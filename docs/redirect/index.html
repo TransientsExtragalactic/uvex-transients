@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <script>
+      async function redirectDocs() {
+        try {
+          const response = await fetch("./stable/", { method: "HEAD" });
+          if (response.ok) {
+            window.location.replace("./stable/");
+          } else {
+            window.location.replace("./dev/");
+          }
+        } catch (e) {
+          window.location.replace("./dev/");
+        }
+      }
+      redirectDocs();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to documentation…</p>
+  </body>
+</html>

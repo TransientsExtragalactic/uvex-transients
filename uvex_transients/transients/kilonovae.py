@@ -1,0 +1,61 @@
+"""Kilonova (binary neutron star merger) population."""
+
+from typing import Union
+
+import numpy as np
+from astropy import units as u
+from astropy.units import Quantity
+from numpy.typing import NDArray
+
+from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
+
+from .base import ExtragalacticTransient
+
+# GW170817-like BNS merger rate, Fishbach et al. 2026: 53 (+176/-49) Gpc^-3 yr^-1.
+# Taken as constant with redshift and as a conservative estimate of the rate of
+# BNS mergers with plausible EM counterparts, relative to the ~28-300 Gpc^-3 yr^-1
+# total BNS merger rate reported by the same work (not every merger is expected
+# to produce a detectable kilonova).
+_KNE_RATE: Quantity = 53 / (u.Gpc**3 * u.yr)
+
+
+class Kilonova(ExtragalacticTransient):
+    """
+    GW170817-like kilonova population.
+
+    Modeled with `KilonovaCoolingBlackbodySED` (a Gaussian-rise/broken-power-law-decline
+    light curve with a cooling blackbody photosphere, calibrated against GW170817), a
+    constant volumetric rate of 53 Gpc^-3 yr^-1 out to z=2, and a 30-day duration window.
+
+    The z=2 redshift limit follows from requiring a bolometric luminosity below
+    1e43 erg/s (well above anything reported in the literature) to remain
+    detectable at UVEX's m < 27 band limit, assuming a flat spectrum and no
+    K-correction. The 30-day duration is a conservative upper bound on the total
+    light curve -- the blue/early kilonova component this SED targets fades below
+    detectability closer to ~10 days.
+    """
+
+    DEFAULT_MODEL = KilonovaCoolingBlackbodySED
+    DEFAULT_DURATION = 30 * u.day
+    DEFAULT_Z_LIM = 2
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """
+        Return the volumetric event rate of kilonovae at a given redshift.
+
+        Parameters
+        ----------
+        z : float or array-like
+            Redshift(s) at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or array-like
+            The volumetric event rate of kilonovae at the specified redshift(s), in units of
+            events per cubic megaparsec per year. Constant in `z` (Fishbach et al. 2026).
+        """
+        z = np.asarray(z)
+
+        rate = np.full_like(z, _KNE_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
+
+        return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.

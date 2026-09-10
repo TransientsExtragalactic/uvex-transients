@@ -1,0 +1,184 @@
+# ================================== #
+# Build System Configuration         #
+# ================================== #
+# Setup the build system for setup.py
+[build-system]
+requires = [
+  "setuptools>=61.2",
+  "setuptools_scm[toml]>=6.2",
+]
+build-backend = "setuptools.build_meta"
+
+# ================================== #
+# Project Configuration              #
+# ================================== #
+# Configuration for the project details.
+[project]
+name = "uvex-transients"
+dynamic = ["version"]
+description = "End-to-end simulations of transients from UVEX all-sky surveys."
+authors = [
+  { name = "Eliza Diggins", email = 'eliza.diggins@berkeley.edu'}
+]
+license = { text = "GPL-3.0-or-later" }
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.10",
+  "astropy",
+  "astropy-healpix",
+  "regions",
+  "synphot",
+  "dust_extinction",
+  "dustmaps",
+  "m4opt",
+  "tqdm",
+]
+
+# ================================== #
+# Optional Dependencies              #
+# ================================== #
+# Configuration for the project details.
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov",
+  "mypy",
+  "black",
+  "pre-commit",
+  "jupyter",
+]
+docs = [
+  'matplotlib>=3.9.2',
+  'myst-parser>=4.0.0',
+  "pydata-sphinx-theme>=0.15.2",
+  'sphinx>=8.1.3',
+  'sphinx_design>=0.6.1',
+  'sphinxcontrib-bibtex>=2.6.3',
+  'sphinx-copybutton',
+  "numpydoc",
+]
+test = [
+  "pytest",
+  "pytest-xdist",
+  "pytest-cov",
+  "pytest-benchmark",
+  "hypothesis"
+]
+
+# ================================== #
+# Tools                              #
+# ================================== #
+[tool.setuptools]
+packages = { find = { include = ["uvex_transients*"] } }
+include-package-data = true
+
+[tool.setuptools_scm]
+# Use git tags to determine the version dynamically.
+# Tags should follow the format `stable_vX.Y.Z` or `dev_vX.Y.Z`.
+# This configuration extracts the version number (X.Y.Z) from the tag.
+
+version_file = "uvex_transients/_version.py"
+local_scheme = "no-local-version"       # Omit local version info (e.g. +gHASH)
+fallback_version = "0.0.0"              # Used if no tag is found
+tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+(?:[-a-zA-Z0-9\\.]+)?)$"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["uvex_transients"]
+
+
+# ================================== #
+# Linting and Formatting Settings    #
+# ================================== #
+# Configuration for linting, formatting, and type checking tools.
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+format.docstring-code-format = true
+format.docstring-code-line-length = 50
+lint.pydocstyle.convention = "numpy"  # Use NumPy style for docstrings
+lint.select = [
+  "E",    # pycodestyle errors (style violations)
+  "F",    # pyflakes (undefined names, etc.)
+  "W",    # pycodestyle warnings
+  "I",    # isort (import sorting)
+  "D",    # pydocstyle (docstring formatting)
+  "UP",   # pyupgrade (modern syntax)
+  "B",    # flake8-bugbear (common bugs & bad patterns)
+  "C4",   # flake8-comprehensions (efficiency in comprehensions)
+  "A",    # flake8-builtins (avoid shadowing builtins)
+  "PERF", # Ruff native perf improvements
+  "NPY",  # NumPy-specific style rules
+  "ICN",  # Import conventions (e.g. disallow wildcard imports)
+]
+
+# Disable some too-noisy docstring rules (especially for scientific code)
+lint.ignore = [
+  "D105",  # Don't require docstrings for magic methods
+  "D107",  # Don't require docstrings for __init__
+  "D203",  # One blank line before class docstring (conflicts with D211)
+  "D213",  # Multi-line docstring summary should start at the second line
+  "D102",  # Ignore missing docstring in public method (flexibility)
+  "E731",  # Do not assign a lambda expression, use def instead
+  "B008",  # Do not perform function calls in default arguments (astropy Quantity/units use this)
+  "B027",  # Allow empty inits on ABCs without abstractmethods.
+  "B024",  # Allow ABCs whose subclass contract is enforced via __init_subclass__ rather than @abstractmethod.
+  "UP007", # Do not use Union in type annotations (use | instead)
+  "NPY201", # We use Numpy<2.0, so this is not relevant.
+  "F403", # Allow wildcard imports in __init__.py to re-export symbols (e.g. from .core import *)
+  "B905", # Allow zip() without kwargs
+]
+
+# Optional: you can also ignore docstring warnings in examples or test files
+lint.exclude = [
+    "*/tests/*",   # Exclude tests from linting.
+    "docs/*",      # Exclude documentation from linting.
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py files build up __all__ incrementally, interleaved with the imports
+# for each submodule, which pycodestyle reads as imports not being at the top.
+"**/__init__.py" = ["E402"]
+
+[tool.coverage.run]
+branch = true
+source = ["uvex_transients"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[flake8]
+max-line-length = 88
+exclude = ['doc',
+    "*/__init__.py",                   # avoid spurious "unused import"
+    "*/__config__.py"                   # autogenerated
+]
+ignore = [
+    "E203",
+    "E266",
+    "E302",
+    "E501",
+    "E741",
+    "W503",
+    "E731",
+    "G004",
+    "G002",
+    "W605",
+    "B009",
+    "B010",
+    "B008",
+    "NPY201", # We use Numpy<2.0, so this is not relevant.
+  ]
+enable-extensions = "G"  # flake8-logging-format (extension is disabled by default)
+jobs = 8
