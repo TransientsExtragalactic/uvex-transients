@@ -1,27 +1,31 @@
 .. raw:: html
 
-   <div class="hero">
-       <img src="_images/uvex_logo.png" class="hero-logo">
-       <div class="hero-text">
-           <h1>UVEX Transients</h1>
-           <p>End-to-end simulations of transients from UVEX all-sky surveys</p>
-           <div class="badges">
+    <p align="center">
+      <img src="_static/uvex_logo_dark.png" width="400" alt="uvex_logo">
+    </p>
 
-|PYPI| |PYPI-PYTHON| |RUFF| |NUMPYDOC| |LAST-COMMIT| |CONTRIBUTORS| |ASTROPY|
 
-.. raw:: html
+    <h1 align="center">UVEX Transients</h1>
 
-           </div>
-       </div>
-   </div>
+    <p align="center"><em>End-to-end simulations of transients from UVEX all-sky surveys.</em></p>
+
+    <p align="center">
+      <img src="https://img.shields.io/badge/docstyle-numpydoc-459db9" alt="Docstring style: numpydoc">
+      <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+      <img src="http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat" alt="Powered by Astropy">
+    </p>
 
 Overview
 =========
 
 **UVEX Transients** is a Python library for simulating populations of astrophysical transients
-(kilonovae, tidal disruption events, luminous fast blue optical transients, supernovae) as they
-would be observed by the UVEX all-sky survey, from a physical SED model all the way through to a
+(kilonovae, tidal disruption events, luminous fast blue optical transients, supernovae, etc.) as they
+would be observed by the UVEX all-sky survey (and other constituent surveys), from a physical SED model all the way through to a
 Monte Carlo catalog of detections against a real survey schedule.
+
+This tool is intended to enable informed modeling of UVEX's discovery and follow-up capabilities for a variety of  transient
+populations and for a variety of survey strategies. It is also intended to be a flexible framework for simulating new transient populations
+as need arises.
 
 .. grid:: 2
    :gutter: 3
@@ -31,12 +35,11 @@ Monte Carlo catalog of detections against a real survey schedule.
 
       **What does it do?**
 
-      - Provides spectral and light-curve models for several transient classes (kilonovae, TDEs,
-        LFBOTs, supernovae).
-      - Composes a bolometric light curve with a spectral shape into a full, cosmologically
-        aware SED that can be evaluated as flux, magnitude, or band photometry.
-      - Samples Monte Carlo realizations of transient populations against a validated survey
-        schedule to produce an event catalog.
+      - Provides a **Monte-Carlo based** event simulator capable of sampling realizations of abstract transient
+        populations against a survey schedule.
+      - Provides a **Flexible SED framework** for building new transient models, including a number of pre-built phenomenological models.
+      - Provides a **Survey schedule framework** for representing and validating survey schedules, including UVEX's all-sky survey.
+      - Provides tooling for end-to-end simulations, including sampling the population and determining detections using **synthetic photometry**.
 
    .. grid-item-card::
       :class-card: sd-shadow-sm sd-border-1
@@ -45,10 +48,9 @@ Monte Carlo catalog of detections against a real survey schedule.
 
       - A common :mod:`~uvex_transients.models.core` SED framework that every transient model
         builds on.
-      - Milky Way foreground dust extinction via the PlanckGNILC E(B-V) map and the Gordon+2023
-        reddening law.
-      - Survey schedule validation and Monte Carlo event simulation, including magnitude- and
-        SNR-based screening.
+      - Efficient and robust synthetic photometry using ``m4opt``, including detailed treatment of spacecraft position,
+        sky backgrounds, detector parameters, bandpass, and foreground extinction.
+      - A Monte Carlo survey simulator that samples transient populations against a survey schedule and determines detections.
 
 .. container:: install-block
 
@@ -78,9 +80,48 @@ Monte Carlo catalog of detections against a real survey schedule.
 Resources
 =========
 
-.. grid:: 1
+.. grid:: 2 2 2 2
     :padding: 3
     :gutter: 5
+
+    .. grid-item-card::
+        :img-top: images/index/book.png
+
+        Transients
+        ^^^^^^^^^^
+
+        Curious what a simulated kilonova, TDE, LFBOT, or Type IIP supernova actually looks like?
+        Each transient page covers the physical motivation, adopted volumetric rate, SED model and
+        parameter priors, and a gallery of simulated light curves.
+
+        +++
+
+        .. button-ref:: transients/index
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            Transients
+
+    .. grid-item-card::
+        :img-top: images/index/lightbulb.png
+
+        Examples
+        ^^^^^^^^
+
+        Ready to run something end to end? The example gallery walks through building survey
+        schedules, simulating transient populations, and writing your own custom transient class.
+
+        +++
+
+        .. button-ref:: examples
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            Examples
 
     .. grid-item-card::
         :img-top: images/index/api_icon.png
@@ -110,6 +151,8 @@ Contents
 .. toctree::
    :maxdepth: 1
 
+   transients/index
+   examples
    api
 
 Indices and tables
@@ -126,17 +169,19 @@ Indices and tables
 
 .. raw:: html
 
-   <div class="affiliation-footer">
+   <div class="affiliation-footer" align="center">
      <p class="affiliation-label">Developed at</p>
      <div class="affiliation-logos">
        <a href="https://www.berkeley.edu" target="_blank" rel="noopener noreferrer">
          <img src="_static/berkeley_logo.svg"
               alt="University of California, Berkeley"
+              height="150px"
               class="affiliation-logo">
        </a>
        <img src="_static/trex_logo.png"
             alt="Transients Extragalactic (TREX)"
-            class="affiliation-logo affiliation-logo-trex">
+            class="affiliation-logo affiliation-logo-trex"
+              height="150px">
      </div>
      <p class="affiliation-text">
        UVEX Transients is developed and maintained by Eliza Diggins and the

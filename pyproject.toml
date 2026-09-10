@@ -41,6 +41,8 @@ dependencies = [
   "dustmaps",
   "m4opt",
   "tqdm",
+  "platformdirs",
+  "ruamel.yaml",
 ]
 
 # ================================== #
@@ -64,6 +66,7 @@ docs = [
   'sphinx_design>=0.6.1',
   'sphinxcontrib-bibtex>=2.6.3',
   'sphinx-copybutton',
+  'sphinx-gallery>=0.19.0',
   "numpydoc",
 ]
 test = [
@@ -94,7 +97,7 @@ tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+(?:[-a-zA-Z0-9\\.]+)?)$"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --strict-markers"
-testpaths = ["uvex_transients"]
+testpaths = ["tests"]
 
 
 # ================================== #
@@ -141,8 +144,8 @@ lint.ignore = [
 
 # Optional: you can also ignore docstring warnings in examples or test files
 lint.exclude = [
-    "*/tests/*",   # Exclude tests from linting.
-    "docs/*",      # Exclude documentation from linting.
+    "tests/*",   # Exclude tests from linting.
+    "docs/*",    # Exclude documentation from linting.
 ]
 
 [tool.ruff.lint.per-file-ignores]

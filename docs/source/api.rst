@@ -1,4 +1,4 @@
-.. image:: ./images/uvex_logo.png
+.. image:: ./images/uvex_logo_dark.png
    :width: 200px
    :align: center
 
@@ -21,13 +21,6 @@ Spectral and light-curve models for individual transient classes, built on a com
     :template: module.rst
 
     uvex_transients.models
-    uvex_transients.models.core
-    uvex_transients.models.lightcurves
-    uvex_transients.models.spectra
-    uvex_transients.models.kilonovae
-    uvex_transients.models.lfbots
-    uvex_transients.models.supernovae
-    uvex_transients.models.tdes
 
 Transients
 ----------
