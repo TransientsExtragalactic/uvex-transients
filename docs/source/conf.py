@@ -40,6 +40,7 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
     "sphinxcontrib.bibtex",
     "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -48,7 +49,7 @@ bibtex_bibfiles = ["docs_bib.bib"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["transients/_page_template.rst"]
 
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -101,3 +102,20 @@ napoleon_preprocess_types = True
 # Suppress toc.not_included warnings for autosummary-generated attribute pages
 # that are referenced by the class pages but not explicitly in a toctree.
 suppress_warnings = ["toc.not_included"]
+
+# Configure the sphinx galleries. These are contained in the
+# /examples gallery.
+sphinx_gallery_conf = {
+    "examples_dirs": [
+        "./galleries/schedules",
+        "./galleries/simulating",
+        "./galleries/custom_transients",
+    ],
+    "gallery_dirs": [
+        "auto_examples/schedules",
+        "auto_examples/simulating",
+        "auto_examples/custom_transients",
+    ],
+    # Do not abort the build if an individual gallery example fails.
+    "abort_on_example_error": False,
+}

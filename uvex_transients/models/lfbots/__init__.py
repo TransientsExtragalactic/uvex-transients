@@ -4,4 +4,4 @@ __all__ = [
     "LFBOTCoolingBlackbodySED",
 ]
 
-from ._lfbots import LFBOTCoolingBlackbodySED
+from .lfbots import LFBOTCoolingBlackbodySED

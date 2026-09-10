@@ -1,34 +1,22 @@
-"""Package-wide logging and random-number-generation helpers."""
+"""Package-wide configuration, logging, and random-number-generation helpers."""
 
-import logging
 from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
 
-logger = logging.getLogger("uvex_transients")
-logger.addHandler(logging.NullHandler())
+from .config import config
+from .log import configure_logging, logger
 
-
-def configure_logging(level: int = logging.DEBUG) -> None:
-    """
-    Attach a console handler to the package logger.
-
-    By default `logger` has only a `~logging.NullHandler` attached (the
-    standard library-friendly setup), so nothing is printed until a
-    consumer -- typically a notebook -- opts in by calling this function.
-
-    Parameters
-    ----------
-    level : int, optional
-        Logging level for both the logger and the console handler
-        (default: `logging.DEBUG`).
-    """
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s", datefmt="%H:%M:%S"))
-
-    logger.addHandler(handler)
-    logger.setLevel(level)
+__all__ = [
+    "config",
+    "logger",
+    "configure_logging",
+    "get_rng",
+    "get_seed_sequence",
+    "split_root_seed",
+    "spawn_seeds",
+]
 
 
 def get_rng(

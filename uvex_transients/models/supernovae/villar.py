@@ -1,4 +1,4 @@
-r"""Supernova SED models from :footcite:t:`2019ApJ...884...83V`."""
+r"""Supernova SED models from the Villar et al. (2019) parametric light curve."""
 
 from typing import ClassVar
 

@@ -1,4 +1,4 @@
-r"""Composite tidal disruption event SED, following :footcite:t:`2021ApJ...908....4V`."""
+r"""Composite tidal disruption event SED, following the Van Velzen et al. (2021) ZTF sample."""
 
 from typing import ClassVar
 

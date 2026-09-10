@@ -32,7 +32,7 @@ import astropy_healpix as ah
 import numpy as np
 from astropy import units as u
 from astropy.coordinates import ICRS, SkyCoord
-from astropy.cosmology import Cosmology, Planck18
+from astropy.cosmology import Cosmology
 from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
@@ -40,6 +40,7 @@ from numpy.typing import NDArray
 from scipy.integrate import cumulative_trapezoid
 
 from uvex_transients.models import SpectralModel
+from uvex_transients.models._cosmology import get_cosmology
 from uvex_transients.utils import get_rng, get_seed_sequence, spawn_seeds, split_root_seed
 
 _SeedType = Union[np.random.SeedSequence, int]
@@ -93,23 +94,25 @@ class TransientBase(ABC):
         if missing:
             raise TypeError(f"{cls.__name__} must override {missing} with real values.")
 
-    def __init__(self, cosmology: Cosmology = Planck18, **_):
+    def __init__(self, cosmology: Union[Cosmology, None] = None, **_):
         """
         Instantiate the transient class.
 
         Parameters
         ----------
-        cosmology: ~astropy.cosmology.Cosmology
+        cosmology: ~astropy.cosmology.Cosmology, optional
             The cosmology to use for this transient class. This is used to determine
             the relevant luminosity distances of objects and to account for cosmological
-            volume corrections.
+            volume corrections. If ``None`` (default), the configured default cosmology
+            is used; see `uvex_transients.models._cosmology.get_cosmology`.
         **_
             Ignored. Lets subclasses (e.g. `ExtragalacticTransient`) forward extra
             constructor arguments through a shared call signature without this base
             `__init__` needing to know about them.
         """
-        # Validate the cosmology and ensure that it is a valid cosmology. Then assign the
-        # cosmology privately.
+        # Resolve the cosmology (falling back to the configured default), then
+        # validate it before assigning it privately.
+        cosmology = get_cosmology(cosmology)
         if not isinstance(cosmology, Cosmology):
             raise TypeError(
                 f"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not {type(cosmology)}."
@@ -196,8 +199,8 @@ class ExtragalacticTransient(TransientBase, ABC):
     DEFAULT_Z_LIM = 10
     DEFAULT_Z_GRID_SIZE = 100
 
-    def __init__(self, cosmology: Cosmology = Planck18):
-        # Instantiate the parent class.
+    def __init__(self, cosmology: Union[Cosmology, None] = None):
+        # Instantiate the parent class (resolves `None` to the configured default).
         super().__init__(cosmology=cosmology)
 
         # Assign the z grid parameters.

@@ -2,21 +2,24 @@
 
 import numpy as np
 from astropy import units as u
-from astropy.cosmology import Planck18, z_at_value
+from astropy.cosmology import z_at_value
 from astropy.units import Quantity
+
+from uvex_transients.utils import config
 
 
 def get_cosmology(cosmology=None):
     """
     Return the cosmology to be used for calculations.
 
-    If no cosmology is provided, the package default (`~astropy.cosmology.Planck18`)
-    is returned.
+    If no cosmology is provided, the configured default
+    (``config["physics.default_cosmology"]``, ``Planck18`` out of the box) is
+    returned.
 
     Parameters
     ----------
     cosmology : astropy.cosmology.FLRW, optional
-        Cosmology to use. If ``None``, `~astropy.cosmology.Planck18` is returned.
+        Cosmology to use. If ``None``, the configured default is returned.
 
     Returns
     -------
@@ -26,10 +29,12 @@ def get_cosmology(cosmology=None):
     Notes
     -----
     This helper ensures that all parts of the framework consistently
-    use the same default cosmology unless explicitly overridden.
+    use the same default cosmology unless explicitly overridden. The default
+    itself is set via ``config["physics.default_cosmology"]``; see
+    `uvex_transients.utils.config`.
     """
     if cosmology is None:
-        return Planck18
+        return config["physics.default_cosmology"]
     return cosmology
 
 

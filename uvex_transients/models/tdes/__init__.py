@@ -5,5 +5,5 @@ __all__ = [
     "VanVelzenTDESED",
 ]
 
-from ._alush_stone import AlushStoneTDESED
-from ._van_velzen import VanVelzenTDESED
+from .alush_stone import AlushStoneTDESED
+from .van_velzen import VanVelzenTDESED

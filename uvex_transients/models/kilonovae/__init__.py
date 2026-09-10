@@ -4,4 +4,4 @@ __all__ = [
     "KilonovaCoolingBlackbodySED",
 ]
 
-from ._kne import KilonovaCoolingBlackbodySED
+from .kne import KilonovaCoolingBlackbodySED
