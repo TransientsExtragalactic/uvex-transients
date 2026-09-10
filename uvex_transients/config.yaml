@@ -1,0 +1,32 @@
+# ======================================================== #
+# uvex_transients Default Configuration File                #
+# ======================================================== #
+# This file provides default settings for uvex_transients. Users can override
+# these defaults using:
+# - the UVEX_TRANSIENTS_CONFIG environment variable
+# - .uvex_transientsrc in the project directory
+# - ~/.config/uvex_transients/config.yaml
+#
+# Values in this file are safe defaults suitable for most environments.
+
+# ------------------------------- #
+# SYSTEM CONFIGURATION            #
+# ------------------------------- #
+system:
+
+  # LOGGING
+  # -------
+  logging:
+    main:
+      level: INFO
+      format: '[uvex_transients]-%(levelname)s: %(message)s'
+
+# ------------------------------- #
+# PHYSICS CONFIGURATION           #
+# ------------------------------- #
+# Physics defaults shared throughout uvex_transients. Every function that
+# accepts a `cosmology` argument falls back to this value when none is given
+# (see uvex_transients.models._cosmology.get_cosmology).
+physics:
+  default_cosmology: !astropy_cosmology
+    name: Planck18
