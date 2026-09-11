@@ -85,6 +85,25 @@ Resources
     :gutter: 5
 
     .. grid-item-card::
+        :img-top: images/index/stopwatch_icon.png
+
+        User Guide
+        ^^^^^^^^^^
+
+        New to UVEX Transients? The user guide walks through the four layers of the package --
+        models, transients, surveys, and simulation -- and how they fit together.
+
+        +++
+
+        .. button-ref:: user_guide
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            User Guide
+
+    .. grid-item-card::
         :img-top: images/index/book.png
 
         Transients
@@ -151,6 +170,7 @@ Contents
 .. toctree::
    :maxdepth: 1
 
+   user_guide
    transients/index
    examples
    api

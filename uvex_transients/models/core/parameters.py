@@ -1,3 +1,5 @@
+"""Parameter classes for use in model implementations."""
+
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass, fields, replace

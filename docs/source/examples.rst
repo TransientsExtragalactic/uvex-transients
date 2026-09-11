@@ -66,7 +66,7 @@ Extend UVEX Transients with a new transient class of your own.
 
       **Write a new SED model and pair it with a transient class.**
 
-      Build a new :class:`~uvex_transients.models.core.SpectralModel`, wrap it in a
+      Build a new :class:`~uvex_transients.models.core.base.SpectralModel`, wrap it in a
       :class:`~uvex_transients.transients.base.TransientBase` (or
       :class:`~uvex_transients.transients.base.ExtragalacticTransient`) subclass, and register
       it with :class:`~uvex_transients.simulation.core.SurveySimulator`.
