@@ -4,8 +4,8 @@ from typing import ClassVar
 
 from astropy import units as u
 
-from uvex_transients.models.core._base import ComposedSpectralModel
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import ComposedSpectralModel
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import NormalPrior
 from uvex_transients.models.lightcurves.generic import GREDLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
@@ -41,7 +41,7 @@ class VanVelzenTDESED(ComposedSpectralModel):
     Composed from :class:`~uvex_transients.models.lightcurves.generic.GREDLightcurve`
     (already bolometric -- :math:`L_0 \cdot \ell(t)`) and
     :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`; see
-    :class:`~uvex_transients.models.core._base.ComposedSpectralModel` for how the two
+    :class:`~uvex_transients.models.core.base.ComposedSpectralModel` for how the two
     are combined.
 
     The default priors are informed by the log-normal fits to the ZTF TDE sample

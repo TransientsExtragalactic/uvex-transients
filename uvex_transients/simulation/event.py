@@ -306,7 +306,7 @@ class Event:
         Intrinsic (rest-frame, distance-independent) -- unlike :meth:`mag`/:meth:`flux`,
         no `mission`/`band` is involved. This event's own SED parameters (see
         :meth:`sample_parameters`) are supplied automatically. Wraps
-        `~uvex_transients.models.core._base.SpectralModel.eval_bolometric`.
+        `~uvex_transients.models.core.base.SpectralModel.eval_bolometric`.
 
         Returns
         -------
@@ -350,7 +350,7 @@ class Event:
 
         Builds one `~synphot.SourceSpectrum` for this whole event -- batched over
         every candidate observation's own time since explosion, via
-        `~uvex_transients.models.core._base.SpectralModel.as_source_spectrum`
+        `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`
         (dust folded in through its ``log_attenuation``, from this event's own cached
         `ebv`) -- and reuses it, unmodified, for every requested band:
         a `~synphot.SourceSpectrum` is purely a function of wavelength/time, so

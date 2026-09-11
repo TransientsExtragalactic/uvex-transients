@@ -9,8 +9,8 @@ import numpy as np
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
-from uvex_transients.models.core._base import SpectralModel
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import SpectralModel
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import NormalPrior, UniformPrior
 from uvex_transients.models.lightcurves.generic import GREDLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
@@ -49,7 +49,7 @@ class AlushStoneTDESED(SpectralModel):
     disk plateau does not sharply replace the fading early-time emission.
 
     Physically, the early branch is the same reprocessed/photospheric emission
-    :class:`~uvex_transients.models.tdes.VanVelzenTDESED` models, while the
+    :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` models, while the
     plateau is the late-time, UV-bright emission from a magnetized accretion disk that
     :footcite:t:`2025arXiv250303811A` predict settles onto an asymptotic
     :math:`L \propto t^{-5/6}` decline persisting for decades to centuries --
@@ -58,7 +58,7 @@ class AlushStoneTDESED(SpectralModel):
     flat/evolving they are.
 
     ``temperature``/``sigma_rise``/``tau_decline`` reuse the same ZTF-sample-informed
-    defaults as :class:`~uvex_transients.models.tdes.VanVelzenTDESED` (see that
+    defaults as :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` (see that
     class's docstring); ``plateau_temperature``, ``plateau_amplitude``, and
     ``plateau_timescale`` do not yet have literature-calibrated defaults and use
     order-of-magnitude fiducial scales instead -- narrow these once fit to real

@@ -7,7 +7,7 @@ from astropy.units import Quantity, UnitBase
 from numpy.typing import ArrayLike, NDArray
 
 if TYPE_CHECKING:
-    from uvex_transients.models.core._parameters import Parameter
+    from uvex_transients.models.core.parameters import Parameter
 
 
 # =========================================================================== #

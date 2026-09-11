@@ -5,8 +5,8 @@ from typing import ClassVar
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
-from uvex_transients.models.core._base import SpectralModel
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import SpectralModel
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import LogNormalPrior
 from uvex_transients.models.lightcurves.generic import VillarLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum

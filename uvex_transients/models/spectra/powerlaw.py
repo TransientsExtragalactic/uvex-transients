@@ -20,7 +20,7 @@ reference frequency for both segments (so no separate normalization
 constant is needed to keep the two pieces continuous).
 
 Neither shape is normalized to integrate to 1 by construction; each
-overrides :meth:`~uvex_transients.models.core._base.Spectrum._eval_normalization`
+overrides :meth:`~uvex_transients.models.core.base.Spectrum._eval_normalization`
 with the closed-form integral of its own shape (see
 :func:`~uvex_transients.models.spectra._utils.powerlaw_shape_integral_cgs`).
 """
@@ -31,8 +31,8 @@ import numpy as np
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
-from uvex_transients.models.core._base import Spectrum
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import Spectrum
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import ConstantPrior, NormalPrior
 
 from ._utils import powerlaw_shape_integral_cgs

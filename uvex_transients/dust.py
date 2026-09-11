@@ -4,7 +4,7 @@ Milky Way foreground dust extinction.
 This module provides access to the PlanckGNILC E(B-V) map (`dust_map`), the adopted
 Gordon+2023 (`G23`) reddening law, and a single vectorized entry point
 (`log_attenuation`) that turns the two into a natural-log attenuation array ready to
-add directly into a `~uvex_transients.models.core._base.SpectralModel` flux calculation
+add directly into a `~uvex_transients.models.core.base.SpectralModel` flux calculation
 (its ``log_attenuation`` keyword argument).
 
 There is deliberately no `synphot.SpectralElement`/`astropy.modeling.Model` wrapping
@@ -148,7 +148,7 @@ def log_attenuation(
     sample (shape ``(K,)``), and combined with ``Ebv`` (shape ``S``) by plain numpy
     broadcasting into a result of shape ``S + (K,)``.
 
-    Add this directly to a `~uvex_transients.models.core._base.SpectralModel` flux
+    Add this directly to a `~uvex_transients.models.core.base.SpectralModel` flux
     calculation's log flux (its ``log_attenuation`` keyword) -- e.g., having already
     called ``ebv = resolve_ebv(dust_map(), coord)`` once,
     ``model.flux_log(nu, t, ..., log_attenuation=log_attenuation(nu, ebv))`` --

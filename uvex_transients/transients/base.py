@@ -3,7 +3,7 @@ Base classes for transient population models.
 
 A :class:`TransientBase` subclass is one type of transient to simulate in the
 survey. It is a thin container pairing a single
-:class:`~uvex_transients.models.core._base.SpectralModel` (the full, self-contained
+:class:`~uvex_transients.models.core.base.SpectralModel` (the full, self-contained
 :math:`L_\\nu(\\nu, t)` model -- flux, magnitude, band-averaged photometry, and
 rest-frame spectrum generation, including cosmological redshift/distance
 resolution, all live on the SED itself now; see that module) with the metadata
@@ -53,11 +53,11 @@ class TransientBase(ABC):
     """
     Abstract base class for transient types.
 
-    A container: one :class:`~uvex_transients.models.core._base.SpectralModel` instance
+    A container: one :class:`~uvex_transients.models.core.base.SpectralModel` instance
     (:attr:`sed`) plus the metadata needed to window a survey simulation around it
     (:attr:`duration_limit`). All flux/magnitude/spectrum evaluation is the SED's
-    own job -- see :class:`~uvex_transients.models.core._base.SpectralModel` and, for a
-    composed lightcurve + spectral-shape SED, :class:`~uvex_transients.models.core._base.ComposedSpectralModel`.
+    own job -- see :class:`~uvex_transients.models.core.base.SpectralModel` and, for a
+    composed lightcurve + spectral-shape SED, :class:`~uvex_transients.models.core.base.ComposedSpectralModel`.
     """
 
     # ------------------------------ #
@@ -152,7 +152,7 @@ class TransientBase(ABC):
     def sed(self) -> SpectralModel:
         """SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.
 
-        See :class:`~uvex_transients.models.core._base.SpectralModel` for the full API
+        See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API
         (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and
         ``generate_spectrum``), each of which resolves redshift/distance from a
         cosmology directly and accepts an optional ``log_attenuation`` for Milky Way

@@ -73,7 +73,7 @@ from .._utils import (
     model_class_from_kernel,
     to_cgs_value,
 )
-from ._parameters import Parameter
+from .parameters import Parameter
 
 __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
 
@@ -175,7 +175,7 @@ class _ModelBase(Mapping[str, Parameter], ABC):
             of this model's parameter names). Passing a plain value (a
             :class:`~astropy.units.Quantity`, ``float``, or ``int``) fixes
             that parameter to it; passing a
-            :class:`~uvex_transients.models.core._parameters.Parameter` replaces the
+            :class:`~uvex_transients.models.core.parameters.Parameter` replaces the
             default parameter entirely (e.g. to use a different prior). In
             the latter case, the *same* ``Parameter`` instance is stored
             (not copied) -- passing one object to two model instances links
@@ -327,7 +327,7 @@ class _ModelBase(Mapping[str, Parameter], ABC):
             Number of samples to draw per parameter.
         rng
             Random-number source, forwarded to each
-            :meth:`~uvex_transients.models.core._parameters.Parameter.sample`. Passing
+            :meth:`~uvex_transients.models.core.parameters.Parameter.sample`. Passing
             a shared :class:`~numpy.random.Generator` is recommended so that
             every parameter's draws come from the same reproducible stream.
         parameters

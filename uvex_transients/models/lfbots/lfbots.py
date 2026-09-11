@@ -7,8 +7,8 @@ from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
 from uvex_transients.models._utils import to_cgs_value
-from uvex_transients.models.core._base import SpectralModel
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import SpectralModel
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import LogNormalPrior, NormalPrior, UniformPrior
 from uvex_transients.models.lightcurves.generic import GaussianRisePowerLawLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
@@ -34,7 +34,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
     where :math:`S_\mathrm{BB}` is the normalized blackbody spectrum provided
     by :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.
     The photosphere follows the same cooling-law form as
-    :class:`~uvex_transients.models.supernovae.VillarCoolingBlackbodySED`,
+    :class:`~uvex_transients.models.supernovae.villar.VillarCoolingBlackbodySED`,
     but with the cooling timescale fixed to the light curve's own
     :math:`t_\mathrm{peak}` rather than a separate free parameter,
 

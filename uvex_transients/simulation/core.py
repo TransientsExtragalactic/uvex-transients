@@ -55,7 +55,7 @@ def _sample_parameters_from_seeds(sed, seeds) -> dict:
 
     Parameters
     ----------
-    sed : ~uvex_transients.models.core._base.SpectralModel
+    sed : ~uvex_transients.models.core.base.SpectralModel
         The transient type's SED model to sample parameters from.
     seeds : array-like of int
         Each event's own `parameter_seed`, in catalog row order.
@@ -331,7 +331,7 @@ class SurveySimulator:
         `parameter_seed` (see `_sample_parameters_from_seeds`), so a kept event's later
         `simulate_photometry` realization is guaranteed to match what was screened here --
         not an independent draw from the same population -- then evaluates
-        :meth:`~uvex_transients.models.core._base.SpectralModel.flux_band` over a shared
+        :meth:`~uvex_transients.models.core.base.SpectralModel.flux_band` over a shared
         ``linspace(0, duration_limit, n_phase)`` phase grid -- the same grid for every event
         of a type, regardless of whether the schedule ever actually pointed there at that
         phase -- broadcasting every event and every requested band at once. At each phase

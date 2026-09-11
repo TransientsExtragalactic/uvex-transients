@@ -14,5 +14,5 @@ from .priors import *
 
 __all__.extend(priors.__all__)
 
-from ._base import ComposedSpectralModel, Lightcurve, SpectralModel, Spectrum
-from ._parameters import Parameter
+from .base import ComposedSpectralModel, Lightcurve, SpectralModel, Spectrum
+from .parameters import Parameter

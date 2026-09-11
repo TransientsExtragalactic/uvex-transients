@@ -276,7 +276,7 @@ def model_class_from_kernel(
     evaluate
         ``evaluate(*input_values) -> FloatResult``, operating on
         unit-stripped, broadcastable NumPy arrays -- e.g. a closure over
-        one of a :class:`~uvex_transients.models.core.SpectralModel` subclass's
+        one of a :class:`~uvex_transients.models.core.base.SpectralModel` subclass's
         ``*_cgs`` classmethods. Bound directly as a ``staticmethod`` on
         the generated class (no ``self``).
 

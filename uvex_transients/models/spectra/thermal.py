@@ -15,8 +15,8 @@ import numpy as np
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
-from uvex_transients.models.core._base import Spectrum
-from uvex_transients.models.core._parameters import Parameter
+from uvex_transients.models.core.base import Spectrum
+from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import LogNormalPrior
 
 from ._utils import C_CGS, H_CGS, K_B_CGS, SIGMA_SB_CGS, log_expm1
@@ -37,7 +37,7 @@ class BlackbodySpectrum(Spectrum):
     By default ``temperature`` uses a
     :class:`~uvex_transients.models.core.priors.LogNormalPrior`, a physically motivated
     prior for a strictly positive scale parameter; like any other
-    :class:`~uvex_transients.models.core._parameters.Parameter`, it can be overridden
+    :class:`~uvex_transients.models.core.parameters.Parameter`, it can be overridden
     per instance.
 
     .. rubric:: Parameters
