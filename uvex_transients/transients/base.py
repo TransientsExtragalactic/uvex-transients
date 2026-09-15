@@ -41,7 +41,7 @@ from scipy.integrate import cumulative_trapezoid
 
 from uvex_transients.models import SpectralModel
 from uvex_transients.models._cosmology import get_cosmology
-from uvex_transients.utils import get_rng, get_seed_sequence, spawn_seeds, split_root_seed
+from uvex_transients.utils import get_rng, get_seed_sequence, logger, spawn_seeds, split_root_seed
 
 _SeedType = Union[np.random.SeedSequence, int]
 
@@ -349,6 +349,14 @@ class ExtragalacticTransient(TransientBase, ABC):
         if self._redshift_grid is not None:
             return
 
+        logger.debug(
+            "%s: (re)building rate table over z in [0, %s] (%d grid points, cosmology=%s).",
+            type(self).__name__,
+            self._redshift_limit,
+            self._redshift_grid_size,
+            self._cosmology.name,
+        )
+
         z_grid = np.linspace(0.0, self._redshift_limit, self._redshift_grid_size)
         rate = np.asarray(self.event_rate(z_grid), dtype=float)
         dVc_dz = self._cosmology.differential_comoving_volume(z_grid).to_value(u.Mpc**3 / u.sr)
@@ -358,7 +366,12 @@ class ExtragalacticTransient(TransientBase, ABC):
         total = cumulative[-1]
 
         if not np.isfinite(total) or total <= 0:
-            raise ValueError("The integrated event rate must be finite and positive; check `event_rate`.")
+            n_nonfinite = int(np.sum(~np.isfinite(rate)))
+            raise ValueError(
+                f"The integrated event rate must be finite and positive, got {total!r}; check `event_rate`. "
+                f"`event_rate(z)` over `redshift_grid` (z in [0, {self._redshift_limit}]) returned values in "
+                f"[{np.nanmin(rate)!r}, {np.nanmax(rate)!r}] with {n_nonfinite} non-finite entries."
+            )
 
         self._redshift_grid = z_grid
         self._luminosity_distance_grid = self._cosmology.luminosity_distance(z_grid)
@@ -366,6 +379,8 @@ class ExtragalacticTransient(TransientBase, ABC):
         # events / Mpc^3 / yr (implicit units of `event_rate`) * Mpc^3/sr (from
         # `differential_comoving_volume`) integrated over dz -> events / sr / yr.
         self._integrated_rate = total / (u.sr * u.yr)
+
+        logger.debug("%s: rate table built; integrated_event_rate=%s.", type(self).__name__, self._integrated_rate)
 
     @staticmethod
     def _resolve_duration(duration: Quantity = None, t_start: Time = None, t_end: Time = None) -> Quantity:
@@ -759,6 +774,16 @@ class ExtragalacticTransient(TransientBase, ABC):
             solid_angle=total_solid_angle,
             duration=duration,
             seed=count_seed,
+        )
+
+        logger.debug(
+            "%s: sampled %d events over %d pixels (nside=%d), solid angle %s, duration %s.",
+            type(self).__name__,
+            number_of_events,
+            len(pixel_indices),
+            nside,
+            total_solid_angle,
+            duration,
         )
 
         event_buffer = self._create_event_table_buffer(

@@ -120,7 +120,7 @@ class AlushStoneTDESED(SpectralModel):
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "amplitude": Parameter(
-            prior=NormalPrior(mean=44.0, sigma=0.1),
+            prior=NormalPrior(mean=43.8, sigma=0.3),
             scale=1.0 * u.erg / u.s,
             transform="log10",
             description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.2^2).",
@@ -134,7 +134,7 @@ class AlushStoneTDESED(SpectralModel):
             latex=r"T",
         ),
         "sigma_rise": Parameter(
-            prior=NormalPrior(mean=0.91, sigma=0.2),
+            prior=NormalPrior(mean=0.91, sigma=0.25),
             scale=1.0 * u.day,
             transform="log10",
             description="Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(1.3, 0.3^2).",

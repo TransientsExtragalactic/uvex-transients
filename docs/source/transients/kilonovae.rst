@@ -3,63 +3,44 @@
 Kilonovae
 ==========
 
-Kilonovae are the optical/UV/IR transients produced by the radioactively-heated, neutron-rich
-ejecta of a compact-object merger -- most plausibly a binary neutron star (BNS) merger, though a
-neutron star-black hole merger can also produce one. They are the electromagnetic counterpart of
-greatest interest to a gravitational-wave-triggered UV survey like UVEX, since they (unlike a
-short gamma-ray burst) are detectable across essentially the full solid angle around the merger
-rather than only along a narrow relativistic jet.
+Kilonovae are modeled here as the radioactively-heated, neutron-rich ejecta of a compact-object
+merger (a binary neutron star or neutron star-black hole merger), calibrated to the one
+well-sampled event to date, AT2017gfo (GW170817) :footcite:p:`cowperthwaite2017, waxman2018`.
 
-The only kilonova with a well-sampled UV/optical/IR light curve to date is AT2017gfo, the
-counterpart of GW170817. Its early-time (:math:`\lesssim 1` day) optical/UV emission was
-significantly bluer and hotter than its later, redder emission, a signature generally attributed
-to a lower-opacity, lanthanide-poor ejecta component dominating early on before a higher-opacity,
-lanthanide-rich component takes over at longer wavelengths and later times
-:footcite:p:`cowperthwaite2017`. UVEX's UV bandpasses are most sensitive to precisely this
-early-time blue component, which is also the piece of the light curve for which GW170817 itself
-gives the best empirical anchor: :footcite:t:`cowperthwaite2017` find a blackbody temperature of
-:math:`T \approx 8300` K and bolometric luminosity :math:`L_\mathrm{bol} \approx 5\times10^{41}`
-erg/s at 0.6 days post-merger, and :footcite:t:`waxman2018` characterize the subsequent bolometric
-decline and cooling as consistent with power laws in each of luminosity and temperature. This
-population is implemented by
-:class:`~uvex_transients.transients.kilonovae.Kilonova`, pairing
+This population is implemented by :class:`~uvex_transients.transients.kilonovae.Kilonova`, pairing
 :class:`~uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED` with the rate/duration
 metadata described below.
 
-Transient Rates
-----------------
-
-The kilonova rate is tied directly to the BNS merger rate measured from gravitational-wave
-observations. :footcite:t:`fishbach2026` report a total BNS merger rate of
-:math:`28`-:math:`300\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` from GWTC-4, of which
-:math:`53^{+176}_{-49}\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` is attributed specifically to
-GW170817-like (:math:`\sim 1.3\,M_\odot + 1.3\,M_\odot`) systems. Because not every BNS merger is
-expected to produce a kilonova as luminous and as blue as AT2017gfo, the GW170817-like sub-rate is
-adopted here as a conservative, directly-calibrated estimate of the rate of kilonovae with the
-properties this SED models, rather than the full (and less certain) BNS rate. The rate is taken as
-constant in redshift, since there is no observational handle yet on its evolution.
-
-The redshift limit is set from a luminosity argument rather than a direct kilonova
-non-detection limit: requiring a source with bolometric luminosity below
-:math:`10^{43}\,\mathrm{erg/s}` -- already well in excess of anything reported for a kilonova in
-the literature -- to remain above a conservative UVEX band-limiting magnitude of :math:`m<27`
-gives (with no K-correction, assuming a spectrum flat across the UVEX bandpasses) a redshift limit
-of :math:`z=2`. The 30-day duration window is likewise conservative: the early, blue kilonova
-component this SED targets is expected to fade below detectability by :math:`\sim 10` days, but 30
-days is used to safely bound the full light curve.
+Quick Facts
+------------
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 20 20 30
+   :widths: 15 25 15 45
 
-   * - Rate
-     - Redshift Limit
-     - Duration
+   * - Quantity
+     - Value
      - Source
-   * - :math:`53^{+176}_{-49}\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (constant in :math:`z`)
-     - :math:`z = 2`
-     - 30 days
+     - Notes
+   * - Rate
+     - :math:`53^{+176}_{-49}\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (constant in :math:`z`)
      - :footcite:t:`fishbach2026`
+     - GWTC-4 total BNS rate is :math:`28`-:math:`300\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}`; the
+       GW170817-like (:math:`\sim 1.3\,M_\odot + 1.3\,M_\odot`) sub-rate is adopted instead, since
+       not every BNS merger produces a kilonova this luminous and blue. No redshift evolution is
+       assumed.
+   * - Redshift limit
+     - :math:`z = 0.2`
+     - --
+     - Luminosity argument: a source with bolometric luminosity below
+       :math:`10^{43}\,\mathrm{erg/s}` (already well above any reported kilonova) stays above a
+       conservative UVEX limit of :math:`m<27` out to :math:`z=2` (no K-correction, flat spectrum
+       assumed).
+   * - Duration
+     - 30 days
+     - --
+     - Conservative: the early, blue component this SED targets fades below detectability by
+       :math:`\sim 10` days, but 30 days is used to safely bound the full light curve.
 
 SED Model
 ----------
@@ -83,7 +64,7 @@ floor :math:`T_\mathrm{floor}`. The functional forms are
 
 .. math::
 
-    T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{t_\mathrm{peak}/5}\right)^{-\alpha_T}.
+    T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{t_\mathrm{peak}}\right)^{-\alpha_T}.
 
 This is a deliberately phenomenological choice: the rise of AT2017gfo was never actually observed
 (hence the Gaussian rise is unconstrained by data and merely provides a smooth turn-on), but the
@@ -136,15 +117,21 @@ Simulated Light Curves
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The plot below draws 1000 random parameter realizations from the priors above and shows the
-resulting bolometric light curves and photospheric temperatures.
+resulting bolometric light curves and photospheric temperatures, together with the AT2017gfo
+measurements from :footcite:t:`cowperthwaite2017` and :footcite:t:`waxman2018` that the priors
+were anchored to.
 
 .. plot::
    :include-source: false
 
+   from pathlib import Path
+
    import numpy as np
    import matplotlib.pyplot as plt
    from astropy import units as u
+   from astropy.table import Table
 
+   import uvex_transients
    from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED as SEDClass
 
    rng = np.random.default_rng(20260910)
@@ -157,22 +144,185 @@ resulting bolometric light curves and photospheric temperatures.
    L_bol = SEDClass.eval_bolometric(t, **params_grid)
    T = SEDClass.temperature(t, **params_grid)
 
+   data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+   lbol_cowperthwaite = Table.read(data_dir / "lbol_gw170817_cowperthwaite.txt", format="ascii")
+   lbol_waxman = Table.read(data_dir / "lbol_gw170817_waxman.txt", format="ascii")
+   tphot_waxman = Table.read(data_dir / "Tphot_gw170817_waxman.txt", format="ascii")
+
    fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
 
    for row in range(n_samples):
        ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
        ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.06)
 
+   ax_L.scatter(
+       lbol_cowperthwaite["time"], lbol_cowperthwaite["L_bol"],
+       marker="o", s=28, color="k", edgecolor="white", linewidth=0.5, zorder=5,
+       label="Cowperthwaite+2017",
+   )
+   ax_L.scatter(
+       lbol_waxman["time"], lbol_waxman["L_bol"],
+       marker="s", s=28, color="firebrick", edgecolor="white", linewidth=0.5, zorder=5,
+       label="Waxman+2018",
+   )
+
+   ax_T.scatter(
+       tphot_waxman["time"], tphot_waxman["T_phot"],
+       marker="s", s=28, color="firebrick", edgecolor="white", linewidth=0.5, zorder=5,
+       label="Waxman+2018",
+   )
+
    ax_L.set_xscale("log")
    ax_L.set_yscale("log")
    ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
    ax_L.set_title("Kilonova: simulated bolometric light curves (n=1000)")
+   ax_L.legend(loc="upper right", fontsize=8, frameon=False)
 
    ax_T.set_yscale("log")
    ax_T.set_xlabel("Time since merger [days]")
    ax_T.set_ylabel("Photospheric temperature [K]")
+   ax_T.legend(loc="upper right", fontsize=8, frameon=False)
 
    fig.tight_layout()
+
+
+----
+
+Observability Summary
+----------------------
+
+Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB magnitudes
+:math:`m_\mathrm{AB}` of 3000 simulated kilonovae drawn from the priors above, with
+the UVEX 1 Dwell limit of :math:`m<24.5` overplotted. Findings here justify our confidence in a
+:math:`z=0.2` redshift limit for this population.
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+    from scipy.stats import gaussian_kde
+
+    from m4opt.missions import uvex
+    from uvex_transients.transients.kilonovae import Kilonova
+    from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED as SEDClass
+
+    rng = np.random.default_rng(20260911)
+    n_samples = 3000
+
+    kilonova = Kilonova()
+    z = kilonova.sample_event_redshift(n_samples, rng=rng)
+    params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+
+    # Observed-frame time of rest-frame peak, i.e. where each event is brightest as seen by UVEX.
+    t_obs_peak = params["t_peak"] * (1.0 + z)
+
+    bandpasses = uvex.detector.bandpasses
+    band_names = list(bandpasses)
+
+    fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
+
+    for ax, band_name in zip(axes, band_names):
+        mag = SEDClass.mag_bandpass(bandpasses[band_name], t_obs_peak, redshift=z, **params).to_value(u.ABmag)
+        finite = np.isfinite(mag)
+        z_finite, mag_finite = z[finite], mag[finite]
+
+        ax.scatter(z_finite, mag_finite, s=5, ec='k',fc='k',alpha=0.5, label="Simulated events")
+
+        kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
+        z_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
+        mag_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
+        Z_grid, Mag_grid = np.meshgrid(z_grid, mag_grid)
+        density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
+        ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
+
+        ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
+
+        ax.invert_yaxis()
+        ax.set_xlabel("Redshift")
+        ax.set_title(f"UVEX {band_name}")
+        ax.legend(loc="upper right", fontsize=8, frameon=False)
+
+        ax.invert_yaxis()
+        ax.set_ylim([30, 18])
+
+    axes[0].set_ylabel("Peak apparent AB magnitude")
+    fig.suptitle(f"Kilonova: peak apparent magnitude vs. redshift (n={n_samples})")
+    fig.tight_layout()
+    plt.show()
+
+The anticipated rate of kilonovae detectable by UVEX at these limits is as follows assuming that
+any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
+in comoving volume out to :math:`z=0.2`:
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+
+    from m4opt.missions import uvex
+    from uvex_transients.transients.kilonovae import Kilonova
+
+
+    rng = np.random.default_rng(20260911)
+    n_samples = 3000
+
+    # Sample the kilonova population.
+    kilonova = Kilonova()
+    redshift = kilonova.sample_event_redshift(n_samples, rng=rng)
+    params = kilonova.sed.sample_parameters(size=n_samples, rng=rng)
+
+    # Convert the integrated rate per steradian to an all-sky rate.
+    all_sky_rate = 4 * np.pi * kilonova.integrated_event_rate * u.sr
+
+    # Observed-frame time corresponding to the rest-frame peak.
+    t_peak_obs = params["t_peak"] * (1 + redshift)
+
+    detection_limits = {
+        "FUV": 24.5 * u.ABmag,
+        "NUV": 24.5 * u.ABmag,
+    }
+
+    # Compute peak-visible rates.
+    visible_rates = {}
+
+    for band_name, bandpass in uvex.detector.bandpasses.items():
+        magnitudes = kilonova.sed.mag_bandpass(
+            bandpass,
+            t_peak_obs,
+            redshift=redshift,
+            **params,
+        ).to_value(u.ABmag)
+
+        visible = magnitudes < detection_limits[band_name].to_value(u.ABmag)
+        visible_fraction = np.mean(visible)
+        visible_rate = visible_fraction * all_sky_rate
+
+        visible_rates[band_name] = visible_rate
+
+        print(
+            f"{band_name}: {visible_rate:.2f} "
+            f"({visible_fraction:.1%} of events visible)"
+        )
+
+    # Plot all-sky visible rates.
+    band_names = list(visible_rates)
+    rates = [visible_rates[band].to_value(1 / u.yr) for band in band_names]
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    ax.bar(band_names, rates)
+
+    ax.set_yscale("log")
+    ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+    ax.set_title("Peak-visible kilonova rate")
+
+    fig.tight_layout()
+    plt.show()
+
 
 References
 -----------

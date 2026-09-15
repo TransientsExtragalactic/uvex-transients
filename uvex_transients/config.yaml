@@ -31,6 +31,50 @@ physics:
   default_cosmology: !astropy_cosmology
     name: Planck18
 
+  # Milky Way dust map source URLs (see uvex_transients.dust.dust_map), tried in
+  # order. Same two mirrors (IRSA, then ESA) and the same astropy download cache
+  # that m4opt.synphot.extinction._dust.dust_map uses, so a cache warmed by
+  # either package is shared by both.
+  dust_map_sources:
+    - https://irsa.ipac.caltech.edu/data/Planck/release_2/all-sky-maps/maps/component-maps/foregrounds/COM_CompMap_Dust-GNILC-Model-Opacity_2048_R2.01.fits
+    - https://pla.esac.esa.int/pla/aio/product-action?MAP.MAP_ID=COM_CompMap_Dust-GNILC-Model-Opacity_2048_R2.01.fits
+
+
+# ------------------------------- #
+# HEALPIX RESOLUTION              #
+# ------------------------------- #
+# Shared default HEALPix resolution/ordering for every survey-footprint/coverage
+# query (uvex_transients.surveys.base.SurveySchedule) and Monte Carlo sampling
+# grid (uvex_transients.simulation.core.SurveySimulator) that accepts
+# nside/order, unless the caller passes its own (see
+# uvex_transients.utils.resolve_healpix_resolution).
+healpix:
+  default_nside: 128
+  default_order: nested
+
+
+# ------------------------------- #
+# SURVEYS CONFIGURATION           #
+# ------------------------------- #
+surveys:
+  # Fractional inflation applied to a footprint's exact bounding radius (see
+  # uvex_transients.surveys.base._bounding_radius), a safety margin against an
+  # axis-aligned bounding-circle search missing a rotated footprint's true extent.
+  footprint_bounding_margin: 1.01
+
+  # Default LSST/Rubin PairMetric-style cadence-sensitivity convention shared by
+  # SurveySchedule.compute_pair_counts/compute_pair_count_curve/
+  # compute_control_time/compute_control_time_curve.
+  cadence:
+    minimum_factor: 0.5
+    maximum_factor: 2.0
+    visibility_factor: 3.0
+
+  # Network timeout (seconds) for downloading a schedule table
+  # (uvex_transients.surveys.utils.download_schedule_from_url); null uses
+  # astropy's own default.
+  download_timeout:
+
 
 # ------------------------------- #
 # EXTERNAL SCHEDULES              #
@@ -47,3 +91,21 @@ schedules:
 
   # Set the default schedule.
   default_schedule: uvex_initial_main
+
+
+# ------------------------------- #
+# SIMULATION CONFIGURATION        #
+# ------------------------------- #
+simulation:
+  # Memory/precision tuning knobs for SurveySimulator.filter_by_limiting_magnitude
+  # -- see its docstring for the array-memory tradeoff each controls.
+  filter_by_limiting_magnitude:
+    n_phase: 50
+    chunk_size: 5000
+
+  # Memory tuning knob for SurveySimulator.filter_by_snr; see its docstring.
+  filter_by_snr:
+    chunk_size: 2000
+
+  # Default detection-significance threshold for Event.simulate_photometry.
+  detection_n_sigma: 5.0

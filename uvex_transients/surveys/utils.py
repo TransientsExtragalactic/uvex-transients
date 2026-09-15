@@ -1,13 +1,18 @@
 """Schema-validation primitives used by :class:`~uvex_transients.surveys.base.SurveySchedule`."""
 
+import shutil
 from collections.abc import Callable, Collection
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 from astropy import units as u
 from astropy.table import QTable
 from astropy.units import UnitBase
+from astropy.utils.data import download_file
+
+from uvex_transients.utils import config, logger
 
 ActionValidator = Callable[[QTable], bool | str | list[str]]
 
@@ -312,3 +317,162 @@ class ActionSpec:
         return [
             f"Validator for action {action_name!r} must return bool, str, or list[str], got {type(result).__name__}."
         ]
+
+
+# =============================================== #
+# Remote Schedule Fetching                        #
+# =============================================== #
+def _resolve_schedule_url(name: str | None, url: str | None) -> str:
+    """
+    Resolve a ``name``/``url`` pair (see :func:`get_schedule`) down to one concrete URL.
+
+    ``name`` and ``url`` are mutually exclusive; if neither is given, ``name`` falls back to
+    ``config["schedules.default_schedule"]``.
+    """
+    if name is not None and url is not None:
+        raise ValueError("Provide at most one of 'name' or 'url'.")
+
+    if url is not None:
+        return url
+
+    registry = config["schedules.schedule_urls"]
+    name = name if name is not None else config["schedules.default_schedule"]
+
+    if name not in registry:
+        raise ValueError(f"Unknown schedule name {name!r}. Available choices: {sorted(registry)}.")
+
+    return registry[name]
+
+
+def download_schedule_from_url(
+    url: str,
+    path: str | Path,
+    overwrite: bool = False,
+    timeout: float | None = None,
+    show_progress: bool = True,
+) -> Path:
+    """
+    Download a remote schedule file to a local path.
+
+    A thin wrapper around :func:`~astropy.utils.data.download_file` that saves the result to
+    an explicit, permanent location rather than leaving it in astropy's own (evictable) cache
+    -- for a durable local copy you can reload later (e.g. via ``QTable.read`` or, once paired
+    with an ``instrument_fov``, :meth:`~uvex_transients.surveys.base.SurveySchedule.from_disk`)
+    without depending on the remote URL still being reachable. If you just want a `QTable` and
+    don't care where the bytes end up, :func:`get_schedule` avoids this step entirely.
+
+    Parameters
+    ----------
+    url
+        Direct HTTP/HTTPS URL to the schedule file.
+    path
+        Local destination path. Parent directories are created as needed.
+    overwrite
+        Whether to overwrite an existing file at ``path``.
+    timeout
+        Timeout in seconds for the network request, or `None` (the default) to use
+        ``config["surveys.download_timeout"]`` -- itself `None` (astropy's own
+        default) out of the box.
+    show_progress
+        Whether to show a progress bar while downloading.
+
+    Returns
+    -------
+    pathlib.Path
+        ``path``, for convenience chaining.
+
+    Raises
+    ------
+    FileExistsError
+        If ``path`` already exists and ``overwrite`` is `False`.
+    """
+    path = Path(path)
+
+    if path.exists() and not overwrite:
+        raise FileExistsError(f"{path} already exists; pass overwrite=True to replace it.")
+
+    if timeout is None:
+        timeout = config["surveys.download_timeout"]
+
+    logger.info("Downloading schedule from %s to %s.", url, path)
+    cached_path = download_file(url, cache=True, timeout=timeout, show_progress=show_progress)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(cached_path, path)
+    logger.info("Schedule download complete: %s.", path)
+
+    return path
+
+
+def get_schedule(
+    name: str | None = None,
+    url: str | None = None,
+    cache: bool = True,
+    **kwargs: Any,
+) -> QTable:
+    """
+    Fetch a survey schedule table by registry name, explicit URL, or the configured default.
+
+    Reads directly from the remote source via :meth:`~astropy.table.QTable.read`, which
+    transparently downloads -- and, with ``cache=True``, locally caches -- an HTTP(S) URL for
+    every format a schedule table might use (ECSV, FITS, ...), so no separate download step is
+    needed just to get a working table. Reach for :func:`download_schedule_from_url` instead
+    when you want a durable local copy at a path of your own choosing, rather than astropy's own
+    evictable cache.
+
+    Parameters
+    ----------
+    name
+        Short identifier for a pre-configured schedule, looked up in
+        ``config["schedules.schedule_urls"]``. Mutually exclusive with ``url``. If neither
+        ``name`` nor ``url`` is given, falls back to ``config["schedules.default_schedule"]``.
+    url
+        Direct HTTP/HTTPS URL to the schedule file. Mutually exclusive with ``name``.
+    cache
+        Whether to cache the downloaded file locally (see
+        :func:`~astropy.utils.data.download_file`) rather than re-fetching it on every call.
+    **kwargs
+        Forwarded to :meth:`~astropy.table.QTable.read`, e.g. ``format`` to override
+        auto-detection.
+
+    Returns
+    -------
+    ~astropy.table.QTable
+        The fetched schedule table. This is just the table: pass it, along with an
+        ``instrument_fov``, to :class:`~uvex_transients.surveys.base.SurveySchedule` to get a
+        validated schedule.
+
+    Raises
+    ------
+    ValueError
+        If both ``name`` and ``url`` are given, or ``name`` is not a known registry entry.
+    """
+    from m4opt.missions import uvex
+
+    from uvex_transients.surveys.base import SurveySchedule
+
+    resolved_url = _resolve_schedule_url(name, url)
+    instrument_fov = kwargs.pop("instrument_fov", uvex.fov)
+
+    logger.info("Fetching schedule %r from %s (cache=%s).", name if name is not None else "<url>", resolved_url, cache)
+    try:
+        table = QTable.read(resolved_url, cache=cache, **kwargs)
+    except Exception:
+        logger.error("Failed to fetch schedule from %s.", resolved_url)
+        raise
+    logger.info("Schedule fetch complete: %d rows.", len(table))
+
+    return SurveySchedule(table, instrument_fov=instrument_fov)
+
+
+def list_schedules() -> list[str]:
+    """
+    List the names of pre-configured schedules available via :func:`get_schedule`.
+
+    Returns
+    -------
+    list[str]
+        Sorted registry names from ``config["schedules.schedule_urls"]``, i.e. the valid
+        values for :func:`get_schedule`'s ``name`` argument.
+    """
+    return sorted(config["schedules.schedule_urls"])

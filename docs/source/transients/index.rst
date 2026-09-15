@@ -36,7 +36,7 @@ underlying physics in any detail.
       anchored to the AT2017gfo/GW170817 light curve.
 
       +++
-      :math:`z \le 2` · 30 day window
+      :math:`z \le 0.2` · 30 day window
 
    .. grid-item-card:: Tidal Disruption Events
       :link: tdes
@@ -47,7 +47,7 @@ underlying physics in any detail.
       photosphere, optionally with a late-time magnetized-disk plateau.
 
       +++
-      :math:`z \le 1` · 200 day window
+      :math:`z \le 2` · 200 day window
 
    .. grid-item-card:: Luminous Fast Blue Optical Transients
       :link: lfbots

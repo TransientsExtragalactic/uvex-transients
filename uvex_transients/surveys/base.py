@@ -20,12 +20,12 @@ from astropy.coordinates import EarthLocation, SkyCoord, SkyOffsetFrame
 from astropy.table import QTable, Row, vstack
 from astropy.time import Time
 from astropy.utils.masked import Masked
-from m4opt.fov import contains, footprint_healpix
-from regions import CircleSkyRegion, RectangleSkyRegion, Regions, SkyRegion
+from m4opt.fov import contains, footprint, footprint_healpix
+from regions import CircleSkyRegion, PointSkyRegion, PolygonSkyRegion, Regions, SkyRegion
 from tqdm.auto import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from uvex_transients.utils import logger
+from uvex_transients.utils import config, logger, resolve_healpix_resolution
 
 from .utils import ActionSpec, QTableColumnSpec
 
@@ -68,43 +68,140 @@ def _sanitize_masked_value(value):
     return value
 
 
-def _bounding_radius(region: SkyRegion) -> u.Quantity:
+def _max_angular_offset(region: SkyRegion | Regions, origin: SkyCoord) -> u.Quantity:
     """
-    Angular radius of the smallest cone, centered on ``region``, that fully contains it.
+    Greatest angular separation from ``origin`` to any point of ``region``.
+
+    Recurses into :class:`~regions.Regions` collections (e.g. a chip-gapped instrument
+    footprint made of several detector tiles) by taking the max across members --
+    *not* the sum -- since the quantity of interest is how far the union's boundary
+    reaches from ``origin``, not each member's own individual extent.
+
+    Parameters
+    ----------
+    region
+        A region already normalized by :func:`m4opt.fov.footprint` (or a
+        :class:`~regions.Regions` collection of such), so the only leaf shapes that
+        can appear are :class:`~regions.PolygonSkyRegion`, :class:`~regions.CircleSkyRegion`,
+        and :class:`~regions.PointSkyRegion`.
+    origin
+        The point to measure separation from.
+
+    Raises
+    ------
+    TypeError
+        If a leaf region is a shape :func:`m4opt.fov.footprint` doesn't normalize
+        into one of the three above (e.g. it doesn't support that shape at all).
+    """
+    if isinstance(region, Regions):
+        if not region.regions:
+            return 0 * u.deg
+        return max(_max_angular_offset(member, origin) for member in region.regions)
+    elif isinstance(region, PolygonSkyRegion):
+        return origin.separation(region.vertices).max()
+    elif isinstance(region, CircleSkyRegion):
+        return origin.separation(region.center) + region.radius
+    elif isinstance(region, PointSkyRegion):
+        return origin.separation(region.center)
+    else:
+        raise TypeError(
+            f"Cannot compute an angular offset for normalized FOV region of type {type(region).__name__!r}."
+        )
+
+
+def _restyle_footprint(template: SkyRegion | Regions, positioned: SkyRegion | Regions) -> SkyRegion | Regions:
+    """
+    Copy ``visual``/``meta`` styling from ``template`` onto its :func:`~m4opt.fov.footprint`.
+
+    :func:`~m4opt.fov.footprint` (used by :meth:`SurveySchedule.get_observed_regions`) rebuilds
+    each positioned footprint from scratch -- e.g. turning a `RectangleSkyRegion` into a
+    `PolygonSkyRegion` -- which drops any plotting style set on ``template``. Since that
+    transform preserves structure exactly (same nesting, same member order, for a
+    `~regions.Regions` collection), the two trees can be walked in lockstep to restore it.
+
+    Parameters
+    ----------
+    template
+        The original, unpositioned FOV (or one of its members).
+    positioned
+        The corresponding output of :func:`~m4opt.fov.footprint`, mutated in place.
+
+    Returns
+    -------
+    regions.SkyRegion or regions.Regions
+        ``positioned``, for convenience.
+    """
+    if isinstance(template, Regions):
+        for template_member, positioned_member in zip(template.regions, positioned.regions):
+            _restyle_footprint(template_member, positioned_member)
+    else:
+        positioned.visual = dict(template.visual)
+        positioned.meta = dict(template.meta)
+
+    return positioned
+
+
+def _flatten_regions(regions_or_collections: list[SkyRegion | Regions]) -> list[SkyRegion]:
+    """
+    Flatten a list of `~regions.SkyRegion`/`~regions.Regions` into one list of plain regions.
+
+    Each `~regions.Regions` collection is treated as the union of its members (the same
+    convention :func:`m4opt.fov.contains` and :func:`~m4opt.fov.footprint_healpix` use), so it
+    is expanded in place rather than kept as a nested element.
+    """
+    flattened: list[SkyRegion] = []
+
+    for region in regions_or_collections:
+        if isinstance(region, Regions):
+            flattened.extend(region.regions)
+        else:
+            flattened.append(region)
+
+    return flattened
+
+
+def _bounding_radius(region: SkyRegion | Regions) -> u.Quantity:
+    """
+    Angular radius of the smallest cone, centered at RA=0deg/Dec=0deg, that fully contains ``region``.
 
     Used by :attr:`SurveySchedule.bounding_radius` as a cheap pre-filter -- plain
     angular separation -- before falling back to an exact but more expensive
     containment test such as :func:`m4opt.fov.contains`.
+
+    ``region`` is first run through :func:`m4opt.fov.footprint` (positioned at, and
+    unrotated from, the origin), which normalizes every supported shape --
+    including a :class:`~regions.RectangleSkyRegion` not centered on the origin, as
+    happens for the individual tiles of a chip-gapped :class:`~regions.Regions`
+    collection -- into vertex/center-and-radius form using the same spherical
+    geometry ``m4opt`` itself relies on for ``contains``/``footprint_healpix``,
+    rather than this function re-deriving rotated-rectangle corners by hand.
+    :func:`_max_angular_offset` then walks the (possibly nested, for a ``Regions``
+    collection) result to find the single farthest point from the origin.
 
     Parameters
     ----------
     region
         The field-of-view region, defined at RA=0deg/Dec=0deg/PA=0deg (the
         convention used throughout ``m4opt``, e.g. :attr:`m4opt.missions.Mission.fov`).
+        May be a single :class:`~regions.SkyRegion` or a :class:`~regions.Regions`
+        collection of several (e.g. a real instrument's chip-gapped footprint).
 
     Returns
     -------
     ~astropy.units.Quantity
-        The bounding radius, inflated by 1% to stay conservative at the
-        boundary.
+        The bounding radius, inflated by ``config["surveys.footprint_bounding_margin"]``
+        (1% out of the box) to stay conservative at the boundary.
 
     Raises
     ------
     TypeError
-        If ``region`` is not one of the supported shapes.
+        If ``region`` (or a member of it) is not one of the shapes
+        :func:`m4opt.fov.footprint` supports.
     """
-    if isinstance(region, RectangleSkyRegion):
-        radius = np.hypot(region.width, region.height) / 2
-    elif isinstance(region, CircleSkyRegion):
-        radius = region.radius
-    else:
-        raise TypeError(
-            f"Cannot compute a bounding radius for FOV region of type "
-            f"{type(region).__name__!r}; supported types are "
-            f"RectangleSkyRegion and CircleSkyRegion."
-        )
+    origin = SkyCoord(0 * u.deg, 0 * u.deg)
+    normalized = footprint(region, origin)
 
-    return 1.01 * radius
+    return config["surveys.footprint_bounding_margin"] * _max_angular_offset(normalized, origin)
 
 
 # =========================================================================== #
@@ -189,7 +286,7 @@ class SurveySchedule:
     # ----------------------------------------- #
     # Initialization                            #
     # ----------------------------------------- #
-    def __init__(self, schedule_table: QTable, instrument_fov: SkyRegion, **kwargs):
+    def __init__(self, schedule_table: QTable, instrument_fov: SkyRegion | Regions, **kwargs):
         """
         Construct and validate a survey schedule.
 
@@ -201,8 +298,12 @@ class SurveySchedule:
         instrument_fov
             The instrument's field of view, defined at RA=0deg/Dec=0deg/PA=0deg
             (the convention used throughout ``m4opt``, e.g.
-            :attr:`m4opt.missions.Mission.fov`). Must be a `RectangleSkyRegion` or
-            `CircleSkyRegion` -- see :func:`_bounding_radius`.
+            :attr:`m4opt.missions.Mission.fov`). Either a single `~regions.SkyRegion`
+            or a `~regions.Regions` collection of several -- e.g. a real instrument's
+            chip-gapped footprint made of multiple detector tiles, such as
+            :attr:`m4opt.missions.Mission.fov` for missions with a segmented focal
+            plane -- of any shape :func:`m4opt.fov.footprint` supports; see
+            :func:`_bounding_radius`.
         **kwargs
             Forwarded to :meth:`_validate_table_columns` and
             :meth:`_validate_table_semantics`, so subclasses that override those
@@ -213,7 +314,8 @@ class SurveySchedule:
         ------
         TypeError
             If ``schedule_table`` is not a `~astropy.table.QTable`, or
-            ``instrument_fov`` is not a `~regions.SkyRegion` of a supported shape.
+            ``instrument_fov`` is not a `~regions.SkyRegion` or `~regions.Regions`
+            of a supported shape.
         ScheduleValidationError
             If ``schedule_table`` fails schema validation.
         """
@@ -231,9 +333,11 @@ class SurveySchedule:
         if errors:
             raise ScheduleValidationError(errors)
 
-        # Read in the instrument FOV and ensure that it is a valid region.
-        if not isinstance(instrument_fov, SkyRegion):
-            raise TypeError(f"Parameter 'instrument_fov' must be of type SkyRegion, not {type(instrument_fov)}")
+        # Read in the instrument FOV and ensure that it is a valid region (or collection thereof).
+        if not isinstance(instrument_fov, (SkyRegion, Regions)):
+            raise TypeError(
+                f"Parameter 'instrument_fov' must be of type SkyRegion or Regions, not {type(instrument_fov)}"
+            )
 
         self._instrument_fov = instrument_fov
         self._instrument_bounding_radius = _bounding_radius(instrument_fov)
@@ -260,6 +364,19 @@ class SurveySchedule:
         # that method's docstring.
         self._HPX_MAP_CACHE = {}
 
+        logger.debug(
+            "SurveySchedule constructed: %d rows (%s).",
+            len(self._schedule_table),
+            ", ".join(
+                f"{action}={count}"
+                for action, count in zip(
+                    *np.unique(np.asarray(self._schedule_table[self._ACTION_COLUMN]).astype(str), return_counts=True)
+                )
+            )
+            if len(self._schedule_table)
+            else "empty",
+        )
+
     # ----------------------------------------- #
     # Schema Validation                         #
     # ----------------------------------------- #
@@ -276,6 +393,7 @@ class SurveySchedule:
         order = np.argsort(start_time)
 
         if not np.array_equal(order, np.arange(len(order))):
+            logger.debug("Schedule table was not chronological; reordering %d rows by 'start_time'.", len(order))
             self._schedule_table = self._schedule_table[order]
 
     def _validate_table_columns(self, **_) -> list[str]:
@@ -460,8 +578,8 @@ class SurveySchedule:
         )
 
     @property
-    def fov(self) -> SkyRegion:
-        """~regions.SkyRegion: The instrument field of view at RA=0deg/Dec=0deg/PA=0deg."""
+    def fov(self) -> SkyRegion | Regions:
+        """~regions.SkyRegion or ~regions.Regions: The instrument field of view at RA=0deg/Dec=0deg/PA=0deg."""
         return self._instrument_fov
 
     @property
@@ -679,7 +797,7 @@ class SurveySchedule:
         self,
         start_time: Time,
         end_time: Time,
-    ) -> list[SkyRegion]:
+    ) -> list[SkyRegion | Regions]:
         """
         Return the instrument footprints observed during a time interval.
 
@@ -696,8 +814,11 @@ class SurveySchedule:
 
         Returns
         -------
-        list[regions.SkyRegion]
-            One positioned and rotated footprint per selected observation.
+        list[regions.SkyRegion or regions.Regions]
+            One positioned and rotated footprint per selected observation, via
+            :func:`m4opt.fov.footprint`. Each entry is a `~regions.Regions` collection
+            rather than a single `~regions.SkyRegion` if :attr:`fov` itself is one --
+            e.g. a chip-gapped footprint made of several detector tiles.
         """
         rows = self.get_rows_between_times(start_time, end_time)
 
@@ -707,28 +828,15 @@ class SurveySchedule:
         if len(rows) == 0:
             return []
 
-        if not isinstance(self._instrument_fov, RectangleSkyRegion):
-            raise TypeError("`get_observed_regions` currently requires `instrument_fov` to be a RectangleSkyRegion.")
+        positioned = footprint(self._instrument_fov, rows["target_coord"], rows["roll"])
 
-        template = self._instrument_fov
-
-        return [
-            RectangleSkyRegion(
-                center=row["target_coord"],
-                width=template.width,
-                height=template.height,
-                angle=row["roll"],
-                visual=dict(template.visual),
-                meta=dict(template.meta),
-            )
-            for row in rows
-        ]
+        return [_restyle_footprint(self._instrument_fov, region) for region in positioned]
 
     def get_observed_region(
         self,
         start_time: Time,
         end_time: Time,
-    ) -> SkyRegion | None:
+    ) -> Regions | None:
         """
         Return the union of every instrument footprint observed during a time interval.
 
@@ -741,22 +849,25 @@ class SurveySchedule:
 
         Returns
         -------
-        regions.SkyRegion or None
-            The union (:meth:`regions.SkyRegion.union`) of every footprint
-            returned by :meth:`get_observed_regions`, or `None` if no
-            observation occurred during the interval.
+        regions.Regions or None
+            A flat `~regions.Regions` collection -- the same union-of-members
+            convention :func:`m4opt.fov.contains`/:func:`~m4opt.fov.footprint_healpix`
+            use -- of every footprint returned by :meth:`get_observed_regions`
+            (expanding any per-observation `~regions.Regions` collection into its
+            individual members rather than nesting it), or `None` if no observation
+            occurred during the interval.
         """
         observed_regions = self.get_observed_regions(start_time, end_time)
 
         if not observed_regions:
             return None
 
-        return np.logical_or.reduce(observed_regions)
+        return Regions(_flatten_regions(observed_regions))
 
     def get_healpix_coverage_index(
         self,
-        nside: int = 256,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
         cache: bool = True,
         overwrite: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
@@ -785,9 +896,11 @@ class SurveySchedule:
         Parameters
         ----------
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``.
+            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use
+            ``config["healpix.default_order"]``.
         cache
             If `True` (the default), reuse a previously built index for this
             ``(nside, order)`` when available, and store the freshly built one for later
@@ -809,11 +922,15 @@ class SurveySchedule:
             ``int64`` array of row indices into :attr:`observe_rows`, grouped
             contiguously by pixel and ordered to match ``pixel_offsets``.
         """
+        nside, order = resolve_healpix_resolution(nside, order)
+
         if cache and not overwrite:
             cached = self._HPX_MAP_CACHE.get((nside, order))
             if cached is not None:
+                logger.debug("Reusing cached HEALPix coverage index for (nside=%d, order=%r).", nside, order)
                 return cached
 
+        logger.debug("Building HEALPix coverage index for (nside=%d, order=%r).", nside, order)
         observe_rows = self.observe_rows
         npix = ah.nside_to_npix(nside)
 
@@ -862,15 +979,19 @@ class SurveySchedule:
         self,
         start_time: Time,
         end_time: Time,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> np.ndarray:
         """
         Return the HEALPix pixel indices covered by observations in a time interval.
 
-        Rasterizes the actual (rolled) instrument footprint at each observed
-        pointing -- via :func:`m4opt.fov.footprint_healpix` -- rather than
-        approximating it with a bounding-circle cone search.
+        Built directly from :meth:`get_healpix_coverage_index`'s cached, whole-schedule
+        CSR structure (rasterized once via :func:`m4opt.fov.footprint_healpix` and cached
+        per ``(nside, order)``) rather than re-rasterizing footprints for this time
+        window -- a per-pixel segmented reduction over the cached index, not a second
+        geometric pass. Repeated calls with the same ``(nside, order)`` across different
+        (even overlapping) time windows -- as in a per-time-bin sampling loop -- pay for
+        the rasterization at most once.
 
         Parameters
         ----------
@@ -879,9 +1000,11 @@ class SurveySchedule:
         end_time
             End of the query interval, exclusive.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``.
+            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use
+            ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -889,28 +1012,38 @@ class SurveySchedule:
             Sorted, deduplicated HEALPix pixel indices covered by any
             observation in the interval; empty if there were none.
         """
-        # Extract the rows associated with this time range and then filter them to
-        # only include the observations.
-        subtable = self.get_rows_between_times(start_time, end_time)
-        subtable = subtable[subtable[self._ACTION_COLUMN] == "observe"]
+        pixel_offsets, sorted_rows = self.get_healpix_coverage_index(nside=nside, order=order)
 
-        if len(subtable) == 0:
+        if len(sorted_rows) == 0:
             return np.array([], dtype=np.int64)
 
-        # Instantiate a healpix object.
-        hpx = ah.HEALPix(nside=nside, order=order, frame=subtable["target_coord"].frame)
+        start_time, end_time = self._resolve_tstart_tend(start_time, end_time)
+        if end_time <= start_time:
+            raise ValueError(
+                f"Parameter 'end_time' ({end_time.iso!r}) must be after 'start_time' ({start_time.iso!r})."
+            )
 
-        # Rasterize the actual (rolled) instrument footprint at each observed
-        # pointing, rather than approximating it with a bounding-circle cone search.
-        pixel_arrays = footprint_healpix(hpx, self._instrument_fov, subtable["target_coord"], subtable["roll"])
+        # `sorted_rows` holds indices into `observe_rows` (see `get_healpix_coverage_index`),
+        # so the window test is evaluated there directly rather than against the full
+        # schedule table, matching `get_rows_between_times`'s half-open overlap semantics.
+        observe_rows = self.observe_rows
+        row_start = observe_rows["start_time"]
+        row_end = row_start + observe_rows["duration"]
+        in_window = np.asarray((row_start < end_time) & (row_end > start_time))
 
-        return np.unique(np.concatenate(pixel_arrays))
+        # Segmented "any row in window covers this pixel" test: a per-pixel prefix-sum
+        # difference over `in_window[sorted_rows]`, rather than a Python loop over pixels.
+        covered = in_window[sorted_rows]
+        cumulative_covered = np.concatenate(([0], np.cumsum(covered)))
+        hits_per_pixel = cumulative_covered[pixel_offsets[1:]] - cumulative_covered[pixel_offsets[:-1]]
+
+        return np.flatnonzero(hits_per_pixel > 0).astype(np.int64)
 
     def get_observation_indices_of(
         self,
         coord: SkyCoord,
-        nside: int = 256,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
         start_time: Time | None = None,
         end_time: Time | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
@@ -940,7 +1073,8 @@ class SurveySchedule:
             internally).
         nside, order
             Resolution and pixel ordering of the coverage index to query -- see
-            :meth:`get_healpix_coverage_index`.
+            :meth:`get_healpix_coverage_index`. Either may be `None` (the default) to
+            use ``config["healpix.default_nside"]``/``config["healpix.default_order"]``.
         start_time, end_time
             Optional time window to restrict matches to. Must be given together. Each
             may be scalar (one shared window for every query position) or an array the
@@ -970,6 +1104,7 @@ class SurveySchedule:
         if (start_time is None) != (end_time is None):
             raise ValueError("Parameters 'start_time' and 'end_time' must be given together.")
 
+        nside, order = resolve_healpix_resolution(nside, order)
         pixel_offsets, sorted_rows = self.get_healpix_coverage_index(nside=nside, order=order)
         observe_rows = self.observe_rows
 
@@ -1135,8 +1270,8 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> np.ndarray:
         """
         Compute the number of visits to each HEALPix pixel.
@@ -1150,9 +1285,11 @@ class SurveySchedule:
             Optional time range over which to compute visit counts. If omitted,
             the full survey duration is used.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -1160,6 +1297,7 @@ class SurveySchedule:
             Integer array of shape ``(12 * nside**2,)``. Entry ``i`` gives the
             number of observations whose footprint covered HEALPix pixel ``i``.
         """
+        nside, order = resolve_healpix_resolution(nside, order)
         start_time, end_time = self._resolve_tstart_tend(start_time, end_time)
 
         rows = self.get_rows_between_times(start_time, end_time)
@@ -1192,11 +1330,23 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> tuple[u.Quantity, np.ndarray]:
         """
         Compute observation times for each HEALPix pixel.
+
+        Parameters
+        ----------
+        start_time, end_time
+            Optional time range over which to compute visit times. If omitted,
+            the full survey duration is used.
+        nside
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
+        order
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -1207,6 +1357,7 @@ class SurveySchedule:
             pixel ``i`` are given by
             ``visit_times[offsets[i]:offsets[i + 1]]``.
         """
+        nside, order = resolve_healpix_resolution(nside, order)
         start_time, end_time = self._resolve_tstart_tend(start_time, end_time)
 
         rows = self.get_rows_between_times(start_time, end_time)
@@ -1257,25 +1408,33 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
+        pairs: str = "all",
     ) -> tuple[u.Quantity, np.ndarray]:
         """
-        Compute all unique pairwise observation-time separations for each HEALPix pixel.
+        Compute pairwise observation-time separations for each HEALPix pixel.
 
         For a pixel observed at times ``t_0, ..., t_N``, the cadence time
-        differences are all positive pairwise separations
-
-        ``t_j - t_i`` for ``j > i``.
+        differences are the positive pairwise separations ``t_j - t_i`` for
+        ``j > i``, either over every such pair (``pairs='all'``) or only over
+        consecutive-in-time pairs ``t_{i+1} - t_i`` (``pairs='consecutive'``,
+        i.e. the successive-gaps distribution).
 
         Parameters
         ----------
         start_time, end_time
             Optional time range over which to compute cadence separations.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
+        pairs
+            Which pairs of observations to include: ``"all"`` for every
+            unique pair, or ``"consecutive"`` for only pairs of
+            temporally-adjacent visits.
 
         Returns
         -------
@@ -1289,6 +1448,8 @@ class SurveySchedule:
 
             Pixels with fewer than two observations have no entries.
         """
+        self._validate_pairs_mode(pairs)
+
         visit_times, visit_offsets = self.compute_visit_times(
             start_time=start_time,
             end_time=end_time,
@@ -1302,8 +1463,12 @@ class SurveySchedule:
         # Number of visits to each pixel.
         visit_counts = np.diff(visit_offsets)
 
-        # A pixel with N visits has N(N - 1) / 2 unique pairs.
-        pair_counts = visit_counts * (visit_counts - 1) // 2
+        if pairs == "all":
+            # A pixel with N visits has N(N - 1) / 2 unique pairs.
+            pair_counts = visit_counts * (visit_counts - 1) // 2
+        else:
+            # A pixel with N visits has N - 1 consecutive pairs.
+            pair_counts = np.maximum(visit_counts - 1, 0)
 
         pair_offsets = np.empty(npix + 1, dtype=np.int64)
         pair_offsets[0] = 0
@@ -1314,11 +1479,15 @@ class SurveySchedule:
         for pixel in np.flatnonzero(pair_counts):
             times = visit_times[visit_offsets[pixel] : visit_offsets[pixel + 1]].to_value(unit)
 
-            # The visit times are already chronological, so taking the upper
-            # triangle gives every unique positive pairwise separation.
-            i, j = np.triu_indices(len(times), k=1)
+            if pairs == "all":
+                # The visit times are already chronological, so taking the upper
+                # triangle gives every unique positive pairwise separation.
+                i, j = np.triu_indices(len(times), k=1)
+                differences = times[j] - times[i]
+            else:
+                differences = np.diff(times)
 
-            time_differences[pair_offsets[pixel] : pair_offsets[pixel + 1]] = times[j] - times[i]
+            time_differences[pair_offsets[pixel] : pair_offsets[pixel + 1]] = differences
 
         return time_differences * unit, pair_offsets
 
@@ -1326,24 +1495,32 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
+        pairs: str = "all",
     ) -> dict[str, u.Quantity]:
         """
-        Compute per-pixel statistics of all pairwise temporal baselines.
+        Compute per-pixel statistics of pairwise temporal baselines.
 
-        Cadence is represented by every unique pairwise separation between
-        observations of the same HEALPix pixel, rather than only separations
-        between consecutive observations.
+        Cadence is represented either by every unique pairwise separation
+        between observations of the same HEALPix pixel (``pairs='all'``) or
+        only by separations between consecutive observations
+        (``pairs='consecutive'``); see :meth:`compute_cadence_time_differences`.
 
         Parameters
         ----------
         start_time, end_time
             Optional time range over which to compute cadence statistics.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
+        pairs
+            Which pairs of observations to include: ``"all"`` for every
+            unique pair, or ``"consecutive"`` for only pairs of
+            temporally-adjacent visits.
 
         Returns
         -------
@@ -1359,6 +1536,7 @@ class SurveySchedule:
             end_time=end_time,
             nside=nside,
             order=order,
+            pairs=pairs,
         )
 
         npix = len(offsets) - 1
@@ -1387,6 +1565,58 @@ class SurveySchedule:
             "max": maximum * unit,
             "std": std * unit,
         }
+
+    def compute_max_gap(
+        self,
+        start_time: Time | None = None,
+        end_time: Time | None = None,
+        nside: int | None = None,
+        order: str | None = None,
+    ) -> u.Quantity:
+        """
+        Compute each pixel's worst-case (maximum) successive observation gap.
+
+        For a pixel observed at times ``t_0, ..., t_N``, this is
+        ``max_i(t_{i+1} - t_i)``, i.e. the maximum of the same
+        consecutive-pair separations returned by
+        :meth:`compute_cadence_time_differences` with ``pairs='consecutive'``.
+
+        Parameters
+        ----------
+        start_time, end_time
+            Optional time range over which to compute the maximum gap.
+        nside
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
+        order
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            Full-sky HEALPix map of each pixel's maximum successive-visit
+            gap, shape ``(12 * nside**2,)``. Pixels observed fewer than
+            twice are assigned ``NaN``.
+        """
+        gaps, offsets = self.compute_cadence_time_differences(
+            start_time=start_time,
+            end_time=end_time,
+            nside=nside,
+            order=order,
+            pairs="consecutive",
+        )
+
+        npix = len(offsets) - 1
+        unit = gaps.unit
+        values = gaps.to_value(unit)
+
+        max_gap = np.full(npix, np.nan)
+
+        for pixel in np.flatnonzero(np.diff(offsets)):
+            max_gap[pixel] = np.max(values[offsets[pixel] : offsets[pixel + 1]])
+
+        return max_gap * unit
 
     @staticmethod
     def _validate_timescale(timescale: u.Quantity) -> None:
@@ -1420,6 +1650,19 @@ class SurveySchedule:
 
         if maximum_factor <= minimum_factor:
             raise ValueError("Parameter 'maximum_factor' must be greater than 'minimum_factor'.")
+
+    @staticmethod
+    def _validate_pairs_mode(pairs: str) -> None:
+        """
+        Check that a ``pairs`` mode selector is one of the supported values.
+
+        Raises
+        ------
+        ValueError
+            If ``pairs`` is not ``"all"`` or ``"consecutive"``.
+        """
+        if pairs not in ("all", "consecutive"):
+            raise ValueError(f"Parameter 'pairs' must be 'all' or 'consecutive', got {pairs!r}.")
 
     @staticmethod
     def _pixel_pair_count(visit_times: np.ndarray, lo: float, hi: float) -> int:
@@ -1462,6 +1705,35 @@ class SurveySchedule:
         hi_idx = np.minimum(hi_idx, np.arange(len(visit_times)))
 
         return int(np.sum(np.maximum(hi_idx - lo_idx, 0)))
+
+    @staticmethod
+    def _pixel_pair_count_consecutive(visit_times: np.ndarray, lo: float, hi: float) -> int:
+        """
+        Count one pixel's own consecutive-in-time visit pairs with separation in ``[lo, hi]``.
+
+        Unlike :meth:`_pixel_pair_count`, which considers every unique pair of
+        visits, this only considers the ``N - 1`` pairs of temporally-adjacent
+        visits ``(t_i, t_{i+1})``.
+
+        Parameters
+        ----------
+        visit_times
+            Sorted elapsed observation times for one pixel.
+        lo, hi
+            Bounds of the qualifying pair-separation window, in the same units
+            as ``visit_times``.
+
+        Returns
+        -------
+        int
+            Number of qualifying consecutive pairs for this pixel.
+        """
+        if len(visit_times) < 2:
+            return 0
+
+        gaps = np.diff(visit_times)
+
+        return int(np.count_nonzero((gaps >= lo) & (gaps <= hi)))
 
     @staticmethod
     def _validate_visibility_factor(visibility_factor: float) -> None:
@@ -1574,31 +1846,36 @@ class SurveySchedule:
     def compute_pair_counts(
         self,
         timescale: u.Quantity,
-        minimum_factor: float = 0.5,
-        maximum_factor: float = 2.0,
+        minimum_factor: float | None = None,
+        maximum_factor: float | None = None,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
+        pairs: str = "all",
     ) -> tuple[np.ndarray, u.Quantity]:
         """
         Compute per-pixel counts of visit pairs bracketing a transient timescale.
 
-        For each HEALPix pixel, counts the number of unique observation pairs
+        For each HEALPix pixel, counts the number of observation pairs
         separated by
 
         ``minimum_factor * timescale <= dt <= maximum_factor * timescale``,
 
         i.e. pairs of visits able to catch a timescale-``timescale`` transient
-        rising and/or fading. This is the same idea as LSST/Rubin's pair-count
-        cadence metrics (e.g. ``rubin_sim.maf.metrics.PairMetric``, used to assess
-        sensitivity to kilonova- and fast-transient-like timescales): a cheap
-        proxy for "can this survey's cadence constrain a timescale-``T``
-        transient here?" that avoids the interval-union bookkeeping (and
-        per-pixel, per-timescale cost) of an exact control-time calculation.
+        rising and/or fading -- either over every unique pair of visits to
+        that pixel (``pairs='all'``) or only over pairs of temporally-adjacent
+        visits (``pairs='consecutive'``). This is the same idea as LSST/Rubin's
+        pair-count cadence metrics (e.g. ``rubin_sim.maf.metrics.PairMetric``,
+        used to assess sensitivity to kilonova- and fast-transient-like
+        timescales): a cheap proxy for "can this survey's cadence constrain a
+        timescale-``T`` transient here?" that avoids the interval-union
+        bookkeeping (and per-pixel, per-timescale cost) of an exact
+        control-time calculation.
 
-        Built on :meth:`compute_visit_times` and :meth:`_pixel_pair_count`
-        rather than :meth:`compute_cadence_time_differences`, so cost scales as
+        Built on :meth:`compute_visit_times` and :meth:`_pixel_pair_count` /
+        :meth:`_pixel_pair_count_consecutive` rather than
+        :meth:`compute_cadence_time_differences`, so cost scales as
         O(n log n) in the number of visits to each pixel rather than O(n^2) --
         important for a survey that covers the whole sky many times over,
         where a given pixel's total visit count (and hence its number of
@@ -1610,13 +1887,21 @@ class SurveySchedule:
             Characteristic transient timescale.
         minimum_factor, maximum_factor
             Bounds of the qualifying pair-separation window, relative to
-            ``timescale``.
+            ``timescale``. Either may be `None` (the default) to use
+            ``config["surveys.cadence.minimum_factor"]``/
+            ``config["surveys.cadence.maximum_factor"]``.
         start_time, end_time
             Optional survey interval to restrict the calculation to.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
+        pairs
+            Which pairs of observations to include: ``"all"`` for every
+            unique pair, or ``"consecutive"`` for only pairs of
+            temporally-adjacent visits.
 
         Returns
         -------
@@ -1627,8 +1912,12 @@ class SurveySchedule:
             Total solid angle of pixels with at least one qualifying pair --
             the area of sky with any cadence sensitivity to this timescale.
         """
+        minimum_factor = minimum_factor if minimum_factor is not None else config["surveys.cadence.minimum_factor"]
+        maximum_factor = maximum_factor if maximum_factor is not None else config["surveys.cadence.maximum_factor"]
+
         self._validate_timescale(timescale)
         self._validate_pair_window_factors(minimum_factor, maximum_factor)
+        self._validate_pairs_mode(pairs)
 
         visit_times, offsets = self.compute_visit_times(
             start_time=start_time,
@@ -1645,11 +1934,13 @@ class SurveySchedule:
         lo = (minimum_factor * timescale).to_value(unit)
         hi = (maximum_factor * timescale).to_value(unit)
 
+        count_pixel_pairs = self._pixel_pair_count if pairs == "all" else self._pixel_pair_count_consecutive
+
         pair_counts = np.zeros(npix, dtype=np.int64)
 
         for pixel in np.flatnonzero(visit_counts >= 2):
             pixel_times = times[offsets[pixel] : offsets[pixel + 1]]
-            pair_counts[pixel] = self._pixel_pair_count(pixel_times, lo, hi)
+            pair_counts[pixel] = count_pixel_pairs(pixel_times, lo, hi)
 
         pixel_area = (4 * np.pi / npix) * u.sr
         sensitive_area = np.count_nonzero(pair_counts) * pixel_area
@@ -1659,12 +1950,13 @@ class SurveySchedule:
     def compute_pair_count_curve(
         self,
         timescales: u.Quantity,
-        minimum_factor: float = 0.5,
-        maximum_factor: float = 2.0,
+        minimum_factor: float | None = None,
+        maximum_factor: float | None = None,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
+        pairs: str = "all",
     ) -> u.Quantity:
         """
         Compute sensitive sky area over a sequence of transient timescales.
@@ -1676,7 +1968,8 @@ class SurveySchedule:
         control-time curve would.
 
         Each timescale still re-scans every observed pixel (via
-        :meth:`_pixel_pair_count`), so cost scales as
+        :meth:`_pixel_pair_count` / :meth:`_pixel_pair_count_consecutive`,
+        selected by ``pairs``), so cost scales as
         O(n_timescales * n_observed_pixels * log(visits per pixel)) -- no
         repeated rasterization, and no O(n^2) blowup with the number of
         repeated full-sky passes, but also no way to get a timescale "for
@@ -1693,13 +1986,21 @@ class SurveySchedule:
             Sequence of characteristic transient timescales.
         minimum_factor, maximum_factor
             Bounds of the qualifying pair-separation window, relative to each
-            timescale.
+            timescale. Either may be `None` (the default) to use
+            ``config["surveys.cadence.minimum_factor"]``/
+            ``config["surveys.cadence.maximum_factor"]``.
         start_time, end_time
             Optional survey interval to restrict the calculation to.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
+        pairs
+            Which pairs of observations to include: ``"all"`` for every
+            unique pair, or ``"consecutive"`` for only pairs of
+            temporally-adjacent visits.
 
         Returns
         -------
@@ -1707,8 +2008,12 @@ class SurveySchedule:
             Sensitive sky area (see :meth:`compute_pair_counts`) for each input
             timescale.
         """
+        minimum_factor = minimum_factor if minimum_factor is not None else config["surveys.cadence.minimum_factor"]
+        maximum_factor = maximum_factor if maximum_factor is not None else config["surveys.cadence.maximum_factor"]
+
         timescales = u.Quantity(timescales, copy=False, ndmin=1)
         self._validate_pair_window_factors(minimum_factor, maximum_factor)
+        self._validate_pairs_mode(pairs)
 
         visit_times, offsets = self.compute_visit_times(
             start_time=start_time,
@@ -1723,6 +2028,7 @@ class SurveySchedule:
         visit_counts = np.diff(offsets)
         observed_pixels = np.flatnonzero(visit_counts >= 2)
         pixel_area = (4 * np.pi / npix) * u.sr
+        count_pixel_pairs = self._pixel_pair_count if pairs == "all" else self._pixel_pair_count_consecutive
 
         sensitive_pixel_counts = []
 
@@ -1736,7 +2042,7 @@ class SurveySchedule:
                 n_sensitive = 0
                 for pixel in observed_pixels:
                     pixel_times = times[offsets[pixel] : offsets[pixel + 1]]
-                    if self._pixel_pair_count(pixel_times, lo, hi) > 0:
+                    if count_pixel_pairs(pixel_times, lo, hi) > 0:
                         n_sensitive += 1
 
                 logger.debug(
@@ -1753,13 +2059,13 @@ class SurveySchedule:
     def compute_control_time(
         self,
         timescale: u.Quantity,
-        minimum_factor: float = 0.5,
-        maximum_factor: float = 2.0,
-        visibility_factor: float = 3.0,
+        minimum_factor: float | None = None,
+        maximum_factor: float | None = None,
+        visibility_factor: float | None = None,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> tuple[u.Quantity, u.Quantity]:
         """
         Compute transient control time as a function of sky position.
@@ -1796,18 +2102,23 @@ class SurveySchedule:
         timescale
             Characteristic transient timescale.
         minimum_factor
-            Minimum useful observation separation relative to ``timescale``.
+            Minimum useful observation separation relative to ``timescale``, or
+            `None` (the default) to use ``config["surveys.cadence.minimum_factor"]``.
         maximum_factor
-            Maximum useful observation separation relative to ``timescale``.
+            Maximum useful observation separation relative to ``timescale``, or
+            `None` (the default) to use ``config["surveys.cadence.maximum_factor"]``.
         visibility_factor
             Duration over which the transient is assumed useful for temporal
-            characterization, relative to ``timescale``.
+            characterization, relative to ``timescale``, or `None` (the default) to
+            use ``config["surveys.cadence.visibility_factor"]``.
         start_time, end_time
             Optional survey interval over which to calculate control time.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -1821,6 +2132,12 @@ class SurveySchedule:
 
             with dimensions of solid angle times time.
         """
+        minimum_factor = minimum_factor if minimum_factor is not None else config["surveys.cadence.minimum_factor"]
+        maximum_factor = maximum_factor if maximum_factor is not None else config["surveys.cadence.maximum_factor"]
+        visibility_factor = (
+            visibility_factor if visibility_factor is not None else config["surveys.cadence.visibility_factor"]
+        )
+
         self._validate_timescale(timescale)
         self._validate_pair_window_factors(minimum_factor, maximum_factor)
         self._validate_visibility_factor(visibility_factor)
@@ -1866,13 +2183,13 @@ class SurveySchedule:
     def compute_control_time_curve(
         self,
         timescales: u.Quantity,
-        minimum_factor: float = 0.5,
-        maximum_factor: float = 2.0,
-        visibility_factor: float = 3.0,
+        minimum_factor: float | None = None,
+        maximum_factor: float | None = None,
+        visibility_factor: float | None = None,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> u.Quantity:
         """
         Compute survey area-time exposure over a sequence of transient timescales.
@@ -1891,22 +2208,33 @@ class SurveySchedule:
             Sequence of characteristic transient timescales.
         minimum_factor, maximum_factor
             Bounds of the qualifying pair-separation window, relative to each
-            timescale.
+            timescale. Either may be `None` (the default) to use
+            ``config["surveys.cadence.minimum_factor"]``/
+            ``config["surveys.cadence.maximum_factor"]``.
         visibility_factor
             Duration over which the transient is assumed useful for temporal
-            characterization, relative to each timescale.
+            characterization, relative to each timescale, or `None` (the default) to
+            use ``config["surveys.cadence.visibility_factor"]``.
         start_time, end_time
             Optional survey interval over which to calculate control time.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
         ~astropy.units.Quantity
             Area-time exposure for each input timescale.
         """
+        minimum_factor = minimum_factor if minimum_factor is not None else config["surveys.cadence.minimum_factor"]
+        maximum_factor = maximum_factor if maximum_factor is not None else config["surveys.cadence.maximum_factor"]
+        visibility_factor = (
+            visibility_factor if visibility_factor is not None else config["surveys.cadence.visibility_factor"]
+        )
+
         timescales = u.Quantity(timescales, copy=False, ndmin=1)
         self._validate_pair_window_factors(minimum_factor, maximum_factor)
         self._validate_visibility_factor(visibility_factor)
@@ -1973,8 +2301,8 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute the distribution of HEALPix pixels by visit count.
@@ -1984,9 +2312,11 @@ class SurveySchedule:
         start_time, end_time
             Optional time range over which to compute visit counts.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -2016,8 +2346,8 @@ class SurveySchedule:
         self,
         start_time: Time | None = None,
         end_time: Time | None = None,
-        nside: int = 128,
-        order: str = "nested",
+        nside: int | None = None,
+        order: str | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute the complementary cumulative visit-count distribution.
@@ -2030,9 +2360,11 @@ class SurveySchedule:
         start_time, end_time
             Optional time range over which to compute visit counts.
         nside
-            HEALPix resolution parameter.
+            HEALPix resolution parameter, or `None` to use
+            ``config["healpix.default_nside"]``.
         order
-            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``.
+            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
+            use ``config["healpix.default_order"]``.
 
         Returns
         -------
@@ -2142,9 +2474,12 @@ class SurveySchedule:
             Whether to overwrite an existing file at ``path`` and ``fov_path``.
         """
         self._sanitized_table().write(Path(path), format=table_format, overwrite=overwrite)
+        logger.info("Wrote schedule table (%d rows) to %s.", len(self._schedule_table), path)
 
         if fov_path is not None:
-            Regions([self._instrument_fov]).write(str(fov_path), overwrite=overwrite)
+            fov = self._instrument_fov
+            (fov if isinstance(fov, Regions) else Regions([fov])).write(str(fov_path), overwrite=overwrite)
+            logger.info("Wrote instrument FOV to %s.", fov_path)
 
     @classmethod
     def from_disk(
@@ -2157,7 +2492,12 @@ class SurveySchedule:
         """
         Read a schedule table and its companion instrument FOV back from disk.
 
-        The inverse of :meth:`to_disk` (when it was called with a ``fov_path``).
+        The inverse of :meth:`to_disk` (when it was called with a ``fov_path``). The
+        reconstructed :attr:`fov` is always a `~regions.Regions` collection -- even if
+        the original ``instrument_fov`` passed to the constructor was a single, bare
+        `~regions.SkyRegion` -- since a DS9 region file doesn't distinguish "one region"
+        from "a one-member collection". Every `SurveySchedule` method treats the two
+        forms identically, so this is transparent to callers.
 
         Parameters
         ----------
@@ -2194,6 +2534,7 @@ class SurveySchedule:
         survey_table = QTable.read(path, format=table_format)
 
         # read the FOV file.
-        (fov_region,) = Regions.read(fov_path)
+        fov_regions = Regions.read(fov_path)
 
-        return cls(survey_table, fov_region, **kwargs)
+        logger.info("Read schedule table (%d rows) from %s (FOV from %s).", len(survey_table), path, fov_path)
+        return cls(survey_table, fov_regions, **kwargs)

@@ -7,7 +7,7 @@ from astropy import units as u
 from astropy.units import Quantity
 from numpy.typing import NDArray
 
-from uvex_transients.models.tdes import AlushStoneTDESED
+from uvex_transients.models.tdes import VanVelzenTDESED
 
 from .base import ExtragalacticTransient
 
@@ -22,12 +22,12 @@ class TidalDisruptionEvent(ExtragalacticTransient):
     Modeled with `VanVelzenTDESED` (a Gaussian-rise/exponential-decay light curve
     with a constant-temperature blackbody photosphere, calibrated against the ZTF
     TDE sample of Van Velzen et al. 2021), a constant volumetric rate of
-    3.1e-7 Mpc^-3 yr^-1 out to z=1 (Yao et al. 2023), and a 200-day duration window.
+    3.1e-7 Mpc^-3 yr^-1 out to z=2 (Yao et al. 2023), and a 200-day duration window.
     """
 
-    DEFAULT_MODEL = AlushStoneTDESED
+    DEFAULT_MODEL = VanVelzenTDESED
     DEFAULT_DURATION = 200 * u.day
-    DEFAULT_Z_LIM = 1
+    DEFAULT_Z_LIM = 2
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """

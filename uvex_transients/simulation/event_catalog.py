@@ -18,6 +18,8 @@ from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
 
+from uvex_transients.utils import logger
+
 from ..surveys.base import SurveySchedule
 from ..transients.base import TransientBase
 from .event import Event
@@ -254,6 +256,7 @@ class EventCatalog:
             }
         )
         table.write(Path(path), format=table_format, overwrite=overwrite)
+        logger.info("Wrote event catalog (%d events) to %s.", len(table), path)
 
     @classmethod
     def from_disk(cls, path: str | Path, table_format: str | None = None) -> "EventCatalog":
@@ -280,6 +283,7 @@ class EventCatalog:
         meta = dict(table.meta)
         table.meta.clear()
 
+        logger.info("Read event catalog (%d events) from %s.", len(table), path)
         return cls(
             table=table,
             nside=int(meta.pop("nside")),

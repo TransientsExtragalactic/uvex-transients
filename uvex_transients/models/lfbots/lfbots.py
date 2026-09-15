@@ -105,7 +105,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
         ),
         "T0": Parameter(
             prior=LogNormalPrior(mean=0.0, sigma=0.15),
-            scale=2e4 * u.K,
+            scale=2.5e4 * u.K,
             description="Photospheric temperature at t=0 (the T(t) -> T0 limit, not literally T at peak).",
             latex=r"T_0",
         ),

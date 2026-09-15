@@ -3,48 +3,49 @@
 Luminous Fast Blue Optical Transients
 ========================================
 
-Luminous fast blue optical transients (LFBOTs), typified by the prototype AT2018cow, are a rare
-class of extragalactic transient distinguished by their unusually fast rise and decline
-(:math:`\lesssim10` day timescales), persistently blue colors, and, in several cases, luminous
-non-thermal X-ray and radio emission indicating a central engine (an accreting black hole or a
-young magnetar) rather than radioactive decay powers the explosion. Their progenitor is still
-debated -- proposed channels include failed supernovae, a white dwarf or star tidally disrupted by
-an intermediate-mass black hole, and the merger of a compact object with a massive companion --
-but their observed optical/UV emission is well described phenomenologically as a rapidly-evolving,
-cooling blackbody photosphere :footcite:p:`holu2026`. This population is implemented by
+Luminous fast blue optical transients (LFBOTs), typified by the prototype AT2018cow, are modeled
+here as a rapidly-evolving, cooling blackbody photosphere -- a phenomenological description of
+their fast rise/decline (:math:`\lesssim10` day timescales), persistently blue colors, and, in
+several cases, non-thermal emission pointing to a central engine rather than radioactive decay
+:footcite:p:`holu2026`.
+
+This population is implemented by
 :class:`~uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient`, pairing
-:class:`~uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED` with the rate/duration metadata
-described below.
+:class:`~uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED` with the rate/duration
+metadata described below.
 
-Transient Rates
-----------------
-
-LFBOT volumetric rates reported in the literature span more than two orders of magnitude,
-reflecting both small-number statistics (only a handful of confirmed events) and differing
-selection criteria across surveys: :footcite:t:`coppejans2020` report rates of
-:math:`<300\ \mathrm{Gpc^{-3}\,yr^{-1}}` from PTF and :math:`700`-:math:`1400\ \mathrm{Gpc^{-3}\,yr^{-1}}`
-from PS1-MDS; the theoretical delayed-dynamical-instability model of :footcite:t:`klencki2025`
-predicts :math:`15`-:math:`300\ \mathrm{Gpc^{-3}\,yr^{-1}}`, substantiated mainly by being
-reasonably comparable to the observed rates; and :footcite:t:`perley2026` and
-:footcite:t:`holu2026` report much lower rates of :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`.
-The rate adopted here, :math:`10\ \mathrm{Gpc^{-3}\,yr^{-1}}`, follows
-:footcite:t:`perley2026` and :footcite:t:`holu2026` and is taken as constant with redshift, since
-LFBOTs are too rare for their redshift evolution to yet be meaningfully constrained. A redshift
-limit of :math:`z=4` and a 100-day duration window are used to safely bound the population relative
-to the SED's own (much shorter) intrinsic rise/decline timescales.
+Quick Facts
+------------
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 20 20 30
+   :widths: 15 25 15 45
 
-   * - Rate
-     - Redshift Limit
-     - Duration
+   * - Quantity
+     - Value
      - Source
-   * - :math:`10\ \mathrm{Gpc^{-3}\,yr^{-1}}` (constant in :math:`z`)
-     - :math:`z = 4`
-     - 100 days
+     - Notes
+   * - Rate
+     - :math:`10\ \mathrm{Gpc^{-3}\,yr^{-1}}` (constant in :math:`z`)
      - :footcite:t:`perley2026,holu2026`
+     - Reported LFBOT rates span more than two orders of magnitude across differing selection
+       criteria: :footcite:t:`coppejans2020` find :math:`<300\ \mathrm{Gpc^{-3}\,yr^{-1}}` (PTF) and
+       :math:`700`-:math:`1400\ \mathrm{Gpc^{-3}\,yr^{-1}}` (PS1-MDS); the delayed-dynamical-instability
+       model of :footcite:t:`klencki2025` predicts :math:`15`-:math:`300\ \mathrm{Gpc^{-3}\,yr^{-1}}`;
+       :footcite:t:`perley2026` and :footcite:t:`holu2026` report the lowest rates,
+       :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, which is adopted here. Taken as
+       constant in :math:`z`, since LFBOTs are too rare for their redshift evolution to yet be
+       meaningfully constrained.
+   * - Redshift limit
+     - :math:`z = 3`
+     - --
+     - Chosen to safely bound the population relative to the SED's own (much shorter) intrinsic
+       rise/decline timescales.
+   * - Duration
+     - 100 days
+     - --
+     - Generous relative to the SED's own rise/decline timescales, to safely bound the slowly
+       fading power-law tail.
 
 SED Model
 ----------
@@ -115,15 +116,21 @@ Simulated Light Curves
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The plot below draws 1000 random parameter realizations from the priors above and shows the
-resulting bolometric light curves and photospheric temperatures.
+resulting bolometric light curves and photospheric temperatures, against the observed
+bolometric light curves and photospheric temperatures of four known LFBOTs -- AT2018cow,
+CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
 
 .. plot::
    :include-source: false
 
+   from pathlib import Path
+
    import numpy as np
    import matplotlib.pyplot as plt
    from astropy import units as u
+   from astropy.table import Table
 
+   import uvex_transients
    from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED as SEDClass
 
    rng = np.random.default_rng(20260910)
@@ -142,16 +149,178 @@ resulting bolometric light curves and photospheric temperatures.
        ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
        ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.06)
 
+   data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+   observed_lfbots = [
+       ("2018cow_holu2026.txt", "AT2018cow (Ho & Lu+2026)", "o", "k"),
+       ("css161010_holu2026.txt", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
+       ("2024wpp_holu2026.txt", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
+       ("2024puz_holu2026.txt", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
+   ]
+
+   for suffix, label, marker, color in observed_lfbots:
+       lbol_obs = Table.read(data_dir / f"lbol_{suffix}", format="ascii")
+       Tphot_obs = Table.read(data_dir / f"Tphot_{suffix}", format="ascii")
+       ax_L.scatter(
+           lbol_obs["time"], lbol_obs["L_bol"],
+           marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+           label=label,
+       )
+       ax_T.scatter(
+           Tphot_obs["time"], Tphot_obs["T_phot"],
+           marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+           label=label,
+       )
+
    ax_L.set_xscale("log")
    ax_L.set_yscale("log")
    ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
    ax_L.set_title("LFBOTs: simulated bolometric light curves (n=1000)")
+   ax_L.legend(loc="upper right", fontsize=8, frameon=False)
 
    ax_T.set_yscale("log")
    ax_T.set_xlabel("Time since explosion [days]")
    ax_T.set_ylabel("Photospheric temperature [K]")
 
    fig.tight_layout()
+
+
+----
+
+Observability Summary
+----------------------
+
+Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB magnitudes
+:math:`m_\mathrm{AB}` of 3000 simulated LFBOTs drawn from the priors above, with
+the UVEX 1 Dwell limit of :math:`m<24.5` overplotted. Findings here justify our confidence in a
+:math:`z=3` redshift limit for this population.
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+    from scipy.stats import gaussian_kde
+
+    from m4opt.missions import uvex
+    from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
+    from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED as SEDClass
+
+    rng = np.random.default_rng(20260911)
+    n_samples = 3000
+
+    lfbot = LuminousFastBlueOpticalTransient()
+    z = lfbot.sample_event_redshift(n_samples, rng=rng)
+    params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+
+    # Observed-frame time of rest-frame peak, i.e. where each event is brightest as seen by UVEX.
+    t_obs_peak = params["t_peak"] * (1.0 + z)
+
+    bandpasses = uvex.detector.bandpasses
+    band_names = list(bandpasses)
+
+    fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
+
+    for ax, band_name in zip(axes, band_names):
+        mag = SEDClass.mag_bandpass(bandpasses[band_name], t_obs_peak, redshift=z, **params).to_value(u.ABmag)
+        finite = np.isfinite(mag)
+        z_finite, mag_finite = z[finite], mag[finite]
+
+        ax.scatter(z_finite, mag_finite, s=5, ec='k',fc='k',alpha=0.5, label="Simulated events")
+
+        kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
+        z_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
+        mag_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
+        Z_grid, Mag_grid = np.meshgrid(z_grid, mag_grid)
+        density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
+        ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
+
+        ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
+
+        ax.invert_yaxis()
+        ax.set_xlabel("Redshift")
+        ax.set_title(f"UVEX {band_name}")
+        ax.legend(loc="upper right", fontsize=8, frameon=False)
+
+        ax.invert_yaxis()
+        ax.set_ylim([50, 15])
+
+    axes[0].set_ylabel("Peak apparent AB magnitude")
+    fig.suptitle(f"LFBOTs: peak apparent magnitude vs. redshift (n={n_samples})")
+    fig.tight_layout()
+    plt.show()
+
+The anticipated rate of LFBOTs detectable by UVEX at these limits is as follows assuming that
+any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
+in comoving volume out to :math:`z=3`:
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+
+    from m4opt.missions import uvex
+    from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
+
+
+    rng = np.random.default_rng(20260911)
+    n_samples = 3000
+
+    # Sample the LFBOT population.
+    lfbot = LuminousFastBlueOpticalTransient()
+    redshift = lfbot.sample_event_redshift(n_samples, rng=rng)
+    params = lfbot.sed.sample_parameters(size=n_samples, rng=rng)
+
+    # Convert the integrated rate per steradian to an all-sky rate.
+    all_sky_rate = 4 * np.pi * lfbot.integrated_event_rate * u.sr
+
+    # Observed-frame time corresponding to the rest-frame peak.
+    t_peak_obs = params["t_peak"] * (1 + redshift)
+
+    detection_limits = {
+        "FUV": 24.5 * u.ABmag,
+        "NUV": 24.5 * u.ABmag,
+    }
+
+    # Compute peak-visible rates.
+    visible_rates = {}
+
+    for band_name, bandpass in uvex.detector.bandpasses.items():
+        magnitudes = lfbot.sed.mag_bandpass(
+            bandpass,
+            t_peak_obs,
+            redshift=redshift,
+            **params,
+        ).to_value(u.ABmag)
+
+        visible = magnitudes < detection_limits[band_name].to_value(u.ABmag)
+        visible_fraction = np.mean(visible)
+        visible_rate = visible_fraction * all_sky_rate
+
+        visible_rates[band_name] = visible_rate
+
+        print(
+            f"{band_name}: {visible_rate:.2f} "
+            f"({visible_fraction:.1%} of events visible)"
+        )
+
+    # Plot all-sky visible rates.
+    band_names = list(visible_rates)
+    rates = [visible_rates[band].to_value(1 / u.yr) for band in band_names]
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    ax.bar(band_names, rates)
+
+    ax.set_yscale("log")
+    ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+    ax.set_title("Peak-visible LFBOT rate")
+
+    fig.tight_layout()
+    plt.show()
+
 
 References
 -----------

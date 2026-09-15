@@ -105,7 +105,7 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             latex=r"t_\mathrm{break}",
         ),
         "T0": Parameter(
-            prior=NormalPrior(mean=3.9, sigma=0.1),
+            prior=NormalPrior(mean=4.1, sigma=0.1),
             scale=1.0 * u.K,
             transform="log10",
             description="Photospheric temperature at t=0 (the T(t) -> T0 limit, not literally "
@@ -114,7 +114,7 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             latex=r"T_0",
         ),
         "T_floor": Parameter(
-            prior=NormalPrior(mean=3.4, sigma=0.08),
+            prior=NormalPrior(mean=3.2, sigma=0.08),
             scale=1.0 * u.K,
             transform="log10",
             description="Asymptotic late-time photospheric temperature (T(t) -> T_floor as "
@@ -122,7 +122,7 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             latex=r"T_\mathrm{floor}",
         ),
         "alpha_T": Parameter(
-            prior=UniformPrior(0.3, 0.7),
+            prior=UniformPrior(1, 2),
             scale=1.0 * u.dimensionless_unscaled,
             description="Early-time photospheric cooling power-law index; "
             "T ~ t^-alpha_T for t << t_peak/5. ~0.5 (Waxman et al. 2018).",
@@ -145,8 +145,7 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
         r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/(t_\mathrm{peak}/5))^{-\alpha_T}`."""
-        sigma_rise = t_peak / 5
-        return T_floor + (T0 - T_floor) * (1.0 + t / sigma_rise) ** (-alpha_T)
+        return T_floor + (T0 - T_floor) * (1.0 + t / t_peak) ** (-alpha_T)
 
     @classmethod
     def temperature(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:

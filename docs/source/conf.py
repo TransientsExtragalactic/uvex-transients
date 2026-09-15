@@ -49,7 +49,11 @@ bibtex_bibfiles = ["docs_bib.bib"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["transients/_page_template.rst", "user_guide/_page_template.rst"]
+exclude_patterns = [
+    "transients/_page_template.rst",
+    "user_guide/_page_template.rst",
+    "galleries/**",
+]
 
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -106,16 +110,8 @@ suppress_warnings = ["toc.not_included"]
 # Configure the sphinx galleries. These are contained in the
 # /examples gallery.
 sphinx_gallery_conf = {
-    "examples_dirs": [
-        "./galleries/schedules",
-        "./galleries/simulating",
-        "./galleries/custom_transients",
-    ],
-    "gallery_dirs": [
-        "auto_examples/schedules",
-        "auto_examples/simulating",
-        "auto_examples/custom_transients",
-    ],
+    "examples_dirs": ["./galleries"],
+    "gallery_dirs": ["auto_examples"],
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
 }

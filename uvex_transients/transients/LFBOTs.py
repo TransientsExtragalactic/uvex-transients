@@ -22,7 +22,7 @@ class LuminousFastBlueOpticalTransient(ExtragalacticTransient):
 
     Modeled with `LFBOTCoolingBlackbodySED` (a Gaussian-rise/power-law-decline
     light curve with a smoothly cooling blackbody photosphere), a constant
-    volumetric rate of 10 Gpc^-3 yr^-1 out to z=4 (Perley et al. 2026; Ho & Lu
+    volumetric rate of 10 Gpc^-3 yr^-1 out to z=3 (Perley et al. 2026; Ho & Lu
     et al. 2026), and a 100-day duration window -- generous relative to the
     SED's own rise/decline timescales, to safely bound the slowly fading
     power-law tail.
@@ -30,7 +30,7 @@ class LuminousFastBlueOpticalTransient(ExtragalacticTransient):
 
     DEFAULT_MODEL = LFBOTCoolingBlackbodySED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 4
+    DEFAULT_Z_LIM = 3
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """

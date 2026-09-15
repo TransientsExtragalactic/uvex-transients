@@ -18,11 +18,10 @@ from functools import partial
 import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-from astropy.table import QTable, vstack
+from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
 from m4opt.missions import Mission
-from m4opt.synphot import observing
 
 from uvex_transients.dust import log_attenuation
 from uvex_transients.utils import get_rng
@@ -343,7 +342,7 @@ class Event:
         self,
         mission: Mission,
         bands: list | None = None,
-        n_sigma: float = 5.0,
+        n_sigma: float | None = None,
     ) -> QTable:
         """
         Evaluate this event's detectability at every observation in `observations`.
@@ -396,7 +395,8 @@ class Event:
             bandpass the detector has.
         n_sigma : float, optional
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
-            ``mag_upper``/``mag_lower`` interval. Default is 5.
+            ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses
+            ``config["simulation.detection_n_sigma"]`` (5 out of the box).
 
         Returns
         -------
@@ -420,6 +420,9 @@ class Event:
         if detector is None:
             raise ValueError(f"Mission {mission.name!r} has no detector configured.")
 
+        # Validated up front (rather than left to `SpectralModel.simulate_photometry`)
+        # so an unknown band raises even when `n_obs == 0` below short-circuits before
+        # ever reaching that call.
         band_names = list(detector.bandpasses) if bands is None else list(bands)
         unknown = [band for band in band_names if band not in detector.bandpasses]
         if unknown:
@@ -430,92 +433,58 @@ class Event:
             return self._empty_photometry_table()
 
         # One RNG, seeded from this event's own stored `seed`, drives both the parameter
-        # draw and every band's noise realization below, in `band_names` order -- so the
-        # whole event replays identically from `seed` alone. Deliberately *not*
+        # draw and every band's noise realization below (inside
+        # `SpectralModel.simulate_photometry`, in `band_names` order) -- so the whole
+        # event replays identically from `seed` alone. Deliberately *not*
         # `self.sample_parameters()` (which reseeds fresh every call): the noise draws
-        # below must continue on the same stream the parameter draw already consumed.
+        # must continue on the same stream the parameter draw already consumed.
         rng = get_rng(self._seed)
         sed_params = {name: value[0] for name, value in self._transient.sed.sample_parameters(size=1, rng=rng).items()}
 
-        # `as_source_spectrum` does not auto-insert batch axes -- this trailing axis
-        # is what keeps `t_obs`'s per-observation batch from colliding with whatever
-        # wavelength grid it's later called with (e.g. a bandpass's `waveset`).
-        t_obs = (self._observations["start_time"] - self._t_explosion).to(u.day)[:, np.newaxis]
+        t_obs = (self._observations["start_time"] - self._t_explosion).to(u.day)
 
-        # One SourceSpectrum for this whole event, batched over every candidate
-        # observation's own time since explosion -- reused, unmodified, across every
-        # band below.
-        spectra = self._transient.sed.as_source_spectrum(
+        # The actual noise simulation -- batched `as_source_spectrum` plus `get_snr`,
+        # the Gaussian flux realization, and the `n_sigma` bound math -- lives on
+        # `SpectralModel.simulate_photometry` now, schedule-independent, so it's shared
+        # with callers that have no `SurveySchedule`/`Event` at all (e.g. a target of
+        # opportunity). This event's own `observer_location`/`start_time` are passed
+        # through as real `observer_location`/`obstime`, so `detector`'s own
+        # `background` (left unmodified -- `background` isn't overridden here) sees the
+        # same real observing geometry it always did.
+        phot = self._transient.sed.simulate_photometry(
             t_obs,
+            self._observations["duration"],
+            detector,
+            self._coord,
+            bands=band_names,
+            observer_location=self._observations["observer_location"],
+            obstime=self._observations["start_time"],
             redshift=self._redshift,
             luminosity_distance=self._luminosity_distance,
             log_attenuation=partial(log_attenuation, Ebv=self._ebv),
+            n_sigma=n_sigma,
+            rng=rng,
             **sed_params,
         )
 
-        tables = []
+        phot["event_id"] = np.full(len(phot), self._event_id, dtype=np.int64)
+        phot["obs_time"] = self._t_explosion + phot["t"]
+        del phot["t"]
 
-        with observing(
-            self._observations["observer_location"],
-            self._coord,
-            self._observations["start_time"],
-        ):
-            for band in band_names:
-                snr = detector.get_snr(self._observations["duration"], spectra, band)
-
-                pivot = detector.bandpasses[band].pivot()
-                with np.errstate(invalid="ignore", divide="ignore"):
-                    # `pivot` is scalar, so it broadcasts against `t_obs`'s own
-                    # reserved trailing axis rather than colliding with it --
-                    # squeeze that axis back out to get one flux per observation.
-                    true_flux = np.squeeze(spectra(pivot, flux_unit=u.Jy).to_value(u.Jy), axis=-1)
-
-                    valid = np.isfinite(snr) & (snr > 0)
-                    safe_snr = np.where(valid, snr, np.nan)
-                    flux_err = true_flux / safe_snr
-                    flux = rng.normal(true_flux, np.where(valid, np.abs(flux_err), 1.0))
-                    flux = np.where(valid, flux, np.nan)
-                    mag_err = 2.5 / (np.log(10) * safe_snr)
-                    mag = np.where(flux > 0, (flux * u.Jy).to_value(u.ABmag), np.nan)
-
-                    # The actual n_sigma interval: bound `flux` symmetrically first
-                    # (where the noise is actually Gaussian), then transform each bound
-                    # to magnitude separately -- rather than propagating one linearized
-                    # width through the nonlinear log transform, as `mag_err` does. A
-                    # larger flux is a *smaller* (brighter) magnitude, so `flux_upper`
-                    # maps to `mag_lower` and vice versa. `flux_lower` can go
-                    # non-positive at low SNR -- that's not an error, it means the
-                    # source isn't securely distinguished from zero flux at `n_sigma`,
-                    # so there is no finite faint bound (`mag_upper` is correctly `nan`
-                    # there, not a substitute finite value).
-                    flux_upper = flux + n_sigma * flux_err
-                    flux_lower = flux - n_sigma * flux_err
-                    mag_lower = np.where(flux_upper > 0, (flux_upper * u.Jy).to_value(u.ABmag), np.nan)
-                    mag_upper = np.where(flux_lower > 0, (flux_lower * u.Jy).to_value(u.ABmag), np.nan)
-
-                band_table = QTable()
-                band_table["event_id"] = np.full(n_obs, self._event_id, dtype=np.int64)
-                band_table["obs_time"] = self._observations["start_time"]
-                band_table["exptime"] = self._observations["duration"]
-                band_table["band"] = np.full(n_obs, band)
-                band_table["snr"] = snr
-                band_table["flux"] = flux * u.Jy
-                band_table["flux_err"] = flux_err * u.Jy
-                band_table["flux_upper"] = flux_upper * u.Jy
-                band_table["flux_lower"] = flux_lower * u.Jy
-                band_table["ab_mag"] = mag
-                band_table["mag_err"] = mag_err
-                band_table["mag_upper"] = mag_upper
-                band_table["mag_lower"] = mag_lower
-                tables.append(band_table)
-
-        table = vstack(tables)
-        # `Table.sort(["obs_time", "band"])` is >1000x slower here than this --
-        # astropy's multi-key sort falls back to pairwise `Time.__lt__`
-        # comparisons once a second sort key is involved (a `Time` column
-        # sorted alone, or `np.lexsort` on its fast numeric `.jd` proxy, are
-        # both fine; combining a `Time` key with another column through
-        # `Table.sort` is what's slow). `band`'s exact string encoding doesn't
-        # matter for sort order, only that equal strings compare equal.
-        order = np.lexsort((table["band"], table["obs_time"].jd))
-        return table[order]
+        return phot[
+            [
+                "event_id",
+                "obs_time",
+                "exptime",
+                "band",
+                "snr",
+                "flux",
+                "flux_err",
+                "flux_upper",
+                "flux_lower",
+                "ab_mag",
+                "mag_err",
+                "mag_upper",
+                "mag_lower",
+            ]
+        ]

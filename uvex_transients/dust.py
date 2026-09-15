@@ -32,6 +32,8 @@ from dust_extinction.parameter_averages import G23
 from dustmaps.planck import PlanckGNILCQuery
 from numpy.typing import NDArray
 
+from uvex_transients.utils import config, logger
+
 
 # =========================================================================== #
 # TYPING MANAGEMENT                                                           #
@@ -57,12 +59,9 @@ Reddening = Union[float, Quantity, NDArray[np.float64], DustMapLike]
 # the exact URLs means that if `m4opt prime` (or any other m4opt code path) has
 # already warmed the astropy download cache for this file, we get a cache hit
 # instead of a second multi-hundred-megabyte download -- even though this
-# loader is otherwise fully independent of m4opt.
-_GNILC_SOURCES = (
-    "https://irsa.ipac.caltech.edu/data/Planck/release_2/all-sky-maps/maps/component-maps/foregrounds/"
-    "COM_CompMap_Dust-GNILC-Model-Opacity_2048_R2.01.fits",
-    "https://pla.esac.esa.int/pla/aio/product-action?MAP.MAP_ID=COM_CompMap_Dust-GNILC-Model-Opacity_2048_R2.01.fits",
-)
+# loader is otherwise fully independent of m4opt. Configurable via
+# ``config["physics.dust_map_sources"]`` (see `uvex_transients.utils.config`),
+# in case a mirror goes stale.
 
 
 @cache
@@ -81,7 +80,13 @@ def dust_map() -> PlanckGNILCQuery:
         Queryable dust map: ``dust_map().query(coord)`` returns E(B-V) at ``coord``,
         vectorized over an array-valued ``coord``.
     """
-    path = download_file(_GNILC_SOURCES[-1], cache=True, sources=list(_GNILC_SOURCES))
+    sources = list(config["physics.dust_map_sources"])
+    logger.info(
+        "Fetching Planck GNILC dust map (first call only; cached to disk on success) from %s.",
+        sources[0],
+    )
+    path = download_file(sources[-1], cache=True, sources=sources)
+    logger.info("Planck GNILC dust map ready at %s.", path)
     return PlanckGNILCQuery(path)
 
 

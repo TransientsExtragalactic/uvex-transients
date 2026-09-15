@@ -537,4 +537,5 @@ Next Steps
 A model on its own is only an SED. To simulate a population of sources with it, that is, to give
 it a sky distribution, a volumetric rate, and a redshift range, pair it with a
 :class:`~uvex_transients.transients.base.TransientBase` subclass, covered in
-:ref:`user_guide_transients`.
+:ref:`user_guide_transients` and, for the pairing step specifically, in
+:ref:`user_guide_transients_custom_transients`.

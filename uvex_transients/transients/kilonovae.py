@@ -25,19 +25,19 @@ class Kilonova(ExtragalacticTransient):
 
     Modeled with `KilonovaCoolingBlackbodySED` (a Gaussian-rise/broken-power-law-decline
     light curve with a cooling blackbody photosphere, calibrated against GW170817), a
-    constant volumetric rate of 53 Gpc^-3 yr^-1 out to z=2, and a 30-day duration window.
+    constant volumetric rate of 53 Gpc^-3 yr^-1 out to z=0.2, and a 30-day duration window.
 
-    The z=2 redshift limit follows from requiring a bolometric luminosity below
-    1e43 erg/s (well above anything reported in the literature) to remain
-    detectable at UVEX's m < 27 band limit, assuming a flat spectrum and no
-    K-correction. The 30-day duration is a conservative upper bound on the total
-    light curve -- the blue/early kilonova component this SED targets fades below
-    detectability closer to ~10 days.
+    The z=0.2 redshift limit is conservative: a source with bolometric luminosity
+    below 1e43 erg/s (well above anything reported in the literature) would still
+    remain detectable at UVEX's m < 27 band limit out to z=2, assuming a flat
+    spectrum and no K-correction. The 30-day duration is a conservative upper
+    bound on the total light curve -- the blue/early kilonova component this SED
+    targets fades below detectability closer to ~10 days.
     """
 
     DEFAULT_MODEL = KilonovaCoolingBlackbodySED
     DEFAULT_DURATION = 30 * u.day
-    DEFAULT_Z_LIM = 2
+    DEFAULT_Z_LIM = 0.2
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """

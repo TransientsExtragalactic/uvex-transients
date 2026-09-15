@@ -16,7 +16,43 @@ __all__ = [
     "get_seed_sequence",
     "split_root_seed",
     "spawn_seeds",
+    "resolve_healpix_resolution",
 ]
+
+
+def resolve_healpix_resolution(
+    nside: Union[int, None] = None,
+    order: Union[str, None] = None,
+) -> tuple[int, str]:
+    """
+    Fill in an omitted HEALPix ``nside``/``order`` from the configured default.
+
+    Shared by every `~uvex_transients.surveys.base.SurveySchedule` query and
+    `~uvex_transients.simulation.core.SurveySimulator` sampling-grid method that
+    accepts ``nside``/``order`` -- so ``config["healpix.default_nside"]``/
+    ``config["healpix.default_order"]`` set the shared resolution once, the same
+    way `~uvex_transients.models._cosmology.get_cosmology` resolves an omitted
+    ``cosmology`` from ``config["physics.default_cosmology"]``, rather than each
+    call site carrying its own (previously inconsistent) hardcoded literal.
+
+    Parameters
+    ----------
+    nside : int or None, optional
+        HEALPix resolution parameter, or `None` to use
+        ``config["healpix.default_nside"]``.
+    order : str or None, optional
+        HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``), or `None` to
+        use ``config["healpix.default_order"]``.
+
+    Returns
+    -------
+    nside : int
+    order : str
+    """
+    return (
+        nside if nside is not None else config["healpix.default_nside"],
+        order if order is not None else config["healpix.default_order"],
+    )
 
 
 def get_rng(

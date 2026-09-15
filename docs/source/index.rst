@@ -18,39 +18,57 @@
 Overview
 =========
 
-**UVEX Transients** is a Python library for simulating populations of astrophysical transients
-(kilonovae, tidal disruption events, luminous fast blue optical transients, supernovae, etc.) as they
-would be observed by the UVEX all-sky survey (and other constituent surveys), from a physical SED model all the way through to a
-Monte Carlo catalog of detections against a real survey schedule.
+**UVEX Transients** is a Python toolkit for simulating transient science with `UVEX <https://www.uvex.caltech.edu/>`__.
+It provides everything needed to simulate the discovery and follow-up of transient populations with UVEX, across
+both target-of-opportunity (TOO) observations and UVEX's planned surveys.
 
-This tool is intended to enable informed modeling of UVEX's discovery and follow-up capabilities for a variety of  transient
-populations and for a variety of survey strategies. It is also intended to be a flexible framework for simulating new transient populations
-as need arises.
+.. card:: Key capabilities
+   :class-card: sd-shadow-md sd-rounded-3 capabilities-box
+   :margin: 3 0 0 0
 
-.. grid:: 2
-   :gutter: 3
+   .. grid:: 1 2 2 4
+      :gutter: 3
 
-   .. grid-item-card::
-      :class-card: sd-shadow-sm sd-border-1
+      .. grid-item::
+         :class: sd-text-center
 
-      **What does it do?**
+         :octicon:`calendar;2em;capabilities-icon`
 
-      - Provides a **Monte-Carlo based** event simulator capable of sampling realizations of abstract transient
-        populations against a survey schedule.
-      - Provides a **Flexible SED framework** for building new transient models, including a number of pre-built phenomenological models.
-      - Provides a **Survey schedule framework** for representing and validating survey schedules, including UVEX's all-sky survey.
-      - Provides tooling for end-to-end simulations, including sampling the population and determining detections using **synthetic photometry**.
+         **Real survey schedules**
 
-   .. grid-item-card::
-      :class-card: sd-shadow-sm sd-border-1
+         Validates and simulates against real spacecraft schedules, not idealized cadences.
 
-      **Core capabilities**
+      .. grid-item::
+         :class: sd-text-center
 
-      - A common :mod:`~uvex_transients.models.core` SED framework that every transient model
-        builds on.
-      - Efficient and robust synthetic photometry using ``m4opt``, including detailed treatment of spacecraft position,
-        sky backgrounds, detector parameters, bandpass, and foreground extinction.
-      - A Monte Carlo survey simulator that samples transient populations against a survey schedule and determines detections.
+         :octicon:`pulse;2em;capabilities-icon`
+
+         **Synthetic photometry**
+
+         A flexible, pluggable photometry backend (``m4opt``) computes band-integrated fluxes and detection
+         significance.
+
+      .. grid-item::
+         :class: sd-text-center
+
+         :octicon:`telescope;2em;capabilities-icon`
+
+         **Realistic instrument modeling**
+
+         Spacecraft position, sky backgrounds, detector parameters, bandpasses, and foreground extinction are all
+         treated in detail.
+
+      .. grid-item::
+         :class: sd-text-center
+
+         :octicon:`graph;2em;capabilities-icon`
+
+         **End-to-end yield simulations**
+
+         Turns a sampled transient population into detections and light curves in a single pipeline.
+
+Installation
+=============
 
 .. container:: install-block
 
@@ -59,11 +77,7 @@ as need arises.
 
        **Get started in seconds!**
 
-       .. code-block:: bash
-
-          pip install uvex-transients
-
-       Or install from source:
+       Install from source:
 
        .. code-block:: bash
 
@@ -134,7 +148,7 @@ Resources
 
         +++
 
-        .. button-ref:: examples
+        .. button-ref:: auto_examples/index
             :ref-type: doc
             :expand:
             :color: secondary
@@ -172,7 +186,7 @@ Contents
 
    user_guide
    transients/index
-   examples
+   auto_examples/index
    api
 
 Indices and tables
