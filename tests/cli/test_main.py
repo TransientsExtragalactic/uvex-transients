@@ -1,0 +1,88 @@
+"""`click.testing.CliRunner` smoke tests for `uvex_transients.cli.main`."""
+
+from astropy.table import QTable
+from click.testing import CliRunner
+
+from uvex_transients.cli.main import cli
+from uvex_transients.simulation.event_catalog import EventCatalog
+
+CONFIG_TEMPLATE = """
+schedule:
+  path: {schedule_path}
+  fov_path: {fov_path}
+
+transients:
+  tde:
+    class: TidalDisruptionEvent
+
+generate:
+  time_bins: 2
+  nside: 16
+  seed: 1
+
+cuts:
+  cut_1:
+    type: limiting_magnitude
+    mag_limit: 25.0
+  cut_2:
+    type: snr
+    snr_threshold: 5.0
+"""
+
+
+def _write_config(tmp_path, make_schedule) -> str:
+    """Write a synthetic schedule and a matching run-config YAML to `tmp_path`; return the config path."""
+    schedule = make_schedule()
+    schedule_path = tmp_path / "schedule.ecsv"
+    fov_path = tmp_path / "schedule.reg"
+    schedule.to_disk(schedule_path, fov_path=fov_path)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(CONFIG_TEMPLATE.format(schedule_path=schedule_path, fov_path=fov_path))
+    return str(config_path)
+
+
+def test_help_shows_the_logo_banner():
+    """`--help` prints the package's ASCII banner above the usual click help text."""
+    result = CliRunner().invoke(cli, ["--help"])
+    assert result.exit_code == 0
+    assert "generate" in result.output
+    assert "cut" in result.output
+    # The logo is drawn from block characters, not literal text -- just check it's non-trivially long.
+    assert result.output.count("\n") > 15
+
+
+def test_bare_invocation_shows_help_too():
+    """Invoking with no subcommand also shows the help/banner (click's `no_args_is_help` default)."""
+    result = CliRunner().invoke(cli, [])
+    assert "generate" in result.output
+
+
+def test_generate_writes_a_catalog(tmp_path, make_schedule):
+    """`generate` writes an `EventCatalog` file readable back via `EventCatalog.from_disk`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_path = tmp_path / "catalog.ecsv"
+
+    result = CliRunner().invoke(cli, ["generate", config_path, "--out", str(out_path)])
+
+    assert result.exit_code == 0, result.output
+    assert out_path.exists()
+    catalog = EventCatalog.from_disk(out_path)
+    assert catalog.nside == 16
+
+
+def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
+    """`run` chains generate -> both cuts -> photometry, writing every stage's file to `--out-dir`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "00_generated.ecsv").exists()
+    assert (out_dir / "01_cut_1.ecsv").exists()
+    assert (out_dir / "02_cut_2.ecsv").exists()
+    phot_path = out_dir / "photometry.ecsv"
+    assert phot_path.exists()
+    phot = QTable.read(phot_path)
+    assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}

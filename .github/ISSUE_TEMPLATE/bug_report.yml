@@ -1,0 +1,49 @@
+name: 🐛 Bug Report
+description: Report incorrect behavior or errors in UVEX Transients
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the following so we can reproduce and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🧩 Description
+      description: What went wrong? Be specific.
+      placeholder: e.g., "Calling `flux_band` on a Kilonova SED raises a unit mismatch error"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🧪 Steps to Reproduce
+      description: Include sample code, inputs, or files.
+      placeholder: |
+        1. Construct a Kilonova transient
+        2. Sample events on a healpix grid
+        3. Observe the error when evaluating photometry
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 🧮 UVEX Transients Version
+      placeholder: e.g., v0.4.1 or main branch commit SHA
+
+  - type: input
+    id: python
+    attributes:
+      label: 🐍 Python Version
+      placeholder: e.g., 3.12.4
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 🧵 Stack Trace or Logs
+      description: Paste the traceback if there is one.
+      render: shell

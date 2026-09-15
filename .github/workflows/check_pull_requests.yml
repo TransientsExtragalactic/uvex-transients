@@ -1,0 +1,47 @@
+# .github/workflows/check_pull_requests.yml
+# ------------------------------------------------ #
+# GitHub Actions Workflow for Pull Request Checks  #
+# ------------------------------------------------ #
+# This workflow runs checks on every pull request to ensure code quality and
+# consistency:
+#
+# 1. Pre-commit run on the codebase.
+# 2. Build the documentation with Sphinx.
+name: Pull Request Checks
+
+on:
+  pull_request:
+
+jobs:
+  pre-commit:
+    name: Pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install pre-commit
+          pip install .[dev]
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
+  # Ensure that the docs generate properly.
+  docs:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install documentation dependencies
+        run: |
+          pip install .[docs]
+      - name: Build documentation with Sphinx
+        run: |
+          sphinx-build -b html -n -W -j auto docs/source docs/_build/html
