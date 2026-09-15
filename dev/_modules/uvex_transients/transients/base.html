@@ -449,7 +449,7 @@
 <span class="c1"># Transient Base Class                                                        #</span>
 <span class="c1"># =========================================================================== #</span>
 <div class="viewcode-block" id="TransientBase">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.LFBOTs.TransientBase">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.supernovae.TransientBase">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TransientBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Abstract base class for transient types.</span>
@@ -506,7 +506,7 @@
         <span class="n">TransientBase</span><span class="o">.</span><span class="n">_REGISTRY</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
 
 <div class="viewcode-block" id="TransientBase.registry">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.registry.html#uvex_transients.transients.LFBOTs.TransientBase.registry">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.registry.html#uvex_transients.transients.supernovae.TransientBase.registry">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">registry</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="s2">"TransientBase"</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">"""dict[str, type[TransientBase]]: A copy of every concrete subclass imported so far, keyed by class name."""</span>
@@ -614,7 +614,7 @@
 <span class="c1"># Extragalactic Transient                                                     #</span>
 <span class="c1"># =========================================================================== #</span>
 <div class="viewcode-block" id="ExtragalacticTransient">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.LFBOTs.ExtragalacticTransient">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.supernovae.ExtragalacticTransient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExtragalacticTransient</span><span class="p">(</span><span class="n">TransientBase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Extragalactic transient with a cosmological volumetric event rate; see the module docstring."""</span>
 
@@ -731,7 +731,7 @@
     <span class="c1"># Event Rate Computations        #</span>
     <span class="c1"># ------------------------------ #</span>
 <div class="viewcode-block" id="ExtragalacticTransient.event_rate">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.LFBOTs.ExtragalacticTransient.event_rate">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.supernovae.ExtragalacticTransient.event_rate">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1020,7 +1020,7 @@
         <span class="k">return</span> <span class="n">table</span>
 
 <div class="viewcode-block" id="ExtragalacticTransient.sample_event_count">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_count.html#uvex_transients.transients.LFBOTs.ExtragalacticTransient.sample_event_count">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_count.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_event_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sample_event_count</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">solid_angle</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
@@ -1066,7 +1066,7 @@
 
 
 <div class="viewcode-block" id="ExtragalacticTransient.sample_event_redshift">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift.html#uvex_transients.transients.LFBOTs.ExtragalacticTransient.sample_event_redshift">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_event_redshift">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sample_event_redshift</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1109,7 +1109,7 @@
 
 
 <div class="viewcode-block" id="ExtragalacticTransient.sample_events_on_healpix_grid">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.LFBOTs.ExtragalacticTransient.sample_events_on_healpix_grid">[docs]</a>
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_events_on_healpix_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sample_events_on_healpix_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
