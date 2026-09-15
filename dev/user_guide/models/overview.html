@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Models &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/models/overview';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Writing a Custom Model" href="custom_models.html" />
+    <link rel="prev" title="User Guide" href="../../user_guide.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Models</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_models.html">Writing a Custom Model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_models.html">Writing a Custom Model</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../transients/overview.html">Transients</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../surveys/overview.html">Surveys</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Models</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="models">
+<span id="user-guide-models"></span><h1>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h1>
+<p>Every transient in UVEX Transients is, underneath everything else, a <strong>model</strong>: an object that
+tells you how bright a source is, at what color, at any given time. This page walks through the
+day-to-day things you’ll do with a model: create one, evaluate it every way you might need, and
+draw random realizations of it.</p>
+<p>We’ll use the kilonova model, <a class="reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED" title="uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">KilonovaCoolingBlackbodySED</span></code></a>,
+as our running example throughout, but everything here works identically for any model in
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.html#module-uvex_transients.models" title="uvex_transients.models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.models</span></code></a>.</p>
+<section id="getting-started-with-models">
+<h2>Getting Started with Models<a class="headerlink" href="#getting-started-with-models" title="Link to this heading">#</a></h2>
+<p>At its core, a model is just two things bolted together:</p>
+<ol class="arabic simple">
+<li><p>A function <span class="math notranslate nohighlight">\(L_\nu(\nu, t)\)</span> the <strong>spectral luminosity</strong>: how much energy per unit
+time and frequency the source radiates, at frequency <span class="math notranslate nohighlight">\(\nu\)</span> and time <span class="math notranslate nohighlight">\(t\)</span> since
+explosion.</p></li>
+<li><p>A named set of <strong>parameters</strong> that function depends on; things like a peak brightness, a
+characteristic temperature, a rise or decline timescale.</p></li>
+</ol>
+<p>That’s it. Everything else on this page is
+built on top of that one idea: give the model some parameter values, and it will tell you
+<span class="math notranslate nohighlight">\(L_\nu(\nu, t)\)</span> (or any of the several derived quantities below) for those values.</p>
+<p>Let’s make that concrete. <strong>Creating a model</strong> is as simple as instantiating its class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">sed</span><span class="p">)</span>
+<span class="gp">... </span><span class="n">KilonovaCoolingBlackbodySED</span><span class="p">(</span>
+<span class="go">        amplitude: free, prior=normal</span>
+<span class="go">        t_peak: free, prior=lognormal</span>
+<span class="go">        decline_index_1: free, prior=uniform</span>
+<span class="go">        decline_index_2: free, prior=uniform</span>
+<span class="go">        t_break: free, prior=uniform</span>
+<span class="go">        T0: free, prior=normal</span>
+<span class="go">        T_floor: free, prior=normal</span>
+<span class="go">        alpha_T: free, prior=uniform</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<p>Once instantiated, the model provides an interface for both inspecting and modifying the parameters, and for
+evaluating the SED.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Instantiation of a model class does not require any arguments; however, all models accept keyword arguments to
+override the default parameters. These need to be <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.parameters.Parameter.html#uvex_transients.models.core.parameters.Parameter" title="uvex_transients.models.core.parameters.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> objects,
+which can be created with a specified name, prior, and additional metadata. One can also <strong>modify the parameters after
+instantiation</strong>.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>A freshly-created model doesn’t have fixed parameter values: each parameter instead carries a
+<em>prior</em>, a plausible range it could take (we’ll come back to that in <a class="reference internal" href="#user-guide-models-sampling"><span class="std std-ref">Sampling</span></a>). To actually evaluate the model, we need one concrete set of
+values. The easiest way to get one is to draw a single random realization:</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># one realization of every parameter</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">L_bol</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">L_bol</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time since explosion [days]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$L_\mathrm</span><span class="si">{bol}</span><span class="s2">$ [erg s$^{-1}$]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"One simulated kilonova bolometric light curve"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/e8cdf9161e2068792aa850575accf63f/overview-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/9bd05fa8e40dcd87793fd58c5673f119/overview-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/06f39b42a48760a71ecaf3e2d1c2f1de/overview-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/548fe4a30414b86e5046c7b0dc9fdb2e/overview-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-11.png" class="plot-directive" src="../../_images/overview-11.png" />
+</figure>
+<p>That’s the whole workflow: <strong>pick parameter values, then ask the model for a quantity you
+care about.</strong> The rest of this page is just a tour of the quantities you can ask for
+(<a class="reference internal" href="#user-guide-models-properties"><span class="std std-ref">below</span></a>) and the different ways to pick parameter values
+(<a class="reference internal" href="#user-guide-models-sampling"><span class="std std-ref">Sampling</span></a>).</p>
+</section>
+<section id="computing-observational-properties">
+<span id="user-guide-models-properties"></span><h2>Computing Observational Properties<a class="headerlink" href="#computing-observational-properties" title="Link to this heading">#</a></h2>
+<p>Once you have a model and some parameter values, there’s a whole family of quantities you can
+compute from them – from the source’s own rest-frame luminosity, to what a real telescope would
+actually measure once redshift, distance, and a bandpass get involved. The table below is a map of
+everything available; the sections after it show each one in action.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 32.0%" />
+<col style="width: 18.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Method</p></th>
+<th class="head"><p>Units</p></th>
+<th class="head"><p>Needs a distance?</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Spectral luminosity <span class="math notranslate nohighlight">\(L_\nu(\nu, t)\)</span></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval.html#uvex_transients.models.core.base.SpectralModel.eval" title="uvex_transients.models.core.base.SpectralModel.eval"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval()</span></code></a></p></td>
+<td><p>erg/s/Hz</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bolometric luminosity <span class="math notranslate nohighlight">\(L_\mathrm{bol}(t)\)</span></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric" title="uvex_transients.models.core.base.SpectralModel.eval_bolometric"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval_bolometric()</span></code></a></p></td>
+<td><p>erg/s</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-even"><td><p>Normalized spectral shape <span class="math notranslate nohighlight">\(S(\nu, t)\)</span></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum" title="uvex_transients.models.core.base.SpectralModel.eval_spectrum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval_spectrum()</span></code></a></p></td>
+<td><p>1/Hz</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Observed flux density <span class="math notranslate nohighlight">\(F_\nu(\nu, t)\)</span></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux.html#uvex_transients.models.core.base.SpectralModel.flux" title="uvex_transients.models.core.base.SpectralModel.flux"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux()</span></code></a></p></td>
+<td><p>erg/s/cm<sup>2</sup>/Hz</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>Observed bolometric flux <span class="math notranslate nohighlight">\(F_\mathrm{bol}(t)\)</span></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric" title="uvex_transients.models.core.base.SpectralModel.flux_bolometric"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux_bolometric()</span></code></a></p></td>
+<td><p>erg/s/cm<sup>2</sup></p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Band-averaged flux density</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band.html#uvex_transients.models.core.base.SpectralModel.flux_band" title="uvex_transients.models.core.base.SpectralModel.flux_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux_band()</span></code></a></p></td>
+<td><p>erg/s/cm<sup>2</sup>/Hz</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>Apparent AB magnitude</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag.html#uvex_transients.models.core.base.SpectralModel.mag" title="uvex_transients.models.core.base.SpectralModel.mag"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag()</span></code></a></p></td>
+<td><p>mag</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Band-averaged AB magnitude</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band.html#uvex_transients.models.core.base.SpectralModel.mag_band" title="uvex_transients.models.core.base.SpectralModel.mag_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag_band()</span></code></a></p></td>
+<td><p>mag</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>AB magnitude over a real instrument bandpass</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_bandpass.html#uvex_transients.models.core.base.SpectralModel.mag_bandpass" title="uvex_transients.models.core.base.SpectralModel.mag_bandpass"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag_bandpass()</span></code></a></p></td>
+<td><p>mag</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Every method in this table also has plain-float (<code class="docutils literal notranslate"><span class="pre">_cgs</span></code>) and natural-log (<code class="docutils literal notranslate"><span class="pre">_log</span></code>,
+<code class="docutils literal notranslate"><span class="pre">_log_cgs</span></code>) counterparts, for when you’re working with large arrays and want to skip
+<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a> overhead or need extra numerical headroom. Unless you have a
+specific reason to reach for one of those, the methods below (which take and return
+<code class="docutils literal notranslate"><span class="pre">Quantity</span></code> objects) are the ones you want.</p>
+</div>
+<section id="rest-frame-quantities">
+<h3>Rest-Frame Quantities<a class="headerlink" href="#rest-frame-quantities" title="Link to this heading">#</a></h3>
+<p>These describe the source itself, with no reference to how far away it is or what’s observing it.
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval.html#uvex_transients.models.core.base.SpectralModel.eval" title="uvex_transients.models.core.base.SpectralModel.eval"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval()</span></code></a> gives the spectral luminosity at any
+frequency and time; <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric" title="uvex_transients.models.core.base.SpectralModel.eval_bolometric"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval_bolometric()</span></code></a> (used
+above) integrates that over all frequency; and
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum" title="uvex_transients.models.core.base.SpectralModel.eval_spectrum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">eval_spectrum()</span></code></a> gives the normalized
+<em>shape</em> of the spectrum at fixed time, independent of overall brightness:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">wave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax_L</span><span class="p">,</span> <span class="n">ax_S</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">:</span>
+    <span class="n">L_nu</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">ax_L</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wave</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">),</span> <span class="n">L_nu</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"t = </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">ax_S</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wave</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">),</span> <span class="n">S</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"t = </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">ax_L</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">ax_L</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Wavelength [$\AA$]"</span><span class="p">)</span>
+<span class="n">ax_L</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$L_\nu$ [erg s$^{-1}$ Hz$^{-1}$]"</span><span class="p">)</span>
+<span class="n">ax_L</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Spectral luminosity"</span><span class="p">)</span>
+<span class="n">ax_L</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="n">ax_S</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Wavelength [$\AA$]"</span><span class="p">)</span>
+<span class="n">ax_S</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$S(\nu, t)$ [Hz$^{-1}$]"</span><span class="p">)</span>
+<span class="n">ax_S</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Normalized shape (integrates to 1 over $</span><span class="se">\\</span><span class="s2">nu$)"</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/d67164ef6337de3da9fb8f6032a56643/overview-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/8d99a38b5e054981fbd029717960d863/overview-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/6733145f972c3f4600442efcc15901e2/overview-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2ec2624ebbde872aad9d550130a07d5a/overview-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-2.png" class="plot-directive" src="../../_images/overview-2.png" />
+</figure>
+<p>Notice that <code class="docutils literal notranslate"><span class="pre">eval</span></code> and <code class="docutils literal notranslate"><span class="pre">eval_spectrum</span></code> differ only by an overall, time-dependent
+normalization: <code class="docutils literal notranslate"><span class="pre">eval_spectrum</span></code> is exactly <code class="docutils literal notranslate"><span class="pre">eval</span></code> divided by <code class="docutils literal notranslate"><span class="pre">eval_bolometric</span></code> at that same
+time, which is handy whenever you only care about color evolution and not absolute brightness.</p>
+</section>
+<section id="observed-flux">
+<h3>Observed Flux<a class="headerlink" href="#observed-flux" title="Link to this heading">#</a></h3>
+<p>As soon as you care about what a telescope would actually see, you need to place the source at a
+distance – and, for anything cosmological, account for the redshift stretching its spectrum.
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux.html#uvex_transients.models.core.base.SpectralModel.flux" title="uvex_transients.models.core.base.SpectralModel.flux"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux()</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric" title="uvex_transients.models.core.base.SpectralModel.flux_bolometric"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux_bolometric()</span></code></a> are the observed-frame
+analogs of <code class="docutils literal notranslate"><span class="pre">eval</span></code> and <code class="docutils literal notranslate"><span class="pre">eval_bolometric</span></code> above: pass a <code class="docutils literal notranslate"><span class="pre">redshift</span></code> (or a
+<code class="docutils literal notranslate"><span class="pre">luminosity_distance</span></code> directly, if you already have one) and the model takes care of the
+<span class="math notranslate nohighlight">\((1+z)\)</span> bandpass shift and inverse-square dilution for you:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+
+<span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">]:</span>
+    <span class="n">F_bol</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">flux_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">redshift</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">F_bol</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"z = </span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time since explosion [days]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$F_\mathrm</span><span class="si">{bol}</span><span class="s2">$ [erg s$^{-1}$ cm$^{-2}$]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Observed bolometric flux at three redshifts"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/4d6370949847355b59504192b7d2752f/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b73da95ee19ca39a6ff89897051931f6/overview-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/86bd9cee806dcc411fa7acb3b3340b23/overview-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/5e2e2839142e1dc77249b298f57184a6/overview-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-3.png" class="plot-directive" src="../../_images/overview-3.png" />
+</figure>
+<p><code class="docutils literal notranslate"><span class="pre">flux</span></code>, <code class="docutils literal notranslate"><span class="pre">flux_bolometric</span></code>, and every other observed-frame method below also accept a
+<code class="docutils literal notranslate"><span class="pre">log_attenuation</span></code> keyword for applying Milky Way foreground dust – see
+<a class="reference internal" href="../../_as_gen/uvex_transients.dust.html#module-uvex_transients.dust" title="uvex_transients.dust"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.dust</span></code></a> for how to compute that array for a given sky position.</p>
+</section>
+<section id="band-integrated-flux-and-magnitudes">
+<h3>Band-Integrated Flux and Magnitudes<a class="headerlink" href="#band-integrated-flux-and-magnitudes" title="Link to this heading">#</a></h3>
+<p>No real instrument observes at a single, infinitely narrow frequency – it integrates the
+spectrum over some bandpass. <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band.html#uvex_transients.models.core.base.SpectralModel.flux_band" title="uvex_transients.models.core.base.SpectralModel.flux_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux_band()</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band.html#uvex_transients.models.core.base.SpectralModel.mag_band" title="uvex_transients.models.core.base.SpectralModel.mag_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag_band()</span></code></a> do exactly that: give them a
+frequency grid and the (dimensionless) throughput at each point, and they return the
+throughput-weighted flux density, or its AB magnitude, over that band. Here we build a simple
+Gaussian bandpass by hand to stand in for a real UV filter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># A toy ~2250 A bandpass, standing in for a real UVEX filter.</span>
+<span class="n">lam0</span><span class="p">,</span> <span class="n">fwhm</span> <span class="o">=</span> <span class="mi">2250</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">,</span> <span class="mi">400</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span>
+<span class="n">wave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lam0</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">fwhm</span><span class="p">,</span> <span class="n">lam0</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">fwhm</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">throughput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">wave</span> <span class="o">-</span> <span class="n">lam0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fwhm</span> <span class="o">/</span> <span class="mf">2.3548</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+<span class="n">nu_grid</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">mag</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">mag_band</span><span class="p">(</span><span class="n">nu_grid</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">redshift</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">mag</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time since explosion [days]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"AB magnitude (band-averaged)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"A toy UV bandpass light curve, z = 0.01"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/c3dfaa9255c696df6ff65f8485b6cd4e/overview-4.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/624a184d9f7b56ba08af73ed2d07d84e/overview-4.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/9dbd912d7123931cd9c91e48d3b00b2e/overview-4.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/3f784345e14097399961e2ab23ef750e/overview-4.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-4.png" class="plot-directive" src="../../_images/overview-4.png" />
+</figure>
+<p>For a single, narrow frequency rather than an integrated band,
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag.html#uvex_transients.models.core.base.SpectralModel.mag" title="uvex_transients.models.core.base.SpectralModel.mag"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag()</span></code></a> is the more direct (and cheaper)
+choice – it’s the same calculation as <code class="docutils literal notranslate"><span class="pre">flux</span></code> above, just expressed as an AB magnitude instead
+of a flux density.</p>
+<p>If you’re working with a real instrument response rather than a hand-built throughput array,
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_bandpass.html#uvex_transients.models.core.base.SpectralModel.mag_bandpass" title="uvex_transients.models.core.base.SpectralModel.mag_bandpass"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag_bandpass()</span></code></a> takes a <code class="docutils literal notranslate"><span class="pre">synphot</span></code>
+<code class="docutils literal notranslate"><span class="pre">SpectralElement</span></code> directly (e.g. one of an <code class="docutils literal notranslate"><span class="pre">m4opt</span></code> <code class="docutils literal notranslate"><span class="pre">Detector</span></code>’s own bandpasses) and reads its
+frequency grid and throughput off of it for you, so you never have to build the arrays by hand.</p>
+</section>
+</section>
+<section id="sampling">
+<span id="user-guide-models-sampling"></span><h2>Sampling<a class="headerlink" href="#sampling" title="Link to this heading">#</a></h2>
+<p>So far every example has used one fixed set of parameter values. The real strength of a model,
+though, is that its parameters aren’t just numbers – each one carries a <strong>prior</strong>, so you can
+cheaply generate as many plausible realizations as you like, and see the <em>population</em> of light
+curves a model predicts rather than just one.</p>
+<section id="model-parameters-and-priors">
+<h3>Model Parameters and Priors<a class="headerlink" href="#model-parameters-and-priors" title="Link to this heading">#</a></h3>
+<p>A model behaves like a dictionary of its parameters, so you can inspect any one of them – or the
+prior it draws from – individually:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span>             <span class="c1"># the Parameter object for t_peak</span>
+<span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span><span class="o">.</span><span class="n">prior</span>       <span class="c1"># LogNormalPrior(mean=0.0, sigma=0.3)</span>
+<span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span><span class="o">.</span><span class="n">is_fixed</span>    <span class="c1"># False -- it's free by default</span>
+</pre></div>
+</div>
+<p>You can also pin a parameter to a constant, bypassing its prior entirely – handy for quick,
+deterministic checks such as “what does the light curve look like at exactly the literature
+value?”:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="mf">0.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+<span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span><span class="o">.</span><span class="n">is_fixed</span>    <span class="c1"># True</span>
+
+<span class="n">sed</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span><span class="o">.</span><span class="n">unfix</span><span class="p">()</span>     <span class="c1"># ...and release it again to go back to sampling from its prior</span>
+</pre></div>
+</div>
+</section>
+<section id="drawing-full-parameter-sets">
+<h3>Drawing Full Parameter Sets<a class="headerlink" href="#drawing-full-parameter-sets" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.sample_parameters.html#uvex_transients.models.core.base.SpectralModel.sample_parameters" title="uvex_transients.models.core.base.SpectralModel.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a> draws <code class="docutils literal notranslate"><span class="pre">size</span></code> random
+realizations of every parameter at once (or of just a subset, via <code class="docutils literal notranslate"><span class="pre">parameters=[...]</span></code>), returning
+a <code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">array}</span></code> dict ready to hand to <code class="docutils literal notranslate"><span class="pre">eval</span></code>, <code class="docutils literal notranslate"><span class="pre">flux</span></code>, <code class="docutils literal notranslate"><span class="pre">mag</span></code>, or any of the other methods
+above:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Every parameter, one realization each</span>
+<span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Every parameter, 1000 realizations each</span>
+<span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Just the two parameters you care about</span>
+<span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">,</span> <span class="s2">"T0"</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Passing the same <code class="docutils literal notranslate"><span class="pre">rng</span></code> (an integer seed, or a shared <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code></a>) makes the
+draw reproducible. Scaling that up to a full population of simulated light curves is exactly the
+pattern used throughout the rest of the package – and on each <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a> page’s light
+curve gallery:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span> <span class="k">as</span> <span class="n">SEDClass</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">20260910</span><span class="p">)</span>
+<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">200</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">SEDClass</span><span class="p">()</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="n">params_grid</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">L_bol</span> <span class="o">=</span> <span class="n">SEDClass</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">params_grid</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">L_bol</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Time since explosion [days]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$L_\mathrm</span><span class="si">{bol}</span><span class="s2">$ [erg s$^{-1}$]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2"> simulated kilonova light curves"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/f324bc65acb623d39aef72284d0e3f80/overview-5.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/4bd8fdfecc7decd0529c8edbe20c32cf/overview-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/287f2e6a7fa78215ff6102a5dfa66204/overview-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/059d8144fc3f86bc4ad6edff30350bb2/overview-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-5.png" class="plot-directive" src="../../_images/overview-5.png" />
+</figure>
+<p>The <code class="docutils literal notranslate"><span class="pre">[:,</span> <span class="pre">None]</span></code> reshape gives each parameter a leading “sample” axis, so it broadcasts against
+the shared <code class="docutils literal notranslate"><span class="pre">t</span></code> grid and produces one light curve per row.</p>
+</section>
+<section id="sampling-and-evaluating-in-one-step">
+<h3>Sampling and Evaluating in One Step<a class="headerlink" href="#sampling-and-evaluating-in-one-step" title="Link to this heading">#</a></h3>
+<p>When you just want a batch of realizations at one particular <code class="docutils literal notranslate"><span class="pre">(nu,</span> <span class="pre">t)</span></code> point – rather than a
+full light curve for each – <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate.html#uvex_transients.models.core.base.SpectralModel.simulate" title="uvex_transients.models.core.base.SpectralModel.simulate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate()</span></code></a> does
+the sampling and evaluation together in a single call: <code class="docutils literal notranslate"><span class="pre">sed.simulate(nu,</span> <span class="pre">t,</span> <span class="pre">size=N)</span></code> is exactly
+<code class="docutils literal notranslate"><span class="pre">sed.eval(nu,</span> <span class="pre">t,</span> <span class="pre">**sed.sample_parameters(size=N))</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.kilonovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">KilonovaCoolingBlackbodySED</span>
+
+<span class="n">sed</span> <span class="o">=</span> <span class="n">KilonovaCoolingBlackbodySED</span><span class="p">()</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2000</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+
+<span class="n">L</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">)),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$\log_</span><span class="si">{10}</span><span class="s2"> L_\nu$ [erg s$^{-1}$ Hz$^{-1}$] at t = 0.6 d"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Realizations"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Spread in peak-time UV luminosity across 2000 draws"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/c7f0cac37361c5ab42f56ecbc98d0ddf/overview-6.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/65bcf89c65d8723e9fce049d5dc4b467/overview-6.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/60d565eff8e344abb4b75735cd7e79fc/overview-6.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/5176b95d0e9d266eb9db5b024822d754/overview-6.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-6.png" class="plot-directive" src="../../_images/overview-6.png" />
+</figure>
+<p>Everything on this page assumed you were working with a model that already exists. To write one
+of your own, see <a class="reference internal" href="custom_models.html#user-guide-models-custom-models"><span class="std std-ref">Writing a Custom Model</span></a>.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../../user_guide.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">User Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="custom_models.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Writing a Custom Model</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started-with-models">Getting Started with Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computing-observational-properties">Computing Observational Properties</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rest-frame-quantities">Rest-Frame Quantities</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observed-flux">Observed Flux</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#band-integrated-flux-and-magnitudes">Band-Integrated Flux and Magnitudes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling">Sampling</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-parameters-and-priors">Model Parameters and Priors</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drawing-full-parameter-sets">Drawing Full Parameter Sets</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling-and-evaluating-in-one-step">Sampling and Evaluating in One Step</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user_guide/models/overview.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

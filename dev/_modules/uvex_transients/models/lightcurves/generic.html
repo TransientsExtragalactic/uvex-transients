@@ -1,0 +1,1852 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.lightcurves.generic &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=fd6457a4" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/lightcurves/generic';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.lightcurves.generic</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.lightcurves.generic</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Generic, reusable `~uvex_transients.models.core.Lightcurve` shapes."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lightcurve</span><span class="p">,</span> <span class="n">LogNormalPrior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">Parameter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_BOL_LUM_UNIT</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"BazinLightcurve"</span><span class="p">,</span>
+    <span class="s2">"BrokenPowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"DelayedExponentialLightcurve"</span><span class="p">,</span>
+    <span class="s2">"FREDLightcurve"</span><span class="p">,</span>
+    <span class="s2">"GREDLightcurve"</span><span class="p">,</span>
+    <span class="s2">"GaussianPulseLightcurve"</span><span class="p">,</span>
+    <span class="s2">"GaussianRiseBrokenPowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"GaussianRisePowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"LogNormalPulseLightcurve"</span><span class="p">,</span>
+    <span class="s2">"PlateauPowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"PowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"SmoothBrokenPowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"TopHatLightcurve"</span><span class="p">,</span>
+    <span class="s2">"VillarLightcurve"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="TopHatLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.TopHatLightcurve.html#uvex_transients.models.lightcurves.generic.TopHatLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TopHatLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A constant luminosity for a fixed duration, zero before and after.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \begin{cases} A &amp; 0 \le t \le \Delta t \\ 0 &amp; t &gt; \Delta t \end{cases}</span>
+
+<span class="sd">    The simplest possible pulse shape: a plateau at the peak amplitude :math:`A` for a</span>
+<span class="sd">    duration :math:`\Delta t`, with an instantaneous rise and cutoff.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Plateau bolometric luminosity.</span>
+<span class="sd">       * - ``duration``</span>
+<span class="sd">         - :math:`\Delta t`</span>
+<span class="sd">         - Duration of the plateau.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"duration"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Duration of the plateau."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\Delta t"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t</span> <span class="o">&lt;=</span> <span class="n">duration</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GaussianPulseLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.GaussianPulseLightcurve.html#uvex_transients.models.lightcurves.generic.GaussianPulseLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianPulseLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A Gaussian pulse in luminosity, peaked at ``t_peak``.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = A \exp\left(-\frac{(t - t_\mathrm{peak})^2}{2\sigma^2}\right)</span>
+
+<span class="sd">    :math:`L(t_\mathrm{peak}) = A` exactly, by construction.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity since explosion.</span>
+<span class="sd">       * - ``sigma``</span>
+<span class="sd">         - :math:`\sigma`</span>
+<span class="sd">         - Gaussian width of the pulse.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity since explosion."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"sigma"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Gaussian width of the pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\sigma"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span><span class="p">,</span> <span class="n">t_peak</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">],</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">],</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+
+<div class="viewcode-block" id="FREDLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.FREDLightcurve.html#uvex_transients.models.lightcurves.generic.FREDLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FREDLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A fast-rise, exponential-decay pulse (the Norris et al. 1996 GRB pulse shape).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = A \exp\left(2\sqrt{\tau_1/\tau_2} - \frac{\tau_1}{t} - \frac{t}{\tau_2}\right), \quad t &gt; 0</span>
+
+<span class="sd">    with :math:`L(0) = 0`. Despite the apparent singularity at :math:`\tau_1/t`, this is</span>
+<span class="sd">    well-behaved: as :math:`t \to 0^+`, the :math:`-\tau_1/t` term dominates and drives</span>
+<span class="sd">    :math:`L \to 0`. The pulse peaks exactly at :math:`t_\mathrm{peak} = \sqrt{\tau_1 \tau_2}`,</span>
+<span class="sd">    where :math:`L(t_\mathrm{peak}) = A`; :math:`\tau_1 \ll \tau_2` gives the characteristic</span>
+<span class="sd">    fast rise / slow, exponential-looking decay.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``rise``</span>
+<span class="sd">         - :math:`\tau_1`</span>
+<span class="sd">         - Rise timescale tau_1.</span>
+<span class="sd">       * - ``decay``</span>
+<span class="sd">         - :math:`\tau_2`</span>
+<span class="sd">         - Decay timescale tau_2.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Rise timescale tau_1."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_1"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decay"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Decay timescale tau_2."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_2"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span><span class="p">,</span> <span class="n">rise</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">],</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise"</span><span class="p">],</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">"decay"</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># `t` includes `t = 0` by convention (see `Lightcurve`'s class docstring), which</span>
+        <span class="c1"># divides by zero here. That's the correct limit, not an error -- `rise / t -&gt; inf`</span>
+        <span class="c1"># drives the exponent to `-inf` and `L -&gt; 0` -- so the warning is suppressed rather</span>
+        <span class="c1"># than worked around.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rise</span> <span class="o">/</span> <span class="n">decay</span><span class="p">)</span> <span class="o">-</span> <span class="n">rise</span> <span class="o">/</span> <span class="n">t</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="n">decay</span></div>
+
+
+
+<div class="viewcode-block" id="GREDLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.GREDLightcurve.html#uvex_transients.models.lightcurves.generic.GREDLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GREDLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A Gaussian rise followed by an exponential decline, peaked at ``t_peak``.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = A \times \begin{cases}</span>
+<span class="sd">            \exp\left(-\dfrac{(t - t_\mathrm{peak})^2}{2\sigma_\mathrm{rise}^2}\right)</span>
+<span class="sd">                &amp; t \le t_\mathrm{peak} \\[4pt]</span>
+<span class="sd">            \exp\left(-\dfrac{t - t_\mathrm{peak}}{\tau_\mathrm{decline}}\right)</span>
+<span class="sd">                &amp; t &gt; t_\mathrm{peak}</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    The two pieces agree at :math:`t = t_\mathrm{peak}`, where :math:`L(t_\mathrm{peak}) = A`</span>
+<span class="sd">    exactly, by construction. ``t_peak`` is not itself a free parameter --</span>
+<span class="sd">    it is fixed at :math:`t_\mathrm{peak} = 5\sigma_\mathrm{rise}`, five</span>
+<span class="sd">    Gaussian widths after explosion.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``sigma_rise``</span>
+<span class="sd">         - :math:`\sigma_\mathrm{rise}`</span>
+<span class="sd">         - Gaussian width of the rise.</span>
+<span class="sd">       * - ``tau_decline``</span>
+<span class="sd">         - :math:`\tau_\mathrm{decline}`</span>
+<span class="sd">         - Exponential decline timescale.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"sigma_rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Gaussian width of the rise."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\sigma_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_decline"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{decline}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">sigma_rise</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"sigma_rise"</span><span class="p">]</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma_rise</span>
+        <span class="n">tau_decline</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"tau_decline"</span><span class="p">]</span>
+
+        <span class="n">is_rising</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_peak</span>
+        <span class="n">log_rise</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_rise</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">log_decline</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">tau_decline</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_rising</span><span class="p">,</span> <span class="n">log_rise</span><span class="p">,</span> <span class="n">log_decline</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GaussianRisePowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.GaussianRisePowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.GaussianRisePowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianRisePowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A Gaussian rise followed by a power-law decline, peaked at ``t_peak``.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = A \times \begin{cases}</span>
+<span class="sd">            \exp\left(-\dfrac{(t - t_\mathrm{peak})^2}{2\sigma_\mathrm{rise}^2}\right)</span>
+<span class="sd">                &amp; t \le t_\mathrm{peak} \\[4pt]</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{peak}}\right)^{-\alpha_\mathrm{decline}}</span>
+<span class="sd">                &amp; t &gt; t_\mathrm{peak}</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    The two branches agree exactly at :math:`t = t_\mathrm{peak}`, where</span>
+<span class="sd">    :math:`L(t_\mathrm{peak}) = A` -- the power-law branch is referenced to</span>
+<span class="sd">    :math:`t_\mathrm{peak}` rather than :math:`t = 0` for exactly this</span>
+<span class="sd">    reason. Unlike `GREDLightcurve`'s exponential cutoff, the power-law tail</span>
+<span class="sd">    here (:math:`L \propto t^{-\alpha_\mathrm{decline}}` for :math:`t \gg</span>
+<span class="sd">    t_\mathrm{peak}`) fades slowly at late times -- the qualitative</span>
+<span class="sd">    late-time behavior of transients with an extended power source (e.g.</span>
+<span class="sd">    luminous fast blue optical transients) rather than a sharply cut-off</span>
+<span class="sd">    pulse.</span>
+
+<span class="sd">    ``sigma_rise`` is not itself a free parameter -- it is fixed at</span>
+<span class="sd">    :math:`\sigma_\mathrm{rise} = t_\mathrm{peak}/5`, one fifth of the time</span>
+<span class="sd">    to peak, the same ratio `GREDLightcurve` fixes between the two</span>
+<span class="sd">    quantities.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity since explosion.</span>
+<span class="sd">       * - ``decline_index``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{decline}`</span>
+<span class="sd">         - Positive post-peak power-law decline index.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity since explosion."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive post-peak power-law decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{decline}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Narrowing `**parameters` to this model's own named parameters (rather</span>
+    <span class="c1"># than matching the base class's generic `**parameters` exactly) is the</span>
+    <span class="c1"># intended pattern for every `_eval` override -- see `Lightcurve._eval`.</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">t_peak</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">decline_index</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">sigma_rise</span> <span class="o">=</span> <span class="n">t_peak</span> <span class="o">/</span> <span class="mi">5</span>
+        <span class="n">log_rise</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_rise</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># `t_peak` is strictly positive (its prior's support excludes 0), so</span>
+        <span class="c1"># `t = 0` always falls on the rising branch -- the `log(0) = -inf`</span>
+        <span class="c1"># this produces on the discarded decline branch is a harmless</span>
+        <span class="c1"># masked-out value, not an error, exactly as in `FREDLightcurve._eval`.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_decline</span> <span class="o">=</span> <span class="o">-</span><span class="n">decline_index</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_peak</span><span class="p">,</span> <span class="n">log_rise</span><span class="p">,</span> <span class="n">log_decline</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GaussianRiseBrokenPowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.GaussianRiseBrokenPowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.GaussianRiseBrokenPowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GaussianRiseBrokenPowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A Gaussian rise followed by a broken power-law decline, peaked at ``t_peak``.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = A \times \begin{cases}</span>
+<span class="sd">            \exp\left(-\dfrac{(t - t_\mathrm{peak})^2}{2\sigma_\mathrm{rise}^2}\right)</span>
+<span class="sd">                &amp; t \le t_\mathrm{peak} \\[4pt]</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{peak}}\right)^{-\alpha_1}</span>
+<span class="sd">                &amp; t_\mathrm{peak} &lt; t \le t_\mathrm{break} \\[4pt]</span>
+<span class="sd">            \left(\dfrac{t_\mathrm{break}}{t_\mathrm{peak}}\right)^{-\alpha_1}</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{break}}\right)^{-\alpha_2}</span>
+<span class="sd">                &amp; t &gt; t_\mathrm{break}</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    Extends `GaussianRisePowerLawLightcurve` with a second, steeper power-law</span>
+<span class="sd">    segment past a break time ``t_break``. Every branch agrees exactly at its</span>
+<span class="sd">    boundary, by construction: :math:`L(t_\mathrm{peak}) = A`, and the two</span>
+<span class="sd">    decline branches meet at :math:`t_\mathrm{break}` without a jump. Useful</span>
+<span class="sd">    for transients whose late-time decline steepens relative to the</span>
+<span class="sd">    early-time behavior -- e.g. a kilonova's blue/early ejecta component</span>
+<span class="sd">    fading faster once it becomes optically thin.</span>
+
+<span class="sd">    ``t_break`` is assumed to exceed ``t_peak``, although this ordering is</span>
+<span class="sd">    not enforced by the model itself.</span>
+
+<span class="sd">    ``sigma_rise`` is not itself a free parameter -- it is fixed at</span>
+<span class="sd">    :math:`\sigma_\mathrm{rise} = t_\mathrm{peak}/5`, one fifth of the time</span>
+<span class="sd">    to peak, the same ratio `GREDLightcurve` fixes between the two</span>
+<span class="sd">    quantities.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity since explosion.</span>
+<span class="sd">       * - ``decline_index_1``</span>
+<span class="sd">         - :math:`\alpha_1`</span>
+<span class="sd">         - Positive power-law decline index between ``t_peak`` and ``t_break``.</span>
+<span class="sd">       * - ``decline_index_2``</span>
+<span class="sd">         - :math:`\alpha_2`</span>
+<span class="sd">         - Positive power-law decline index past ``t_break``.</span>
+<span class="sd">       * - ``t_break``</span>
+<span class="sd">         - :math:`t_\mathrm{break}`</span>
+<span class="sd">         - Time at which the decline steepens from :math:`\alpha_1` to :math:`\alpha_2`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity since explosion."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive power-law decline index between t_peak and t_break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_1"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index_2"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive power-law decline index past t_break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_2"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_break"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time at which the decline steepens from decline_index_1 to decline_index_2."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Narrowing `**parameters` to this model's own named parameters (rather</span>
+    <span class="c1"># than matching the base class's generic `**parameters` exactly) is the</span>
+    <span class="c1"># intended pattern for every `_eval` override -- see `Lightcurve._eval`.</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">t_peak</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">decline_index_1</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">decline_index_2</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">t_break</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">sigma_rise</span> <span class="o">=</span> <span class="n">t_peak</span> <span class="o">/</span> <span class="mi">5</span>
+        <span class="n">log_rise</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_rise</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># `t_peak`/`t_break` are strictly positive (their priors' support</span>
+        <span class="c1"># excludes 0), so `t = 0` always falls on the rising branch -- the</span>
+        <span class="c1"># `log(0) = -inf` this produces on the discarded decline branches is</span>
+        <span class="c1"># a harmless masked-out value, not an error, exactly as in</span>
+        <span class="c1"># `GaussianRisePowerLawLightcurve._eval`.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_decline_early</span> <span class="o">=</span> <span class="o">-</span><span class="n">decline_index_1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span>
+            <span class="n">log_break_offset</span> <span class="o">=</span> <span class="o">-</span><span class="n">decline_index_1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t_break</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span>
+            <span class="n">log_decline_late</span> <span class="o">=</span> <span class="n">log_break_offset</span> <span class="o">-</span> <span class="n">decline_index_2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_break</span><span class="p">)</span>
+
+        <span class="n">log_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_peak</span><span class="p">,</span>
+            <span class="n">log_rise</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_break</span><span class="p">,</span> <span class="n">log_decline_early</span><span class="p">,</span> <span class="n">log_decline_late</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span></div>
+
+
+
+<div class="viewcode-block" id="BazinLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.BazinLightcurve.html#uvex_transients.models.lightcurves.generic.BazinLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BazinLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A smooth asymmetric transient following the Bazin functional form.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A\,</span>
+<span class="sd">        \frac{</span>
+<span class="sd">            \exp[-(t-t_0)/\tau_\mathrm{fall}]</span>
+<span class="sd">        }{</span>
+<span class="sd">            1 + \exp[-(t-t_0)/\tau_\mathrm{rise}]</span>
+<span class="sd">        }.</span>
+
+<span class="sd">    The model combines a logistic-like rise with an exponential decline and is</span>
+<span class="sd">    commonly useful as a generic phenomenological approximation to supernova-like</span>
+<span class="sd">    transients.</span>
+
+<span class="sd">    A finite maximum exists when</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \tau_\mathrm{fall} &gt; \tau_\mathrm{rise}.</span>
+
+<span class="sd">    Unlike most of the other pulse models in this module, ``amplitude`` is the</span>
+<span class="sd">    normalization of the Bazin function and is not, in general, exactly the peak</span>
+<span class="sd">    luminosity.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Luminosity normalization.</span>
+<span class="sd">       * - ``t0``</span>
+<span class="sd">         - :math:`t_0`</span>
+<span class="sd">         - Characteristic transition time.</span>
+<span class="sd">       * - ``rise``</span>
+<span class="sd">         - :math:`\tau_\mathrm{rise}`</span>
+<span class="sd">         - Logistic rise timescale.</span>
+<span class="sd">       * - ``fall``</span>
+<span class="sd">         - :math:`\tau_\mathrm{fall}`</span>
+<span class="sd">         - Exponential decline timescale.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity normalization."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Characteristic transition time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"fall"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">30.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{fall}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span>
+        <span class="n">rise</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise"</span><span class="p">]</span>
+        <span class="n">fall</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"fall"</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">t0</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="n">x</span> <span class="o">/</span> <span class="n">fall</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="n">rise</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="PowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.PowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.PowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A power-law decline beginning at a reference time.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            0, &amp; t &lt; t_\mathrm{ref}, \\[4pt]</span>
+<span class="sd">            A \left(\dfrac{t}{t_\mathrm{ref}}\right)^{-\alpha},</span>
+<span class="sd">            &amp; t \ge t_\mathrm{ref}.</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    The luminosity is therefore exactly :math:`A` at ``t_ref``. This form is</span>
+<span class="sd">    useful for generic afterglows and other transients whose post-onset emission</span>
+<span class="sd">    is approximately scale free.</span>
+
+<span class="sd">    Restricting the model to ``t &gt;= t_ref`` avoids the formal divergence of a</span>
+<span class="sd">    declining power law as :math:`t \rightarrow 0`.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Luminosity at the reference time.</span>
+<span class="sd">       * - ``t_ref``</span>
+<span class="sd">         - :math:`t_\mathrm{ref}`</span>
+<span class="sd">         - Reference time at which the power law begins.</span>
+<span class="sd">       * - ``index``</span>
+<span class="sd">         - :math:`\alpha`</span>
+<span class="sd">         - Positive power-law decline index.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity at the reference time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_ref"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Reference time at which the power law begins."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{ref}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive power-law decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_ref</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_ref"</span><span class="p">]</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"index"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_luminosity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="n">index</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_ref</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">t_ref</span><span class="p">,</span> <span class="n">log_luminosity</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="BrokenPowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.BrokenPowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.BrokenPowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BrokenPowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A sharply broken power-law transient with a rise and decline.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{peak}}\right)^{\alpha_\mathrm{rise}},</span>
+<span class="sd">                &amp; 0 &lt; t \le t_\mathrm{peak}, \\[6pt]</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{peak}}\right)^{-\alpha_\mathrm{decline}},</span>
+<span class="sd">                &amp; t &gt; t_\mathrm{peak}.</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    Both indices are defined to be positive. The two branches meet exactly at</span>
+<span class="sd">    ``t_peak``, where :math:`L(t_\mathrm{peak}) = A`. For positive rise index,</span>
+<span class="sd">    the luminosity tends continuously to zero as :math:`t \rightarrow 0`.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of the power-law break and peak.</span>
+<span class="sd">       * - ``rise_index``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{rise}`</span>
+<span class="sd">         - Positive pre-peak power-law index.</span>
+<span class="sd">       * - ``decline_index``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{decline}`</span>
+<span class="sd">         - Positive post-peak power-law decline index.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of the power-law break and peak."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive pre-peak power-law index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive post-peak power-law decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{decline}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span>
+        <span class="n">rise_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise_index"</span><span class="p">]</span>
+        <span class="n">decline_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"decline_index"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span>
+
+        <span class="n">log_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_peak</span><span class="p">,</span>
+            <span class="n">rise_index</span> <span class="o">*</span> <span class="n">log_time</span><span class="p">,</span>
+            <span class="o">-</span><span class="n">decline_index</span> <span class="o">*</span> <span class="n">log_time</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span></div>
+
+
+
+<div class="viewcode-block" id="SmoothBrokenPowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.SmoothBrokenPowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.SmoothBrokenPowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SmoothBrokenPowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A smoothly broken power-law transient.</span>
+
+<span class="sd">    The asymptotic behavior is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) \propto</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            t^{\alpha_\mathrm{rise}}, &amp; t \ll t_\mathrm{peak}, \\</span>
+<span class="sd">            t^{-\alpha_\mathrm{decline}}, &amp; t \gg t_\mathrm{peak},</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    with a smooth transition between the two branches. The implementation uses</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        f(x) =</span>
+<span class="sd">        \left[</span>
+<span class="sd">            x^{-s\alpha_\mathrm{rise}}</span>
+<span class="sd">            +</span>
+<span class="sd">            x^{s\alpha_\mathrm{decline}}</span>
+<span class="sd">        \right]^{-1/s},</span>
+
+<span class="sd">    but rescales the argument and normalization so that the maximum occurs</span>
+<span class="sd">    exactly at ``t_peak`` and</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t_\mathrm{peak}) = A.</span>
+
+<span class="sd">    The positive ``smoothness`` parameter :math:`s` controls the sharpness of</span>
+<span class="sd">    the transition: larger values approach a sharply broken power law.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity.</span>
+<span class="sd">       * - ``rise_index``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{rise}`</span>
+<span class="sd">         - Positive asymptotic rise index.</span>
+<span class="sd">       * - ``decline_index``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{decline}`</span>
+<span class="sd">         - Positive asymptotic decline index.</span>
+<span class="sd">       * - ``smoothness``</span>
+<span class="sd">         - :math:`s`</span>
+<span class="sd">         - Sharpness of the transition between power-law branches.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive asymptotic rise index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive asymptotic decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{decline}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"smoothness"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the transition between power-law branches."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span>
+        <span class="n">rise_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise_index"</span><span class="p">]</span>
+        <span class="n">decline_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"decline_index"</span><span class="p">]</span>
+        <span class="n">smoothness</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"smoothness"</span><span class="p">]</span>
+
+        <span class="c1"># For</span>
+        <span class="c1">#</span>
+        <span class="c1">#   f(y) = [y^(-s a) + y^(s b)]^(-1/s),</span>
+        <span class="c1">#</span>
+        <span class="c1"># the maximum occurs at</span>
+        <span class="c1">#</span>
+        <span class="c1">#   y_peak = (a / b)^[1 / (s(a+b))].</span>
+        <span class="c1">#</span>
+        <span class="c1"># Scale y so that t=t_peak corresponds exactly to y=y_peak.</span>
+        <span class="n">log_y_peak</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rise_index</span> <span class="o">/</span> <span class="n">decline_index</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">smoothness</span> <span class="o">*</span> <span class="p">(</span><span class="n">rise_index</span> <span class="o">+</span> <span class="n">decline_index</span><span class="p">))</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_y_peak</span>
+
+        <span class="n">log_shape</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">smoothness</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">smoothness</span> <span class="o">*</span> <span class="n">rise_index</span> <span class="o">*</span> <span class="n">log_y</span><span class="p">,</span>
+            <span class="n">smoothness</span> <span class="o">*</span> <span class="n">decline_index</span> <span class="o">*</span> <span class="n">log_y</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">log_shape_peak</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">smoothness</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="o">-</span><span class="n">smoothness</span> <span class="o">*</span> <span class="n">rise_index</span> <span class="o">*</span> <span class="n">log_y_peak</span><span class="p">,</span>
+            <span class="n">smoothness</span> <span class="o">*</span> <span class="n">decline_index</span> <span class="o">*</span> <span class="n">log_y_peak</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span> <span class="o">-</span> <span class="n">log_shape_peak</span></div>
+
+
+
+<div class="viewcode-block" id="DelayedExponentialLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.DelayedExponentialLightcurve.html#uvex_transients.models.lightcurves.generic.DelayedExponentialLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DelayedExponentialLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A polynomial rise followed by an exponential decline.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A</span>
+<span class="sd">        \left(\frac{t}{t_\mathrm{peak}}\right)^\alpha</span>
+<span class="sd">        \exp\left[</span>
+<span class="sd">            \alpha\left(1-\frac{t}{t_\mathrm{peak}}\right)</span>
+<span class="sd">        \right],</span>
+<span class="sd">        \qquad t &gt; 0.</span>
+
+<span class="sd">    This is a gamma-like transient pulse. The chosen parameterization makes</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t_\mathrm{peak}) = A</span>
+
+<span class="sd">    exactly, while :math:`L \rightarrow 0` as :math:`t \rightarrow 0^+` and</span>
+<span class="sd">    the late-time emission declines exponentially.</span>
+
+<span class="sd">    The positive shape parameter :math:`\alpha` controls both the steepness of</span>
+<span class="sd">    the rise and the relation between the peak time and exponential timescale.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity.</span>
+<span class="sd">       * - ``shape``</span>
+<span class="sd">         - :math:`\alpha`</span>
+<span class="sd">         - Positive dimensionless pulse-shape parameter.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"shape"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive dimensionless pulse-shape parameter."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"shape"</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">shape</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">shape</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="LogNormalPulseLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.LogNormalPulseLightcurve.html#uvex_transients.models.lightcurves.generic.LogNormalPulseLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LogNormalPulseLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A log-normal pulse in time.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A</span>
+<span class="sd">        \exp\left[</span>
+<span class="sd">            -\frac{1}{2}</span>
+<span class="sd">            \left(</span>
+<span class="sd">                \frac{\ln(t/t_\mathrm{peak})}{\sigma}</span>
+<span class="sd">            \right)^2</span>
+<span class="sd">        \right],</span>
+<span class="sd">        \qquad t &gt; 0.</span>
+
+<span class="sd">    The pulse peaks exactly at ``t_peak`` with</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t_\mathrm{peak}) = A.</span>
+
+<span class="sd">    Unlike a Gaussian pulse in linear time, a log-normal pulse is intrinsically</span>
+<span class="sd">    asymmetric and has support only at positive times. The dimensionless width</span>
+<span class="sd">    ``sigma`` controls the width in logarithmic time.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_peak``</span>
+<span class="sd">         - :math:`t_\mathrm{peak}`</span>
+<span class="sd">         - Time of peak luminosity.</span>
+<span class="sd">       * - ``sigma``</span>
+<span class="sd">         - :math:`\sigma`</span>
+<span class="sd">         - Width of the pulse in logarithmic time.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_peak"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of peak luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{peak}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"sigma"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Width of the pulse in logarithmic time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\sigma"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_peak"</span><span class="p">]</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_time</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+
+<div class="viewcode-block" id="PlateauPowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.PlateauPowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.PlateauPowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlateauPowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A constant plateau followed by a power-law decline.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            1, &amp; 0 \le t \le t_\mathrm{break}, \\[4pt]</span>
+<span class="sd">            \left(\dfrac{t}{t_\mathrm{break}}\right)^{-\alpha},</span>
+<span class="sd">                &amp; t &gt; t_\mathrm{break}.</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    This provides a minimal phenomenological description of a transient with a</span>
+<span class="sd">    sustained plateau followed by scale-free fading, such as some GRB afterglow</span>
+<span class="sd">    and engine-powered transient light curves.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Plateau bolometric luminosity.</span>
+<span class="sd">       * - ``t_break``</span>
+<span class="sd">         - :math:`t_\mathrm{break}`</span>
+<span class="sd">         - Time at which the plateau transitions to a power-law decline.</span>
+<span class="sd">       * - ``index``</span>
+<span class="sd">         - :math:`\alpha`</span>
+<span class="sd">         - Positive post-plateau power-law decline index.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_break"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time at which the plateau transitions to a power-law decline."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Positive post-plateau power-law decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_break</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_break"</span><span class="p">]</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"index"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_decline</span> <span class="o">=</span> <span class="o">-</span><span class="n">index</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">t_break</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">t_break</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">log_decline</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="VillarLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.VillarLightcurve.html#uvex_transients.models.lightcurves.generic.VillarLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VillarLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A parametric supernova-like light curve.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A \times</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            \dfrac{1 + \beta(t - t_0)}{1 + \exp[-(t-t_0)/\tau_\mathrm{rise}]},</span>
+<span class="sd">                &amp; t &lt; t_1, \\[8pt]</span>
+<span class="sd">            \dfrac{(1 + \beta\gamma)\,</span>
+<span class="sd">                \exp[-(t-t_1)/\tau_\mathrm{fall}]}{1 + \exp[-(t-t_0)/\tau_\mathrm{rise}]},</span>
+<span class="sd">                &amp; t \ge t_1,</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    with :math:`t_1 = t_0 + \gamma`. A logistic rise (timescale</span>
+<span class="sd">    :math:`\tau_\mathrm{rise}`) turns on around :math:`t_0`; the light curve</span>
+<span class="sd">    then declines linearly with slope :math:`\beta` (a plateau, for small</span>
+<span class="sd">    :math:`|\beta|`) until :math:`t_1`, after which it switches to an</span>
+<span class="sd">    exponential decline with timescale :math:`\tau_\mathrm{fall}`. The two</span>
+<span class="sd">    branches agree exactly at :math:`t_1`, by construction.</span>
+
+<span class="sd">    This is the parametric form used by :footcite:t:`2019ApJ...884...83V` to</span>
+<span class="sd">    fit multi-band supernova photometry, adapted here to a bolometric</span>
+<span class="sd">    luminosity rather than a per-band flux.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Overall luminosity normalization.</span>
+<span class="sd">       * - ``t0``</span>
+<span class="sd">         - :math:`t_0`</span>
+<span class="sd">         - Reference time at which the logistic rise is centered.</span>
+<span class="sd">       * - ``gamma``</span>
+<span class="sd">         - :math:`\gamma`</span>
+<span class="sd">         - Duration of the plateau, measured from t0.</span>
+<span class="sd">       * - ``beta``</span>
+<span class="sd">         - :math:`\beta`</span>
+<span class="sd">         - Linear slope of the plateau.</span>
+<span class="sd">       * - ``tau_rise``</span>
+<span class="sd">         - :math:`\tau_\mathrm{rise}`</span>
+<span class="sd">         - Logistic rise timescale.</span>
+<span class="sd">       * - ``tau_fall``</span>
+<span class="sd">         - :math:`\tau_\mathrm{fall}`</span>
+<span class="sd">         - Exponential decline timescale, after the plateau.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    uvex_transients.models.supernovae.VillarCoolingBlackbodySED</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Overall luminosity normalization."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Reference time at which the logistic rise is centered."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"gamma"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Duration of the plateau, measured from t0."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\gamma"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e-2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Linear slope of the plateau."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_fall"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">30.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale, after the plateau."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{fall}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Narrowing `**parameters` to this model's own named parameters (rather</span>
+    <span class="c1"># than matching the base class's generic `**parameters` exactly) is the</span>
+    <span class="c1"># intended pattern for every `_eval` override -- see `Lightcurve._eval`.</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">amplitude</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">t0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">beta</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">tau_rise</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">tau_fall</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">t0</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">+</span> <span class="n">gamma</span>
+        <span class="n">is_rise</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">t1</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">is_rise</span><span class="p">,</span>
+                <span class="mf">1.0</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span>
+                <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span> <span class="o">/</span> <span class="n">tau_fall</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">log_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">linear</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="n">tau_rise</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
