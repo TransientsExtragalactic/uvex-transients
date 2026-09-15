@@ -134,7 +134,7 @@ jobs:
           # Root redirect (only on main or tag)
           if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == refs/tags/* ]]; then
 
-            LATEST=$(ls -d v* 2>/dev/null | sort -Vr | head -n 1)
+            LATEST=$(ls -d v*/ 2>/dev/null | sed 's:/*$::' | sort -Vr | head -n 1)
 
             if [ -n "$LATEST" ]; then
               TARGET="$BASE_URL/$LATEST/"
@@ -161,5 +161,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add versions.json index.html || true
-          git diff --quiet && echo "No changes" || git commit -m "Update versions.json and redirect"
+          git diff --cached --quiet && echo "No changes" || git commit -m "Update versions.json and redirect"
           git push
