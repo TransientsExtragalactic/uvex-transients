@@ -56,6 +56,18 @@ Representation and validation of survey schedules.
 
     uvex_transients.surveys
 
+Command-Line Interface
+-----------------------
+The ``uvex-transients`` console script: a YAML-driven wrapper around
+:mod:`uvex_transients.simulation`.
+
+.. autosummary::
+    :toctree: _as_gen
+    :recursive:
+    :template: module.rst
+
+    uvex_transients.cli
+
 Utilities
 ---------
 

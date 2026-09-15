@@ -32,10 +32,7 @@ Quick Facts
    * - Redshift limit
      - :math:`z = 0.2`
      - --
-     - Luminosity argument: a source with bolometric luminosity below
-       :math:`10^{43}\,\mathrm{erg/s}` (already well above any reported kilonova) stays above a
-       conservative UVEX limit of :math:`m<27` out to :math:`z=2` (no K-correction, flat spectrum
-       assumed).
+     - See observability summary below.
    * - Duration
      - 30 days
      - --

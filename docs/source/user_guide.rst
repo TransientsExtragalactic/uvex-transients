@@ -8,11 +8,11 @@
 User Guide
 ==================
 
-Welcome to the **UVEX Transients User Guide** -- a tutorial-style tour of the library, layer by layer.
+Welcome to the **UVEX Transients User Guide**, a tutorial-style tour of the library, layer by layer.
 For exhaustive per-class and per-function detail, see the :ref:`api` instead.
 
 The package is organized into four independent layers, plus utility modules such as :mod:`~uvex_transients.dust`
-and :mod:`~uvex_transients.utils`.
+and :mod:`~uvex_transients.utils`, and a command-line interface that ties all four layers together.
 
 .. grid:: 1 2 2 2
    :gutter: 3
@@ -85,3 +85,20 @@ and :mod:`~uvex_transients.utils`.
          :maxdepth: 1
 
          user_guide/simulation/overview
+
+   .. grid-item-card:: Command-Line Interface
+      :class-card: sd-shadow-sm sd-border-1 guide-card
+
+      .. container:: card-intro
+
+         *Module:* :mod:`~uvex_transients.cli`
+
+         Drives the layers above from a single YAML run-config and the ``uvex-transients``
+         console script, no Python required.
+
+      +++
+
+      .. toctree::
+         :maxdepth: 1
+
+         user_guide/cli/overview

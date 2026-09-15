@@ -33,6 +33,18 @@ git clone https://github.com/TransientsExtragalactic/uvex-transients
 cd uvex-transients && pip install -e .
 ```
 
+## Quickstart
+
+The `uvex-transients` CLI drives the full simulation pipeline (sample events, screen by
+magnitude/SNR, run synthetic photometry) from a single YAML config file. Try it against the
+bundled [`quickstart_tde.yaml`](quickstart_tde.yaml) example:
+
+```bash
+uvex-transients run quickstart_tde.yaml --out-dir quickstart_results/
+```
+
+See the file itself for what each section does, and `uvex-transients --help` for every command.
+
 Full documentation, including the API reference, is available in the [`docs/`](docs/) directory.
 
 ---

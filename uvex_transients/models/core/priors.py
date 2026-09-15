@@ -126,6 +126,9 @@ class Prior(ABC):
     DISTRIBUTION_NAME: ClassVar[str] = "prior"
     """str: The public-facing name of this distribution prior class."""
 
+    _REGISTRY: ClassVar[dict[str, type["Prior"]]] = {}
+    """dict[str, type[Prior]]: Every concrete `Prior` subclass, keyed by `DISTRIBUTION_NAME`; see `registry`."""
+
     # Cache for the generic numerical-inversion sampler (see `_sample`). Built
     # lazily on first use since constructing it requires evaluating `_logpdf`
     # across the support, which is wasted work for subclasses that override
@@ -144,6 +147,27 @@ class Prior(ABC):
         repr=False,
         compare=False,
     )
+
+    # ----------------------------------- #
+    # Registration                        #
+    # ----------------------------------- #
+    def __init_subclass__(cls, **kwargs) -> None:
+        """Register a concrete subclass in `_REGISTRY`, keyed by its own `DISTRIBUTION_NAME`."""
+        # Explicit two-argument `super()` -- `Prior` is a `@dataclass(slots=True)` class,
+        # which rebuilds the class object to add `__slots__`; a zero-argument `super()`
+        # here would close over the pre-rebuild `Prior`, raising a `TypeError` at every
+        # subclass definition (a known dataclass+slots interaction, not specific to this
+        # method).
+        super(Prior, cls).__init_subclass__(**kwargs)
+        if ABC in cls.__bases__:
+            # `cls` is itself still abstract -- not a real, sampleable distribution yet.
+            return
+        Prior._REGISTRY[cls.DISTRIBUTION_NAME] = cls
+
+    @classmethod
+    def registry(cls) -> dict[str, type["Prior"]]:
+        """dict[str, type[Prior]]: A copy of every concrete `Prior` subclass, keyed by `DISTRIBUTION_NAME`."""
+        return dict(cls._REGISTRY)
 
     # ----------------------------------- #
     # Initialization / Dunders            #

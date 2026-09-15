@@ -14,9 +14,11 @@ from typing import Union
 
 import numpy as np
 from astropy.coordinates import SkyCoord
-from astropy.table import QTable
+from astropy.table import QTable, vstack
 from astropy.time import Time
 from astropy.units import Quantity
+from m4opt.missions import Mission
+from tqdm.auto import tqdm
 
 from uvex_transients.utils import logger
 
@@ -228,6 +230,58 @@ class EventCatalog:
             )
 
         return events[0] if scalar else events
+
+    def simulate_photometry(
+        self,
+        mission: Mission,
+        transients: dict[str, TransientBase],
+        schedule: SurveySchedule,
+        bands: list[str] | None = None,
+        n_sigma: float | None = None,
+    ) -> QTable:
+        """
+        Run `~uvex_transients.simulation.event.Event.simulate_photometry` over every event in this catalog.
+
+        Reconstructs every row as an `Event` (via `get_events`), runs its own
+        `Event.simulate_photometry` (one `~synphot.SourceSpectrum` per event, batched over
+        that event's own observations), and stacks every event's table together -- there is
+        no cross-event batching here, just a loop; the expensive vectorization already
+        happens per event, inside `Event.simulate_photometry` itself.
+
+        Parameters
+        ----------
+        mission : m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` (bandpasses, background, ...) evaluated
+            against.
+        transients : dict[str, TransientBase]
+            Transient-type instances, keyed by the same names used in this catalog's
+            ``transient_type`` column -- forwarded to `get_events`.
+        schedule : ~uvex_transients.surveys.base.SurveySchedule
+            The survey schedule to check each event's visibility against -- forwarded to
+            `get_events`.
+        bands : list of str, optional
+            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every
+            bandpass the detector has.
+        n_sigma : float, optional
+            Forwarded to `Event.simulate_photometry`; see its own docstring.
+
+        Returns
+        -------
+        astropy.table.QTable
+            The `astropy.table.vstack` of every event's own photometry table (see
+            `Event.simulate_photometry`'s docstring for the column schema) -- one row per
+            (event, observation, band). Empty (but correctly typed) if this catalog itself
+            is empty.
+        """
+        if len(self) == 0:
+            return Event._empty_photometry_table()
+
+        events = self.get_events(self.event_id, transients, schedule)
+        tables = [
+            event.simulate_photometry(mission, bands=bands, n_sigma=n_sigma)
+            for event in tqdm(events, desc="Simulating photometry", unit="event")
+        ]
+        return vstack(tables, metadata_conflicts="silent")
 
     # ----------------------------------------- #
     # IO Methods                                #

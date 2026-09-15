@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.219** total execution time for 3 files **from all galleries**:
+**00:11.996** total execution time for 3 files **from all galleries**:
 
 .. container::
 
@@ -32,12 +32,12 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_too_followup.py` (``galleries/simulating/plot_too_followup.py``)
-     - 00:01.219
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
+     - 00:11.996
      - 0.0
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_too_followup.py` (``galleries/simulating/plot_too_followup.py``)
      - 00:00.000
      - 0.0

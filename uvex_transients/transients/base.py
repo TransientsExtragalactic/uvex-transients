@@ -74,6 +74,14 @@ class TransientBase(ABC):
     transient and should be a strong upper bound on the total duration of the relevant transient.
     """
 
+    _REGISTRY: ClassVar[dict[str, type["TransientBase"]]] = {}
+    """dict[str, type[TransientBase]]: Every concrete subclass, keyed by class name; see `registry`.
+
+    Populated automatically by `__init_subclass__` -- a class only appears here once its
+    defining module has actually been imported (this registry does not, by itself, import
+    anything).
+    """
+
     # ------------------------------ #
     # Instantiation                  #
     # ------------------------------ #
@@ -93,6 +101,13 @@ class TransientBase(ABC):
         missing = [name for name in ("DEFAULT_MODEL", "DEFAULT_DURATION") if getattr(cls, name) is None]
         if missing:
             raise TypeError(f"{cls.__name__} must override {missing} with real values.")
+
+        TransientBase._REGISTRY[cls.__name__] = cls
+
+    @classmethod
+    def registry(cls) -> dict[str, type["TransientBase"]]:
+        """dict[str, type[TransientBase]]: A copy of every concrete subclass imported so far, keyed by class name."""
+        return dict(cls._REGISTRY)
 
     def __init__(self, cosmology: Union[Cosmology, None] = None, **_):
         """

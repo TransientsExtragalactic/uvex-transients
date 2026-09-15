@@ -104,8 +104,9 @@ Resources
         User Guide
         ^^^^^^^^^^
 
-        New to UVEX Transients? The user guide walks through the four layers of the package --
-        models, transients, surveys, and simulation -- and how they fit together.
+        New to UVEX Transients? The user guide walks through the four layers of the package
+        (models, transients, surveys, and simulation), how they fit together, and how to drive
+        them all from the command line.
 
         +++
 

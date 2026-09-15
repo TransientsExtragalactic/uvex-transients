@@ -72,7 +72,49 @@ def _sample_parameters_from_seeds(sed, seeds) -> dict:
     return {name: np.concatenate([sample[name] for sample in per_event]) for name in per_event[0]}
 
 
-class SurveySimulator:
+def cut(name: str):
+    """
+    Mark a `SurveySimulator` method as a named, registrable screening cut.
+
+    Applied to `SurveySimulator.filter_by_limiting_magnitude`/`filter_by_snr` below;
+    `SurveySimulator.run_cut`/`available_cuts` dispatch by this name rather than by the
+    method's own Python name, so a config-driven caller (see `uvex_transients.cli`) never
+    needs to hardcode either one.
+
+    Parameters
+    ----------
+    name : str
+        The registry key this method should be reachable under.
+    """
+
+    def decorator(method):
+        method._cut_name = name
+        return method
+
+    return decorator
+
+
+class _CutRegistryMeta(type):
+    """Metaclass collecting every `@cut`-tagged method (across the whole MRO) into ``cls._CUT_REGISTRY``.
+
+    Subclassing `SurveySimulator` and adding more `@cut`-decorated methods extends the
+    registry automatically -- no separate ``Cut`` class hierarchy or manual registration
+    step required.
+    """
+
+    def __new__(mcls, name, bases, namespace, **kwargs):
+        cls = super().__new__(mcls, name, bases, namespace, **kwargs)
+        registry: dict[str, str] = {}
+        for base in reversed(cls.__mro__):
+            for attr_name, attr in vars(base).items():
+                cut_name = getattr(attr, "_cut_name", None)
+                if cut_name is not None:
+                    registry[cut_name] = attr_name
+        cls._CUT_REGISTRY = registry
+        return cls
+
+
+class SurveySimulator(metaclass=_CutRegistryMeta):
     """Samples transient populations against a survey schedule."""
 
     def __init__(
@@ -314,6 +356,41 @@ class SurveySimulator:
     # -------------------------------------------------- #
     # Filtering                                          #
     # -------------------------------------------------- #
+    @classmethod
+    def available_cuts(cls) -> tuple[str, ...]:
+        """Tuple of str: Every cut name registered on this class via `@cut`, sorted."""
+        return tuple(sorted(cls._CUT_REGISTRY))
+
+    def run_cut(self, name: str, catalog: EventCatalog, mission: Mission, **params) -> EventCatalog:
+        """
+        Run one `@cut`-registered screening method by name.
+
+        A thin dispatch layer over `filter_by_limiting_magnitude`/`filter_by_snr` (and any
+        further ``@cut``-decorated methods a subclass adds) so a config-driven caller (see
+        `uvex_transients.cli`) can select a cut by name rather than hardcoding which Python
+        method to call.
+
+        Parameters
+        ----------
+        name : str
+            One of `available_cuts`.
+        catalog : EventCatalog
+        mission : m4opt.missions.Mission
+        **params
+            Forwarded to the underlying cut method (e.g. `mag_limit` for the
+            ``"limiting_magnitude"`` cut, `snr_threshold` for ``"snr"``).
+
+        Returns
+        -------
+        EventCatalog
+        """
+        try:
+            method_name = self._CUT_REGISTRY[name]
+        except KeyError:
+            raise ValueError(f"Unknown cut {name!r}; available: {self.available_cuts()}.") from None
+        return getattr(self, method_name)(catalog, mission, **params)
+
+    @cut("limiting_magnitude")
     def filter_by_limiting_magnitude(
         self,
         catalog: EventCatalog,
@@ -522,6 +599,7 @@ class SurveySimulator:
             seed=catalog.seed,
         )
 
+    @cut("snr")
     def filter_by_snr(
         self,
         catalog: EventCatalog,
