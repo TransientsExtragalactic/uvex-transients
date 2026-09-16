@@ -334,6 +334,118 @@ def test_simulate_photometry_exptime_shape_mismatch_raises():
         model.simulate_photometry(t, exptime, uvex.detector, coord, redshift=0.05, **params)
 
 
+def test_simulate_photometry_sys_err_widens_uncertainty_and_scatter():
+    """
+    `sys_err` inflates `snr`/`flux_err`/`mag_err` in quadrature and is drawn into `flux` itself.
+
+    Checked two ways: analytically, that `mag_err` with `sys_err` matches
+    `sqrt(mag_err_without**2 + sys_err**2)` combined in quadrature; and empirically,
+    over many independent draws (different `rng` per draw, same `t`), that the sample
+    standard deviation of `flux` widens along with it -- confirming the systematic
+    floor is folded into the noise realization, not just reported as a wider bar
+    around an unchanged draw.
+    """
+    model = VanVelzenTDESED()
+    coord = SkyCoord(ra=80 * u.deg, dec=15 * u.deg)
+    params = {name: value[0] for name, value in model.sample_parameters(1, rng=8).items()}
+    sys_err = 0.05
+
+    def simulate(rng):
+        return model.simulate_photometry(
+            10 * u.day,
+            900 * u.s,
+            uvex.detector,
+            coord,
+            bands=["FUV"],
+            background=GalacticBackground(),
+            redshift=0.05,
+            sys_err=sys_err,
+            rng=rng,
+            **params,
+        )
+
+    def simulate_baseline(rng):
+        return model.simulate_photometry(
+            10 * u.day,
+            900 * u.s,
+            uvex.detector,
+            coord,
+            bands=["FUV"],
+            background=GalacticBackground(),
+            redshift=0.05,
+            rng=rng,
+            **params,
+        )
+
+    phot_without = simulate_baseline(rng=0)
+    phot_with = simulate(rng=0)
+
+    expected_mag_err = np.hypot(phot_without["mag_err"][0], sys_err)
+    np.testing.assert_allclose(phot_with["mag_err"][0], expected_mag_err, rtol=1e-6)
+    assert phot_with["snr"][0] < phot_without["snr"][0]
+    assert phot_with["flux_err"][0] > phot_without["flux_err"][0]
+
+    fluxes_without = np.array([simulate_baseline(rng=i)["flux"][0].value for i in range(50)])
+    fluxes_with = np.array([simulate(rng=i)["flux"][0].value for i in range(50)])
+    assert np.std(fluxes_with) > np.std(fluxes_without)
+
+
+def test_simulate_photometry_sys_err_mapping_is_per_band():
+    """A `Mapping` applies a different floor per band, matching the equivalent per-band scalar calls."""
+    model = VanVelzenTDESED()
+    coord = SkyCoord(ra=80 * u.deg, dec=15 * u.deg)
+    params = {name: value[0] for name, value in model.sample_parameters(1, rng=9).items()}
+    sys_err = {"FUV": 0.01, "NUV": 0.05}
+
+    phot = model.simulate_photometry(
+        10 * u.day,
+        900 * u.s,
+        uvex.detector,
+        coord,
+        background=GalacticBackground(),
+        redshift=0.05,
+        sys_err=sys_err,
+        rng=0,
+        **params,
+    )
+
+    for band, floor in sys_err.items():
+        phot_scalar = model.simulate_photometry(
+            10 * u.day,
+            900 * u.s,
+            uvex.detector,
+            coord,
+            bands=[band],
+            background=GalacticBackground(),
+            redshift=0.05,
+            sys_err=floor,
+            rng=0,
+            **params,
+        )
+        row = phot[phot["band"] == band]
+        np.testing.assert_allclose(row["mag_err"][0], phot_scalar["mag_err"][0], rtol=1e-10)
+
+
+def test_simulate_photometry_sys_err_mapping_missing_band_raises():
+    """A `Mapping` missing an entry for a requested band raises, rather than silently using zero."""
+    model = VanVelzenTDESED()
+    coord = SkyCoord(ra=80 * u.deg, dec=15 * u.deg)
+    params = {name: value[0] for name, value in model.sample_parameters(1, rng=10).items()}
+
+    with pytest.raises(ValueError, match="sys_err"):
+        model.simulate_photometry(
+            10 * u.day,
+            900 * u.s,
+            uvex.detector,
+            coord,
+            bands=["FUV", "NUV"],
+            background=GalacticBackground(),
+            redshift=0.05,
+            sys_err={"FUV": 0.01},
+            **params,
+        )
+
+
 def test_simulate_photometry_detector_is_not_mutated():
     """`background=` must never leak into the caller's own `detector` object."""
     model = VanVelzenTDESED()

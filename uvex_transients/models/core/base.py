@@ -2521,6 +2521,7 @@ class SpectralModel(_ModelBase):
         cosmology: FLRW | None = None,
         log_attenuation: Callable[[Quantity], FloatArray] | None = None,
         n_sigma: float | None = None,
+        sys_err: float | Mapping[str, float] | None = None,
         rng: RNGInput = None,
         **parameters: ParameterValue,
     ) -> QTable:
@@ -2598,6 +2599,18 @@ class SpectralModel(_ModelBase):
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
             ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses
             ``config["simulation.detection_n_sigma"]`` (5 out of the box).
+        sys_err : float or Mapping[str, float], optional
+            A per-band systematic calibration error floor, in magnitudes, combined in
+            quadrature with the shot-noise uncertainty `detector` itself computes (via
+            :meth:`~m4opt.synphot.Detector.get_snr`, the OIR CCD equation -- source and
+            sky Poisson noise plus detector read/dark noise only, with no notion of
+            flat-fielding, PSF-fit, or zeropoint calibration systematics). Folded into
+            the noise realization itself, not just reported as a wider `flux_err` around
+            an unchanged draw -- otherwise the scatter of simulated points across
+            repeated visits would be narrower than what their own error bars claim.
+            A bare `float` applies the same floor to every band in `bands`; a mapping
+            must have an entry for every band in `bands`. If `None` (the default, and
+            the prior behavior), no systematic floor is added.
         rng
             Random-number source for the noise realization; see :func:`~uvex_transients.utils.get_rng`.
         **parameters
@@ -2613,12 +2626,16 @@ class SpectralModel(_ModelBase):
             interval transformed to magnitude, brighter bound first. See
             :meth:`~uvex_transients.simulation.event.Event.simulate_photometry` for the
             exact semantics of every column (this method implements the same math).
+            If `sys_err` is given, ``snr``/``flux_err``/``mag_err`` (and everything
+            derived from them) reflect the combined shot-noise-plus-systematic
+            uncertainty.
 
         Raises
         ------
         ValueError
             If `coord` is not scalar, if `bands` contains a name `detector` doesn't
-            have, or if `exptime` is neither scalar nor shaped like `t`.
+            have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`
+            is a mapping missing an entry for one of `bands`.
         """
         if n_sigma is None:
             n_sigma = config["simulation.detection_n_sigma"]
@@ -2630,6 +2647,11 @@ class SpectralModel(_ModelBase):
         unknown = [band for band in band_names if band not in detector.bandpasses]
         if unknown:
             raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
+
+        if isinstance(sys_err, Mapping):
+            missing_sys_err = [band for band in band_names if band not in sys_err]
+            if missing_sys_err:
+                raise ValueError(f"'sys_err' is missing entries for band(s) {missing_sys_err}.")
 
         if not coord.isscalar:
             raise ValueError("Parameter 'coord' must be a scalar SkyCoord.")
@@ -2668,6 +2690,7 @@ class SpectralModel(_ModelBase):
         with observing(observer_location, coord, obstime):
             for band in band_names:
                 snr = detector.get_snr(exptime, spectra, band)
+                band_sys_err = sys_err[band] if isinstance(sys_err, Mapping) else sys_err
 
                 pivot = detector.bandpasses[band].pivot()
                 with np.errstate(invalid="ignore", divide="ignore"):
@@ -2676,9 +2699,20 @@ class SpectralModel(_ModelBase):
                     valid = np.isfinite(snr) & (snr > 0)
                     safe_snr = np.where(valid, snr, np.nan)
                     flux_err = true_flux / safe_snr
+                    reported_snr = snr
+                    if band_sys_err:
+                        # `sys_err` is a fixed fractional-magnitude floor; convert to a
+                        # fractional flux error (exact for the same small-error limit
+                        # `mag_err = 2.5 / (ln(10) * snr)` already assumes) and combine
+                        # in quadrature with the shot-noise flux error above, before
+                        # anything is drawn from it -- so the noise realization itself
+                        # carries the systematic scatter, not just a wider reported bar
+                        # around an unchanged draw.
+                        flux_err = np.hypot(flux_err, np.abs(true_flux) * band_sys_err * np.log(10) / 2.5)
+                        reported_snr = np.where(valid, true_flux / flux_err, snr)
                     flux = rng.normal(true_flux, np.where(valid, np.abs(flux_err), 1.0))
                     flux = np.where(valid, flux, np.nan)
-                    mag_err = 2.5 / (np.log(10) * safe_snr)
+                    mag_err = np.where(valid, 2.5 / (np.log(10) * np.abs(reported_snr)), np.nan)
                     mag = np.where(flux > 0, (flux * u.Jy).to_value(u.ABmag), np.nan)
 
                     flux_upper = flux + n_sigma * flux_err
@@ -2690,7 +2724,7 @@ class SpectralModel(_ModelBase):
                 band_table["t"] = t
                 band_table["exptime"] = exptime
                 band_table["band"] = np.full(n_obs, band)
-                band_table["snr"] = snr
+                band_table["snr"] = reported_snr
                 band_table["flux"] = flux * u.Jy
                 band_table["flux_err"] = flux_err * u.Jy
                 band_table["flux_upper"] = flux_upper * u.Jy
