@@ -97,7 +97,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
             latex=r"t_\mathrm{peak}",
         ),
         "decline_index": Parameter(
-            prior=UniformPrior(lower=2, upper=4),
+            prior=UniformPrior(lower=1.5, upper=4),
             scale=1 * u.dimensionless_unscaled,
             description="Positive post-peak power-law decline index; L_bol ~ t^-decline_index. "
             "Late-time light curves are broadly consistent with a t^-3 decline (Ho & Lu et al. 2026).",
@@ -105,7 +105,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
         ),
         "T0": Parameter(
             prior=LogNormalPrior(mean=0.0, sigma=0.15),
-            scale=2.5e4 * u.K,
+            scale=4e4 * u.K,
             description="Photospheric temperature at t=0 (the T(t) -> T0 limit, not literally T at peak).",
             latex=r"T_0",
         ),
@@ -117,7 +117,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
             latex=r"T_\mathrm{floor}",
         ),
         "alpha_T": Parameter(
-            prior=UniformPrior(lower=0, upper=1 / 3),
+            prior=UniformPrior(lower=1 / 3, upper=1),
             scale=1,
             description="Late-time photospheric cooling power-law index; T ~ t^-alpha_T for t >> t_peak. "
             "~1/3 is a reasonable fit for most events (e.g. AT2018cow); CSS161010 was closer to "
