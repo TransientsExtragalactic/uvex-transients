@@ -3074,6 +3074,7 @@
         <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">log_attenuation</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Quantity</span><span class="p">],</span> <span class="n">FloatArray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sys_err</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
@@ -3151,6 +3152,18 @@
 <span class="sd">            Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/</span>
 <span class="sd">            ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses</span>
 <span class="sd">            ``config["simulation.detection_n_sigma"]`` (5 out of the box).</span>
+<span class="sd">        sys_err : float or Mapping[str, float], optional</span>
+<span class="sd">            A per-band systematic calibration error floor, in magnitudes, combined in</span>
+<span class="sd">            quadrature with the shot-noise uncertainty `detector` itself computes (via</span>
+<span class="sd">            :meth:`~m4opt.synphot.Detector.get_snr`, the OIR CCD equation -- source and</span>
+<span class="sd">            sky Poisson noise plus detector read/dark noise only, with no notion of</span>
+<span class="sd">            flat-fielding, PSF-fit, or zeropoint calibration systematics). Folded into</span>
+<span class="sd">            the noise realization itself, not just reported as a wider `flux_err` around</span>
+<span class="sd">            an unchanged draw -- otherwise the scatter of simulated points across</span>
+<span class="sd">            repeated visits would be narrower than what their own error bars claim.</span>
+<span class="sd">            A bare `float` applies the same floor to every band in `bands`; a mapping</span>
+<span class="sd">            must have an entry for every band in `bands`. If `None` (the default, and</span>
+<span class="sd">            the prior behavior), no systematic floor is added.</span>
 <span class="sd">        rng</span>
 <span class="sd">            Random-number source for the noise realization; see :func:`~uvex_transients.utils.get_rng`.</span>
 <span class="sd">        **parameters</span>
@@ -3166,12 +3179,16 @@
 <span class="sd">            interval transformed to magnitude, brighter bound first. See</span>
 <span class="sd">            :meth:`~uvex_transients.simulation.event.Event.simulate_photometry` for the</span>
 <span class="sd">            exact semantics of every column (this method implements the same math).</span>
+<span class="sd">            If `sys_err` is given, ``snr``/``flux_err``/``mag_err`` (and everything</span>
+<span class="sd">            derived from them) reflect the combined shot-noise-plus-systematic</span>
+<span class="sd">            uncertainty.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If `coord` is not scalar, if `bands` contains a name `detector` doesn't</span>
-<span class="sd">            have, or if `exptime` is neither scalar nor shaped like `t`.</span>
+<span class="sd">            have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`</span>
+<span class="sd">            is a mapping missing an entry for one of `bands`.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">n_sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">n_sigma</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"simulation.detection_n_sigma"</span><span class="p">]</span>
@@ -3183,6 +3200,11 @@
         <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys_err</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">missing_sys_err</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys_err</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">missing_sys_err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'sys_err' is missing entries for band(s) </span><span class="si">{</span><span class="n">missing_sys_err</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">coord</span><span class="o">.</span><span class="n">isscalar</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Parameter 'coord' must be a scalar SkyCoord."</span><span class="p">)</span>
@@ -3221,6 +3243,7 @@
         <span class="k">with</span> <span class="n">observing</span><span class="p">(</span><span class="n">observer_location</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">obstime</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span><span class="p">:</span>
                 <span class="n">snr</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_snr</span><span class="p">(</span><span class="n">exptime</span><span class="p">,</span> <span class="n">spectra</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
+                <span class="n">band_sys_err</span> <span class="o">=</span> <span class="n">sys_err</span><span class="p">[</span><span class="n">band</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys_err</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">sys_err</span>
 
                 <span class="n">pivot</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">[</span><span class="n">band</span><span class="p">]</span><span class="o">.</span><span class="n">pivot</span><span class="p">()</span>
                 <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
@@ -3229,9 +3252,20 @@
                     <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">snr</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">snr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="n">safe_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
                     <span class="n">flux_err</span> <span class="o">=</span> <span class="n">true_flux</span> <span class="o">/</span> <span class="n">safe_snr</span>
+                    <span class="n">reported_snr</span> <span class="o">=</span> <span class="n">snr</span>
+                    <span class="k">if</span> <span class="n">band_sys_err</span><span class="p">:</span>
+                        <span class="c1"># `sys_err` is a fixed fractional-magnitude floor; convert to a</span>
+                        <span class="c1"># fractional flux error (exact for the same small-error limit</span>
+                        <span class="c1"># `mag_err = 2.5 / (ln(10) * snr)` already assumes) and combine</span>
+                        <span class="c1"># in quadrature with the shot-noise flux error above, before</span>
+                        <span class="c1"># anything is drawn from it -- so the noise realization itself</span>
+                        <span class="c1"># carries the systematic scatter, not just a wider reported bar</span>
+                        <span class="c1"># around an unchanged draw.</span>
+                        <span class="n">flux_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">flux_err</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">true_flux</span><span class="p">)</span> <span class="o">*</span> <span class="n">band_sys_err</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span><span class="p">)</span>
+                        <span class="n">reported_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">true_flux</span> <span class="o">/</span> <span class="n">flux_err</span><span class="p">,</span> <span class="n">snr</span><span class="p">)</span>
                     <span class="n">flux</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">true_flux</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">flux_err</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">))</span>
                     <span class="n">flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                    <span class="n">mag_err</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">safe_snr</span><span class="p">)</span>
+                    <span class="n">mag_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="mf">2.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">reported_snr</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
                     <span class="n">mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flux</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">flux</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ABmag</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
                     <span class="n">flux_upper</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">+</span> <span class="n">n_sigma</span> <span class="o">*</span> <span class="n">flux_err</span>
@@ -3243,7 +3277,7 @@
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"exptime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">exptime</span>
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"band"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">snr</span>
+                <span class="n">band_table</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reported_snr</span>
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_err</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
                 <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_upper</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
