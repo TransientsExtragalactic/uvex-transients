@@ -6,5 +6,5 @@ __all__ = [
     "VillarCoolingBlackbodySED",
 ]
 
-from .IIp_excess import TypeIIPExcessSED, TypeIIPSED
+from .IIp import TypeIIPExcessSED, TypeIIPSED
 from .villar import VillarCoolingBlackbodySED

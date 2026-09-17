@@ -65,11 +65,12 @@ underlying physics in any detail.
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1
 
-      Hydrogen-rich core-collapse supernovae with a months-long plateau, with an optional
-      early-time UV excess from circumstellar interaction.
+      Hydrogen-rich core-collapse supernovae with a months-long plateau, preceded by an early
+      cooling-phase decline and followed by a radioactive tail. A rarer, brighter/hotter
+      early-excess variant (IXF/GGI-like) is also covered.
 
       +++
-      :math:`z \le 2` · 200 day window
+      :math:`z \le 0.8`-:math:`2` · 100 day window
 
 Detailed Physical Models
 --------------------------

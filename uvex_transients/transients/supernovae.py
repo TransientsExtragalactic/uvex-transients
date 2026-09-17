@@ -10,11 +10,13 @@ from uvex_transients.models.supernovae import TypeIIPExcessSED, TypeIIPSED
 
 from .base import ExtragalacticTransient
 
-# Type IIP fraction of the total CC SNe rate (Li et al. 2011), and the sub-fraction of
-# those that are early-interacting (IXF/GGI-like): ~30% of IIP, i.e. 12% of the total
-# CC SNe rate.
+# Type IIP fraction of the total CC SNe rate (Li et al. 2011).
 _TYPE_IIP_FRACTION = 0.40
-_TYPE_IIP_EXCESS_FRACTION = 0.12
+
+# Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,
+# following the high incidence of early CSM-interaction signatures found among Type II SNe by
+# Bruch et al. 2023 (ZTF).
+_TYPE_IIP_EXCESS_FRACTION = 0.30 * _TYPE_IIP_FRACTION
 
 
 def _core_collapse_rate(z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
@@ -45,11 +47,11 @@ def _core_collapse_rate(z: Union[float, NDArray[np.float64]]) -> Union[float, ND
 
 
 class TypeIIPSNe(ExtragalacticTransient):
-    """Type IIP core-collapse SNe: `TypeIIPSED` (Villar lightcurve x cooling blackbody), Li+2011 rate fraction."""
+    """Type IIP core-collapse SNe: `TypeIIPSED` (two-exponential + radioactive-tail lightcurve x cooling blackbody)."""
 
     DEFAULT_MODEL = TypeIIPSED
-    DEFAULT_DURATION = 200 * u.day
-    DEFAULT_Z_LIM = 1
+    DEFAULT_DURATION = 100 * u.day
+    DEFAULT_Z_LIM = 0.8
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """Volumetric event rate: `_core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""
@@ -60,9 +62,9 @@ class TypeIIPExcessSNe(ExtragalacticTransient):
     """Early-interacting (IXF/GGI-like) Type IIP core-collapse SNe: `TypeIIPExcessSED`."""
 
     DEFAULT_MODEL = TypeIIPExcessSED
-    DEFAULT_DURATION = 200 * u.day
+    DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 2
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Return `_core_collapse_rate(z)` times the early-interacting IIP fraction (see module docstring)."""
+        """Volumetric event rate: `_core_collapse_rate(z)` times the Type IIP-excess fraction (see module docstring)."""
         return _TYPE_IIP_EXCESS_FRACTION * _core_collapse_rate(z)

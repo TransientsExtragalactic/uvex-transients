@@ -124,12 +124,12 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - 100 d
      - 3
    * - :class:`~uvex_transients.transients.supernovae.TypeIIPSNe`
-     - :class:`~uvex_transients.models.supernovae.IIp_excess.TypeIIPSED`
-     - 200 d
-     - 1
+     - :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`
+     - 100 d
+     - 0.8
    * - :class:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe`
-     - :class:`~uvex_transients.models.supernovae.IIp_excess.TypeIIPExcessSED`
-     - 200 d
+     - :class:`~uvex_transients.models.supernovae.IIp.TypeIIPExcessSED`
+     - 100 d
      - 2
 
 .. seealso::
