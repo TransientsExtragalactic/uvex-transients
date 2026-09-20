@@ -33,8 +33,6 @@ curves.
 # against the real sky map -- since it depends only on sky position, not on when the
 # TDE happens to be observed.
 
-from functools import partial
-
 import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
@@ -79,7 +77,7 @@ print(f"{len(t)} visits, one every {CADENCE}.")
 # A real ToO trigger time isn't known in advance, so there's no meaningful
 # ``obstime`` to feed a season-dependent background term like zodiacal light. Passing
 # ``background=GalacticBackground()`` explicitly simulates against dust (already
-# folded into the source flux itself, via ``log_attenuation``) plus the Milky Way's
+# folded into the source flux itself, via ``ebv``) plus the Milky Way's
 # diffuse UV glow only, and leaves ``observer_location``/``obstime`` at their
 # placeholder defaults -- both irrelevant to
 # :class:`~m4opt.synphot.background.GalacticBackground`, so there is nothing else to
@@ -94,7 +92,7 @@ phot = tde.sed.simulate_photometry(
     background=GalacticBackground(),
     redshift=redshift,
     luminosity_distance=luminosity_distance,
-    log_attenuation=partial(log_attenuation, Ebv=ebv),
+    ebv=ebv,
     rng=0,
     **params,
 )
@@ -190,7 +188,7 @@ phot_with_zodi = tde.sed.simulate_photometry(
     obstime=obstime,
     redshift=redshift,
     luminosity_distance=luminosity_distance,
-    log_attenuation=partial(log_attenuation, Ebv=ebv),
+    ebv=ebv,
     rng=0,
     **params,
 )

@@ -1,11 +1,14 @@
 """Cosmological utility functions."""
 
+from typing import Union
+
 import numpy as np
 from astropy import units as u
-from astropy.cosmology import z_at_value
+from astropy.cosmology import Cosmology, z_at_value
 from astropy.units import Quantity
+from numpy.typing import NDArray
 
-from uvex_transients.utils import config
+from .config import config
 
 
 def get_cosmology(cosmology=None):
@@ -379,3 +382,46 @@ def physical_to_angular(size, redshift=None, cosmology=None):
     distances = resolve_cosmological_distances(redshift=redshift, cosmology=cosmology)
     DA = distances["angular_diameter_distance"]
     return (size / DA).to(u.arcsec, equivalencies=u.dimensionless_angles())
+
+
+def core_collapse_rate(
+    z: Union[float, NDArray[np.float64]],
+    cosmology: Union[Cosmology, None] = None,
+) -> Union[float, NDArray[np.float64]]:
+    """
+    Return the total (all-subtype) volumetric core-collapse SNe rate at redshift(s) `z`.
+
+    Shared by each core-collapse subtype class's own ``event_rate`` (see
+    `uvex_transients.transients.supernovae`), so the per-subtype rates always stay a
+    fixed fraction of the same underlying total rather than risking independent drift.
+
+    Parameters
+    ----------
+    z : float or array-like
+        Redshift(s) at which to evaluate the event rate.
+    cosmology : `~astropy.cosmology.FLRW`, optional
+        Cosmology whose little Hubble parameter `h` rescales the rate (see Notes).
+        If ``None``, the configured default cosmology is used; see `get_cosmology`.
+
+    Returns
+    -------
+    float or array-like
+        The volumetric event rate at the specified redshift(s), in events per cubic megaparsec per year.
+
+    Notes
+    -----
+    The Madau & Dickinson (2014) coefficient this rate is built from is quoted for
+    :math:`h = 0.7`; its :math:`h^2` scaling is applied here using the actual
+    little Hubble parameter of ``cosmology`` rather than a hardcoded value, so the
+    rate stays consistent with whatever cosmology the caller is using elsewhere.
+    """
+    z = np.asarray(z)
+    cosmo = get_cosmology(cosmology)
+
+    # Madau & Dickinson (2014) coefficient * CC rate from LGS 2015, rescaled by h^2
+    # from the cosmology's actual little Hubble parameter rather than the h=0.7
+    # value the coefficient was originally quoted at.
+    _coefficient = 0.0001365 * cosmo.h**2
+    rate = _coefficient * (1 + z) ** 2.7 / (1 + ((1 + z) / 2.9) ** 5.6)
+
+    return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.

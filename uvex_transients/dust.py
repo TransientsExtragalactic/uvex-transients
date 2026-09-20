@@ -1,26 +1,20 @@
 """
 Milky Way foreground dust extinction.
 
-This module provides access to the PlanckGNILC E(B-V) map (`dust_map`), the adopted
-Gordon+2023 (`G23`) reddening law, and a single vectorized entry point
-(`log_attenuation`) that turns the two into a natural-log attenuation array ready to
-add directly into a `~uvex_transients.models.core.base.SpectralModel` flux calculation
-(its ``log_attenuation`` keyword argument).
-
-There is deliberately no `synphot.SpectralElement`/`astropy.modeling.Model` wrapping
-here anymore: nothing in the `models` package needs a multiplicative transmission
-curve as an object to hand elsewhere, only a plain array to add in log-space, so
-building one is pure overhead. `dust_extinction.parameter_averages.G23` is still an
-`astropy.modeling.Model` under the hood (that's `dust_extinction`'s own API, not
-something this module controls), and it still enforces its native wavelength range by
-*raising* `ValueError` if any input is out of range -- `log_attenuation` masks
-out-of-range frequencies to `NaN` before calling it (comparisons against `NaN` are
-always `False`, so `dust_extinction`'s own range check never sees them) purely to turn
-that hard failure into a graceful per-element `NaN`, exactly as the code it replaces
-did.
+This module provides access to the PlanckGNILC E(B-V) map (`dust_map`) and a
+reddening law (`get_dust_law`, Gordon+2023's `G23` by default -- see
+``config["physics.default_dust_law"]``), combined by a single vectorized entry point
+(`log_attenuation`) into a natural-log attenuation array ready to add directly into a
+`~uvex_transients.models.core.base.SpectralModel` flux calculation (its
+``log_attenuation`` keyword argument). `attenuation_callable` gives the same thing as
+a callable; `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`/
+`~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call it
+internally whenever their own ``ebv`` keyword is given, so ordinary callers of this
+package never touch this module, a callable, or `functools.partial` at all.
 """
 
-from functools import cache
+from collections.abc import Callable
+from functools import cache, partial
 from typing import Protocol, Union, runtime_checkable
 
 import numpy as np
@@ -94,8 +88,51 @@ def dust_map() -> PlanckGNILCQuery:
 # REDDENING LAW                                                               #
 # =========================================================================== #
 # To model the extinction for UVEX, we adopt the Gordon+2023 dust model, which covers
-# IR through FUV and is suitable for our needs.
-_reddening_law = G23()
+# IR through FUV and is suitable for our needs -- kept as a name in this registry,
+# resolved through `config["physics.default_dust_law"]`, rather than hardcoded, purely
+# so it's a config knob and not a code change. In practice nobody is expected to reach
+# for anything but the default.
+_DUST_LAWS = {"g23": G23}
+
+
+@cache
+def _instantiate_dust_law(name: str):
+    """
+    Build (and cache) the named law.
+
+    See `get_dust_law`; split out so the cache key is always the resolved name, never `None`.
+    """
+    try:
+        return _DUST_LAWS[name]()
+    except KeyError:
+        raise KeyError(f"Unknown dust law {name!r}; known laws are {sorted(_DUST_LAWS)}.") from None
+
+
+def get_dust_law(dust_law: str | None = None):
+    """
+    Return the (cached, instantiated) reddening law to use.
+
+    Parameters
+    ----------
+    dust_law : str, optional
+        Name of a registered law (case-insensitive), currently just ``"g23"``
+        (`dust_extinction.parameter_averages.G23`). If ``None`` (the default), the
+        configured default (``config["physics.default_dust_law"]``, ``"g23"`` out of
+        the box) is used.
+
+    Returns
+    -------
+    dust_extinction.baseclasses.BaseExtModel
+        Instantiated reddening law, exposing ``.Rv``, ``.x_range``, and
+        ``law(x) -> A(x)/A(V)`` -- see `log_attenuation`.
+
+    Raises
+    ------
+    KeyError
+        If ``dust_law`` (or the configured default) doesn't name a registered law.
+    """
+    name = (dust_law or config["physics.default_dust_law"]).lower()
+    return _instantiate_dust_law(name)
 
 
 # =========================================================================== #
@@ -139,6 +176,7 @@ def resolve_ebv(reddening: Reddening, coord: SkyCoord | None = None) -> NDArray[
 def log_attenuation(
     nu: Quantity,
     Ebv: float | Quantity | NDArray[np.float64],
+    dust_law: str | None = None,
 ) -> NDArray[np.float64]:
     r"""
     Natural log of the Milky Way foreground attenuation, :math:`\ln(10^{-0.4\,A(\nu)})`, at ``nu``.
@@ -160,11 +198,11 @@ def log_attenuation(
     rather than multiplying a linear transmission fraction in, since everything on
     that side is already computed in log space.
 
-    `SpectralModel.as_source_spectrum` takes the same shape one level removed: bind
-    ``Ebv`` with `functools.partial` first (its wavelength grid isn't known until
-    the resulting `~synphot.SourceSpectrum` is actually called), e.g.
-    ``model.as_source_spectrum(t, ..., log_attenuation=functools.partial(log_attenuation,
-    Ebv=ebv))``.
+    `SpectralModel.as_source_spectrum`/`as_astropy_model` take the same shape one
+    level removed, as a callable (their wavelength grid isn't known until the
+    resulting `~synphot.SourceSpectrum` is actually called): use `attenuation_callable`
+    rather than binding this function yourself, e.g.
+    ``model.as_source_spectrum(t, ..., log_attenuation=attenuation_callable(ebv))``.
 
     Parameters
     ----------
@@ -175,15 +213,20 @@ def log_attenuation(
     Ebv : float, ~astropy.units.Quantity, or numpy.ndarray
         Already-resolved, dimensionless :math:`E(B-V)`, any shape ``S`` -- see
         `resolve_ebv` for turning a dust map + sky position into this.
+    dust_law : str, optional
+        Passed through to `get_dust_law`; ``None`` (the default) uses the configured
+        default reddening law.
 
     Returns
     -------
     numpy.ndarray
         Natural log of the dimensionless attenuation, ``NaN`` wherever ``nu`` falls
-        outside `dust_extinction.parameter_averages.G23`'s native range (roughly 900
-        Angstrom to 32 microns). Shape ``S + (K,)``, or plain ``S`` if ``nu`` was
-        scalar.
+        outside the reddening law's native range (roughly 900 Angstrom to 32 microns
+        for the default, `dust_extinction.parameter_averages.G23`). Shape
+        ``S + (K,)``, or plain ``S`` if ``nu`` was scalar.
     """
+    law = get_dust_law(dust_law)
+
     Ebv = (
         np.asarray(Ebv.to_value(u.dimensionless_unscaled), dtype=np.float64)
         if isinstance(Ebv, Quantity)
@@ -203,14 +246,49 @@ def log_attenuation(
     # produce the documented `NaN`. This masks the *output* explicitly instead, using
     # `valid` computed from `x` directly, which is correct regardless of what G23 happens
     # to do internally with a `NaN` input.
-    lo, hi = _reddening_law.x_range
+    lo, hi = law.x_range
     delta = 1e-6
     valid = (x > lo - delta) & (x < hi + delta)
     x_safe = np.where(valid, x, lo)
 
-    axav = np.where(valid, np.asarray(_reddening_law(x_safe / u.micron), dtype=np.float64), np.nan)
-    Av = _reddening_law.Rv.value * Ebv
+    axav = np.where(valid, np.asarray(law(x_safe / u.micron), dtype=np.float64), np.nan)
+    Av = law.Rv.value * Ebv
 
     result = -0.4 * np.log(10.0) * Av[..., np.newaxis] * axav
 
     return result if nu.shape else result[..., 0]
+
+
+def attenuation_callable(
+    Ebv: float | Quantity | NDArray[np.float64],
+    dust_law: str | None = None,
+) -> Callable[[Quantity], NDArray[np.float64]]:
+    """
+    Bind `log_attenuation` to a fixed E(B-V)/dust law, as a plain ``nu -> ln(transmission)`` callable.
+
+    This is what `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`
+    and `~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call
+    internally, themselves, whenever their own ``ebv`` keyword is given -- callers of
+    *those* methods just pass ``ebv=...`` directly and never see this function, a
+    callable, or `functools.partial` at all. It's exposed here only for the rare case
+    of building a bespoke :class:`~astropy.modeling.Model`/:class:`~synphot.SourceSpectrum`
+    by hand, outside of `as_source_spectrum`, that still wants this module's
+    already-resolved-:math:`E(B-V)`-to-callable contract (`log_attenuation(wave) ->
+    ln(transmission)`, evaluated against a wavelength grid unknown until
+    :mod:`synphot` samples it).
+
+    Parameters
+    ----------
+    Ebv : float, ~astropy.units.Quantity, or numpy.ndarray
+        Already-resolved E(B-V) -- see `resolve_ebv`.
+    dust_law : str, optional
+        Passed through to `log_attenuation`/`get_dust_law`. The configured default is
+        almost always the right choice; this is here mainly so the resulting callable
+        stays a pure function of its inputs.
+
+    Returns
+    -------
+    Callable[[~astropy.units.Quantity], numpy.ndarray]
+        ``nu -> log_attenuation(nu, Ebv, dust_law)``.
+    """
+    return partial(log_attenuation, Ebv=Ebv, dust_law=dust_law)

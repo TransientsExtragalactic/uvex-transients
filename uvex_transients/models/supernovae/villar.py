@@ -5,6 +5,7 @@ from typing import ClassVar
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
+from uvex_transients.models._util_functions import cooling_temperature_cgs
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import LogNormalPrior
@@ -192,7 +193,7 @@ class VillarCoolingBlackbodySED(SpectralModel):
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
         r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`."""
-        return T_floor + (T0 - T_floor) * (1.0 + t / tau_T) ** (-alpha_T)
+        return cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=tau_T, alpha=alpha_T)
 
     # -------------------------------------- #
     # Bolometric Luminosity: L_bol(t)         #

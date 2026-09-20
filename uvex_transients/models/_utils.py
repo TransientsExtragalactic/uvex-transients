@@ -14,7 +14,6 @@ units.
 from collections.abc import Callable
 
 import numpy as np
-from astropy import constants as const
 from astropy import units as u
 from astropy.modeling import Model
 from numpy.typing import DTypeLike, NDArray
@@ -33,15 +32,6 @@ _BOL_LUM_UNIT: u.Unit = u.erg / u.s
 
 # The SED shape unit is the unit used to parameterize the shape of a raw spectrum.
 _SED_SHAPE_UNIT: u.Unit = u.Hz**-1
-
-# ------------------------------------------ #
-# Zero-Points and Constants                  #
-# ------------------------------------------ #
-AB_MAG_ZERO_POINT: float = 3631e-23
-"""float: The CGS zero-point flux in the AB mag system."""
-
-H_CGS: float = const.h.cgs.value
-"""float: The Planck constant, in erg s."""
 
 # ------------------------------------------ #
 # Unit Coercion Functions                    #

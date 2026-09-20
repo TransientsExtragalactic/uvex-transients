@@ -25,6 +25,7 @@ __all__ = [
     "PowerLawLightcurve",
     "SmoothBrokenPowerLawLightcurve",
     "TopHatLightcurve",
+    "TwoComponentBazinLightcurve",
     "VillarLightcurve",
 ]
 
@@ -1335,3 +1336,139 @@ class VillarLightcurve(Lightcurve):
             log_shape = np.log(linear) - np.logaddexp(0.0, -x / tau_rise)
 
         return np.log(amplitude) + log_shape
+
+
+class TwoComponentBazinLightcurve(Lightcurve):
+    r"""
+    A superposition of two independent Bazin pulses.
+
+    .. math::
+
+        L(t) =
+        A_0\,
+        \frac{\exp[-(t-t_0)/\tau_{\mathrm{fall},0}]}{1 + \exp[-(t-t_0)/\tau_{\mathrm{rise},0}]}
+        +
+        A_1\,
+        \frac{\exp[-(t-t_1)/\tau_{\mathrm{fall},1}]}{1 + \exp[-(t-t_1)/\tau_{\mathrm{rise},1}]}.
+
+    Two ordinary :class:`BazinLightcurve` pulses, added rather than multiplied, each with its own
+    amplitude, transition time, and rise/fall timescales. Because the two components are
+    independent and additive, this covers both single- and double-peaked light curves in the same
+    functional form: with :math:`A_0 \ll A_1` (or a comparable but much earlier/narrower first
+    pulse well clear of the second), the second component alone sets the observed shape -- a
+    single peak; with :math:`A_0` comparable to :math:`A_1`, both pulses are visible, with a dip
+    between them where each has decayed enough to let the other dominate. Since the two peaks are
+    genuinely independent components rather than one shape reweighted by another, their relative
+    amplitude, timing, and widths can be tuned separately to fit real double- and single-peaked
+    events alike.
+
+    .. rubric:: Parameters
+
+    The light curve parameters are summarized below.
+
+    .. list-table::
+       :header-rows: 1
+       :widths: 18 18 64
+
+       * - Parameter
+         - Symbol
+         - Description
+       * - ``amplitude_0``
+         - :math:`A_0`
+         - Luminosity normalization of the first (typically earlier) pulse.
+       * - ``t0``
+         - :math:`t_0`
+         - Characteristic transition time of the first pulse.
+       * - ``rise_0``
+         - :math:`\tau_{\mathrm{rise},0}`
+         - Logistic rise timescale of the first pulse.
+       * - ``fall_0``
+         - :math:`\tau_{\mathrm{fall},0}`
+         - Exponential decline timescale of the first pulse.
+       * - ``amplitude_1``
+         - :math:`A_1`
+         - Luminosity normalization of the second (typically later) pulse.
+       * - ``t1``
+         - :math:`t_1`
+         - Characteristic transition time of the second pulse.
+       * - ``rise_1``
+         - :math:`\tau_{\mathrm{rise},1}`
+         - Logistic rise timescale of the second pulse.
+       * - ``fall_1``
+         - :math:`\tau_{\mathrm{fall},1}`
+         - Exponential decline timescale of the second pulse.
+
+    See Also
+    --------
+    BazinLightcurve
+    """
+
+    _LIGHTCURVE_TYPE = "bolometric"
+
+    _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
+        "amplitude_0": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=1e42 * _BOL_LUM_UNIT,
+            description="Luminosity normalization of the first (typically earlier) pulse.",
+            latex=r"A_0",
+        ),
+        "t0": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=2.0 * u.day,
+            description="Characteristic transition time of the first pulse.",
+            latex=r"t_0",
+        ),
+        "rise_0": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=0.3 * u.day,
+            description="Logistic rise timescale of the first pulse.",
+            latex=r"\tau_{\mathrm{rise},0}",
+        ),
+        "fall_0": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.3),
+            scale=5.0 * u.day,
+            description="Exponential decline timescale of the first pulse.",
+            latex=r"\tau_{\mathrm{fall},0}",
+        ),
+        "amplitude_1": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=1e43 * _BOL_LUM_UNIT,
+            description="Luminosity normalization of the second (typically later) pulse.",
+            latex=r"A_1",
+        ),
+        "t1": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=18.0 * u.day,
+            description="Characteristic transition time of the second pulse.",
+            latex=r"t_1",
+        ),
+        "rise_1": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.5),
+            scale=5.0 * u.day,
+            description="Logistic rise timescale of the second pulse.",
+            latex=r"\tau_{\mathrm{rise},1}",
+        ),
+        "fall_1": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=0.3),
+            scale=30.0 * u.day,
+            description="Exponential decline timescale of the second pulse.",
+            latex=r"\tau_{\mathrm{fall},1}",
+        ),
+    }
+
+    @classmethod
+    def _eval(
+        cls,
+        t: NDArray[np.float64],
+        **parameters: CGSParameterValue,
+    ) -> NDArray[np.float64]:
+        x0 = t - parameters["t0"]
+        log_bazin_0 = -x0 / parameters["fall_0"] - np.logaddexp(0.0, -x0 / parameters["rise_0"])
+
+        x1 = t - parameters["t1"]
+        log_bazin_1 = -x1 / parameters["fall_1"] - np.logaddexp(0.0, -x1 / parameters["rise_1"])
+
+        return np.logaddexp(
+            np.log(parameters["amplitude_0"]) + log_bazin_0,
+            np.log(parameters["amplitude_1"]) + log_bazin_1,
+        )

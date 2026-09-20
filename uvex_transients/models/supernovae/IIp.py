@@ -5,6 +5,7 @@ from typing import ClassVar
 import numpy as np
 from astropy import units as u
 
+from uvex_transients.models._constants import SECONDS_PER_DAY
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
 from uvex_transients.models._util_functions import _log_sigmoid
 from uvex_transients.models._utils import to_cgs_value
@@ -18,11 +19,6 @@ __all__ = ["TypeIIPExcessSED", "TypeIIPSED"]
 #: :math:`^{56}\mathrm{Co}` decay e-folding time (half-life 77.236 d / ln 2), in days. The
 #: radioactive tail's decay rate is fixed to this physical constant rather than sampled.
 _TAU_CO_DAYS = 77.236 / np.log(2.0)
-
-#: Seconds per day. All ``_eval*``-family methods receive ``t`` (and every time-scale parameter)
-#: in cgs (seconds); the temperature law below is expressed in days to match how its parameters
-#: are conventionally quoted, so it converts back explicitly rather than working in ratios alone.
-_DAY_CGS = (1.0 * u.day).to_value(u.s)
 
 #: Numerical floor on L_bol, in erg/s. Well before t0 (where L_bol is already ~0 from the S_0(t)
 #: switch) the bolometric light curve is unconstrained and can underflow toward 0 in float64,
@@ -266,9 +262,9 @@ class TypeIIPSED(SpectralModel):
         Floored at ``_T_FLOOR_K`` -- well before ``t0`` (unconstrained; ``L_bol`` is already ~0
         there) the early branch can otherwise underflow toward 0 K.
         """
-        t_day = t / _DAY_CGS
-        t0_day = t0 / _DAY_CGS
-        tP_day = t_P / _DAY_CGS
+        t_day = t / SECONDS_PER_DAY
+        t0_day = t0 / SECONDS_PER_DAY
+        tP_day = t_P / SECONDS_PER_DAY
         t_break2 = np.sqrt(t0_day * tP_day)
 
         with np.errstate(divide="ignore", invalid="ignore"):

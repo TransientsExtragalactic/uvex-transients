@@ -6,6 +6,7 @@ import numpy as np
 from astropy import units as u
 
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
+from uvex_transients.models._util_functions import cooling_temperature_cgs
 from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
@@ -141,7 +142,7 @@ class LFBOTCoolingBlackbodySED(SpectralModel):
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
         r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/t_\mathrm{peak})^{-\alpha_T}`."""
-        return T_floor + (T0 - T_floor) * (1.0 + t / t_peak) ** (-alpha_T)
+        return cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=t_peak, alpha=alpha_T)
 
     @classmethod
     def temperature(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:

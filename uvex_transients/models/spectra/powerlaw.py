@@ -22,7 +22,7 @@ constant is needed to keep the two pieces continuous).
 Neither shape is normalized to integrate to 1 by construction; each
 overrides :meth:`~uvex_transients.models.core.base.Spectrum._eval_normalization`
 with the closed-form integral of its own shape (see
-:func:`~uvex_transients.models.spectra._utils.powerlaw_shape_integral_cgs`).
+:func:`~uvex_transients.models._util_functions.powerlaw_shape_integral_cgs`).
 """
 
 from typing import ClassVar
@@ -35,7 +35,7 @@ from uvex_transients.models.core.base import Spectrum
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import ConstantPrior, NormalPrior
 
-from ._utils import powerlaw_shape_integral_cgs
+from .._util_functions import powerlaw_shape_integral_cgs
 
 __all__ = ["BrokenPowerLawSpectrum", "PowerLawSpectrum"]
 

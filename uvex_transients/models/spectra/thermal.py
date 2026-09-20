@@ -19,7 +19,7 @@ from uvex_transients.models.core.base import Spectrum
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import LogNormalPrior
 
-from ._utils import C_CGS, H_CGS, K_B_CGS, SIGMA_SB_CGS, log_expm1
+from .._util_functions import planck_shape_log_cgs
 
 __all__ = ["BlackbodySpectrum"]
 
@@ -75,10 +75,7 @@ class BlackbodySpectrum(Spectrum):
     def _eval(  # type: ignore[override]
         cls, nu: FloatArray, *, temperature: CGSParameterValue
     ) -> FloatArray:
-        x = H_CGS * nu / (K_B_CGS * temperature)
-        log_B_nu = np.log(2.0 * H_CGS / C_CGS**2) + 3.0 * np.log(nu) - log_expm1(x)
-
-        return np.log(np.pi) + log_B_nu - np.log(SIGMA_SB_CGS) - 4.0 * np.log(temperature)
+        return planck_shape_log_cgs(nu, temperature)
 
     # ----------------------------------- #
     # Normalization: integral of S(nu) dnu #

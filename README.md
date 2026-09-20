@@ -37,13 +37,25 @@ cd uvex-transients && pip install -e .
 
 The `uvex-transients` CLI drives the full simulation pipeline (sample events, screen by
 magnitude/SNR, run synthetic photometry) from a single YAML config file. Try it against the
-bundled [`quickstart_tde.yaml`](quickstart_tde.yaml) example:
+bundled [`configs/quickstart_tde.yaml`](configs/quickstart_tde.yaml) example:
 
 ```bash
-uvex-transients run quickstart_tde.yaml --out-dir quickstart_results/
+uvex-transients run configs/quickstart_tde.yaml --out-dir results/quickstart/
 ```
 
+<p align="center">
+  <img src="docs/source/images/make_run.gif" width="700" alt="uvex-transients run demo">
+</p>
+
 See the file itself for what each section does, and `uvex-transients --help` for every command.
+[`configs/full_run.yaml`](configs/full_run.yaml) is a full-scale config covering every registered
+transient class at once; run it directly or via `make run` (see the [`Makefile`](Makefile) --
+`make help` lists every target).
+
+If you'd rather work interactively, [`notebooks/`](notebooks/) has one self-contained, end-to-end
+notebook per transient family (kilonovae, TDEs, LFBOTs, Type II supernovae -- IIP, IIP + early
+excess and IIb together -- and Type I supernovae -- Ib and Ic); run them with `make notebooks` or
+open them directly in Jupyter.
 
 Full documentation, including the API reference, is available in the [`docs/`](docs/) directory.
 

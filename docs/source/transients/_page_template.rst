@@ -84,7 +84,9 @@ Simulated Light Curves
 The plot below draws ~1000 random parameter realizations from the priors
 above and shows the resulting bolometric light curves<, and photospheric
 temperatures (if the model is thermal)>. <If real comparison data for the
-calibrating event(s) exists under ``test_data/transients/``, overlay it as a
+calibrating event(s) exists in the packaged light-curve archive
+(``test_data/transients/lightcurves.h5``, via
+:class:`~uvex_transients.utils.lightcurve_archive.LightcurveArchive`), overlay it as a
 scatter series on top of the simulated realizations (see kilonovae.rst); omit
 this if no such data is available.>
 

@@ -1,7 +1,5 @@
 """Tests for `Event.simulate_photometry`."""
 
-from functools import partial
-
 import numpy as np
 import pytest
 from astropy import units as u
@@ -10,7 +8,6 @@ from astropy.time import Time
 from m4opt.missions._uvex import uvex
 from m4opt.synphot import observing
 
-from uvex_transients.dust import log_attenuation
 from uvex_transients.simulation.event import Event
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
@@ -60,7 +57,7 @@ def test_simulate_photometry_batches_observations_and_bands(make_schedule_from_p
             t_single,
             redshift=event.redshift,
             luminosity_distance=event.luminosity_distance,
-            log_attenuation=partial(log_attenuation, Ebv=event.ebv),
+            ebv=event.ebv,
             **sed_params,
         )
         with observing(obs_row["observer_location"], event_coord, obs_row["start_time"]):

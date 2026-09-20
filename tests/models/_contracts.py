@@ -34,7 +34,8 @@ from astropy import units as u
 from astropy.units import Quantity
 from scipy.integrate import quad
 
-from uvex_transients.models._utils import AB_MAG_ZERO_POINT, to_cgs_value
+from uvex_transients.models._constants import AB_MAG_ZERO_POINT
+from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core.parameters import Parameter
 
 __all__ = [

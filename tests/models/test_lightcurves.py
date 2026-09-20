@@ -22,6 +22,7 @@ from uvex_transients.models.lightcurves import (
     PowerLawLightcurve,
     SmoothBrokenPowerLawLightcurve,
     TopHatLightcurve,
+    TwoComponentBazinLightcurve,
     VillarLightcurve,
 )
 
@@ -82,6 +83,10 @@ class TestPlateauPowerLawLightcurve(LightcurveContract):
 
 class TestVillarLightcurve(LightcurveContract):
     model_class = VillarLightcurve
+
+
+class TestTwoComponentBazinLightcurve(LightcurveContract):
+    model_class = TwoComponentBazinLightcurve
 
 
 def test_all_lightcurves_covered():

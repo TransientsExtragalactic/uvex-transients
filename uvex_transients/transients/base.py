@@ -11,7 +11,8 @@ needed to run and window a Monte Carlo survey simulation: a duration limit and,
 for :class:`ExtragalacticTransient`, a cosmological volumetric event rate. Milky
 Way foreground reddening is likewise no longer a `TransientBase` concern -- see
 :class:`~m4opt.synphot.extinction.DustExtinction` -- since it's folded into a flux/magnitude call via
-the SED's own ``log_attenuation`` keyword rather than wrapped here.
+the SED's own ``log_attenuation`` keyword (``ebv``/``dust_law`` for
+``as_source_spectrum``/``simulate_photometry``) rather than wrapped here.
 
 :class:`ExtragalacticTransient` adds cosmological volumetric-rate sampling: given a
 per-class comoving event-rate density (events / Mpc^3 / yr as a function of redshift),
@@ -40,8 +41,8 @@ from numpy.typing import NDArray
 from scipy.integrate import cumulative_trapezoid
 
 from uvex_transients.models import SpectralModel
-from uvex_transients.models._cosmology import get_cosmology
 from uvex_transients.utils import get_rng, get_seed_sequence, logger, spawn_seeds, split_root_seed
+from uvex_transients.utils.cosmology import get_cosmology
 
 _SeedType = Union[np.random.SeedSequence, int]
 
@@ -119,7 +120,7 @@ class TransientBase(ABC):
             The cosmology to use for this transient class. This is used to determine
             the relevant luminosity distances of objects and to account for cosmological
             volume corrections. If ``None`` (default), the configured default cosmology
-            is used; see `uvex_transients.models._cosmology.get_cosmology`.
+            is used; see `uvex_transients.utils.cosmology.get_cosmology`.
         **_
             Ignored. Lets subclasses (e.g. `ExtragalacticTransient`) forward extra
             constructor arguments through a shared call signature without this base
@@ -170,8 +171,9 @@ class TransientBase(ABC):
         See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API
         (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and
         ``generate_spectrum``), each of which resolves redshift/distance from a
-        cosmology directly and accepts an optional ``log_attenuation`` for Milky Way
-        foreground reddening (see :class:`~m4opt.synphot.extinction.DustExtinction`).
+        cosmology directly and accepts an optional ``log_attenuation`` (or, for
+        ``as_source_spectrum``/``simulate_photometry``, ``ebv``/``dust_law``) for Milky
+        Way foreground reddening (see :class:`~m4opt.synphot.extinction.DustExtinction`).
         """
         return self._sed
 

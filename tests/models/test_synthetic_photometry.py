@@ -2,8 +2,6 @@
 This test suite verifies that the model module can plug into the synphot machinery.
 """
 
-from functools import partial
-
 import numpy as np
 import pytest
 from astropy import units as u
@@ -14,7 +12,6 @@ from m4opt.skygrid import _geodesic
 from m4opt.synphot import observing
 from m4opt.synphot.background import GalacticBackground
 
-from uvex_transients.dust import log_attenuation
 from uvex_transients.models import VanVelzenTDESED, VillarCoolingBlackbodySED
 
 
@@ -102,20 +99,19 @@ def test_synthetic_photometry_batches_events_and_times():
 
 def test_synthetic_photometry_with_batched_dust_extinction():
     """
-    Per-event dust extinction via `as_source_spectrum`'s `log_attenuation`, fully batched.
+    Per-event dust extinction via `as_source_spectrum`'s `ebv`, fully batched.
 
     Multiplying a batched `SourceSpectrum` by a separate `DustExtinction()`
     `SpectralElement` routes through `m4opt.synphot._math.countrate`'s
     per-Ebv interpolation shortcut, which chokes on a per-event batch axis
     (a known, separate m4opt limitation -- see
     `test_synthetic_photometry_batches_events_and_times`'s docstring).
-    Instead, `uvex_transients.dust.log_attenuation` (bound to each event's
-    own E(B-V) via `functools.partial`) is folded directly into the flux --
-    as plain NumPy arithmetic inside `as_source_spectrum`'s own evaluation
-    kernel -- before the `SourceSpectrum` is ever built. That keeps the
-    whole thing one ordinary broadcast, so it batches over events exactly as
-    cleanly as every other parameter already does in
-    `test_synthetic_photometry_batches_events_and_times`.
+    Instead, `as_source_spectrum` resolves `ebv` (each event's own E(B-V)) to
+    `uvex_transients.dust.log_attenuation` internally and folds it directly into
+    the flux -- as plain NumPy arithmetic inside its own evaluation kernel --
+    before the `SourceSpectrum` is ever built. That keeps the whole thing one
+    ordinary broadcast, so it batches over events exactly as cleanly as every
+    other parameter already does in `test_synthetic_photometry_batches_events_and_times`.
     """
     rng = np.random.default_rng(0)
 
@@ -138,7 +134,7 @@ def test_synthetic_photometry_with_batched_dust_extinction():
     spectra_with_dust = model.as_source_spectrum(
         time_since_explosion,
         redshift=redshift,
-        log_attenuation=partial(log_attenuation, Ebv=ebv),
+        ebv=ebv,
         **parameters,
     )
     spectra_without_dust = model.as_source_spectrum(time_since_explosion, redshift=redshift, **parameters)
@@ -162,7 +158,7 @@ def test_synthetic_photometry_with_batched_dust_extinction():
     scalar_spectrum = VanVelzenTDESED().as_source_spectrum(
         time_since_explosion,
         redshift=redshift,
-        log_attenuation=partial(log_attenuation, Ebv=ebv[i_event]),
+        ebv=ebv[i_event],
         **scalar_params,
     )
     expected = scalar_spectrum(wave[i_freq])

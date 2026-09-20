@@ -1,7 +1,5 @@
 """Tests for `SurveySimulator.filter_by_snr`."""
 
-from functools import partial
-
 import astropy_healpix as ah
 import numpy as np
 import pytest
@@ -12,7 +10,6 @@ from astropy.time import Time
 from m4opt.missions._uvex import uvex
 from m4opt.synphot import observing
 
-from uvex_transients.dust import log_attenuation
 from uvex_transients.simulation.core import (
     SurveySimulator,
     _sample_parameters_from_seeds,
@@ -130,7 +127,7 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
                 t_obs,
                 redshift=redshift[i],
                 luminosity_distance=catalog.table["luminosity_distance"][i],
-                log_attenuation=partial(log_attenuation, Ebv=0.05),
+                ebv=0.05,
                 **sed_params_i,
             )
             with observing(obs_i["observer_location"][j], coord[i], obs_i["start_time"][j]):

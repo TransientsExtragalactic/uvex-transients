@@ -1,16 +1,19 @@
-.. _transients_supernovae:
+.. _transients_type_ii:
 
-Type IIP Supernovae
-=====================
+Type II Supernovae
+====================
 
-Type IIP core-collapse supernovae (CCSNe) are the explosions of hydrogen-rich massive stars: an
+Type II core-collapse supernovae (CCSNe) are the explosions of massive stars that retained at
+least part of their hydrogen envelope. Type IIP events are the explosions of hydrogen-rich stars: an
 early cooling-phase decline (from the initial shock breakout) settles onto a
 weeks-to-months-long luminosity "plateau" as a recombination front recedes through the ejecta,
 followed by a radioactive tail powered by :math:`^{56}\mathrm{Co}` decay. A subset show a brighter,
 hotter, faster early excess on top of this, attributed to shock breakout through and/or collisional
 heating of close circumstellar material -- IXF/GGI-like objects, after the prototypes SN 2023ixf
-and SN 2024ggi. Both variants share the same SED functional form and differ only in their parameter
-priors, implemented as two sibling transient populations below.
+and SN 2024ggi. Both IIP variants share the same SED functional form and differ only in their
+parameter priors. Type IIb events, which lost most but not all of their hydrogen, are modeled with
+a different, double-pulse form. Each is implemented as its own transient population in a tab below.
+(Hydrogen-free Type Ib and Ic supernovae are covered on the :ref:`Type I page <transients_type_i>`.)
 
 .. tab-set::
 
@@ -45,7 +48,7 @@ priors, implemented as two sibling transient populations below.
            - --
            - Covers the plateau and the transition to the (unmodeled) nebular phase.
 
-      .. _transients_supernovae_sed:
+      .. _transients_type_ii_sed:
 
       SED Model
       ----------
@@ -178,15 +181,12 @@ priors, implemented as two sibling transient populations below.
       .. plot::
          :include-source: false
 
-         from pathlib import Path
-
          import numpy as np
          import matplotlib.pyplot as plt
          from astropy import units as u
-         from astropy.table import Table
 
-         import uvex_transients
          from uvex_transients.models.supernovae import TypeIIPSED
+         from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
          rng = np.random.default_rng(20260910)
          n_samples = 300
@@ -204,39 +204,39 @@ priors, implemented as two sibling transient populations below.
              ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.2)
              ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.2)
 
-         data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+         archive = LightcurveArchive()
          observed_iip_sne = [
-             ("1999em_bersten2009.txt", "SN 1999em", "o", "k"),
-             ("2003hn_bersten2009.txt", "SN 2003hn", "s", "firebrick"),
-             ("2012aw_dallora14.txt", "SN 2012aw", "^", "C2"),
-             ("2012A_faran18.txt", "SN 2012A", "X", "C7"),
-             ("2008in_faran18.txt", "SN 2008in", "*", "C8"),
+             ("1999em_bersten2009", "SN 1999em", "o", "k"),
+             ("2003hn_bersten2009", "SN 2003hn", "s", "firebrick"),
+             ("2012aw_dallora14", "SN 2012aw", "^", "C2"),
+             ("2012A_faran18", "SN 2012A", "X", "C7"),
+             ("2008in_faran18", "SN 2008in", "*", "C8"),
          ]
          # Light-curve-only comparison objects (no photospheric temperature sequence available).
          lbol_only_iip_sne = [
-             ("2004et_dallora14.txt", "SN 2004et", "v", "C4"),
-             ("1992H_dallora14.txt", "SN 1992H", "D", "C5"),
-             ("2009bw_dallora14.txt", "SN 2009bw", "P", "C6"),
+             ("2004et_dallora14", "SN 2004et", "v", "C4"),
+             ("1992H_dallora14", "SN 1992H", "D", "C5"),
+             ("2009bw_dallora14", "SN 2009bw", "P", "C6"),
          ]
 
          for suffix, label, marker, color in observed_iip_sne:
-             lbol_obs = Table.read(data_dir / f"lbol_{suffix}", format="ascii")
-             Tphot_obs = Table.read(data_dir / f"Tphot_{suffix}", format="ascii")
+             lbol_obs = archive.table("supernovae/IIP", suffix, "L_bol")
+             Tphot_obs = archive.table("supernovae/IIP", suffix, "T_phot")
              ax_L.scatter(
-                 lbol_obs["time"], lbol_obs["L_bol"],
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
                  marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
                  label=label,
              )
              ax_T.scatter(
-                 Tphot_obs["time"], Tphot_obs["T_phot"],
+                 Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
                  marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
                  label=label,
              )
 
          for suffix, label, marker, color in lbol_only_iip_sne:
-             lbol_obs = Table.read(data_dir / f"lbol_{suffix}", format="ascii")
+             lbol_obs = archive.table("supernovae/IIP", suffix, "L_bol")
              ax_L.scatter(
-                 lbol_obs["time"], lbol_obs["L_bol"],
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
                  marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
                  label=label,
              )
@@ -525,15 +525,12 @@ priors, implemented as two sibling transient populations below.
       .. plot::
          :include-source: false
 
-         from pathlib import Path
-
          import numpy as np
          import matplotlib.pyplot as plt
          from astropy import units as u
-         from astropy.table import Table
 
-         import uvex_transients
          from uvex_transients.models.supernovae import TypeIIPExcessSED
+         from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
          rng = np.random.default_rng(20260910)
          n_samples = 300
@@ -551,22 +548,22 @@ priors, implemented as two sibling transient populations below.
              ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.2)
              ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.2)
 
-         data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+         archive = LightcurveArchive()
          observed_excess_sne = [
-             ("2023ixf_hsu2025.txt", "SN 2023ixf", "o", "k"),
-             ("2024ggi_chen2024.txt", "SN 2024ggi", "s", "firebrick"),
+             ("2023ixf_hsu2025", "SN 2023ixf", "o", "k"),
+             ("2024ggi_chen2024", "SN 2024ggi", "s", "firebrick"),
          ]
 
          for suffix, label, marker, color in observed_excess_sne:
-             lbol_obs = Table.read(data_dir / f"lbol_{suffix}", format="ascii")
-             Tphot_obs = Table.read(data_dir / f"Tphot_{suffix}", format="ascii")
+             lbol_obs = archive.table("supernovae/II", suffix, "L_bol")
+             Tphot_obs = archive.table("supernovae/II", suffix, "T_phot")
              ax_L.scatter(
-                 lbol_obs["time"], lbol_obs["L_bol"],
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
                  marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
                  label=label,
              )
              ax_T.scatter(
-                 Tphot_obs["time"], Tphot_obs["T_phot"],
+                 Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
                  marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
                  label=label,
              )
@@ -716,6 +713,380 @@ priors, implemented as two sibling transient populations below.
 
           fig.tight_layout()
           plt.show()
+
+   .. tab-item:: Type IIb
+
+      Type IIb supernovae are core-collapse explosions of massive stars that have been stripped of most,
+      but not all, of their hydrogen envelope. Many show a double-peaked light curve: an early, hours-
+      to-days-long flash powered by the shock heating and subsequent cooling of the extended envelope,
+      followed -- after a dip -- by a broader, weeks-long peak powered by radioactive
+      :math:`^{56}\mathrm{Ni}` decay, the same mechanism that powers most other core-collapse SN light
+      curves. Others show only the single, radioactively powered peak, with no resolved early bump.
+      Where :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` models only the shock-cooling
+      component from first principles, this population is a purely phenomenological light curve intended
+      to span the whole population -- single- and double-peaked events alike -- in a single functional
+      form.
+
+      This population is implemented by
+      :class:`~uvex_transients.transients.supernovae.TypeIIbSNe`, pairing
+      :class:`~uvex_transients.models.supernovae.IIb.TypeIIbSED` with the rate/duration metadata
+      described below.
+
+      .. note::
+
+         The priors below are broad, order-of-magnitude-motivated ranges, not yet a fit to any specific
+         real Type IIb event. This page will be updated if/when they are recalibrated against data (as
+         :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` was).
+
+      Quick Facts
+      ------------
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 15 25 15 45
+
+         * - Quantity
+           - Value
+           - Source
+           - Notes
+         * - Rate
+           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
+             :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history; 10.3% is the stripped-envelope-corrected local
+             Type IIb fraction of core-collapse SNe from the LOSS volume-limited sample
+             :footcite:p:`shivvers2017`. Identical to the rate used by
+             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the same
+             underlying Type IIb population, just with different SED models.
+         * - Redshift limit
+           - :math:`z = 0.5`
+           - --
+           - Tighter than the :math:`z = 1` bound of :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`.
+         * - Duration
+           - 200 days
+           - --
+           - Long enough to cover the shock-cooling peak (where present), the dip, the radioactive main
+             peak, and its subsequent decline -- unlike
+             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`'s much shorter 20 day
+             window, which covers only the first of those phases.
+
+      SED Model
+      ----------
+
+      :class:`~uvex_transients.models.supernovae.IIb.TypeIIbSED` pairs a superposition of two Bazin
+      pulses with the same single-power-law cooling blackbody photosphere used elsewhere in this package
+      (e.g. :class:`~uvex_transients.models.supernovae.VillarCoolingBlackbodySED`):
+
+      .. math::
+
+          L_\mathrm{bol}(t) =
+          A_0\,
+          \frac{\exp[-(t-t_0)/\tau_{\mathrm{fall},0}]}{1 + \exp[-(t-t_0)/\tau_{\mathrm{rise},0}]}
+          +
+          A_1\,
+          \frac{\exp[-(t-t_1)/\tau_{\mathrm{fall},1}]}{1 + \exp[-(t-t_1)/\tau_{\mathrm{rise},1}]},
+          \qquad
+          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
+
+      The light curve is delegated directly to
+      :class:`~uvex_transients.models.lightcurves.generic.TwoComponentBazinLightcurve`: two ordinary
+      :class:`~uvex_transients.models.lightcurves.generic.BazinLightcurve` pulses, added rather than
+      multiplied -- an early one centered on :math:`t_0` standing in for the shock-cooling peak, and a
+      later one centered on :math:`t_1` for the radioactively powered main peak. Because the two
+      components are independent and additive, a single functional form covers both populations at once:
+      with the early component's amplitude :math:`A_0` much smaller than the main peak's :math:`A_1`,
+      only the main peak is visible (a single-peaked event); with :math:`A_0` comparable to :math:`A_1`,
+      both peaks show, with a dip between them where each pulse has decayed enough for the other to
+      dominate (a double-peaked event). This fits real double- and single-peaked Type IIb light curves
+      better than a single pulse reshaped by a multiplicative modulation.
+
+      .. dropdown:: Parameter priors
+
+         ``amplitude_0`` -- the early peak's normalization -- is uniform in
+         :math:`\log_{10}(A_0/\mathrm{erg\,s^{-1}})` between 39 and 43, i.e. from
+         :math:`10^{39}` to :math:`10^{43}\ \mathrm{erg\,s^{-1}}`: far fainter than the main peak (an
+         effectively single-peaked draw) up to brighter than it (a double-peaked, or even
+         early-peak-dominated, draw); roughly a third of draws from the priors below are double-peaked.
+         ``t0`` and ``T_floor`` are held fixed; every other parameter is drawn from a broad Uniform (or,
+         for ``amplitude_1``/``T0``, Normal-in-log) prior.
+
+         .. list-table::
+            :header-rows: 1
+            :widths: 16 12 26 46
+
+            * - Parameter
+              - Symbol
+              - Prior
+              - Notes
+            * - ``amplitude_0``
+              - :math:`A_0`
+              - LogUniform(:math:`10^{39}`, :math:`10^{43}\ \mathrm{erg\,s^{-1}}`)
+              - Early, shock-cooling peak normalization; spans negligible to brighter than the main peak.
+            * - ``t0``
+              - :math:`t_0`
+              - Fixed (2 d)
+              - Transition time of the early peak.
+            * - ``rise_0``
+              - :math:`\tau_{\mathrm{rise},0}`
+              - Uniform(0.3 d, 1 d)
+              - Logistic rise timescale of the early peak.
+            * - ``fall_0``
+              - :math:`\tau_{\mathrm{fall},0}`
+              - Uniform(3 d, 10 d)
+              - Exponential decline timescale of the early peak.
+            * - ``amplitude_1``
+              - :math:`A_1`
+              - Normal(:math:`\log_{10}(A_1/\mathrm{erg\,s^{-1}})`; mean=42.5, :math:`\sigma`\=0.1)
+              - Main, radioactively powered peak normalization (median :math:`\sim3\times10^{42}` erg/s).
+            * - ``t1``
+              - :math:`t_1`
+              - Uniform(10 d, 20 d)
+              - Transition time of the main peak.
+            * - ``rise_1``
+              - :math:`\tau_{\mathrm{rise},1}`
+              - Uniform(2 d, 4 d)
+              - Logistic rise timescale of the main peak.
+            * - ``fall_1``
+              - :math:`\tau_{\mathrm{fall},1}`
+              - Uniform(30 d, 55 d)
+              - Exponential decline timescale of the main peak.
+            * - ``T0``
+              - :math:`T_0`
+              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.1, :math:`\sigma`\=0.05)
+              - Photospheric temperature as :math:`t \to 0` (median :math:`\sim1.3\times10^4` K).
+            * - ``T_floor``
+              - :math:`T_\mathrm{floor}`
+              - Fixed (:math:`4\times10^3` K)
+              - Asymptotic late-time photospheric temperature.
+            * - ``tau_T``
+              - :math:`\tau_T`
+              - Uniform(5 d, 10 d)
+              - Photospheric cooling timescale.
+            * - ``alpha_T``
+              - :math:`\alpha_T`
+              - Uniform(0.7, 1.3)
+              - Photospheric cooling power-law index.
+
+      Simulated Light Curves
+      ~~~~~~~~~~~~~~~~~~~~~~~
+
+      The plot below draws 300 random parameter realizations from the priors above and shows the
+      resulting bolometric light curves and photospheric temperatures, overlaid with the observed
+      light curves and temperatures of several Type IIb SNe
+      :footcite:p:`richmond1994,taubenberger2011,moralesgaroffolo2014,moralesgaroffolo2015,yamanaka2025,prentice2019`.
+      The spread illustrates the single-/double-peaked split described above: most realizations show
+      only the main peak, with a minority showing a distinct early bump or, at the high end of the
+      ``amplitude_0`` prior, an early-dominated light curve -- both SN 1993J and SN 2011fu are
+      well-known double-peaked events, and show up as such in the overlaid data.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from uvex_transients.models.supernovae import TypeIIbSED as SEDClass
+         from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+
+         rng = np.random.default_rng(20260918)
+         n_samples = 300
+
+         params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+
+         t = np.geomspace(0.1, 200, 400) * u.day
+         L_bol = SEDClass.eval_bolometric(t, **params_grid)
+         T = SEDClass.temperature(t, **params_grid)
+
+         fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
+
+         for row in range(n_samples):
+             ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.15)
+             ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
+
+         archive = LightcurveArchive()
+         observed_iib_sne = [
+             ("2011fu_moralesgaroffolo2015", "SN 2011fu", "o", "k"),
+             ("2013df_moralesgaroffolo2014", "SN 2013df", "s", "firebrick"),
+         ]
+         # Temperature-only comparison objects (photospheric temperatures from Prentice+19, shifted to
+         # time since explosion using the tabulated peak time; no bolometric light curve available).
+         tphot_only_iib_sne = [
+             ("2013bb_prentice2019", "SN 2013bb", "P", "C1"),
+             ("2016gkg_prentice2019", "SN 2016gkg", "h", "C5"),
+             ("2017ixz_prentice2019", "SN 2017ixz", "<", "C6"),
+         ]
+         # Light-curve-only comparison objects (no photospheric temperature sequence available).
+         lbol_only_iib_sne = [
+             ("1993J_richmond1994", "SN 1993J", "^", "C2"),
+             ("2008ax_taubenberger2011", "SN 2008ax", "X", "C7"),
+             ("2024iss_yamanaka2025", "SN 2024iss", "*", "C8"),
+         ]
+
+         for suffix, label, marker, color in observed_iib_sne:
+             lbol_obs = archive.table("supernovae/IIb", suffix, "L_bol")
+             Tphot_obs = archive.table("supernovae/IIb", suffix, "T_phot")
+             ax_L.scatter(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+                 label=label,
+             )
+             ax_T.scatter(
+                 Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
+                 marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+                 label=label,
+             )
+
+         for suffix, label, marker, color in tphot_only_iib_sne:
+             Tphot_obs = archive.table("supernovae/IIb", suffix, "T_phot")
+             ax_T.scatter(
+                 Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
+                 marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+                 label=label,
+             )
+
+         for suffix, label, marker, color in lbol_only_iib_sne:
+             lbol_obs = archive.table("supernovae/IIb", suffix, "L_bol")
+             ax_L.scatter(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
+                 label=label,
+             )
+
+         ax_L.set_xscale("log")
+         ax_L.set_yscale("log")
+         ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
+         ax_L.set_title("Type IIb: simulated bolometric light curves (n=300)")
+         ax_L.legend(loc="lower left", fontsize=8, frameon=False)
+         ax_L.set_ylim([1e39, None])
+
+         ax_T.set_yscale("log")
+         ax_T.set_xlabel("Time since explosion [days]")
+         ax_T.set_ylabel("Photospheric temperature [K]")
+         ax_T.set_ylim([1e3, None])
+
+         fig.tight_layout()
+
+
+      ----
+
+      Observability Summary
+      ----------------------
+
+      Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
+      :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1 Dwell
+      limit of :math:`m<24.5` overplotted. The peak apparent magnitude is found by a numerical search
+      over each event's light curve, since neither peak sits at a single named parameter once both
+      components contribute.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIIbSNe
+         from uvex_transients.models.supernovae import TypeIIbSED
+
+         rng = np.random.default_rng(20260918)
+         n_samples = 1000
+
+         sn = TypeIIbSNe()
+         z = sn.sample_event_redshift(n_samples, rng=rng)
+         params = TypeIIbSED().sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+
+         # Numerically search each event's own light curve for its brightest (peak) apparent
+         # magnitude, since neither the early nor the main peak sits at a single named parameter.
+         t_grid_rest = np.geomspace(0.1, 200, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
+         z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
+
+         bandpasses = uvex.detector.bandpasses
+         band_names = list(bandpasses)
+
+         fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
+
+         for ax, band_name in zip(axes, band_names):
+             mag_curve = TypeIIbSED.mag_bandpass(
+                 bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
+             ).to_value(u.ABmag)
+             mag = np.nanmin(mag_curve, axis=1)
+             finite = np.isfinite(mag)
+
+             ax.scatter(z[finite], mag[finite], s=5, ec="k", fc="k", alpha=0.5, label="Simulated events")
+             ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
+
+             ax.invert_yaxis()
+             ax.set_xlabel("Redshift")
+             ax.set_title(f"UVEX {band_name}")
+             ax.legend(loc="upper right", fontsize=8, frameon=False)
+             ax.set_ylim([35, 15])
+
+         axes[0].set_ylabel("Peak apparent AB magnitude")
+         fig.suptitle(f"Type IIb: peak apparent magnitude vs. redshift (n={n_samples})")
+         fig.tight_layout()
+
+      The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
+      the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous in
+      comoving volume out to its redshift limit:
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIIbSNe
+
+         rng = np.random.default_rng(20260918)
+         n_samples = 1000
+
+         sn = TypeIIbSNe()
+         redshift = sn.sample_event_redshift(n_samples, rng=rng)
+         params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+         params_grid = {pname: value[:, None] for pname, value in params.items()}
+
+         # Convert the integrated rate per steradian to an all-sky rate.
+         all_sky_rate = 4 * np.pi * sn.integrated_event_rate * u.sr
+
+         t_grid_rest = np.geomspace(0.1, 200, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+         z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
+
+         visible_rates = {}
+         for band_name, bandpass in uvex.detector.bandpasses.items():
+             mag_curve = sn.sed.mag_bandpass(
+                 bandpass,
+                 t_obs_grid,
+                 redshift=z_grid_bcast,
+                 **params_grid,
+             ).to_value(u.ABmag)
+             magnitudes = np.nanmin(mag_curve, axis=1)
+
+             visible = magnitudes < 24.5
+             visible_fraction = np.mean(visible)
+             visible_rate = visible_fraction * all_sky_rate
+
+             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+
+             print(
+                 f"{band_name}: {visible_rate:.2f} "
+                 f"({visible_fraction:.1%} of events visible)"
+             )
+
+         fig, ax = plt.subplots(figsize=(5, 4))
+         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         ax.set_yscale("log")
+         ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+         ax.set_title("Peak-visible Type IIb rate")
+
+         fig.tight_layout()
 
 References
 -----------

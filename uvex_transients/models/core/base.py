@@ -36,7 +36,7 @@ combines one of each into a full :class:`SpectralModel`, with
 """
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from copy import copy, deepcopy
 from dataclasses import replace
 from typing import ClassVar, Self
@@ -54,9 +54,11 @@ from scipy.integrate import quad_vec
 from synphot import SourceSpectrum, SpectralElement
 from synphot import units as synphot_units
 
+from uvex_transients.dust import attenuation_callable
 from uvex_transients.utils import config, get_rng, logger
+from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
-from .._cosmology import resolve_cosmological_distances
+from .._constants import AB_MAG_ZERO_POINT, H_CGS
 from .._typing import (
     CGSParameterValue,
     FloatArray,
@@ -74,8 +76,6 @@ from .._utils import (
     _SED_SHAPE_UNIT,
     _SPEC_FLUX_UNIT,
     _SPEC_LUM_UNIT,
-    AB_MAG_ZERO_POINT,
-    H_CGS,
     hz_per_unit,
     model_class_from_kernel,
     to_cgs_value,
@@ -1491,7 +1491,8 @@ class SpectralModel(_ModelBase):
         angular_diameter_distance: Quantity | None = None,
         proper_distance: Quantity | None = None,
         cosmology: FLRW | None = None,
-        log_attenuation: Callable[[Quantity], FloatArray] | None = None,
+        ebv: float | Quantity | FloatArray | None = None,
+        dust_law: str | None = None,
         **parameters: ParameterValue,
     ) -> SourceSpectrum:
         r"""
@@ -1515,37 +1516,24 @@ class SpectralModel(_ModelBase):
         flux for :class:`~m4opt.synphot.Detector` to consume, not a
         rest-frame luminosity.
 
-        Foreground (e.g. Milky Way) dust attenuation is optional and, if
-        wanted, applied here rather than through :mod:`synphot`'s own
-        spectrum-composition operators (``spectrum * extinction``): pass
-        ``log_attenuation``, a callable evaluated on this wavelength grid
-        (as a proper :class:`~astropy.units.Quantity`, so unit conversion is
-        never ambiguous) and multiplied into the native photon flux, inside
-        this method's own evaluation kernel, before the result is wrapped
-        as a :class:`~synphot.SourceSpectrum`. Doing it here rather than by
-        composing two :class:`~astropy.modeling.Model` instances is what
-        lets ``E(B-V)`` stay vector-valued (e.g. one row per event) without
-        resurrecting :mod:`synphot`'s ``n_models=1`` restriction, exactly
-        like every other parameter here (see
-        :func:`~uvex_transients.models._utils.model_class_from_kernel`)
-        -- the attenuation is just one more array multiplied in via plain
-        NumPy broadcasting, not a second composed model.
-
-        :func:`~uvex_transients.dust.log_attenuation` matches this
-        contract already, given an already-resolved E(B-V) (see
-        :func:`~uvex_transients.dust.resolve_ebv` for turning a dust
-        map and sky position into one, as a separate prior step); bind it
-        with :func:`functools.partial` (or a small lambda), e.g.
-        ``log_attenuation=partial(uvex_transients.dust.log_attenuation,
-        Ebv=event_ebv)``. Passing a bare reddening-law model such as
-        :class:`dust_extinction.parameter_averages.G23` directly here does
-        *not* work: its bare-float calling convention assumes wavenumbers
-        in inverse microns (not this method's Angstrom), its
-        ``extinguish(x, Av=None, Ebv=None)`` takes :math:`A_V` positionally
-        rather than :math:`E(B-V)`, and it raises outright on wavelengths
-        outside its native range instead of returning ``NaN`` --
-        :func:`~uvex_transients.dust.log_attenuation` exists
-        specifically to handle all three correctly.
+        Foreground (e.g. Milky Way) dust attenuation is optional: pass an
+        already-resolved ``ebv`` (see :func:`~uvex_transients.dust.resolve_ebv`
+        for turning a dust map and sky position into one, as a separate prior
+        step) and it's folded into the native photon flux for you, inside this
+        method's own evaluation kernel, before the result is wrapped as a
+        :class:`~synphot.SourceSpectrum` -- applied here rather than through
+        :mod:`synphot`'s own spectrum-composition operators
+        (``spectrum * extinction``), and resolved to
+        :func:`~uvex_transients.dust.log_attenuation`'s callable form (via
+        :func:`~uvex_transients.dust.attenuation_callable`) internally, right
+        here, rather than something a caller ever has to build. Doing it here
+        rather than by composing two :class:`~astropy.modeling.Model`
+        instances is what lets ``ebv`` stay vector-valued (e.g. one row per
+        event) without resurrecting :mod:`synphot`'s ``n_models=1``
+        restriction, exactly like every other parameter here (see
+        :func:`~uvex_transients.models._utils.model_class_from_kernel`) -- the
+        attenuation is just one more array multiplied in via plain NumPy
+        broadcasting, not a second composed model.
 
         Parameters
         ----------
@@ -1558,11 +1546,14 @@ class SpectralModel(_ModelBase):
             Exactly one of ``redshift`` or the three distance keywords must
             be given; the rest are derived from it using ``cosmology``. See
             :meth:`as_astropy_model`.
-        log_attenuation
-            ``log_attenuation(wave) -> ln(transmission)``: a callable giving
-            the natural log of the dimensionless foreground transmission at
-            each wavelength in ``wave`` (a :class:`~astropy.units.Quantity`
-            in Angstrom). ``None`` (the default) applies no attenuation.
+        ebv : float, ~astropy.units.Quantity, or array-like, optional
+            Already-resolved, dimensionless E(B-V) (see
+            :func:`~uvex_transients.dust.resolve_ebv`). ``None`` (the default)
+            applies no dust attenuation.
+        dust_law : str, optional
+            Passed through to :func:`~uvex_transients.dust.get_dust_law`;
+            the configured default (``config["physics.default_dust_law"]``)
+            is almost always the right choice.
         **parameters
             This model's parameter values, either
             :class:`~astropy.units.Quantity` or already unit-stripped cgs
@@ -1607,6 +1598,7 @@ class SpectralModel(_ModelBase):
             **parameters,
         )
         t_cgs = to_cgs_value(t)
+        log_attenuation = None if ebv is None else attenuation_callable(ebv, dust_law)
 
         if log_attenuation is None:
 
@@ -1773,7 +1765,7 @@ class SpectralModel(_ModelBase):
         redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
             Exactly one of ``redshift`` or the three distance keywords must
             be given; the rest are derived from it using ``cosmology`` (see
-            :func:`~uvex_transients.models._cosmology.resolve_cosmological_distances`).
+            :func:`~uvex_transients.utils.cosmology.resolve_cosmological_distances`).
             ``cosmology`` defaults to that function's configured default.
         log_attenuation
             See :meth:`flux_log_cgs`.
@@ -2519,7 +2511,8 @@ class SpectralModel(_ModelBase):
         angular_diameter_distance: Quantity | None = None,
         proper_distance: Quantity | None = None,
         cosmology: FLRW | None = None,
-        log_attenuation: Callable[[Quantity], FloatArray] | None = None,
+        ebv: float | Quantity | FloatArray | None = None,
+        dust_law: str | None = None,
         n_sigma: float | None = None,
         sys_err: float | Mapping[str, float] | None = None,
         rng: RNGInput = None,
@@ -2541,7 +2534,7 @@ class SpectralModel(_ModelBase):
         chosen observing cadence), not ones a schedule was queried for. `background` is
         a required, explicit choice for the same reason -- rather than an implicit
         default read off `detector`. This lets a caller decide what physics to include
-        (dust, via `log_attenuation`, is always folded into the source flux itself; the
+        (dust, via `ebv`, is always folded into the source flux itself; the
         Milky Way's diffuse UV glow via
         `~m4opt.synphot.background.GalacticBackground`; zodiacal light via
         `~m4opt.synphot.background.ZodiacalBackground`; ...) without needing to know, let
@@ -2593,7 +2586,7 @@ class SpectralModel(_ModelBase):
             `background` doesn't depend on it.
         redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
             See :meth:`as_source_spectrum`.
-        log_attenuation
+        ebv, dust_law
             See :meth:`as_source_spectrum`.
         n_sigma : float, optional
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
@@ -2681,7 +2674,8 @@ class SpectralModel(_ModelBase):
             angular_diameter_distance=angular_diameter_distance,
             proper_distance=proper_distance,
             cosmology=cosmology,
-            log_attenuation=log_attenuation,
+            ebv=ebv,
+            dust_law=dust_law,
             **parameters,
         )
 

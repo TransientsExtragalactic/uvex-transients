@@ -4,7 +4,7 @@ The only non-trivial extension needed here is a ``!astropy_cosmology`` tag so
 ``config.yaml`` can name one of Astropy's built-in cosmologies (e.g.
 ``Planck18``) and have it load as a live `~astropy.cosmology.FLRW` instance
 rather than a bare string -- see
-:func:`uvex_transients.models._cosmology.get_cosmology`.
+:func:`uvex_transients.utils.cosmology.get_cosmology`.
 """
 
 from astropy.cosmology import FLRW, FlatLambdaCDM

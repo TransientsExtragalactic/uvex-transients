@@ -6,7 +6,15 @@ import numpy as np
 from astropy import units as u
 from numpy.typing import NDArray
 
-from uvex_transients.models.supernovae import TypeIIPExcessSED, TypeIIPSED
+from uvex_transients.models.supernovae import (
+    MoragShockCoolingSED,
+    TypeIbSED,
+    TypeIcSED,
+    TypeIIbSED,
+    TypeIIPExcessSED,
+    TypeIIPSED,
+)
+from uvex_transients.utils.cosmology import core_collapse_rate
 
 from .base import ExtragalacticTransient
 
@@ -18,32 +26,15 @@ _TYPE_IIP_FRACTION = 0.40
 # Bruch et al. 2023 (ZTF).
 _TYPE_IIP_EXCESS_FRACTION = 0.30 * _TYPE_IIP_FRACTION
 
+# Type IIb fraction of the total CC SNe rate, Shivvers et al. 2017 (doi:10.1088/1538-3873/aa54a6).
+_TYPE_IIB_FRACTION = 0.103
 
-def _core_collapse_rate(z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-    """
-    Return the total (all-subtype) volumetric core-collapse SNe rate at redshift(s) `z`.
-
-    Shared by each subtype class's own `event_rate` below, so the per-subtype rates
-    always stay a fixed fraction of the same underlying total rather than risking
-    independent drift.
-
-    Parameters
-    ----------
-    z : float or array-like
-        Redshift(s) at which to evaluate the event rate.
-
-    Returns
-    -------
-    float or array-like
-        The volumetric event rate at the specified redshift(s), in events per cubic megaparsec per year.
-    """
-    z = np.asarray(z)
-
-    # Maude & Dickenson coefficient * CC rate from LGS 2015.
-    _coefficient = 0.0001365 * 0.49  # (0.49 from h^2 inclusion). TODO: We should be more robust.
-    rate = _coefficient * (1 + z) ** 2.7 / (1 + ((1 + z) / 2.9) ** 5.6)
-
-    return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.
+# Stripped-envelope (IIb + Ib + Ic) fraction of the total CC SNe rate, and the Type Ic and Type Ib
+# shares of that stripped-envelope rate, all from Shivvers et al. 2017
+# (doi:10.1088/1538-3873/aa54a6). The Ic and Ib fractions of the CC rate are the product.
+_SESNE_FRACTION = 0.304
+_TYPE_IC_FRACTION = _SESNE_FRACTION * 0.411
+_TYPE_IB_FRACTION = _SESNE_FRACTION * 0.161
 
 
 class TypeIIPSNe(ExtragalacticTransient):
@@ -54,8 +45,8 @@ class TypeIIPSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 0.8
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `_core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""
-        return _TYPE_IIP_FRACTION * _core_collapse_rate(z)
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""
+        return _TYPE_IIP_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
 class TypeIIPExcessSNe(ExtragalacticTransient):
@@ -63,8 +54,77 @@ class TypeIIPExcessSNe(ExtragalacticTransient):
 
     DEFAULT_MODEL = TypeIIPExcessSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 2
+    DEFAULT_Z_LIM = 1.2
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `_core_collapse_rate(z)` times the Type IIP-excess fraction (see module docstring)."""
-        return _TYPE_IIP_EXCESS_FRACTION * _core_collapse_rate(z)
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIP-excess fraction (see module docstring)."""
+        return _TYPE_IIP_EXCESS_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+
+
+class ShockCoolingIIb(ExtragalacticTransient):
+    """
+    Early-time shock-cooling emission from Type IIb core-collapse SNe.
+
+    Uses `MoragShockCoolingSED` (Morag et al. 2024).
+
+    This models only the shock-cooling phase -- from shock breakout out to roughly a week
+    post-explosion, per Morag+24's own stated validity window -- not the radioactive-decay-powered
+    peak that dominates a typical Type IIb light curve at ~15-25 days. `DEFAULT_DURATION` is set
+    accordingly, well short of a full Type IIb light curve.
+    """
+
+    DEFAULT_MODEL = MoragShockCoolingSED
+    DEFAULT_DURATION = 20 * u.day
+    DEFAULT_Z_LIM = 1
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""
+        return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+
+
+class TypeIIbSNe(ExtragalacticTransient):
+    """
+    Full Type IIb core-collapse SN light curve.
+
+    `TypeIIbSED`: a phenomenological superposition of two Bazin pulses (an early shock-cooling
+    peak and the radioactively powered main peak) times a cooling blackbody photosphere. A broad
+    prior on the early peak's amplitude covers both single- and double-peaked Type IIb events in
+    the same population.
+
+    Unlike `ShockCoolingIIb`, which covers only the early shock-cooling phase, this spans a full
+    Type IIb light curve, hence its much longer `DEFAULT_DURATION`. Shares the same event rate as
+    `ShockCoolingIIb` -- both describe the same underlying Type IIb population, just with
+    different SED models.
+    """
+
+    DEFAULT_MODEL = TypeIIbSED
+    DEFAULT_DURATION = 200 * u.day
+    DEFAULT_Z_LIM = 0.5
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""
+        return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+
+
+class TypeIbSNe(ExtragalacticTransient):
+    """Type Ib core-collapse SNe: `TypeIbSED` (single Bazin pulse x cooling blackbody)."""
+
+    DEFAULT_MODEL = TypeIbSED
+    DEFAULT_DURATION = 100 * u.day
+    DEFAULT_Z_LIM = 0.5
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type Ib fraction (see module constants)."""
+        return _TYPE_IB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+
+
+class TypeIcSNe(ExtragalacticTransient):
+    """Type Ic core-collapse SNe: `TypeIcSED` (single Bazin pulse x cooling blackbody)."""
+
+    DEFAULT_MODEL = TypeIcSED
+    DEFAULT_DURATION = 100 * u.day
+    DEFAULT_Z_LIM = 0.5
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """Volumetric event rate: `core_collapse_rate(z)` times the Type Ic fraction (see module constants)."""
+        return _TYPE_IC_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)

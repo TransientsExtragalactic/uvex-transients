@@ -13,7 +13,6 @@ not constructed directly.
 """
 
 from collections.abc import Hashable
-from functools import partial
 
 import numpy as np
 from astropy import units as u
@@ -461,7 +460,7 @@ class Event:
             obstime=self._observations["start_time"],
             redshift=self._redshift,
             luminosity_distance=self._luminosity_distance,
-            log_attenuation=partial(log_attenuation, Ebv=self._ebv),
+            ebv=self._ebv,
             n_sigma=n_sigma,
             rng=rng,
             **sed_params,

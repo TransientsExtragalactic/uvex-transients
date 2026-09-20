@@ -5,7 +5,7 @@ Writing a Custom Transient
 
 The previous page covered everything you do *with* a transient class: instantiate it, read off
 its rate and duration, sample a population from it. This page covers how to build one. If none of
-the five populations shipped with the package (see :ref:`transients`) fit what you need, this is
+the populations shipped with the package (see :ref:`transients`) fit what you need, this is
 how you add a new one.
 
 A transient class only ever needs two things: a

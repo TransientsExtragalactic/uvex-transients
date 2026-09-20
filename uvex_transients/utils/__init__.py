@@ -31,7 +31,7 @@ def resolve_healpix_resolution(
     `~uvex_transients.simulation.core.SurveySimulator` sampling-grid method that
     accepts ``nside``/``order`` -- so ``config["healpix.default_nside"]``/
     ``config["healpix.default_order"]`` set the shared resolution once, the same
-    way `~uvex_transients.models._cosmology.get_cosmology` resolves an omitted
+    way `~uvex_transients.utils.cosmology.get_cosmology` resolves an omitted
     ``cosmology`` from ``config["physics.default_cosmology"]``, rather than each
     call site carrying its own (previously inconsistent) hardcoded literal.
 

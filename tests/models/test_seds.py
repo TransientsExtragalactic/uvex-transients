@@ -11,10 +11,18 @@ exactly the same public interface. See `_contracts`'s docstring for what is
 actually being checked.
 """
 
+import numpy as np
+from astropy import units as u
+
 from uvex_transients.models.core.base import ComposedSpectralModel, SpectralModel
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from uvex_transients.models.supernovae import (
+    MoragShockCoolingBlackbodySED,
+    MoragShockCoolingSED,
+    TypeIbSED,
+    TypeIcSED,
+    TypeIIbSED,
     TypeIIPExcessSED,
     TypeIIPSED,
     VillarCoolingBlackbodySED,
@@ -28,12 +36,38 @@ class TestVillarCoolingBlackbodySED(SpectralModelContract):
     model_class = VillarCoolingBlackbodySED
 
 
+class TestMoragShockCoolingSED(SpectralModelContract):
+    """Narrower `t_grid` than the default: Morag+24's shock-cooling fit is only valid for a
+    fairly short early-time window (this model masks parameter draws outside it to `nan`), unlike
+    the other phenomenological SEDs here which stay finite across the full default grid."""
+
+    model_class = MoragShockCoolingSED
+    t_grid: u.Quantity = np.geomspace(3e-2, 5, 24) * u.day
+
+
+class TestMoragShockCoolingBlackbodySED(SpectralModelContract):
+    model_class = MoragShockCoolingBlackbodySED
+    t_grid: u.Quantity = np.geomspace(3e-2, 5, 24) * u.day
+
+
 class TestTypeIIPSED(SpectralModelContract):
     model_class = TypeIIPSED
 
 
 class TestTypeIIPExcessSED(SpectralModelContract):
     model_class = TypeIIPExcessSED
+
+
+class TestTypeIIbSED(SpectralModelContract):
+    model_class = TypeIIbSED
+
+
+class TestTypeIbSED(SpectralModelContract):
+    model_class = TypeIbSED
+
+
+class TestTypeIcSED(SpectralModelContract):
+    model_class = TypeIcSED
 
 
 class TestVanVelzenTDESED(SpectralModelContract):

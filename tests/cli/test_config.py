@@ -195,3 +195,26 @@ def test_known_transient_modules_matches_the_package_directory():
     package_dir = Path(transients_pkg.__file__).parent
     actual_modules = {path.stem for path in package_dir.glob("*.py") if path.stem not in {"__init__", "base"}}
     assert actual_modules == set(_KNOWN_TRANSIENT_MODULES)
+
+
+#: Registered transient classes deliberately left out of `configs/full_run.yaml`: bespoke, first-principles
+#: models of one phase of a population another class already covers (counting both would double-count it).
+_FULL_RUN_EXCLUDED_CLASSES = {"ShockCoolingIIb"}
+
+
+def test_full_run_config_lists_every_registered_transient_class():
+    """`configs/full_run.yaml` promises "every registered class" -- fail loudly if a new one is missing from it."""
+    from uvex_transients.cli.config import _import_known_transients
+    from uvex_transients.transients.base import TransientBase
+
+    _import_known_transients()
+    registered = {name for name in TransientBase.registry() if not name.startswith("_")}
+
+    config_path = Path(__file__).resolve().parents[2] / "configs" / "full_run.yaml"
+    raw = get_run_yaml().load(config_path.read_text())
+    listed = {entry["class"] for entry in raw["transients"].values()}
+
+    assert listed == registered - _FULL_RUN_EXCLUDED_CLASSES, (
+        f"missing from full_run.yaml: {sorted(registered - _FULL_RUN_EXCLUDED_CLASSES - listed)}; "
+        f"unknown to the registry: {sorted(listed - registered)}"
+    )

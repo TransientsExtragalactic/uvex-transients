@@ -34,6 +34,24 @@ CONFIG_ARGUMENT = click.argument(
     "config_path", metavar="CONFIG", type=click.Path(exists=True, dir_okay=False, path_type=Path)
 )
 OVERWRITE_OPTION = click.option("--overwrite", is_flag=True, default=False, help="Overwrite an existing output file.")
+DRY_RUN_OPTION = click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Validate CONFIG and report what would run, without sampling, computing, or writing anything.",
+)
+
+
+def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, cut_names=None) -> None:
+    """Print `pipeline.dry_run_report` and exit non-zero if the real command would fail on an existing output."""
+    try:
+        lines, ok = pipeline.dry_run_report(config, command, outputs=outputs, overwrite=overwrite, cut_names=cut_names)
+    except (ValueError, KeyError, OSError) as error:
+        raise click.ClickException(f"dry run failed: {error}") from error
+    for line in lines:
+        click.echo(line)
+    if not ok:
+        raise click.exceptions.Exit(1)
 
 
 @click.group(cls=_LogoGroup)
@@ -45,9 +63,12 @@ def cli():
 @CONFIG_ARGUMENT
 @click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
 @OVERWRITE_OPTION
-def generate_command(config_path: Path, out_path: Path, overwrite: bool) -> None:
+@DRY_RUN_OPTION
+def generate_command(config_path: Path, out_path: Path, overwrite: bool, dry_run: bool) -> None:
     """Sample a Monte Carlo event catalog (needs CONFIG's schedule/transients/mission/generate sections)."""
     config = RunConfig.from_yaml(config_path)
+    if dry_run:
+        return _dry_run(config, "generate", [out_path], overwrite)
     catalog = pipeline.run_generate(config)
     catalog.to_disk(out_path, overwrite=overwrite)
     click.echo(f"generate: {len(catalog)} events -> {out_path}")
@@ -59,7 +80,10 @@ def generate_command(config_path: Path, out_path: Path, overwrite: bool) -> None
 @click.option("--in", "in_path", required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
 @OVERWRITE_OPTION
-def cut_command(config_path: Path, names: tuple[str, ...], in_path: Path, out_path: Path, overwrite: bool) -> None:
+@DRY_RUN_OPTION
+def cut_command(
+    config_path: Path, names: tuple[str, ...], in_path: Path, out_path: Path, overwrite: bool, dry_run: bool
+) -> None:
     """
     Run one or more of CONFIG's declared cuts against a catalog, chained in order.
 
@@ -67,6 +91,8 @@ def cut_command(config_path: Path, names: tuple[str, ...], in_path: Path, out_pa
     runs, in declared order.
     """
     config = RunConfig.from_yaml(config_path)
+    if dry_run:
+        return _dry_run(config, "cut", [out_path], overwrite, cut_names=list(names) or None)
     catalog = EventCatalog.from_disk(in_path)
     result = pipeline.run_cuts(config, catalog, names=list(names) or None)
     result.to_disk(out_path, overwrite=overwrite)
@@ -78,9 +104,12 @@ def cut_command(config_path: Path, names: tuple[str, ...], in_path: Path, out_pa
 @click.option("--in", "in_path", required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
 @OVERWRITE_OPTION
-def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwrite: bool) -> None:
+@DRY_RUN_OPTION
+def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwrite: bool, dry_run: bool) -> None:
     """Run synthetic photometry over every event in a catalog."""
     config = RunConfig.from_yaml(config_path)
+    if dry_run:
+        return _dry_run(config, "photometry", [out_path], overwrite)
     catalog = EventCatalog.from_disk(in_path)
     phot = pipeline.run_photometry(config, catalog)
     phot.write(out_path, overwrite=overwrite)
@@ -91,9 +120,20 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
 @CONFIG_ARGUMENT
 @click.option("--out-dir", "out_dir", required=True, type=click.Path(file_okay=False, path_type=Path))
 @OVERWRITE_OPTION
-def run_command(config_path: Path, out_dir: Path, overwrite: bool) -> None:
+@DRY_RUN_OPTION
+def run_command(config_path: Path, out_dir: Path, overwrite: bool, dry_run: bool) -> None:
     """Chain generate -> every declared cut -> photometry in one process, writing each stage's catalog to OUT_DIR."""
+    logo = _logo_text()
+    if logo:
+        click.echo(logo)
+
     config = RunConfig.from_yaml(config_path)
+    if dry_run:
+        stage_files = ["00_generated.ecsv"]
+        if config.has_section("cuts"):
+            stage_files += [f"{i:02d}_{key}.ecsv" for i, key in enumerate(config.cuts, start=1)]
+        stage_files.append("photometry.ecsv")
+        return _dry_run(config, "run", [out_dir / name for name in stage_files], overwrite)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     catalog = pipeline.run_generate(config)

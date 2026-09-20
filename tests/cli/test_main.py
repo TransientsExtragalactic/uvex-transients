@@ -86,3 +86,83 @@ def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
     assert phot_path.exists()
     phot = QTable.read(phot_path)
     assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}
+
+
+# --------------------------------------------------------------------------- #
+# --dry-run                                                                   #
+# --------------------------------------------------------------------------- #
+def test_generate_dry_run_reports_the_plan_and_writes_nothing(tmp_path, make_schedule):
+    """`generate --dry-run` validates the config, prints the plan, and creates no output file."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_path = tmp_path / "catalog.ecsv"
+
+    result = CliRunner().invoke(cli, ["generate", config_path, "--out", str(out_path), "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert "dry run: generate" in result.output
+    assert "TidalDisruptionEvent" in result.output
+    assert "time_bins=2" in result.output
+    assert f"would write  {out_path}" in result.output
+    assert "nothing was sampled or written" in result.output
+    assert not out_path.exists()
+
+
+def test_run_dry_run_lists_every_stage_file_and_creates_no_directory(tmp_path, make_schedule):
+    """`run --dry-run` lists each cut and every stage file it would write, without even creating OUT_DIR."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir), "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    for name in ("00_generated.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv", "photometry.ecsv"):
+        assert f"would write  {out_dir / name}" in result.output
+    assert "limiting_magnitude" in result.output
+    assert not out_dir.exists()
+
+
+def test_dry_run_flags_an_existing_output_and_fails(tmp_path, make_schedule):
+    """A dry run exits non-zero when the real command would refuse to overwrite an existing file, unless `--overwrite`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_path = tmp_path / "catalog.ecsv"
+    out_path.write_text("already here")
+
+    blocked = CliRunner().invoke(cli, ["generate", config_path, "--out", str(out_path), "--dry-run"])
+    assert blocked.exit_code == 1
+    assert "WOULD FAIL" in blocked.output
+
+    allowed = CliRunner().invoke(cli, ["generate", config_path, "--out", str(out_path), "--dry-run", "--overwrite"])
+    assert allowed.exit_code == 0, allowed.output
+    assert out_path.read_text() == "already here"
+
+
+def test_dry_run_reports_a_bad_config_as_a_clean_error(tmp_path, make_schedule):
+    """Config errors surface in a dry run as a short message rather than a traceback."""
+    config_path = _write_config(tmp_path, make_schedule)
+    bad = tmp_path / "bad.yaml"
+    bad.write_text(open(config_path).read().replace("TidalDisruptionEvent", "NotARealTransient"))
+
+    result = CliRunner().invoke(cli, ["generate", str(bad), "--out", str(tmp_path / "c.ecsv"), "--dry-run"])
+
+    assert result.exit_code != 0
+    assert "dry run failed" in result.output
+    assert "NotARealTransient" in result.output
+
+
+def test_cut_dry_run_rejects_an_unknown_cut_name(tmp_path, make_schedule):
+    """`cut --dry-run` validates the requested cut names against the config, without needing to read the catalog."""
+    config_path = _write_config(tmp_path, make_schedule)
+    catalog_path = tmp_path / "in.ecsv"
+    catalog_path.write_text("placeholder")  # only has to exist; a dry run never reads it
+
+    ok = CliRunner().invoke(
+        cli, ["cut", config_path, "cut_2", "--in", str(catalog_path), "--out", str(tmp_path / "o.ecsv"), "--dry-run"]
+    )
+    assert ok.exit_code == 0, ok.output
+    assert "cuts (1, in order)" in ok.output
+
+    bad = CliRunner().invoke(
+        cli, ["cut", config_path, "nope", "--in", str(catalog_path), "--out", str(tmp_path / "o.ecsv"), "--dry-run"]
+    )
+    assert bad.exit_code != 0
+    assert "Unknown cut key" in bad.output

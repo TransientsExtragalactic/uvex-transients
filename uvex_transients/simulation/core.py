@@ -17,7 +17,6 @@ above a given SNR" -- batched across many events at once the same way
 `Event.simulate_photometry` batches across one event's own observations.
 """
 
-from functools import partial
 from typing import Union
 
 import astropy_healpix as ah
@@ -836,7 +835,7 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
                         t_obs_flat,
                         redshift=redshift_flat,
                         luminosity_distance=luminosity_distance_flat,
-                        log_attenuation=partial(log_attenuation, Ebv=ebv_flat),
+                        ebv=ebv_flat,
                         **sed_params_flat,
                     )
 

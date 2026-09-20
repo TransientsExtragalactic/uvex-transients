@@ -173,8 +173,9 @@ overrides you want on top of its defaults:
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`
 subclass: every built-in type (``TidalDisruptionEvent``, ``Kilonova``,
-``LuminousFastBlueOpticalTransient``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``) is available by class
-name; an unrecognized one raises, listing what *is* registered.
+``LuminousFastBlueOpticalTransient``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``, ``TypeIIbSNe``,
+``ShockCoolingIIb``, ``TypeIbSNe``, ``TypeIcSNe``) is available by class name; an unrecognized one
+raises, listing what *is* registered.
 
 Everything under ``parameters:`` is applied the same way
 :meth:`Event.simulate_photometry <uvex_transients.simulation.event.Event.simulate_photometry>`
@@ -397,6 +398,23 @@ is fine here too; ``run`` goes straight from ``generate`` to ``photometry``.
 
 Every command accepts ``--overwrite`` to replace an existing output file/directory contents
 instead of raising.
+
+Every command also accepts ``--dry-run``, which validates the config and prints what the real
+command would do without sampling, computing photometry, or writing anything:
+
+.. code-block:: bash
+
+    uvex-transients run configs/full_run.yaml --out-dir results/ --dry-run
+
+It resolves every section the command needs, so an unknown transient ``class:``, a bad
+``parameters:`` override, an unknown cut type or cut name, an unknown mission, or an unreadable
+schedule fails here exactly as it would in the real run (as a short ``dry run failed: ...``
+message). On success it reports the mission, the size of the schedule, each transient population
+(class, SED, redshift limit, duration window), the ``generate:``, ``cuts:`` and ``photometry:``
+settings, and each output file it would write. If a real run would refuse to overwrite one that
+already exists, the dry run flags it as ``WOULD FAIL`` and exits non-zero unless ``--overwrite`` is
+also given. The schedule is loaded (and downloaded on first use), but the command never reads the
+``--in`` catalog of ``cut``/``photometry``, only checks that it exists.
 
 ----
 
