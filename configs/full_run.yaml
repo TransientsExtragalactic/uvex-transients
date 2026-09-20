@@ -1,0 +1,72 @@
+# ============================================================================ #
+# uvex_transients CLI: complete-population run                                 #
+# ============================================================================ #
+# A full-scale, every-registered-transient-class run-config for the
+# `uvex-transients` CLI. Where `configs/quickstart_tde.yaml` is a small,
+# fast, single-class demo, this config is meant to produce genuinely
+# representative UVEX yields across every transient population the package
+# ships (see `uvex_transients.transients.base.TransientBase.registry()`):
+# kilonovae, tidal disruption events, luminous fast blue optical transients,
+# Type II supernovae (both Type IIP variants and Type IIb), and Type Ib and Ic
+# supernovae. `ShockCoolingIIb` is deliberately left out: it is a bespoke,
+# first-principles model of just the early shock-cooling phase of the Type IIb
+# population `TypeIIbSNe` already covers.
+#
+# It's wired up as `make run` (see the Makefile), which writes its output
+# under `results/full_run/`. Run it directly instead with:
+#
+#     uvex-transients run configs/full_run.yaml --out-dir results/full_run/
+#
+# Full-scale sampling is not cheap: expect this to take substantially longer
+# than the quickstart config, since `generate:` below neither shrinks
+# `nside`/`time_bins` below the package default nor downsamples any
+# population beyond what its own event rate needs to stay tractable.
+
+schedule:
+  name: uvex_initial_main
+
+mission: uvex
+
+# One entry per registered `TransientBase` subclass. Each uses its own
+# defaults (rate, redshift limit, duration window; see
+# `uvex_transients/transients/*.py`) unmodified.
+transients:
+  kilonova:
+    class: Kilonova
+  tde:
+    class: TidalDisruptionEvent
+  lfbot:
+    class: LuminousFastBlueOpticalTransient
+  iip_sne:
+    class: TypeIIPSNe
+  iip_excess_sne:
+    class: TypeIIPExcessSNe
+  iib_sne:
+    class: TypeIIbSNe
+  ib_sne:
+    class: TypeIbSNe
+  ic_sne:
+    class: TypeIcSNe
+
+# `nside`/`order` are left unset (package default: `healpix.default_nside`/
+# `healpix.default_order` in `uvex_transients/config.yaml`). `time_bins` is
+# generous enough to resolve the full mission window at that resolution.
+# `downsample` applies as a single factor across every registered type in
+# this call (there's no per-class knob) -- 20 keeps the highest-rate
+# populations (TDEs, Type IIP SNe) tractable; counts for every type are
+# rescaled back up by this factor automatically once sampled.
+generate:
+  time_bins: 200
+  downsample: 20
+  seed: 42
+
+cuts:
+  mag_screen:
+    type: limiting_magnitude
+    mag_limit: 25.0
+  snr_screen:
+    type: snr
+    snr_threshold: 5.0
+
+photometry:
+  bands: [FUV, NUV]
