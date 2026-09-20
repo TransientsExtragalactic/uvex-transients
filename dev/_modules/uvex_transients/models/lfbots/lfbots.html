@@ -405,6 +405,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">cooling_temperature_cgs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
@@ -542,7 +543,7 @@
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/t_\mathrm{peak})^{-\alpha_T}`."""</span>
-        <span class="k">return</span> <span class="n">T_floor</span> <span class="o">+</span> <span class="p">(</span><span class="n">T0</span> <span class="o">-</span> <span class="n">T_floor</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">alpha_T</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cooling_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">T0</span><span class="o">=</span><span class="n">T0</span><span class="p">,</span> <span class="n">T_floor</span><span class="o">=</span><span class="n">T_floor</span><span class="p">,</span> <span class="n">timescale</span><span class="o">=</span><span class="n">t_peak</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_T</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LFBOTCoolingBlackbodySED.temperature">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED.temperature.html#uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED.temperature">[docs]</a>

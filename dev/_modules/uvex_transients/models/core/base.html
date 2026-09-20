@@ -435,7 +435,7 @@
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Self</span>
@@ -453,9 +453,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceSpectrum</span><span class="p">,</span> <span class="n">SpectralElement</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">synphot_units</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">attenuation_callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.._cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">AB_MAG_ZERO_POINT</span><span class="p">,</span> <span class="n">H_CGS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="n">FloatArray</span><span class="p">,</span>
@@ -473,8 +475,6 @@
     <span class="n">_SED_SHAPE_UNIT</span><span class="p">,</span>
     <span class="n">_SPEC_FLUX_UNIT</span><span class="p">,</span>
     <span class="n">_SPEC_LUM_UNIT</span><span class="p">,</span>
-    <span class="n">AB_MAG_ZERO_POINT</span><span class="p">,</span>
-    <span class="n">H_CGS</span><span class="p">,</span>
     <span class="n">hz_per_unit</span><span class="p">,</span>
     <span class="n">model_class_from_kernel</span><span class="p">,</span>
     <span class="n">to_cgs_value</span><span class="p">,</span>
@@ -1990,7 +1990,8 @@
         <span class="n">angular_diameter_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">proper_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">log_attenuation</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Quantity</span><span class="p">],</span> <span class="n">FloatArray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SourceSpectrum</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -2014,37 +2015,24 @@
 <span class="sd">        flux for :class:`~m4opt.synphot.Detector` to consume, not a</span>
 <span class="sd">        rest-frame luminosity.</span>
 
-<span class="sd">        Foreground (e.g. Milky Way) dust attenuation is optional and, if</span>
-<span class="sd">        wanted, applied here rather than through :mod:`synphot`'s own</span>
-<span class="sd">        spectrum-composition operators (``spectrum * extinction``): pass</span>
-<span class="sd">        ``log_attenuation``, a callable evaluated on this wavelength grid</span>
-<span class="sd">        (as a proper :class:`~astropy.units.Quantity`, so unit conversion is</span>
-<span class="sd">        never ambiguous) and multiplied into the native photon flux, inside</span>
-<span class="sd">        this method's own evaluation kernel, before the result is wrapped</span>
-<span class="sd">        as a :class:`~synphot.SourceSpectrum`. Doing it here rather than by</span>
-<span class="sd">        composing two :class:`~astropy.modeling.Model` instances is what</span>
-<span class="sd">        lets ``E(B-V)`` stay vector-valued (e.g. one row per event) without</span>
-<span class="sd">        resurrecting :mod:`synphot`'s ``n_models=1`` restriction, exactly</span>
-<span class="sd">        like every other parameter here (see</span>
-<span class="sd">        :func:`~uvex_transients.models._utils.model_class_from_kernel`)</span>
-<span class="sd">        -- the attenuation is just one more array multiplied in via plain</span>
-<span class="sd">        NumPy broadcasting, not a second composed model.</span>
-
-<span class="sd">        :func:`~uvex_transients.dust.log_attenuation` matches this</span>
-<span class="sd">        contract already, given an already-resolved E(B-V) (see</span>
-<span class="sd">        :func:`~uvex_transients.dust.resolve_ebv` for turning a dust</span>
-<span class="sd">        map and sky position into one, as a separate prior step); bind it</span>
-<span class="sd">        with :func:`functools.partial` (or a small lambda), e.g.</span>
-<span class="sd">        ``log_attenuation=partial(uvex_transients.dust.log_attenuation,</span>
-<span class="sd">        Ebv=event_ebv)``. Passing a bare reddening-law model such as</span>
-<span class="sd">        :class:`dust_extinction.parameter_averages.G23` directly here does</span>
-<span class="sd">        *not* work: its bare-float calling convention assumes wavenumbers</span>
-<span class="sd">        in inverse microns (not this method's Angstrom), its</span>
-<span class="sd">        ``extinguish(x, Av=None, Ebv=None)`` takes :math:`A_V` positionally</span>
-<span class="sd">        rather than :math:`E(B-V)`, and it raises outright on wavelengths</span>
-<span class="sd">        outside its native range instead of returning ``NaN`` --</span>
-<span class="sd">        :func:`~uvex_transients.dust.log_attenuation` exists</span>
-<span class="sd">        specifically to handle all three correctly.</span>
+<span class="sd">        Foreground (e.g. Milky Way) dust attenuation is optional: pass an</span>
+<span class="sd">        already-resolved ``ebv`` (see :func:`~uvex_transients.dust.resolve_ebv`</span>
+<span class="sd">        for turning a dust map and sky position into one, as a separate prior</span>
+<span class="sd">        step) and it's folded into the native photon flux for you, inside this</span>
+<span class="sd">        method's own evaluation kernel, before the result is wrapped as a</span>
+<span class="sd">        :class:`~synphot.SourceSpectrum` -- applied here rather than through</span>
+<span class="sd">        :mod:`synphot`'s own spectrum-composition operators</span>
+<span class="sd">        (``spectrum * extinction``), and resolved to</span>
+<span class="sd">        :func:`~uvex_transients.dust.log_attenuation`'s callable form (via</span>
+<span class="sd">        :func:`~uvex_transients.dust.attenuation_callable`) internally, right</span>
+<span class="sd">        here, rather than something a caller ever has to build. Doing it here</span>
+<span class="sd">        rather than by composing two :class:`~astropy.modeling.Model`</span>
+<span class="sd">        instances is what lets ``ebv`` stay vector-valued (e.g. one row per</span>
+<span class="sd">        event) without resurrecting :mod:`synphot`'s ``n_models=1``</span>
+<span class="sd">        restriction, exactly like every other parameter here (see</span>
+<span class="sd">        :func:`~uvex_transients.models._utils.model_class_from_kernel`) -- the</span>
+<span class="sd">        attenuation is just one more array multiplied in via plain NumPy</span>
+<span class="sd">        broadcasting, not a second composed model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2057,11 +2045,14 @@
 <span class="sd">            Exactly one of ``redshift`` or the three distance keywords must</span>
 <span class="sd">            be given; the rest are derived from it using ``cosmology``. See</span>
 <span class="sd">            :meth:`as_astropy_model`.</span>
-<span class="sd">        log_attenuation</span>
-<span class="sd">            ``log_attenuation(wave) -&gt; ln(transmission)``: a callable giving</span>
-<span class="sd">            the natural log of the dimensionless foreground transmission at</span>
-<span class="sd">            each wavelength in ``wave`` (a :class:`~astropy.units.Quantity`</span>
-<span class="sd">            in Angstrom). ``None`` (the default) applies no attenuation.</span>
+<span class="sd">        ebv : float, ~astropy.units.Quantity, or array-like, optional</span>
+<span class="sd">            Already-resolved, dimensionless E(B-V) (see</span>
+<span class="sd">            :func:`~uvex_transients.dust.resolve_ebv`). ``None`` (the default)</span>
+<span class="sd">            applies no dust attenuation.</span>
+<span class="sd">        dust_law : str, optional</span>
+<span class="sd">            Passed through to :func:`~uvex_transients.dust.get_dust_law`;</span>
+<span class="sd">            the configured default (``config["physics.default_dust_law"]``)</span>
+<span class="sd">            is almost always the right choice.</span>
 <span class="sd">        **parameters</span>
 <span class="sd">            This model's parameter values, either</span>
 <span class="sd">            :class:`~astropy.units.Quantity` or already unit-stripped cgs</span>
@@ -2106,6 +2097,7 @@
             <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">t_cgs</span> <span class="o">=</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">log_attenuation</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">ebv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">attenuation_callable</span><span class="p">(</span><span class="n">ebv</span><span class="p">,</span> <span class="n">dust_law</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">log_attenuation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
@@ -2278,7 +2270,7 @@
 <span class="sd">        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology</span>
 <span class="sd">            Exactly one of ``redshift`` or the three distance keywords must</span>
 <span class="sd">            be given; the rest are derived from it using ``cosmology`` (see</span>
-<span class="sd">            :func:`~uvex_transients.models._cosmology.resolve_cosmological_distances`).</span>
+<span class="sd">            :func:`~uvex_transients.utils.cosmology.resolve_cosmological_distances`).</span>
 <span class="sd">            ``cosmology`` defaults to that function's configured default.</span>
 <span class="sd">        log_attenuation</span>
 <span class="sd">            See :meth:`flux_log_cgs`.</span>
@@ -3072,7 +3064,8 @@
         <span class="n">angular_diameter_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">proper_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">log_attenuation</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Quantity</span><span class="p">],</span> <span class="n">FloatArray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sys_err</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3094,7 +3087,7 @@
 <span class="sd">        chosen observing cadence), not ones a schedule was queried for. `background` is</span>
 <span class="sd">        a required, explicit choice for the same reason -- rather than an implicit</span>
 <span class="sd">        default read off `detector`. This lets a caller decide what physics to include</span>
-<span class="sd">        (dust, via `log_attenuation`, is always folded into the source flux itself; the</span>
+<span class="sd">        (dust, via `ebv`, is always folded into the source flux itself; the</span>
 <span class="sd">        Milky Way's diffuse UV glow via</span>
 <span class="sd">        `~m4opt.synphot.background.GalacticBackground`; zodiacal light via</span>
 <span class="sd">        `~m4opt.synphot.background.ZodiacalBackground`; ...) without needing to know, let</span>
@@ -3146,7 +3139,7 @@
 <span class="sd">            `background` doesn't depend on it.</span>
 <span class="sd">        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology</span>
 <span class="sd">            See :meth:`as_source_spectrum`.</span>
-<span class="sd">        log_attenuation</span>
+<span class="sd">        ebv, dust_law</span>
 <span class="sd">            See :meth:`as_source_spectrum`.</span>
 <span class="sd">        n_sigma : float, optional</span>
 <span class="sd">            Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/</span>
@@ -3234,7 +3227,8 @@
             <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
             <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
             <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span>
-            <span class="n">log_attenuation</span><span class="o">=</span><span class="n">log_attenuation</span><span class="p">,</span>
+            <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
+            <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span>
             <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
         <span class="p">)</span>
 

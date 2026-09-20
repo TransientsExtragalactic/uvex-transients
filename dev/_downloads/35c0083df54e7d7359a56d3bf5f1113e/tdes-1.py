@@ -1,13 +1,10 @@
-from pathlib import Path
-
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from astropy.table import Table
 
-import uvex_transients
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 from uvex_transients.models.lightcurves.generic import GREDLightcurve
+from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
 rng = np.random.default_rng(20260910)
 n_samples = 1000
@@ -24,13 +21,13 @@ t = t_rel + t_peak
 
 L_bol = TDEs.sed.eval_bolometric(t, **params_grid)
 
-data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+archive = LightcurveArchive()
 observed_tdes = [
-    ("lbol_2018hyz_vanvelzen.txt", "AT2018hyz (van Velzen+2021)", "o", "k"),
-    ("lbol_2019qiz_vanvelzen.txt", "AT2019qiz (van Velzen+2021)", "s", "firebrick"),
-    ("lbol_2018lna_vanvelzen.txt", "AT2018lna (van Velzen+2021)", "^", "darkorange"),
-    ("lbol_2018iih_vanvelzen.txt", "AT2018iih (van Velzen+2021)", "D", "seagreen"),
-    ("lbol_2019mha_vanvelzen.txt", "AT2019mha (van Velzen+2021)", "v", "mediumpurple"),
+    ("2018hyz_vanvelzen", "AT2018hyz (van Velzen+2021)", "o", "k"),
+    ("2019qiz_vanvelzen", "AT2019qiz (van Velzen+2021)", "s", "firebrick"),
+    ("2018lna_vanvelzen", "AT2018lna (van Velzen+2021)", "^", "darkorange"),
+    ("2018iih_vanvelzen", "AT2018iih (van Velzen+2021)", "D", "seagreen"),
+    ("2019mha_vanvelzen", "AT2019mha (van Velzen+2021)", "v", "mediumpurple"),
 ]
 
 fig, ax_L = plt.subplots(figsize=(6.4, 4.8))
@@ -38,10 +35,10 @@ fig, ax_L = plt.subplots(figsize=(6.4, 4.8))
 for row in range(n_samples):
     ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
 
-for filename, label, marker, color in observed_tdes:
-    lbol_obs = Table.read(data_dir / filename, format="ascii")
+for suffix, label, marker, color in observed_tdes:
+    lbol_obs = archive.table("tdes", suffix, "L_bol")
     ax_L.scatter(
-        lbol_obs["time"], lbol_obs["L_bol"],
+        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
         marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
         label=label,
     )

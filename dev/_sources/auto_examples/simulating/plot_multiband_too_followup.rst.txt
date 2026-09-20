@@ -31,12 +31,10 @@ In this example, we'll show off a simulation of this sort of scenario: Rubin get
 starts a multi-band follow-up campaign of its own, then UVEX is triggered and joins in with its two UV
 bands.
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-43
+.. GENERATED FROM PYTHON SOURCE LINES 15-41
 
 .. code-block:: Python
 
-
-    from functools import partial
 
     import numpy as np
     from astropy import units as u
@@ -77,7 +75,7 @@ bands.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-54
+.. GENERATED FROM PYTHON SOURCE LINES 42-52
 
 Choosing the cadences
 -------------------------
@@ -90,7 +88,7 @@ cadence for ``FUV``/``NUV``. Every band that shares an (instrument, cadence) pai
 also shares one time grid, so :meth:`~uvex_transients.models.core.base.SpectralModel.simulate_photometry`
 only needs to be called once per group.
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-87
+.. GENERATED FROM PYTHON SOURCE LINES 52-85
 
 .. code-block:: Python
 
@@ -134,7 +132,7 @@ only needs to be called once per group.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-105
+.. GENERATED FROM PYTHON SOURCE LINES 86-103
 
 Simulating photometry
 --------------------------
@@ -154,7 +152,7 @@ column. Rubin's call also passes ``sys_err=RUBIN_SIGMA_SYS``, so its
 itself -- reflect the combined shot-noise-plus-systematic uncertainty; UVEX's call
 doesn't, so its points stay pure shot noise.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-149
+.. GENERATED FROM PYTHON SOURCE LINES 103-147
 
 .. code-block:: Python
 
@@ -172,7 +170,7 @@ doesn't, so its points stay pure shot noise.
             background=SkyBackground.medium(),
             redshift=redshift,
             luminosity_distance=luminosity_distance,
-            log_attenuation=partial(log_attenuation, Ebv=ebv),
+            ebv=ebv,
             sys_err=RUBIN_SIGMA_SYS,
             rng=0,
             **params,
@@ -190,7 +188,7 @@ doesn't, so its points stay pure shot noise.
         background=GalacticBackground(),
         redshift=redshift,
         luminosity_distance=luminosity_distance,
-        log_attenuation=partial(log_attenuation, Ebv=ebv),
+        ebv=ebv,
         rng=0,
         **params,
     )
@@ -217,7 +215,7 @@ doesn't, so its points stay pure shot noise.
      d                                                           
     --- ---------- ---- ---------------------- ------------------
     0.0       UVEX  FUV 0.00013221681436506683  28.99481738028228
-    0.0       UVEX  NUV  0.0006738824614370495                nan
+    0.0       UVEX  NUV  0.0006738824614370494                nan
     0.0      Rubin    g  0.0015027763939941836                nan
     0.0      Rubin    i  0.0006517172496378308                nan
     0.0      Rubin    r  0.0008886615886936758 29.203724142556172
@@ -226,7 +224,7 @@ doesn't, so its points stay pure shot noise.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-158
+.. GENERATED FROM PYTHON SOURCE LINES 148-156
 
 The light curves
 -------------------
@@ -237,7 +235,7 @@ instruments: detections above SNR=5 as points with error bars, fainter visits as
 downward-pointing upper limits -- the same plotting convention used at the end of
 :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-230
+.. GENERATED FROM PYTHON SOURCE LINES 156-228
 
 .. code-block:: Python
 
@@ -328,7 +326,7 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.465 seconds)
+   **Total running time of the script:** (0 minutes 0.321 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_multiband_too_followup.py:

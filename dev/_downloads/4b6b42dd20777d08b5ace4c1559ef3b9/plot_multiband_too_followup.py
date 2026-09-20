@@ -13,8 +13,6 @@ starts a multi-band follow-up campaign of its own, then UVEX is triggered and jo
 bands.
 """
 
-from functools import partial
-
 import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
@@ -116,7 +114,7 @@ for cadence, bands in rubin_band_groups.items():
         background=SkyBackground.medium(),
         redshift=redshift,
         luminosity_distance=luminosity_distance,
-        log_attenuation=partial(log_attenuation, Ebv=ebv),
+        ebv=ebv,
         sys_err=RUBIN_SIGMA_SYS,
         rng=0,
         **params,
@@ -134,7 +132,7 @@ phot_uvex = tde.sed.simulate_photometry(
     background=GalacticBackground(),
     redshift=redshift,
     luminosity_distance=luminosity_distance,
-    log_attenuation=partial(log_attenuation, Ebv=ebv),
+    ebv=ebv,
     rng=0,
     **params,
 )

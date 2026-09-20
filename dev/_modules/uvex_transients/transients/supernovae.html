@@ -405,58 +405,51 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeIIPExcessSED</span><span class="p">,</span> <span class="n">TypeIIPSED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MoragShockCoolingSED</span><span class="p">,</span>
+    <span class="n">TypeIbSED</span><span class="p">,</span>
+    <span class="n">TypeIcSED</span><span class="p">,</span>
+    <span class="n">TypeIIbSED</span><span class="p">,</span>
+    <span class="n">TypeIIPExcessSED</span><span class="p">,</span>
+    <span class="n">TypeIIPSED</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">core_collapse_rate</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
 
-<span class="c1"># Type IIP fraction of the total CC SNe rate (Li et al. 2011), and the sub-fraction of</span>
-<span class="c1"># those that are early-interacting (IXF/GGI-like): ~30% of IIP, i.e. 12% of the total</span>
-<span class="c1"># CC SNe rate.</span>
+<span class="c1"># Type IIP fraction of the total CC SNe rate (Li et al. 2011).</span>
 <span class="n">_TYPE_IIP_FRACTION</span> <span class="o">=</span> <span class="mf">0.40</span>
-<span class="n">_TYPE_IIP_EXCESS_FRACTION</span> <span class="o">=</span> <span class="mf">0.12</span>
 
+<span class="c1"># Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,</span>
+<span class="c1"># following the high incidence of early CSM-interaction signatures found among Type II SNe by</span>
+<span class="c1"># Bruch et al. 2023 (ZTF).</span>
+<span class="n">_TYPE_IIP_EXCESS_FRACTION</span> <span class="o">=</span> <span class="mf">0.30</span> <span class="o">*</span> <span class="n">_TYPE_IIP_FRACTION</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Return the total (all-subtype) volumetric core-collapse SNe rate at redshift(s) `z`.</span>
+<span class="c1"># Type IIb fraction of the total CC SNe rate, Shivvers et al. 2017 (doi:10.1088/1538-3873/aa54a6).</span>
+<span class="n">_TYPE_IIB_FRACTION</span> <span class="o">=</span> <span class="mf">0.103</span>
 
-<span class="sd">    Shared by each subtype class's own `event_rate` below, so the per-subtype rates</span>
-<span class="sd">    always stay a fixed fraction of the same underlying total rather than risking</span>
-<span class="sd">    independent drift.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    z : float or array-like</span>
-<span class="sd">        Redshift(s) at which to evaluate the event rate.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    float or array-like</span>
-<span class="sd">        The volumetric event rate at the specified redshift(s), in events per cubic megaparsec per year.</span>
-<span class="sd">    """</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-
-    <span class="c1"># Maude &amp; Dickenson coefficient * CC rate from LGS 2015.</span>
-    <span class="n">_coefficient</span> <span class="o">=</span> <span class="mf">0.0001365</span> <span class="o">*</span> <span class="mf">0.49</span>  <span class="c1"># (0.49 from h^2 inclusion). TODO: We should be more robust.</span>
-    <span class="n">rate</span> <span class="o">=</span> <span class="n">_coefficient</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.7</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.9</span><span class="p">)</span> <span class="o">**</span> <span class="mf">5.6</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span>
+<span class="c1"># Stripped-envelope (IIb + Ib + Ic) fraction of the total CC SNe rate, and the Type Ic and Type Ib</span>
+<span class="c1"># shares of that stripped-envelope rate, all from Shivvers et al. 2017</span>
+<span class="c1"># (doi:10.1088/1538-3873/aa54a6). The Ic and Ib fractions of the CC rate are the product.</span>
+<span class="n">_SESNE_FRACTION</span> <span class="o">=</span> <span class="mf">0.304</span>
+<span class="n">_TYPE_IC_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="mf">0.411</span>
+<span class="n">_TYPE_IB_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="mf">0.161</span>
 
 
 <div class="viewcode-block" id="TypeIIPSNe">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TypeIIPSNe</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Type IIP core-collapse SNe: `TypeIIPSED` (Villar lightcurve x cooling blackbody), Li+2011 rate fraction."""</span>
+<span class="w">    </span><span class="sd">"""Type IIP core-collapse SNe: `TypeIIPSED` (two-exponential + radioactive-tail lightcurve x cooling blackbody)."""</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPSED</span>
-    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.8</span>
 
 <div class="viewcode-block" id="TypeIIPSNe.event_rate">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.event_rate.html#uvex_transients.transients.supernovae.TypeIIPSNe.event_rate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""Volumetric event rate: `_core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""</span>
-        <span class="k">return</span> <span class="n">_TYPE_IIP_FRACTION</span> <span class="o">*</span> <span class="n">_core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IIP_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
 </div>
 
 
@@ -467,14 +460,107 @@
 <span class="w">    </span><span class="sd">"""Early-interacting (IXF/GGI-like) Type IIP core-collapse SNe: `TypeIIPExcessSED`."""</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPExcessSED</span>
-    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.2</span>
 
 <div class="viewcode-block" id="TypeIIPExcessSNe.event_rate">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.event_rate.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe.event_rate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""Return `_core_collapse_rate(z)` times the early-interacting IIP fraction (see module docstring)."""</span>
-        <span class="k">return</span> <span class="n">_TYPE_IIP_EXCESS_FRACTION</span> <span class="o">*</span> <span class="n">_core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type IIP-excess fraction (see module docstring)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IIP_EXCESS_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ShockCoolingIIb">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.html#uvex_transients.transients.supernovae.ShockCoolingIIb">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShockCoolingIIb</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Early-time shock-cooling emission from Type IIb core-collapse SNe.</span>
+
+<span class="sd">    Uses `MoragShockCoolingSED` (Morag et al. 2024).</span>
+
+<span class="sd">    This models only the shock-cooling phase -- from shock breakout out to roughly a week</span>
+<span class="sd">    post-explosion, per Morag+24's own stated validity window -- not the radioactive-decay-powered</span>
+<span class="sd">    peak that dominates a typical Type IIb light curve at ~15-25 days. `DEFAULT_DURATION` is set</span>
+<span class="sd">    accordingly, well short of a full Type IIb light curve.</span>
+<span class="sd">    """</span>
+
+    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">MoragShockCoolingSED</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="ShockCoolingIIb.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.event_rate.html#uvex_transients.transients.supernovae.ShockCoolingIIb.event_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IIB_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TypeIIbSNe">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIbSNe.html#uvex_transients.transients.supernovae.TypeIIbSNe">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIIbSNe</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Full Type IIb core-collapse SN light curve.</span>
+
+<span class="sd">    `TypeIIbSED`: a phenomenological superposition of two Bazin pulses (an early shock-cooling</span>
+<span class="sd">    peak and the radioactively powered main peak) times a cooling blackbody photosphere. A broad</span>
+<span class="sd">    prior on the early peak's amplitude covers both single- and double-peaked Type IIb events in</span>
+<span class="sd">    the same population.</span>
+
+<span class="sd">    Unlike `ShockCoolingIIb`, which covers only the early shock-cooling phase, this spans a full</span>
+<span class="sd">    Type IIb light curve, hence its much longer `DEFAULT_DURATION`. Shares the same event rate as</span>
+<span class="sd">    `ShockCoolingIIb` -- both describe the same underlying Type IIb population, just with</span>
+<span class="sd">    different SED models.</span>
+<span class="sd">    """</span>
+
+    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIbSED</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<div class="viewcode-block" id="TypeIIbSNe.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIbSNe.event_rate.html#uvex_transients.transients.supernovae.TypeIIbSNe.event_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IIB_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TypeIbSNe">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.html#uvex_transients.transients.supernovae.TypeIbSNe">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIbSNe</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Type Ib core-collapse SNe: `TypeIbSED` (single Bazin pulse x cooling blackbody)."""</span>
+
+    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIbSED</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<div class="viewcode-block" id="TypeIbSNe.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.event_rate.html#uvex_transients.transients.supernovae.TypeIbSNe.event_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type Ib fraction (see module constants)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IB_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TypeIcSNe">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.html#uvex_transients.transients.supernovae.TypeIcSNe">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIcSNe</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Type Ic core-collapse SNe: `TypeIcSED` (single Bazin pulse x cooling blackbody)."""</span>
+
+    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIcSED</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<div class="viewcode-block" id="TypeIcSNe.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.event_rate.html#uvex_transients.transients.supernovae.TypeIcSNe.event_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Volumetric event rate: `core_collapse_rate(z)` times the Type Ic fraction (see module constants)."""</span>
+        <span class="k">return</span> <span class="n">_TYPE_IC_FRACTION</span> <span class="o">*</span> <span class="n">core_collapse_rate</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

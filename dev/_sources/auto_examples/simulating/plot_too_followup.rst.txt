@@ -52,12 +52,10 @@ a real survey simulation resolves it -- :func:`~uvex_transients.dust.resolve_ebv
 against the real sky map -- since it depends only on sky position, not on when the
 TDE happens to be observed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-60
+.. GENERATED FROM PYTHON SOURCE LINES 35-58
 
 .. code-block:: Python
 
-
-    from functools import partial
 
     import numpy as np
     from astropy import units as u
@@ -95,7 +93,7 @@ TDE happens to be observed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-68
+.. GENERATED FROM PYTHON SOURCE LINES 59-66
 
 A weekly cadence
 -------------------
@@ -105,7 +103,7 @@ No schedule to query -- just pick the times to observe. :attr:`tde.duration_limi
 upper bound on how long this class of event stays relevant; weekly visits across
 that whole window is a plausible real follow-up cadence for something this slow.
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-75
+.. GENERATED FROM PYTHON SOURCE LINES 66-73
 
 .. code-block:: Python
 
@@ -129,7 +127,7 @@ that whole window is a plausible real follow-up cadence for something this slow.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-88
+.. GENERATED FROM PYTHON SOURCE LINES 74-86
 
 Simulating photometry, with no zodiacal light
 --------------------------------------------------
@@ -137,14 +135,14 @@ Simulating photometry, with no zodiacal light
 A real ToO trigger time isn't known in advance, so there's no meaningful
 ``obstime`` to feed a season-dependent background term like zodiacal light. Passing
 ``background=GalacticBackground()`` explicitly simulates against dust (already
-folded into the source flux itself, via ``log_attenuation``) plus the Milky Way's
+folded into the source flux itself, via ``ebv``) plus the Milky Way's
 diffuse UV glow only, and leaves ``observer_location``/``obstime`` at their
 placeholder defaults -- both irrelevant to
 :class:`~m4opt.synphot.background.GalacticBackground`, so there is nothing else to
 supply. See :meth:`~uvex_transients.models.core.base.SpectralModel.simulate_photometry`'s
 own docstring for exactly when that placeholder default is (and isn't) safe.
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-103
+.. GENERATED FROM PYTHON SOURCE LINES 86-101
 
 .. code-block:: Python
 
@@ -157,7 +155,7 @@ own docstring for exactly when that placeholder default is (and isn't) safe.
         background=GalacticBackground(),
         redshift=redshift,
         luminosity_distance=luminosity_distance,
-        log_attenuation=partial(log_attenuation, Ebv=ebv),
+        ebv=ebv,
         rng=0,
         **params,
     )
@@ -174,7 +172,7 @@ own docstring for exactly when that placeholder default is (and isn't) safe.
      t   band         snr                ab_mag      
      d                                               
     ---- ---- -------------------- ------------------
-     0.0  FUV 0.011435447604935763  28.88966586939173
+     0.0  FUV 0.011435447604935759  28.88966586939173
      0.0  NUV 0.042660466209702985 28.658262785939527
      7.0  FUV    12.75841223741749 23.251605560381677
      7.0  NUV   28.266290110411916 22.325140164532897
@@ -184,7 +182,7 @@ own docstring for exactly when that placeholder default is (and isn't) safe.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-112
+.. GENERATED FROM PYTHON SOURCE LINES 102-110
 
 The light curves
 -------------------
@@ -195,7 +193,7 @@ detections above SNR=5 as points with error bars, fainter visits as
 downward-pointing upper limits -- the same plotting convention used at the end of
 :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-167
+.. GENERATED FROM PYTHON SOURCE LINES 110-165
 
 .. code-block:: Python
 
@@ -266,7 +264,7 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-179
+.. GENERATED FROM PYTHON SOURCE LINES 166-177
 
 Bonus: what zodiacal light would have cost
 -----------------------------------------------
@@ -280,7 +278,7 @@ background, Galactic *and* zodiacal light together, and now real
 :meth:`~m4opt.missions.uvex.observer_location`) are needed too, since zodiacal
 light actually depends on both.
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-202
+.. GENERATED FROM PYTHON SOURCE LINES 177-200
 
 .. code-block:: Python
 
@@ -298,7 +296,7 @@ light actually depends on both.
         obstime=obstime,
         redshift=redshift,
         luminosity_distance=luminosity_distance,
-        log_attenuation=partial(log_attenuation, Ebv=ebv),
+        ebv=ebv,
         rng=0,
         **params,
     )
@@ -324,7 +322,7 @@ light actually depends on both.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 39.198 seconds)
+   **Total running time of the script:** (1 minutes 57.846 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_too_followup.py:

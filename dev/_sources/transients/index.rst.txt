@@ -60,24 +60,55 @@ underlying physics in any detail.
       +++
       :math:`z \le 4` · 100 day window
 
-   .. grid-item-card:: Type IIP Supernovae
-      :link: supernovae
+   .. grid-item-card:: Type II Supernovae
+      :link: type_ii
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1
 
-      Hydrogen-rich core-collapse supernovae with a months-long plateau, with an optional
-      early-time UV excess from circumstellar interaction.
+      Hydrogen-bearing core-collapse supernovae: Type IIP events with a months-long plateau (plus
+      a rarer, brighter/hotter early-excess IXF/GGI-like variant), and Type IIb events, a
+      double-pulse phenomenological model spanning single- and double-peaked light curves.
 
       +++
-      :math:`z \le 2` · 200 day window
+      :math:`z \le 0.5`-:math:`1.2` · 100-200 day window
+
+   .. grid-item-card:: Type I Supernovae
+      :link: type_i
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1
+
+      Hydrogen-free (stripped-envelope) Type Ib and Type Ic core-collapse supernovae: a single
+      radioactively powered peak, modeled as a Bazin pulse times a cooling blackbody.
+
+      +++
+      :math:`z \le 0.5` · 100 day window
 
 Detailed Physical Models
 --------------------------
 
+Unlike the phenomenological SEDs above, the model below is a semi-analytic solution derived from
+radiation-hydrodynamics theory and calibrated against numerical simulations, rather than an
+empirical shape fit directly to observed light curves.
+
+.. grid:: 2
+   :gutter: 3
+
+   .. grid-item-card:: Shock-Cooling Type IIb SNe
+      :link: shock_cooling_iib
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1
+
+      The early, days-long shock-cooling flash from a stripped-envelope core-collapse SN, per
+      Morag+24's diffusion-envelope model. Covers only this early phase, not the later
+      radioactive-decay peak of a full Type IIb light curve.
+
+      +++
+      :math:`z \le 1` · 20 day window
+
 .. note::
 
-   All models above are phenomenological. First-principles physical models (e.g. radiative
-   transfer or hydrodynamically motivated SEDs) are not yet implemented, but the same
+   Other kinds of first-principles physical models (e.g. full radiative transfer or
+   hydrodynamically-motivated SEDs) are not yet implemented, but the same
    :mod:`~uvex_transients.models.core` framework is designed to accommodate them as they are
    added.
 
@@ -88,4 +119,6 @@ Detailed Physical Models
    kilonovae
    tdes
    lfbots
-   supernovae
+   type_ii
+   type_i
+   shock_cooling_iib

@@ -400,26 +400,20 @@
 <span></span><span class="sd">"""</span>
 <span class="sd">Milky Way foreground dust extinction.</span>
 
-<span class="sd">This module provides access to the PlanckGNILC E(B-V) map (`dust_map`), the adopted</span>
-<span class="sd">Gordon+2023 (`G23`) reddening law, and a single vectorized entry point</span>
-<span class="sd">(`log_attenuation`) that turns the two into a natural-log attenuation array ready to</span>
-<span class="sd">add directly into a `~uvex_transients.models.core.base.SpectralModel` flux calculation</span>
-<span class="sd">(its ``log_attenuation`` keyword argument).</span>
-
-<span class="sd">There is deliberately no `synphot.SpectralElement`/`astropy.modeling.Model` wrapping</span>
-<span class="sd">here anymore: nothing in the `models` package needs a multiplicative transmission</span>
-<span class="sd">curve as an object to hand elsewhere, only a plain array to add in log-space, so</span>
-<span class="sd">building one is pure overhead. `dust_extinction.parameter_averages.G23` is still an</span>
-<span class="sd">`astropy.modeling.Model` under the hood (that's `dust_extinction`'s own API, not</span>
-<span class="sd">something this module controls), and it still enforces its native wavelength range by</span>
-<span class="sd">*raising* `ValueError` if any input is out of range -- `log_attenuation` masks</span>
-<span class="sd">out-of-range frequencies to `NaN` before calling it (comparisons against `NaN` are</span>
-<span class="sd">always `False`, so `dust_extinction`'s own range check never sees them) purely to turn</span>
-<span class="sd">that hard failure into a graceful per-element `NaN`, exactly as the code it replaces</span>
-<span class="sd">did.</span>
+<span class="sd">This module provides access to the PlanckGNILC E(B-V) map (`dust_map`) and a</span>
+<span class="sd">reddening law (`get_dust_law`, Gordon+2023's `G23` by default -- see</span>
+<span class="sd">``config["physics.default_dust_law"]``), combined by a single vectorized entry point</span>
+<span class="sd">(`log_attenuation`) into a natural-log attenuation array ready to add directly into a</span>
+<span class="sd">`~uvex_transients.models.core.base.SpectralModel` flux calculation (its</span>
+<span class="sd">``log_attenuation`` keyword argument). `attenuation_callable` gives the same thing as</span>
+<span class="sd">a callable; `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`/</span>
+<span class="sd">`~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call it</span>
+<span class="sd">internally whenever their own ``ebv`` keyword is given, so ordinary callers of this</span>
+<span class="sd">package never touch this module, a callable, or `functools.partial` at all.</span>
 <span class="sd">"""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">runtime_checkable</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -502,8 +496,54 @@
 <span class="c1"># REDDENING LAW                                                               #</span>
 <span class="c1"># =========================================================================== #</span>
 <span class="c1"># To model the extinction for UVEX, we adopt the Gordon+2023 dust model, which covers</span>
-<span class="c1"># IR through FUV and is suitable for our needs.</span>
-<span class="n">_reddening_law</span> <span class="o">=</span> <span class="n">G23</span><span class="p">()</span>
+<span class="c1"># IR through FUV and is suitable for our needs -- kept as a name in this registry,</span>
+<span class="c1"># resolved through `config["physics.default_dust_law"]`, rather than hardcoded, purely</span>
+<span class="c1"># so it's a config knob and not a code change. In practice nobody is expected to reach</span>
+<span class="c1"># for anything but the default.</span>
+<span class="n">_DUST_LAWS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"g23"</span><span class="p">:</span> <span class="n">G23</span><span class="p">}</span>
+
+
+<span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_instantiate_dust_law</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build (and cache) the named law.</span>
+
+<span class="sd">    See `get_dust_law`; split out so the cache key is always the resolved name, never `None`.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_DUST_LAWS</span><span class="p">[</span><span class="n">name</span><span class="p">]()</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown dust law </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; known laws are </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_DUST_LAWS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_dust_law">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.get_dust_law.html#uvex_transients.dust.get_dust_law">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dust_law</span><span class="p">(</span><span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the (cached, instantiated) reddening law to use.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Name of a registered law (case-insensitive), currently just ``"g23"``</span>
+<span class="sd">        (`dust_extinction.parameter_averages.G23`). If ``None`` (the default), the</span>
+<span class="sd">        configured default (``config["physics.default_dust_law"]``, ``"g23"`` out of</span>
+<span class="sd">        the box) is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dust_extinction.baseclasses.BaseExtModel</span>
+<span class="sd">        Instantiated reddening law, exposing ``.Rv``, ``.x_range``, and</span>
+<span class="sd">        ``law(x) -&gt; A(x)/A(V)`` -- see `log_attenuation`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If ``dust_law`` (or the configured default) doesn't name a registered law.</span>
+<span class="sd">    """</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">dust_law</span> <span class="ow">or</span> <span class="n">config</span><span class="p">[</span><span class="s2">"physics.default_dust_law"</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_instantiate_dust_law</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
 
 
 <span class="c1"># =========================================================================== #</span>
@@ -552,6 +592,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">log_attenuation</span><span class="p">(</span>
     <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
     <span class="n">Ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Natural log of the Milky Way foreground attenuation, :math:`\ln(10^{-0.4\,A(\nu)})`, at ``nu``.</span>
@@ -573,11 +614,11 @@
 <span class="sd">    rather than multiplying a linear transmission fraction in, since everything on</span>
 <span class="sd">    that side is already computed in log space.</span>
 
-<span class="sd">    `SpectralModel.as_source_spectrum` takes the same shape one level removed: bind</span>
-<span class="sd">    ``Ebv`` with `functools.partial` first (its wavelength grid isn't known until</span>
-<span class="sd">    the resulting `~synphot.SourceSpectrum` is actually called), e.g.</span>
-<span class="sd">    ``model.as_source_spectrum(t, ..., log_attenuation=functools.partial(log_attenuation,</span>
-<span class="sd">    Ebv=ebv))``.</span>
+<span class="sd">    `SpectralModel.as_source_spectrum`/`as_astropy_model` take the same shape one</span>
+<span class="sd">    level removed, as a callable (their wavelength grid isn't known until the</span>
+<span class="sd">    resulting `~synphot.SourceSpectrum` is actually called): use `attenuation_callable`</span>
+<span class="sd">    rather than binding this function yourself, e.g.</span>
+<span class="sd">    ``model.as_source_spectrum(t, ..., log_attenuation=attenuation_callable(ebv))``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -588,15 +629,20 @@
 <span class="sd">    Ebv : float, ~astropy.units.Quantity, or numpy.ndarray</span>
 <span class="sd">        Already-resolved, dimensionless :math:`E(B-V)`, any shape ``S`` -- see</span>
 <span class="sd">        `resolve_ebv` for turning a dust map + sky position into this.</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Passed through to `get_dust_law`; ``None`` (the default) uses the configured</span>
+<span class="sd">        default reddening law.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        Natural log of the dimensionless attenuation, ``NaN`` wherever ``nu`` falls</span>
-<span class="sd">        outside `dust_extinction.parameter_averages.G23`'s native range (roughly 900</span>
-<span class="sd">        Angstrom to 32 microns). Shape ``S + (K,)``, or plain ``S`` if ``nu`` was</span>
-<span class="sd">        scalar.</span>
+<span class="sd">        outside the reddening law's native range (roughly 900 Angstrom to 32 microns</span>
+<span class="sd">        for the default, `dust_extinction.parameter_averages.G23`). Shape</span>
+<span class="sd">        ``S + (K,)``, or plain ``S`` if ``nu`` was scalar.</span>
 <span class="sd">    """</span>
+    <span class="n">law</span> <span class="o">=</span> <span class="n">get_dust_law</span><span class="p">(</span><span class="n">dust_law</span><span class="p">)</span>
+
     <span class="n">Ebv</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Ebv</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Ebv</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span>
@@ -616,17 +662,55 @@
     <span class="c1"># produce the documented `NaN`. This masks the *output* explicitly instead, using</span>
     <span class="c1"># `valid` computed from `x` directly, which is correct regardless of what G23 happens</span>
     <span class="c1"># to do internally with a `NaN` input.</span>
-    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">_reddening_law</span><span class="o">.</span><span class="n">x_range</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">law</span><span class="o">.</span><span class="n">x_range</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="mf">1e-6</span>
     <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">lo</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">hi</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span>
     <span class="n">x_safe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lo</span><span class="p">)</span>
 
-    <span class="n">axav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">_reddening_law</span><span class="p">(</span><span class="n">x_safe</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">Av</span> <span class="o">=</span> <span class="n">_reddening_law</span><span class="o">.</span><span class="n">Rv</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">Ebv</span>
+    <span class="n">axav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">law</span><span class="p">(</span><span class="n">x_safe</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">Av</span> <span class="o">=</span> <span class="n">law</span><span class="o">.</span><span class="n">Rv</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">Ebv</span>
 
     <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">Av</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">axav</span>
 
     <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">nu</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="n">result</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="attenuation_callable">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.attenuation_callable.html#uvex_transients.dust.attenuation_callable">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">attenuation_callable</span><span class="p">(</span>
+    <span class="n">Ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Quantity</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Bind `log_attenuation` to a fixed E(B-V)/dust law, as a plain ``nu -&gt; ln(transmission)`` callable.</span>
+
+<span class="sd">    This is what `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`</span>
+<span class="sd">    and `~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call</span>
+<span class="sd">    internally, themselves, whenever their own ``ebv`` keyword is given -- callers of</span>
+<span class="sd">    *those* methods just pass ``ebv=...`` directly and never see this function, a</span>
+<span class="sd">    callable, or `functools.partial` at all. It's exposed here only for the rare case</span>
+<span class="sd">    of building a bespoke :class:`~astropy.modeling.Model`/:class:`~synphot.SourceSpectrum`</span>
+<span class="sd">    by hand, outside of `as_source_spectrum`, that still wants this module's</span>
+<span class="sd">    already-resolved-:math:`E(B-V)`-to-callable contract (`log_attenuation(wave) -&gt;</span>
+<span class="sd">    ln(transmission)`, evaluated against a wavelength grid unknown until</span>
+<span class="sd">    :mod:`synphot` samples it).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Ebv : float, ~astropy.units.Quantity, or numpy.ndarray</span>
+<span class="sd">        Already-resolved E(B-V) -- see `resolve_ebv`.</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Passed through to `log_attenuation`/`get_dust_law`. The configured default is</span>
+<span class="sd">        almost always the right choice; this is here mainly so the resulting callable</span>
+<span class="sd">        stays a pure function of its inputs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Callable[[~astropy.units.Quantity], numpy.ndarray]</span>
+<span class="sd">        ``nu -&gt; log_attenuation(nu, Ebv, dust_law)``.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">log_attenuation</span><span class="p">,</span> <span class="n">Ebv</span><span class="o">=</span><span class="n">Ebv</span><span class="p">,</span> <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -424,6 +424,7 @@
     <span class="s2">"PowerLawLightcurve"</span><span class="p">,</span>
     <span class="s2">"SmoothBrokenPowerLawLightcurve"</span><span class="p">,</span>
     <span class="s2">"TopHatLightcurve"</span><span class="p">,</span>
+    <span class="s2">"TwoComponentBazinLightcurve"</span><span class="p">,</span>
     <span class="s2">"VillarLightcurve"</span><span class="p">,</span>
 <span class="p">]</span>
 
@@ -1775,6 +1776,145 @@
             <span class="n">log_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">linear</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="n">tau_rise</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span></div>
+
+
+
+<div class="viewcode-block" id="TwoComponentBazinLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.TwoComponentBazinLightcurve.html#uvex_transients.models.lightcurves.generic.TwoComponentBazinLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoComponentBazinLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A superposition of two independent Bazin pulses.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) =</span>
+<span class="sd">        A_0\,</span>
+<span class="sd">        \frac{\exp[-(t-t_0)/\tau_{\mathrm{fall},0}]}{1 + \exp[-(t-t_0)/\tau_{\mathrm{rise},0}]}</span>
+<span class="sd">        +</span>
+<span class="sd">        A_1\,</span>
+<span class="sd">        \frac{\exp[-(t-t_1)/\tau_{\mathrm{fall},1}]}{1 + \exp[-(t-t_1)/\tau_{\mathrm{rise},1}]}.</span>
+
+<span class="sd">    Two ordinary :class:`BazinLightcurve` pulses, added rather than multiplied, each with its own</span>
+<span class="sd">    amplitude, transition time, and rise/fall timescales. Because the two components are</span>
+<span class="sd">    independent and additive, this covers both single- and double-peaked light curves in the same</span>
+<span class="sd">    functional form: with :math:`A_0 \ll A_1` (or a comparable but much earlier/narrower first</span>
+<span class="sd">    pulse well clear of the second), the second component alone sets the observed shape -- a</span>
+<span class="sd">    single peak; with :math:`A_0` comparable to :math:`A_1`, both pulses are visible, with a dip</span>
+<span class="sd">    between them where each has decayed enough to let the other dominate. Since the two peaks are</span>
+<span class="sd">    genuinely independent components rather than one shape reweighted by another, their relative</span>
+<span class="sd">    amplitude, timing, and widths can be tuned separately to fit real double- and single-peaked</span>
+<span class="sd">    events alike.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude_0``</span>
+<span class="sd">         - :math:`A_0`</span>
+<span class="sd">         - Luminosity normalization of the first (typically earlier) pulse.</span>
+<span class="sd">       * - ``t0``</span>
+<span class="sd">         - :math:`t_0`</span>
+<span class="sd">         - Characteristic transition time of the first pulse.</span>
+<span class="sd">       * - ``rise_0``</span>
+<span class="sd">         - :math:`\tau_{\mathrm{rise},0}`</span>
+<span class="sd">         - Logistic rise timescale of the first pulse.</span>
+<span class="sd">       * - ``fall_0``</span>
+<span class="sd">         - :math:`\tau_{\mathrm{fall},0}`</span>
+<span class="sd">         - Exponential decline timescale of the first pulse.</span>
+<span class="sd">       * - ``amplitude_1``</span>
+<span class="sd">         - :math:`A_1`</span>
+<span class="sd">         - Luminosity normalization of the second (typically later) pulse.</span>
+<span class="sd">       * - ``t1``</span>
+<span class="sd">         - :math:`t_1`</span>
+<span class="sd">         - Characteristic transition time of the second pulse.</span>
+<span class="sd">       * - ``rise_1``</span>
+<span class="sd">         - :math:`\tau_{\mathrm{rise},1}`</span>
+<span class="sd">         - Logistic rise timescale of the second pulse.</span>
+<span class="sd">       * - ``fall_1``</span>
+<span class="sd">         - :math:`\tau_{\mathrm{fall},1}`</span>
+<span class="sd">         - Exponential decline timescale of the second pulse.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    BazinLightcurve</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e42</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity normalization of the first (typically earlier) pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Characteristic transition time of the first pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale of the first pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{rise}</span><span class="s2">,0}"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"fall_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale of the first pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{fall}</span><span class="s2">,0}"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"amplitude_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity normalization of the second (typically later) pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A_1"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">18.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Characteristic transition time of the second pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_1"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"rise_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale of the second pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{rise}</span><span class="s2">,1}"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"fall_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">30.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale of the second pulse."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{fall}</span><span class="s2">,1}"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span>
+        <span class="n">log_bazin_0</span> <span class="o">=</span> <span class="o">-</span><span class="n">x0</span> <span class="o">/</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"fall_0"</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">x0</span> <span class="o">/</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise_0"</span><span class="p">])</span>
+
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t1"</span><span class="p">]</span>
+        <span class="n">log_bazin_1</span> <span class="o">=</span> <span class="o">-</span><span class="n">x1</span> <span class="o">/</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"fall_1"</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">x1</span> <span class="o">/</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"rise_1"</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude_0"</span><span class="p">])</span> <span class="o">+</span> <span class="n">log_bazin_0</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude_1"</span><span class="p">])</span> <span class="o">+</span> <span class="n">log_bazin_1</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 </pre></div>
 

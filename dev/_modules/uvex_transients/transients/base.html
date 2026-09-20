@@ -410,7 +410,8 @@
 <span class="sd">for :class:`ExtragalacticTransient`, a cosmological volumetric event rate. Milky</span>
 <span class="sd">Way foreground reddening is likewise no longer a `TransientBase` concern -- see</span>
 <span class="sd">:class:`~m4opt.synphot.extinction.DustExtinction` -- since it's folded into a flux/magnitude call via</span>
-<span class="sd">the SED's own ``log_attenuation`` keyword rather than wrapped here.</span>
+<span class="sd">the SED's own ``log_attenuation`` keyword (``ebv``/``dust_law`` for</span>
+<span class="sd">``as_source_spectrum``/``simulate_photometry``) rather than wrapped here.</span>
 
 <span class="sd">:class:`ExtragalacticTransient` adds cosmological volumetric-rate sampling: given a</span>
 <span class="sd">per-class comoving event-rate density (events / Mpc^3 / yr as a function of redshift),</span>
@@ -439,8 +440,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">cumulative_trapezoid</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">spawn_seeds</span><span class="p">,</span> <span class="n">split_root_seed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
 
 <span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 
@@ -523,7 +524,7 @@
 <span class="sd">            The cosmology to use for this transient class. This is used to determine</span>
 <span class="sd">            the relevant luminosity distances of objects and to account for cosmological</span>
 <span class="sd">            volume corrections. If ``None`` (default), the configured default cosmology</span>
-<span class="sd">            is used; see `uvex_transients.models._cosmology.get_cosmology`.</span>
+<span class="sd">            is used; see `uvex_transients.utils.cosmology.get_cosmology`.</span>
 <span class="sd">        **_</span>
 <span class="sd">            Ignored. Lets subclasses (e.g. `ExtragalacticTransient`) forward extra</span>
 <span class="sd">            constructor arguments through a shared call signature without this base</span>
@@ -574,8 +575,9 @@
 <span class="sd">        See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API</span>
 <span class="sd">        (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and</span>
 <span class="sd">        ``generate_spectrum``), each of which resolves redshift/distance from a</span>
-<span class="sd">        cosmology directly and accepts an optional ``log_attenuation`` for Milky Way</span>
-<span class="sd">        foreground reddening (see :class:`~m4opt.synphot.extinction.DustExtinction`).</span>
+<span class="sd">        cosmology directly and accepts an optional ``log_attenuation`` (or, for</span>
+<span class="sd">        ``as_source_spectrum``/``simulate_photometry``, ``ebv``/``dust_law``) for Milky</span>
+<span class="sd">        Way foreground reddening (see :class:`~m4opt.synphot.extinction.DustExtinction`).</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span>
 

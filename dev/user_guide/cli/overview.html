@@ -635,8 +635,9 @@ overrides you want on top of its defaults:</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">class:</span></code> must name a registered <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a>
 subclass: every built-in type (<code class="docutils literal notranslate"><span class="pre">TidalDisruptionEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">Kilonova</span></code>,
-<code class="docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code>) is available by class
-name; an unrecognized one raises, listing what <em>is</em> registered.</p>
+<code class="docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIbSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIcSNe</span></code>) is available by class name; an unrecognized one
+raises, listing what <em>is</em> registered.</p>
 <p>Everything under <code class="docutils literal notranslate"><span class="pre">parameters:</span></code> is applied the same way
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Event.simulate_photometry</span></code></a>
 expects to find it later: a plain value fixes that parameter
@@ -907,6 +908,20 @@ writing each stage’s catalog to <code class="docutils literal notranslate"><sp
 is fine here too; <code class="docutils literal notranslate"><span class="pre">run</span></code> goes straight from <code class="docutils literal notranslate"><span class="pre">generate</span></code> to <code class="docutils literal notranslate"><span class="pre">photometry</span></code>.</p>
 <p>Every command accepts <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> to replace an existing output file/directory contents
 instead of raising.</p>
+<p>Every command also accepts <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>, which validates the config and prints what the real
+command would do without sampling, computing photometry, or writing anything:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>configs/full_run.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/<span class="w"> </span>--dry-run
+</pre></div>
+</div>
+<p>It resolves every section the command needs, so an unknown transient <code class="docutils literal notranslate"><span class="pre">class:</span></code>, a bad
+<code class="docutils literal notranslate"><span class="pre">parameters:</span></code> override, an unknown cut type or cut name, an unknown mission, or an unreadable
+schedule fails here exactly as it would in the real run (as a short <code class="docutils literal notranslate"><span class="pre">dry</span> <span class="pre">run</span> <span class="pre">failed:</span> <span class="pre">...</span></code>
+message). On success it reports the mission, the size of the schedule, each transient population
+(class, SED, redshift limit, duration window), the <code class="docutils literal notranslate"><span class="pre">generate:</span></code>, <code class="docutils literal notranslate"><span class="pre">cuts:</span></code> and <code class="docutils literal notranslate"><span class="pre">photometry:</span></code>
+settings, and each output file it would write. If a real run would refuse to overwrite one that
+already exists, the dry run flags it as <code class="docutils literal notranslate"><span class="pre">WOULD</span> <span class="pre">FAIL</span></code> and exits non-zero unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> is
+also given. The schedule is loaded (and downloaded on first use), but the command never reads the
+<code class="docutils literal notranslate"><span class="pre">--in</span></code> catalog of <code class="docutils literal notranslate"><span class="pre">cut</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry</span></code>, only checks that it exists.</p>
 </section>
 <hr class="docutils" />
 <section id="using-it-from-python">

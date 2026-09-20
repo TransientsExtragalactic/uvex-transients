@@ -1,12 +1,9 @@
-from pathlib import Path
-
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from astropy.table import Table
 
-import uvex_transients
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED as SEDClass
+from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
 rng = np.random.default_rng(20260910)
 n_samples = 1000
@@ -24,24 +21,24 @@ for row in range(n_samples):
     ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
     ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.06)
 
-data_dir = Path(uvex_transients.__file__).parent.parent / "test_data" / "transients"
+archive = LightcurveArchive()
 observed_lfbots = [
-    ("2018cow_holu2026.txt", "AT2018cow (Ho & Lu+2026)", "o", "k"),
-    ("css161010_holu2026.txt", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
-    ("2024wpp_holu2026.txt", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
-    ("2024puz_holu2026.txt", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
+    ("2018cow_holu2026", "AT2018cow (Ho & Lu+2026)", "o", "k"),
+    ("css161010_holu2026", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
+    ("2024wpp_holu2026", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
+    ("2024puz_holu2026", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
 ]
 
 for suffix, label, marker, color in observed_lfbots:
-    lbol_obs = Table.read(data_dir / f"lbol_{suffix}", format="ascii")
-    Tphot_obs = Table.read(data_dir / f"Tphot_{suffix}", format="ascii")
+    lbol_obs = archive.table("lfbots", suffix, "L_bol")
+    Tphot_obs = archive.table("lfbots", suffix, "T_phot")
     ax_L.scatter(
-        lbol_obs["time"], lbol_obs["L_bol"],
+        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
         marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
         label=label,
     )
     ax_T.scatter(
-        Tphot_obs["time"], Tphot_obs["T_phot"],
+        Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
         marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
         label=label,
     )
