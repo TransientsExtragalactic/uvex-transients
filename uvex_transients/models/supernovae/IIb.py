@@ -388,6 +388,11 @@ class _MoragShockCoolingBase(SpectralModel):
     .. footbibliography::
     """
 
+    _MASK_INVALID: bool = False
+    """
+    bool: If ``True``, invalid points are masked out of the analysis.
+    """
+
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "v_star": Parameter(
             prior=LogNormalPrior(mean=0.0, sigma=0.5),
@@ -453,7 +458,7 @@ class _MoragShockCoolingBase(SpectralModel):
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
         log_time = np.log(t.cgs.value)
         components = cls._components(t.cgs.value, **cgs_parameters)
-        return np.exp(_log_morag_temperature_log_K(components, log_time, mask_invalid=True)) * u.K
+        return np.exp(_log_morag_temperature_log_K(components, log_time, mask_invalid=cls._MASK_INVALID)) * u.K
 
 
 # ======================================== #
@@ -461,14 +466,13 @@ class _MoragShockCoolingBase(SpectralModel):
 # ======================================== #
 class MoragShockCoolingSED(_MoragShockCoolingBase):
     r"""
-    Shock-cooling SED from Morag+24\ :footcite:p:`2024MNRAS.528.7137M`, Eq. A7.
+    Full UV-suppressed shock-cooling SED (Eq. A7).
+
+    Based on Morag+24\ :footcite:p:`2024MNRAS.528.7137M`.
 
     The frequency-dependent SED: line suppression above :math:`3.5\,T_\mathrm{col}`, plus a
     free-free correction below it. See :class:`MoragShockCoolingBlackbodySED` for the simpler
     pure-blackbody form (Eq. A8) instead.
-
-    Parameter combinations outside Morag+24's stated validity window (its Eqs. 17-18) evaluate
-    to ``nan``, rather than silently extrapolating a fit outside the regime it was calibrated for.
 
     Notes
     -----
@@ -514,7 +518,7 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
             log_opacity=np.log(opacity),
             log_envelope_mass=np.log(envelope_mass),
             log_core_mass=np.log(core_mass),
-            mask_invalid=True,
+            mask_invalid=cls._MASK_INVALID,
         )
 
     @classmethod
@@ -554,16 +558,15 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
 # ======================================== #
 class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
     r"""
-    Shock-cooling SED from Morag+24\ :footcite:p:`2024MNRAS.528.7137M`, Eq. A8.
+    Pure-blackbody shock-cooling SED (Eq. A8).
+
+    Based on Morag+24\ :footcite:p:`2024MNRAS.528.7137M`.
 
     A pure blackbody at the color temperature :math:`T_\mathrm{col}(t)`, which integrates exactly
     to the bolometric luminosity :math:`L(t)` (Eq. A1) -- unlike :class:`MoragShockCoolingSED`,
     whose UV line-suppression/free-free redistribution (Eq. A9) does not conserve bolometric energy
     relative to a blackbody, this variant needs no numerical frequency integration to recover
     :math:`L_\mathrm{bol}(t)`.
-
-    Parameter combinations outside Morag+24's stated validity window (its Eqs. 17-18) evaluate
-    to ``nan``, rather than silently extrapolating a fit outside the regime it was calibrated for.
 
     References
     ----------
@@ -575,14 +578,14 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
         r""":math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed."""
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
-        return _log_morag_bolometric(components, log_time, mask_invalid=True)
+        return _log_morag_bolometric(components, log_time, mask_invalid=cls._MASK_INVALID)
 
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
         r""":math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`."""
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
-        log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=True)
+        log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=cls._MASK_INVALID)
         return planck_shape_log_cgs(nu, np.exp(log_T))
 
     @classmethod
