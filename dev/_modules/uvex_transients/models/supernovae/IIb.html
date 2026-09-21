@@ -787,6 +787,11 @@
 <span class="sd">    .. footbibliography::</span>
 <span class="sd">    """</span>
 
+    <span class="n">_MASK_INVALID</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    bool: If ``True``, invalid points are masked out of the analysis.</span>
+<span class="sd">    """</span>
+
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"v_star"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
@@ -852,7 +857,7 @@
         <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
 
 
 <span class="c1"># ======================================== #</span>
@@ -862,14 +867,13 @@
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingSED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Shock-cooling SED from Morag+24\ :footcite:p:`2024MNRAS.528.7137M`, Eq. A7.</span>
+<span class="sd">    Full UV-suppressed shock-cooling SED (Eq. A7).</span>
+
+<span class="sd">    Based on Morag+24\ :footcite:p:`2024MNRAS.528.7137M`.</span>
 
 <span class="sd">    The frequency-dependent SED: line suppression above :math:`3.5\,T_\mathrm{col}`, plus a</span>
 <span class="sd">    free-free correction below it. See :class:`MoragShockCoolingBlackbodySED` for the simpler</span>
 <span class="sd">    pure-blackbody form (Eq. A8) instead.</span>
-
-<span class="sd">    Parameter combinations outside Morag+24's stated validity window (its Eqs. 17-18) evaluate</span>
-<span class="sd">    to ``nan``, rather than silently extrapolating a fit outside the regime it was calibrated for.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -915,7 +919,7 @@
             <span class="n">log_opacity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">opacity</span><span class="p">),</span>
             <span class="n">log_envelope_mass</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">envelope_mass</span><span class="p">),</span>
             <span class="n">log_core_mass</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">core_mass</span><span class="p">),</span>
-            <span class="n">mask_invalid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
@@ -958,16 +962,15 @@
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingBlackbodySED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Shock-cooling SED from Morag+24\ :footcite:p:`2024MNRAS.528.7137M`, Eq. A8.</span>
+<span class="sd">    Pure-blackbody shock-cooling SED (Eq. A8).</span>
+
+<span class="sd">    Based on Morag+24\ :footcite:p:`2024MNRAS.528.7137M`.</span>
 
 <span class="sd">    A pure blackbody at the color temperature :math:`T_\mathrm{col}(t)`, which integrates exactly</span>
 <span class="sd">    to the bolometric luminosity :math:`L(t)` (Eq. A1) -- unlike :class:`MoragShockCoolingSED`,</span>
 <span class="sd">    whose UV line-suppression/free-free redistribution (Eq. A9) does not conserve bolometric energy</span>
 <span class="sd">    relative to a blackbody, this variant needs no numerical frequency integration to recover</span>
 <span class="sd">    :math:`L_\mathrm{bol}(t)`.</span>
-
-<span class="sd">    Parameter combinations outside Morag+24's stated validity window (its Eqs. 17-18) evaluate</span>
-<span class="sd">    to ``nan``, rather than silently extrapolating a fit outside the regime it was calibrated for.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -979,14 +982,14 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed."""</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_log_morag_bolometric</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_log_morag_bolometric</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`."""</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T</span><span class="p">))</span>
 
     <span class="nd">@classmethod</span>
