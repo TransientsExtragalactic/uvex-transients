@@ -1,6 +1,6 @@
 import numpy as np
 
-from uvex_transients.models._constants import C_CGS, H_CGS, K_B_CGS, LOG_SIGMA_SB_CGS
+from uvex_transients.models._constants import C_CGS, H_CGS, K_B_CGS, LOG_SIGMA_SB_CGS, SIGMA_SB_CGS
 from uvex_transients.models._typing import CGSParameterValue, FloatArray, NumericalInput
 
 
@@ -190,3 +190,70 @@ def cooling_temperature_cgs(
         :math:`T(t)`, in K.
     """
     return T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
+
+
+def photospheric_temperature_cgs(
+    t: FloatArray,
+    *,
+    L: CGSParameterValue,
+    v_phot: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Blackbody temperature of a photosphere expanding at constant velocity.
+
+    .. math::
+
+        T(t) = \left[\frac{L}{4\pi\sigma_\mathrm{SB}\,(v_\mathrm{phot}\,t)^2}\right]^{1/4}
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    L : array_like
+        Bolometric luminosity, in erg/s.
+    v_phot : array_like
+        Photospheric velocity, in cm/s.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`T(t)`, in K. Diverges as :math:`t \to 0`.
+    """
+    return (L / (4.0 * np.pi * SIGMA_SB_CGS * (v_phot * t) ** 2)) ** 0.25
+
+
+def photospheric_temperature_with_floor_cgs(
+    t: FloatArray,
+    *,
+    L: CGSParameterValue,
+    v_phot: CGSParameterValue,
+    T_floor: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Photospheric temperature, clipped from below at a floor temperature.
+
+    .. math::
+
+        T(t) = \max\left[T_\mathrm{phot}(t),\, T_\mathrm{floor}\right]
+
+    where :math:`T_\mathrm{phot}` is given by :func:`photospheric_temperature_cgs`.
+    Once the expanding blackbody photosphere cools to :math:`T_\mathrm{floor}`,
+    the temperature stays fixed there.
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    L : array_like
+        Bolometric luminosity, in erg/s.
+    v_phot : array_like
+        Photospheric velocity, in cm/s.
+    T_floor : array_like
+        Minimum photospheric temperature, in K.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`T(t)`, in K.
+    """
+    return np.maximum(photospheric_temperature_cgs(t, L=L, v_phot=v_phot), T_floor)
