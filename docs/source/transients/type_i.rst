@@ -28,8 +28,7 @@ differ only in their event rates, implemented as two sibling transient populatio
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` with the rate/duration metadata
       described below.
 
-      Quick Facts
-      ------------
+      .. rubric:: Quick Facts
 
       .. list-table::
          :header-rows: 1
@@ -57,8 +56,7 @@ differ only in their event rates, implemented as two sibling transient populatio
            - --
            - Covers the rise, peak (:math:`t_p \approx 20` d after explosion) and the decline.
 
-      SED Model
-      ----------
+      .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` is a single Bazin pulse times the
       same single-power-law cooling blackbody photosphere used elsewhere in this package (e.g.
@@ -131,8 +129,7 @@ differ only in their event rates, implemented as two sibling transient populatio
               - Fixed (4)
               - Photospheric cooling power-law index.
 
-      Simulated Light Curves
-      ~~~~~~~~~~~~~~~~~~~~~~~
+      .. rubric:: Simulated Light Curves
 
       The plot below draws 300 random parameter realizations from the priors above. The top panel shows
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
@@ -214,8 +211,7 @@ differ only in their event rates, implemented as two sibling transient populatio
 
          fig.tight_layout()
 
-      Observability Summary
-      ----------------------
+      .. rubric:: Observability Summary
 
       Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
       :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1
@@ -332,8 +328,7 @@ differ only in their event rates, implemented as two sibling transient populatio
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` with the rate/duration metadata
       described below.
 
-      Quick Facts
-      ------------
+      .. rubric:: Quick Facts
 
       .. list-table::
          :header-rows: 1
@@ -361,8 +356,7 @@ differ only in their event rates, implemented as two sibling transient populatio
            - --
            - Covers the rise, peak (:math:`t_p \approx 20` d after explosion) and the decline.
 
-      SED Model
-      ----------
+      .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` is a single Bazin pulse times the
       same single-power-law cooling blackbody photosphere used elsewhere in this package (e.g.
@@ -435,8 +429,7 @@ differ only in their event rates, implemented as two sibling transient populatio
               - Fixed (4)
               - Photospheric cooling power-law index.
 
-      Simulated Light Curves
-      ~~~~~~~~~~~~~~~~~~~~~~~
+      .. rubric:: Simulated Light Curves
 
       The plot below draws 300 random parameter realizations from the priors above. The top panel shows
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
@@ -520,8 +513,7 @@ differ only in their event rates, implemented as two sibling transient populatio
 
          fig.tight_layout()
 
-      Observability Summary
-      ----------------------
+      .. rubric:: Observability Summary
 
       Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
       :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1

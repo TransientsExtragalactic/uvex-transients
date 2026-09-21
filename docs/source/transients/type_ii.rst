@@ -23,8 +23,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` with the rate/duration metadata
       described below.
 
-      Quick Facts
-      ------------
+      .. rubric:: Quick Facts
 
       .. list-table::
          :header-rows: 1
@@ -50,8 +49,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. _transients_type_ii_sed:
 
-      SED Model
-      ----------
+      .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` is two shared-onset exponential
       components (an early cooling-phase decline onto a constant plateau) plus a switched
@@ -171,8 +169,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Uniform(10, 50)
               - Sharpness of the break at :math:`\sqrt{t_0 t_P}`.
 
-      Simulated Light Curves
-      ~~~~~~~~~~~~~~~~~~~~~~~
+      .. rubric:: Simulated Light Curves
 
       The plot below draws 300 random parameter realizations from the priors above and shows the
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
@@ -254,8 +251,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
          fig.tight_layout()
 
-      Observability Summary
-      ----------------------
+      .. rubric:: Observability Summary
 
       Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB
       magnitudes :math:`m_\mathrm{AB}` of 3000 simulated events drawn from the priors above, with
@@ -397,8 +393,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
       ordinary Type IIP evolution, attributed to shock breakout through and/or collisional heating
       of close circumstellar material.
 
-      Quick Facts
-      ------------
+      .. rubric:: Quick Facts
 
       .. list-table::
          :header-rows: 1
@@ -423,8 +418,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - --
            - Same window as ordinary Type IIP.
 
-      SED Model
-      ----------
+      .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPExcessSED` is a subclass of
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`: the same light curve and
@@ -514,8 +508,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Uniform(10, 50)
               - Sharpness of the break at :math:`\sqrt{t_0 t_P}`.
 
-      Simulated Light Curves
-      ~~~~~~~~~~~~~~~~~~~~~~~
+      .. rubric:: Simulated Light Curves
 
       The plot below draws 300 random parameter realizations from the priors above and shows the
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
@@ -581,8 +574,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
          fig.tight_layout()
 
-      Observability Summary
-      ----------------------
+      .. rubric:: Observability Summary
 
       Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB
       magnitudes :math:`m_\mathrm{AB}` of 3000 simulated events drawn from the priors above, with
@@ -738,8 +730,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          real Type IIb event. This page will be updated if/when they are recalibrated against data (as
          :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` was).
 
-      Quick Facts
-      ------------
+      .. rubric:: Quick Facts
 
       .. list-table::
          :header-rows: 1
@@ -770,8 +761,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`'s much shorter 20 day
              window, which covers only the first of those phases.
 
-      SED Model
-      ----------
+      .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.IIb.TypeIIbSED` pairs a superposition of two Bazin
       pulses with the same single-power-law cooling blackbody photosphere used elsewhere in this package
@@ -867,8 +857,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Uniform(0.7, 1.3)
               - Photospheric cooling power-law index.
 
-      Simulated Light Curves
-      ~~~~~~~~~~~~~~~~~~~~~~~
+      .. rubric:: Simulated Light Curves
 
       The plot below draws 300 random parameter realizations from the priors above and shows the
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
@@ -969,10 +958,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
          fig.tight_layout()
 
 
-      ----
 
-      Observability Summary
-      ----------------------
+      .. rubric:: Observability Summary
 
       Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
       :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1 Dwell

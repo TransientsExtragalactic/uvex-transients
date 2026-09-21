@@ -18,14 +18,24 @@ Every other quantity (fluxes, magnitudes, band-integrated fluxes, bolometric
 luminosity) is derived automatically. All of these public methods come in a
 consistent family of four, distinguished by suffix:
 
-============ ================================= ===================
-Suffix       Inputs / outputs                  Example
-============ ================================= ===================
-``_log_cgs`` unit-free numbers, natural log     :meth:`SpectralModel.eval_log_cgs`
-``_log``     physical :class:`~astropy.units.Quantity`, natural log :meth:`SpectralModel.eval_log`
-``_cgs``     unit-free numbers, linear scale    :meth:`SpectralModel.eval_cgs`
-(none)       physical ``Quantity``, linear scale :meth:`SpectralModel.eval`
-============ ================================= ===================
+.. list-table::
+   :header-rows: 1
+
+   * - Suffix
+     - Inputs / outputs
+     - Example
+   * - ``_log_cgs``
+     - unit-free numbers, natural log
+     - :meth:`SpectralModel.eval_log_cgs`
+   * - ``_log``
+     - physical :class:`~astropy.units.Quantity`, natural log
+     - :meth:`SpectralModel.eval_log`
+   * - ``_cgs``
+     - unit-free numbers, linear scale
+     - :meth:`SpectralModel.eval_cgs`
+   * - (none)
+     - physical ``Quantity``, linear scale
+     - :meth:`SpectralModel.eval`
 
 :class:`Lightcurve` and :class:`Spectrum` are the time-only and
 frequency-only halves of the same idea: a :class:`Lightcurve` is just
