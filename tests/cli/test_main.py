@@ -1,5 +1,7 @@
 """`click.testing.CliRunner` smoke tests for `uvex_transients.cli.main`."""
 
+from pathlib import Path
+
 from astropy.table import QTable
 from click.testing import CliRunner
 
@@ -88,6 +90,55 @@ def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
     assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}
 
 
+def test_run_no_keep_intermediate_writes_only_the_final_catalog_and_photometry(tmp_path, make_schedule):
+    """`run --no-keep-intermediate` discards the intermediate stage catalogs but keeps the final catalog."""
+    config_path = _write_config(tmp_path, make_schedule)
+    full_out_dir = tmp_path / "full"
+    sparse_out_dir = tmp_path / "sparse"
+
+    full = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(full_out_dir)])
+    assert full.exit_code == 0, full.output
+    expected = EventCatalog.from_disk(full_out_dir / "02_cut_2.ecsv")
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(sparse_out_dir), "--no-keep-intermediate"])
+
+    assert result.exit_code == 0, result.output
+    assert not (sparse_out_dir / "00_generated.ecsv").exists()
+    assert not (sparse_out_dir / "01_cut_1.ecsv").exists()
+    assert not (sparse_out_dir / "02_cut_2.ecsv").exists()
+    final_path = sparse_out_dir / "final_catalog.ecsv"
+    assert final_path.exists()
+    assert (sparse_out_dir / "photometry.ecsv").exists()
+
+    final_catalog = EventCatalog.from_disk(final_path)
+    assert len(final_catalog) == len(expected)
+
+
+def test_run_keep_intermediate_config_key_is_honored_without_the_cli_flag(tmp_path, make_schedule):
+    """A config's `keep_intermediate: false` suppresses stage files even without `--no-keep-intermediate`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(Path(config_path).read_text() + "\nkeep_intermediate: false\n")
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+
+    assert result.exit_code == 0, result.output
+    assert not (out_dir / "00_generated.ecsv").exists()
+    assert (out_dir / "photometry.ecsv").exists()
+
+
+def test_run_keep_intermediate_cli_flag_overrides_the_config_key(tmp_path, make_schedule):
+    """`--keep-intermediate` on the CLI overrides a config's `keep_intermediate: false`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(Path(config_path).read_text() + "\nkeep_intermediate: false\n")
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir), "--keep-intermediate"])
+
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "00_generated.ecsv").exists()
+
+
 # --------------------------------------------------------------------------- #
 # --dry-run                                                                   #
 # --------------------------------------------------------------------------- #
@@ -119,6 +170,22 @@ def test_run_dry_run_lists_every_stage_file_and_creates_no_directory(tmp_path, m
         assert f"would write  {out_dir / name}" in result.output
     assert "limiting_magnitude" in result.output
     assert not out_dir.exists()
+
+
+def test_run_dry_run_no_keep_intermediate_lists_only_final_catalog_and_photometry(tmp_path, make_schedule):
+    """`run --dry-run --no-keep-intermediate` lists only `final_catalog.ecsv` and `photometry.ecsv`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(
+        cli, ["run", config_path, "--out-dir", str(out_dir), "--dry-run", "--no-keep-intermediate"]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert f"would write  {out_dir / 'final_catalog.ecsv'}" in result.output
+    assert f"would write  {out_dir / 'photometry.ecsv'}" in result.output
+    for name in ("00_generated.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv"):
+        assert name not in result.output
 
 
 def test_dry_run_flags_an_existing_output_and_fails(tmp_path, make_schedule):

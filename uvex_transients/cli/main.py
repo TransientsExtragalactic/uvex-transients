@@ -207,12 +207,24 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
     click.echo(f"photometry: {len(phot)} rows -> {out_path}")
 
 
+KEEP_INTERMEDIATE_OPTION = click.option(
+    "--keep-intermediate/--no-keep-intermediate",
+    default=None,
+    help="Keep (or discard) each stage's catalog under OUT_DIR; defaults to the config's "
+    "'keep_intermediate:' (itself defaulting to keeping everything). With --no-keep-intermediate, "
+    "only the final event catalog (final_catalog.ecsv) and the photometry table are written.",
+)
+
+
 @cli.command("run")
 @CONFIG_ARGUMENT
 @click.option("--out-dir", "out_dir", required=True, type=click.Path(file_okay=False, path_type=Path))
 @OVERWRITE_OPTION
+@KEEP_INTERMEDIATE_OPTION
 @DRY_RUN_OPTION
-def run_command(config_path: Path, out_dir: Path, overwrite: bool, dry_run: bool) -> None:
+def run_command(
+    config_path: Path, out_dir: Path, overwrite: bool, keep_intermediate: bool | None, dry_run: bool
+) -> None:
     """
     Chain generate -> every declared cut -> photometry in one process, writing each stage's catalog to OUT_DIR.
 
@@ -224,6 +236,10 @@ def run_command(config_path: Path, out_dir: Path, overwrite: bool, dry_run: bool
         Directory to write each stage's catalog into.
     overwrite : bool
         Whether to overwrite existing files in `out_dir`.
+    keep_intermediate : bool, optional
+        Whether to write each *intermediate* stage's catalog to `out_dir`. If `None` (the
+        default), falls back to the config's ``keep_intermediate:`` (itself defaulting to
+        `True`). The final event catalog and the photometry table are always written either way.
     dry_run : bool
         If True, validate and report without running any stage or writing anything.
 
@@ -237,24 +253,41 @@ def run_command(config_path: Path, out_dir: Path, overwrite: bool, dry_run: bool
         click.echo(logo)
 
     config = RunConfig.from_yaml(config_path)
+    keep = config.keep_intermediate if keep_intermediate is None else keep_intermediate
+
     if dry_run:
-        stage_files = ["00_generated.ecsv"]
-        if config.has_section("cuts"):
-            stage_files += [f"{i:02d}_{key}.ecsv" for i, key in enumerate(config.cuts, start=1)]
+        stage_files = []
+        if keep:
+            stage_files.append("00_generated.ecsv")
+            if config.has_section("cuts"):
+                stage_files += [f"{i:02d}_{key}.ecsv" for i, key in enumerate(config.cuts, start=1)]
+        else:
+            stage_files.append("final_catalog.ecsv")
         stage_files.append("photometry.ecsv")
         return _dry_run(config, "run", [out_dir / name for name in stage_files], overwrite)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     catalog = pipeline.run_generate(config)
-    catalog.to_disk(out_dir / "00_generated.ecsv", overwrite=overwrite)
-    click.echo(f"generate: {len(catalog)} events -> 00_generated.ecsv")
+    if keep:
+        catalog.to_disk(out_dir / "00_generated.ecsv", overwrite=overwrite)
+        click.echo(f"generate: {len(catalog)} events -> 00_generated.ecsv")
+    else:
+        click.echo(f"generate: {len(catalog)} events")
 
     if config.has_section("cuts"):
         for i, key in enumerate(config.cuts, start=1):
             catalog = pipeline.run_cuts(config, catalog, names=[key])
-            stage_path = out_dir / f"{i:02d}_{key}.ecsv"
-            catalog.to_disk(stage_path, overwrite=overwrite)
-            click.echo(f"cut {key}: {len(catalog)} events -> {stage_path.name}")
+            if keep:
+                stage_path = out_dir / f"{i:02d}_{key}.ecsv"
+                catalog.to_disk(stage_path, overwrite=overwrite)
+                click.echo(f"cut {key}: {len(catalog)} events -> {stage_path.name}")
+            else:
+                click.echo(f"cut {key}: {len(catalog)} events")
+
+    if not keep:
+        final_path = out_dir / "final_catalog.ecsv"
+        catalog.to_disk(final_path, overwrite=overwrite)
+        click.echo(f"catalog: {len(catalog)} events -> {final_path.name}")
 
     phot = pipeline.run_photometry(config, catalog)
     phot_path = out_dir / "photometry.ecsv"

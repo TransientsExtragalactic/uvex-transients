@@ -39,7 +39,7 @@ commands it works with, so you can build your own.
 The Run-Config File
 ----------------------
 
-A run-config is a single YAML file with up to six top-level sections. Every CLI command reads the
+A run-config is a single YAML file with up to seven top-level sections. Every CLI command reads the
 *same* file (there's no separate config per command), but each command only needs the section(s)
 it actually touches, resolved lazily by :class:`~uvex_transients.cli.config.RunConfig`: a config
 with no ``photometry:`` block is perfectly valid as long as you never run
@@ -75,6 +75,12 @@ with no ``photometry:`` block is perfectly valid as long as you never run
      - :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`'s
        optional ``bands``/``n_sigma`` arguments. Optional; omit entirely to use every band at the
        package's default detection significance.
+   * - ``keep_intermediate:``
+     - ``run``
+     - Whether ``run`` writes each *intermediate* stage's catalog to ``--out-dir``, in addition to
+       the final event catalog and photometry table (always written). Optional bool; defaults to
+       ``true``. Overridden either way by ``run``'s own ``--keep-intermediate``/
+       ``--no-keep-intermediate`` flag.
 
 .. important::
 
@@ -395,6 +401,17 @@ Chains ``generate`` then every declared cut, in order, then ``photometry`` in on
 writing each stage's catalog to ``results/`` as it goes: ``00_generated.ecsv``, then one
 ``NN_<cut key>.ecsv`` per cut, then ``photometry.ecsv``. A config with no ``cuts:`` section at all
 is fine here too; ``run`` goes straight from ``generate`` to ``photometry``.
+
+Every stage's catalog stays in memory and feeds the next stage regardless, so writing the
+*intermediate* ones (everything up to, but not including, the catalog that photometry actually
+runs against) is purely for inspection/debugging -- set the config's top-level
+``keep_intermediate: false`` (or pass ``--no-keep-intermediate``, which overrides the config
+either way) to have ``run`` skip those and write only ``final_catalog.ecsv`` (the catalog
+photometry ran against) and ``photometry.ecsv``:
+
+.. code-block:: bash
+
+    uvex-transients run quickstart_tde.yaml --out-dir results/ --no-keep-intermediate
 
 Every command accepts ``--overwrite`` to replace an existing output file/directory contents
 instead of raising.

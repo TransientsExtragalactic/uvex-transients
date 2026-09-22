@@ -178,6 +178,18 @@ def test_photometry_defaults_when_omitted():
     assert config.photometry.n_sigma is None
 
 
+def test_keep_intermediate_defaults_to_true_when_omitted():
+    """An entirely absent `keep_intermediate:` key defaults to `True`."""
+    config = _config_from("x: 1\n")
+    assert config.keep_intermediate is True
+
+
+def test_keep_intermediate_reads_the_config_value():
+    """`keep_intermediate: false` resolves to `False`."""
+    config = _config_from("keep_intermediate: false\n")
+    assert config.keep_intermediate is False
+
+
 def test_config_missing_unrelated_section_still_works():
     """A config with only `transients:`/`schedule:` still resolves `.transients` fine, with no `cuts:`/`generate:`."""
     config = _config_from(MINIMAL_TRANSIENTS)

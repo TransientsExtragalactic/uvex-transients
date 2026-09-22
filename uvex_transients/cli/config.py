@@ -337,6 +337,7 @@ class RunConfig:
         self._generate: GenerateConfig | None = None
         self._cuts: dict[str, CutSpec] | None = None
         self._photometry: PhotometryConfig | None = None
+        self._keep_intermediate: bool | None = None
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "RunConfig":
@@ -508,3 +509,20 @@ class RunConfig:
             section = self._raw.get("photometry") or {}
             self._photometry = PhotometryConfig(bands=section.get("bands"), n_sigma=section.get("n_sigma"))
         return self._photometry
+
+    @property
+    def keep_intermediate(self) -> bool:
+        """
+        Whether the ``run`` command should keep each stage's catalog on disk (top-level ``keep_intermediate:``).
+
+        Defaults to `True`; set to `False` to have ``run`` write only the final photometry
+        table, discarding the generated/cut catalogs once the next stage no longer needs them.
+
+        Returns
+        -------
+        bool
+            Whether to keep intermediate stage files.
+        """
+        if self._keep_intermediate is None:
+            self._keep_intermediate = bool(self._raw.get("keep_intermediate", True))
+        return self._keep_intermediate

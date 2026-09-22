@@ -23,7 +23,7 @@
 # population beyond what its own event rate needs to stay tractable.
 
 schedule:
-  name: uvex_initial_main
+  name: uvex_dev
 
 mission: uvex
 
@@ -72,3 +72,9 @@ cuts:
 
 photometry:
   bands: [FUV, NUV]
+
+# Full-scale event counts make the intermediate stage catalogs (the raw
+# generated sample, then each cut's survivors) large and rarely worth
+# keeping around -- only the catalog photometry actually ran against
+# (`final_catalog.ecsv`) and `photometry.ecsv` itself are written.
+keep_intermediate: false
