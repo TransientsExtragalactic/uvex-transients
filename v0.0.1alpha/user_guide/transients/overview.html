@@ -1,0 +1,970 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Transients &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/transients/overview';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Writing a Custom Transient" href="custom_transients.html" />
+    <link rel="prev" title="Writing a Custom Model" href="../models/custom_models.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../models/overview.html">Models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Transients</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../surveys/overview.html">Surveys</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Transients</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="transients">
+<span id="user-guide-transients"></span><h1>Transients<a class="headerlink" href="#transients" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.html#module-uvex_transients.transients" title="uvex_transients.transients"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.transients</span></code></a> sits between the SED framework in
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.html#module-uvex_transients.models" title="uvex_transients.models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.models</span></code></a> and the survey pipeline in <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.html#module-uvex_transients.simulation" title="uvex_transients.simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.simulation</span></code></a>. A
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a> subclass is a thin pairing of one
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.html#uvex_transients.models.core.base.SpectralModel" title="uvex_transients.models.core.base.SpectralModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralModel</span></code></a>
+(<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.sed.html#uvex_transients.transients.base.TransientBase.sed" title="uvex_transients.transients.base.TransientBase.sed"><code class="xref py py-attr docutils literal notranslate"><span class="pre">sed</span></code></a>) with the metadata needed to
+<em>window</em> a survey simulation around it – above all, a strict upper bound on how long the
+transient could plausibly stay relevant
+(<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.duration_limit.html#uvex_transients.transients.base.TransientBase.duration_limit" title="uvex_transients.transients.base.TransientBase.duration_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">duration_limit</span></code></a>). Its
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a> subclass adds a cosmological
+volumetric event rate, turning that pairing into something that can draw its own Monte Carlo
+population: given a comoving rate density and a patch of sky and time, how many events exploded
+there, at what redshifts, and when.</p>
+<p>This page covers that shared machinery – <code class="docutils literal notranslate"><span class="pre">TransientBase</span></code>/<code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> themselves,
+not any one population. For the astrophysics, adopted rate, SED choice, and default parameter priors
+of each implemented population (kilonovae, TDEs, LFBOTs, supernovae), see the <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a>
+gallery instead; for how <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a> drives this
+sampling against a real survey schedule, see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>.</p>
+<section id="quick-look">
+<h2>Quick Look<a class="headerlink" href="#quick-look" title="Link to this heading">#</a></h2>
+<p>Every transient class is instantiated with no arguments – everything below works identically for
+any of the built-in populations, so this page uses
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.html#uvex_transients.transients.TDEs.TidalDisruptionEvent" title="uvex_transients.transients.TDEs.TidalDisruptionEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">TidalDisruptionEvent</span></code></a> throughout as a running example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.TDEs</span><span class="w"> </span><span class="kn">import</span> <span class="n">TidalDisruptionEvent</span>
+
+<span class="n">tde</span> <span class="o">=</span> <span class="n">TidalDisruptionEvent</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tde</span><span class="o">.</span><span class="n">sed</span><span class="p">)</span>                  <span class="c1"># the VanVelzenTDESED SED instance</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tde</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">)</span>       <span class="c1"># 200.0 d</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tde</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">)</span>       <span class="c1"># 2</span>
+
+<span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tde</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">rate</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Redshift"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Event rate [Mpc$^{-3}$ yr$^{-1}$]"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"TDE volumetric event rate"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/32e7cbcef300077b60e14006298eba51/overview-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/fb44425543647b937b796db17bd64a4a/overview-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/221e6d31ab93674ef5541eb0359d9fbc/overview-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/1a67441f020b43540770a249b2463633/overview-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-11.png" class="plot-directive" src="../../_images/overview-11.png" />
+</figure>
+<p>A transient class is a <em>pairing</em>: <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.sed.html#uvex_transients.transients.base.TransientBase.sed" title="uvex_transients.transients.base.TransientBase.sed"><code class="xref py py-attr docutils literal notranslate"><span class="pre">sed</span></code></a>
+is exactly the <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.html#uvex_transients.models.core.base.SpectralModel" title="uvex_transients.models.core.base.SpectralModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralModel</span></code></a> documented in
+<a class="reference internal" href="../models/overview.html#user-guide-models"><span class="std std-ref">Models</span></a> (every <code class="docutils literal notranslate"><span class="pre">eval</span></code>/<code class="docutils literal notranslate"><span class="pre">flux</span></code>/<code class="docutils literal notranslate"><span class="pre">mag</span></code> method, every prior,
+<code class="docutils literal notranslate"><span class="pre">sample_parameters</span></code>, all of it), and <code class="docutils literal notranslate"><span class="pre">duration_limit</span></code>/<code class="docutils literal notranslate"><span class="pre">event_rate</span></code> are the two pieces of
+extra bookkeeping that let <code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> turn that SED into a self-sampling
+population, covered below.</p>
+</section>
+<hr class="docutils" />
+<section id="the-transient-object">
+<h2>The Transient Object<a class="headerlink" href="#the-transient-object" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a> itself is deliberately minimal: it holds
+one SED instance and one duration, and nothing about <em>how many</em> events exist or <em>where</em> – that’s
+<code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code>’s job, covered in the next two sections.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tde</span><span class="o">.</span><span class="n">sed</span>              <span class="c1"># the VanVelzenTDESED instance -- see user_guide_models</span>
+<span class="n">tde</span><span class="o">.</span><span class="n">duration_limit</span>    <span class="c1"># 200.0 d</span>
+<span class="n">tde</span><span class="o">.</span><span class="n">cosmology</span>         <span class="c1"># the astropy Cosmology used for D_L(z) and comoving volume</span>
+
+<span class="n">tde</span><span class="o">.</span><span class="n">duration_limit</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>   <span class="c1"># override -- must be a positive time Quantity</span>
+</pre></div>
+</div>
+<p>A concrete subclass supplies exactly two class variables, checked at class-definition time (not
+buried inside <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, so a subclass that forgets one fails immediately at import, not partway
+through a Monte Carlo run):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class variable</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL</span></code></p></td>
+<td><p>The <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.html#uvex_transients.models.core.base.SpectralModel" title="uvex_transients.models.core.base.SpectralModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralModel</span></code></a> subclass this transient type
+is built from; instantiated fresh (with its own default parameters/priors) for every new
+transient instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DEFAULT_DURATION</span></code></p></td>
+<td><p>The default
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.duration_limit.html#uvex_transients.transients.base.TransientBase.duration_limit" title="uvex_transients.transients.base.TransientBase.duration_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">duration_limit</span></code></a>: a
+<em>strict upper bound</em> on the time between explosion and the transient fading below any
+relevance, not a typical or characteristic duration –
+used for windowing, so an overly generous value costs some wasted sampling but an overly
+tight one silently drops real detections.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Nine populations ship with the package today, each pairing one of these SEDs with a rate and
+duration – see the linked <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a> page for each one’s astrophysics and priors:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Default SED</p></th>
+<th class="head"><p>Duration</p></th>
+<th class="head"><p>Redshift limit</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova" title="uvex_transients.transients.kilonovae.Kilonova"><code class="xref py py-class docutils literal notranslate"><span class="pre">Kilonova</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED" title="uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">KilonovaCoolingBlackbodySED</span></code></a></p></td>
+<td><p>30 d</p></td>
+<td><p>0.2</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.html#uvex_transients.transients.TDEs.TidalDisruptionEvent" title="uvex_transients.transients.TDEs.TidalDisruptionEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">TidalDisruptionEvent</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.tdes.van_velzen.VanVelzenTDESED.html#uvex_transients.models.tdes.van_velzen.VanVelzenTDESED" title="uvex_transients.models.tdes.van_velzen.VanVelzenTDESED"><code class="xref py py-class docutils literal notranslate"><span class="pre">VanVelzenTDESED</span></code></a></p></td>
+<td><p>200 d</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.html#uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient" title="uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED.html#uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED" title="uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LFBOTCoolingBlackbodySED</span></code></a></p></td>
+<td><p>100 d</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe" title="uvex_transients.transients.supernovae.TypeIIPSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a></p></td>
+<td><p>100 d</p></td>
+<td><p>0.8</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe" title="uvex_transients.transients.supernovae.TypeIIPExcessSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPExcessSED.html#uvex_transients.models.supernovae.IIp.TypeIIPExcessSED" title="uvex_transients.models.supernovae.IIp.TypeIIPExcessSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSED</span></code></a></p></td>
+<td><p>100 d</p></td>
+<td><p>1.2</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIbSNe.html#uvex_transients.transients.supernovae.TypeIIbSNe" title="uvex_transients.transients.supernovae.TypeIIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIb.TypeIIbSED.html#uvex_transients.models.supernovae.IIb.TypeIIbSED" title="uvex_transients.models.supernovae.IIb.TypeIIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIbSED</span></code></a></p></td>
+<td><p>200 d</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.html#uvex_transients.transients.supernovae.ShockCoolingIIb" title="uvex_transients.transients.supernovae.ShockCoolingIIb"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a></p></td>
+<td><p>20 d</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.html#uvex_transients.transients.supernovae.TypeIbSNe" title="uvex_transients.transients.supernovae.TypeIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a></p></td>
+<td><p>100 d</p></td>
+<td><p>0.5</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.html#uvex_transients.transients.supernovae.TypeIcSNe" title="uvex_transients.transients.supernovae.TypeIcSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIcSED.html#uvex_transients.models.supernovae.Ibc.TypeIcSED" title="uvex_transients.models.supernovae.Ibc.TypeIcSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSED</span></code></a></p></td>
+<td><p>100 d</p></td>
+<td><p>0.5</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Writing your own population – a new SED, a new <code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL</span></code>/<code class="docutils literal notranslate"><span class="pre">DEFAULT_DURATION</span></code> pairing,
+an <code class="docutils literal notranslate"><span class="pre">event_rate(z)</span></code> – is covered end to end in
+<a class="reference internal" href="custom_transients.html#user-guide-transients-custom-transients"><span class="std std-ref">Writing a Custom Transient</span></a>.</p>
+</div>
+</section>
+<hr class="docutils" />
+<section id="volumetric-rates-and-redshift-sampling">
+<h2>Volumetric Rates and Redshift Sampling<a class="headerlink" href="#volumetric-rates-and-redshift-sampling" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a> is the abstract base every
+extragalactic population above subclasses. Concrete subclasses implement exactly one abstract
+method, <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a>: the comoving
+event rate density <span class="math notranslate nohighlight">\(R(z)\)</span>, in events / Mpc<sup>3</sup> / yr, as a function of redshift. It
+must be NumPy-vectorized – called once, across a whole grid, never in a per-event loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tde</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>                      <span class="c1"># a scalar rate at z=0.5</span>
+<span class="n">tde</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>    <span class="c1"># the same function, vectorized</span>
+</pre></div>
+</div>
+<section id="from-rate-to-a-redshift-distribution">
+<span id="user-guide-transients-rate-caching"></span><h3>From Rate to a Redshift Distribution<a class="headerlink" href="#from-rate-to-a-redshift-distribution" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">event_rate</span></code> alone isn’t yet something you can sample from – it’s a rate <em>density</em>, not a
+probability distribution, and it needs to be weighted by the comoving volume element and the
+cosmological time-dilation between rest-frame rate and observer-frame duration. On first access,
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_grid.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_grid" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_grid</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid.html#uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid" title="uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">luminosity_distance_grid</span></code></a>, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_event_rate</span></code></a> all trigger
+one lazy build: <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> is tabulated once, on a grid of
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_grid_size</span></code></a> points spanning
+<code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">redshift_limit]</span></code>, weighted by</p>
+<div class="math notranslate nohighlight">
+\[w(z) = R(z) \, \frac{dV_c}{dz} \Big/ (1+z),\]</div>
+<p>then integrated (via cumulative trapezoidal quadrature) into both a total –
+<code class="docutils literal notranslate"><span class="pre">integrated_event_rate</span></code>, the expected count per steradian per unit <em>observer</em> time – and a CDF
+used to draw redshifts by inverse-transform sampling:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">z_samples</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sample_event_redshift</span><span class="p">(</span><span class="mi">20000</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Redshift"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Probability density"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"TDE redshift distribution (rate-weighted, inverse-transform sampled)"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/6854236e7841d0cedcd88fd4c8dc014c/overview-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<figure class="align-default" id="id1">
+<img alt="../../_images/overview-2_00.png" class="plot-directive" src="../../_images/overview-2_00.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/f92bb2864310b51109feb4677f4e9797/overview-2_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/930f39cef96a057dc58e384576895b28/overview-2_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0fcd8c62ed608504f9fbdf378f5a8b9e/overview-2_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id2">
+<img alt="../../_images/overview-2_01.png" class="plot-directive" src="../../_images/overview-2_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/a25a268634400628049a76a6f4ce6891/overview-2_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c843901feb0ba61835b9c8a9fc94efb8/overview-2_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/556f03c18de7c085d1f0d06b60d610ed/overview-2_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift.html#uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift" title="uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_event_redshift()</span></code></a> is the
+one-line version of that inversion; <code class="docutils literal notranslate"><span class="pre">luminosity_distance_grid</span></code> caches <span class="math notranslate nohighlight">\(D_L(z)\)</span> at the same
+grid points, so a caller with a batch of already-sampled redshifts gets <span class="math notranslate nohighlight">\(D_L\)</span> via a cheap
+<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.interp.html#numpy.interp" title="(in NumPy v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.interp()</span></code></a> against it rather than a second <code class="docutils literal notranslate"><span class="pre">cosmology.luminosity_distance</span></code> call
+(exactly what <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a> does – see
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>All of this is cached and rebuilt lazily, keyed off <code class="docutils literal notranslate"><span class="pre">(cosmology,</span> <span class="pre">redshift_limit,</span>
+<span class="pre">redshift_grid_size)</span></code> – reassigning any of <code class="docutils literal notranslate"><span class="pre">cosmology</span></code>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_limit.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_limit" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_limit</span></code></a>, or
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_grid_size</span></code></a> invalidates
+the cache, so the next access rebuilds it against the new value rather than silently reusing a
+stale one. <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> itself is only ever evaluated once per rebuild, no matter how many
+events are subsequently sampled from it.</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="sampling-events">
+<h2>Sampling Events<a class="headerlink" href="#sampling-events" title="Link to this heading">#</a></h2>
+<p>With a redshift distribution in hand, <code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> can draw an actual Monte Carlo
+population: how many events, where, when, and with which SED parameters.</p>
+<section id="how-many-events">
+<h3>How Many Events<a class="headerlink" href="#how-many-events" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_count.html#uvex_transients.transients.base.ExtragalacticTransient.sample_event_count" title="uvex_transients.transients.base.ExtragalacticTransient.sample_event_count"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_event_count()</span></code></a> converts
+<code class="docutils literal notranslate"><span class="pre">integrated_event_rate</span></code> into an expected count over a given solid angle and duration, then draws
+a Poisson realization of it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sample_event_count</span><span class="p">(</span><span class="n">solid_angle</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">duration</span></code> above can also be given as a <code class="docutils literal notranslate"><span class="pre">t_start</span></code>/<code class="docutils literal notranslate"><span class="pre">t_end</span></code> pair instead – both
+<code class="docutils literal notranslate"><span class="pre">sample_event_count</span></code> and <code class="docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid</span></code> below resolve it the same way.</p>
+</section>
+<section id="drawing-a-full-population">
+<h3>Drawing a Full Population<a class="headerlink" href="#drawing-a-full-population" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid" title="uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid()</span></code></a> is
+the main event: it draws the count above, then places each event uniformly at random within one of
+a set of eligible HEALPix pixels (optionally jittered to a sub-pixel position via <code class="docutils literal notranslate"><span class="pre">jitter</span></code>; see
+below), assigns it a redshift from <code class="docutils literal notranslate"><span class="pre">sample_event_redshift</span></code>, an explosion time drawn uniformly
+across the sampling window, and a per-event parameter seed – rather than fully-sampled physical
+SED parameters, which are meant to be regenerated lazily, on demand, from that seed (see
+<a class="reference internal" href="#user-guide-transients-parameter-seeds"><span class="std std-ref">Parameter Seeds, Not Parameters</span></a> below).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+
+<span class="n">events</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sample_events_on_healpix_grid</span><span class="p">(</span>
+    <span class="n">nside</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">t_start</span><span class="o">=</span><span class="n">Time</span><span class="p">(</span><span class="s2">"2025-01-01"</span><span class="p">),</span>
+    <span class="n">duration</span><span class="o">=</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sampled </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="si">}</span><span class="s2"> events."</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"aitoff"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ra</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">wrap_at</span><span class="p">(</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">radian</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">events</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">radian</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"viridis"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="si">}</span><span class="s2"> sampled TDEs, whole sky, 180 days"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/ad25f9ce2a3a209638d658f23093772d/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<figure class="align-default" id="id3">
+<img alt="../../_images/overview-3_00.png" class="plot-directive" src="../../_images/overview-3_00.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/53a056a29413ba896712835ca7c19c61/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/8ab4ad9b446d1cfedad4dfdc7cfe5702/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/88f50c6791f93176f42c4e97b36a7067/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id4">
+<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/f8d7e8f615765308e01f39828dc9710b/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/4a8b8fce0170855020c64f59c08d5c31/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/ff4f7c5da76888955fc4283b64b1c07d/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id5">
+<img alt="../../_images/overview-3_02.png" class="plot-directive" src="../../_images/overview-3_02.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/10cca611264bc54b97839b640ec5dfc2/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/fca678c19606994a7623767381aa4df4/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/fcdf52f18c9e8800e4f7d580e2977c83/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>By default every pixel of the <code class="docutils literal notranslate"><span class="pre">nside</span></code> grid is eligible, as above; <code class="docutils literal notranslate"><span class="pre">pixel_mask</span></code> (a boolean mask
+over the full grid) or <code class="docutils literal notranslate"><span class="pre">pixel_ids</span></code> (an explicit array of pixel indices) restrict sampling to a
+subset – exactly how
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a> restricts each time bin’s
+sampling to only the HEALPix pixels the survey schedule actually observed during that bin (see
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>), rather than sampling the whole sky and discarding almost everything.</p>
+<p>The returned table has one row per sampled event:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">healpix_id</span></code></p></td>
+<td><p>int</p></td>
+<td><p>Sampling pixel, at the <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code> passed in.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">healpix_dx</span></code>, <code class="docutils literal notranslate"><span class="pre">healpix_dy</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Sub-pixel offset within <code class="docutils literal notranslate"><span class="pre">healpix_id</span></code> (<code class="docutils literal notranslate"><span class="pre">0.5,</span> <span class="pre">0.5</span></code> for every event if <code class="docutils literal notranslate"><span class="pre">jitter=False</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">coord</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyCoord</span></code></a></p></td>
+<td><p>Sky position, derived from <code class="docutils literal notranslate"><span class="pre">healpix_id</span></code>/<code class="docutils literal notranslate"><span class="pre">healpix_dx</span></code>/<code class="docutils literal notranslate"><span class="pre">healpix_dy</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">redshift</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Drawn from <code class="docutils literal notranslate"><span class="pre">sample_event_redshift</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_explosion</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Time</span></code></a></p></td>
+<td><p>Drawn uniformly across <code class="docutils literal notranslate"><span class="pre">[t_start,</span> <span class="pre">t_start</span> <span class="pre">+</span> <span class="pre">duration)</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code></p></td>
+<td><p>int</p></td>
+<td><p>Regenerates this event’s physical SED parameters on demand – see below.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="parameter-seeds-not-parameters">
+<span id="user-guide-transients-parameter-seeds"></span><h3>Parameter Seeds, Not Parameters<a class="headerlink" href="#parameter-seeds-not-parameters" title="Link to this heading">#</a></h3>
+<p>Notice what’s <em>not</em> in that table: no amplitude, no rise time, no temperature – none of the SED’s
+own physical parameters. Sampling a full parameter set for every event up front would be wasted
+work for the overwhelming majority of a freshly-sampled population that never survives screening
+(see <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_limiting_magnitude()</span></code></a> in
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>), and would mean <code class="docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid</span></code>’s own output schema
+depends on which SED a transient type happens to use. Instead, only a <code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code> is
+stored – one independent, individually-storable seed per event (drawn from a single spawned tree,
+so no two events, however many are sampled, ever share a stream) – and the actual parameters are
+regenerated from it later, exactly once needed, via
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.sample_parameters.html#uvex_transients.models.core.base.SpectralModel.sample_parameters" title="uvex_transients.models.core.base.SpectralModel.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s2">"parameter_seed"</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This is exactly what <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.sample_parameters.html#uvex_transients.simulation.event.Event.sample_parameters" title="uvex_transients.simulation.event.Event.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a> does for a
+single reconstructed event, and what
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_limiting_magnitude()</span></code></a>/
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_snr.html#uvex_transients.simulation.core.SurveySimulator.filter_by_snr" title="uvex_transients.simulation.core.SurveySimulator.filter_by_snr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_snr()</span></code></a> do in batch across a whole
+catalog – see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for both.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="reproducibility">
+<h2>Reproducibility<a class="headerlink" href="#reproducibility" title="Link to this heading">#</a></h2>
+<p>Every stochastic call on this page takes a <code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">rng</span></code> argument (an integer, an existing
+<a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code></a>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for non-reproducible entropy), the same way
+<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.sample_parameters.html#uvex_transients.models.core.base.SpectralModel.sample_parameters" title="uvex_transients.models.core.base.SpectralModel.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a> does in
+<a class="reference internal" href="../models/overview.html#user-guide-models"><span class="std std-ref">Models</span></a>. <code class="docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid</span></code> in particular spawns one tree of
+independent child streams from its own <code class="docutils literal notranslate"><span class="pre">seed</span></code> – one per stochastic draw it makes internally
+(the event count, pixel assignment, jitter, explosion time, redshift, and the parameter-seed
+spawn point itself) – so that no two of those draws, and no two sampled events’ own
+<code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code> values, can ever collide, regardless of how many events end up being sampled.
+The same <code class="docutils literal notranslate"><span class="pre">seed</span></code> therefore always reproduces the same population, down to the last
+<code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code>.</p>
+<hr class="docutils" />
+<p>See the <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a> gallery for the astrophysics, adopted rate, and default priors of each
+implemented population, <a class="reference internal" href="custom_transients.html#user-guide-transients-custom-transients"><span class="std std-ref">Writing a Custom Transient</span></a> for writing your own, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.html#module-uvex_transients.transients" title="uvex_transients.transients"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.transients</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a> reference for exhaustive method-by-method
+detail.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../models/custom_models.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Writing a Custom Model</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="custom_transients.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Writing a Custom Transient</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-look">Quick Look</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-transient-object">The Transient Object</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#volumetric-rates-and-redshift-sampling">Volumetric Rates and Redshift Sampling</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-rate-to-a-redshift-distribution">From Rate to a Redshift Distribution</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling-events">Sampling Events</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-many-events">How Many Events</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drawing-a-full-population">Drawing a Full Population</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-seeds-not-parameters">Parameter Seeds, Not Parameters</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducibility">Reproducibility</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user_guide/transients/overview.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

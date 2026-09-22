@@ -1,0 +1,1519 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.transients.base &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/transients/base';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.transients.base</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.transients.base</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Base classes for transient population models.</span>
+
+<span class="sd">A :class:`TransientBase` subclass is one type of transient to simulate in the</span>
+<span class="sd">survey. It is a thin container pairing a single</span>
+<span class="sd">:class:`~uvex_transients.models.core.base.SpectralModel` (the full, self-contained</span>
+<span class="sd">:math:`L_\\nu(\\nu, t)` model -- flux, magnitude, band-averaged photometry, and</span>
+<span class="sd">rest-frame spectrum generation, including cosmological redshift/distance</span>
+<span class="sd">resolution, all live on the SED itself now; see that module) with the metadata</span>
+<span class="sd">needed to run and window a Monte Carlo survey simulation: a duration limit and,</span>
+<span class="sd">for :class:`ExtragalacticTransient`, a cosmological volumetric event rate. Milky</span>
+<span class="sd">Way foreground reddening is likewise no longer a `TransientBase` concern -- see</span>
+<span class="sd">:class:`~m4opt.synphot.extinction.DustExtinction` -- since it's folded into a flux/magnitude call via</span>
+<span class="sd">the SED's own ``log_attenuation`` keyword (``ebv``/``dust_law`` for</span>
+<span class="sd">``as_source_spectrum``/``simulate_photometry``) rather than wrapped here.</span>
+
+<span class="sd">:class:`ExtragalacticTransient` adds cosmological volumetric-rate sampling: given a</span>
+<span class="sd">per-class comoving event-rate density (events / Mpc^3 / yr as a function of redshift),</span>
+<span class="sd">it can draw a Monte Carlo realization of events over a sky patch and time window,</span>
+<span class="sd">either as individual ``(RA, DEC, z, t_explosion, parameter_seed)`` tuples or, more</span>
+<span class="sd">compactly, as ``(healpix_id, time_id, z, seed)`` tuples against a shared discretization</span>
+<span class="sd">grid. It caches its redshift grid's corresponding luminosity-distance values</span>
+<span class="sd">(:attr:`~ExtragalacticTransient.luminosity_distance_grid`) alongside the redshift grid</span>
+<span class="sd">itself (:attr:`~ExtragalacticTransient.redshift_grid`), so callers needing :math:`D_L(z)`</span>
+<span class="sd">for a batch of events have it on hand without a second cosmology lookup.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy_healpix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ah</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">ICRS</span><span class="p">,</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cosmology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">cumulative_trapezoid</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">spawn_seeds</span><span class="p">,</span> <span class="n">split_root_seed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
+
+<span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># Transient Base Class                                                        #</span>
+<span class="c1"># =========================================================================== #</span>
+<div class="viewcode-block" id="TransientBase">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.supernovae.TransientBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransientBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Abstract base class for transient types.</span>
+
+<span class="sd">    A container: one :class:`~uvex_transients.models.core.base.SpectralModel` instance</span>
+<span class="sd">    (:attr:`sed`) plus the metadata needed to window a survey simulation around it</span>
+<span class="sd">    (:attr:`duration_limit`). All flux/magnitude/spectrum evaluation is the SED's</span>
+<span class="sd">    own job -- see :class:`~uvex_transients.models.core.base.SpectralModel` and, for a</span>
+<span class="sd">    composed lightcurve + spectral-shape SED, :class:`~uvex_transients.models.core.base.ComposedSpectralModel`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        The cosmology to use for this transient class. See :meth:`__init__`.</span>
+<span class="sd">    **_</span>
+<span class="sd">        Ignored. See :meth:`__init__`.</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Class Variables                #</span>
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Concrete subclasses (e.g. `TypeIIPSNe`) must override both of these with</span>
+    <span class="c1"># real values.</span>
+    <span class="n">DEFAULT_MODEL</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">SpectralModel</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""type[SpectralModel]: The SED model class associated with this transient type. Must be set by subclasses."""</span>
+    <span class="n">DEFAULT_DURATION</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">""" ~astropy.units.Quantity: The duration of this transient.</span>
+
+<span class="sd">    This parameter is used when doing windowing to determine the relevant observations which could detect a given</span>
+<span class="sd">    transient and should be a strong upper bound on the total duration of the relevant transient.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_REGISTRY</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="s2">"TransientBase"</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">    </span><span class="sd">"""dict[str, type[TransientBase]]: Every concrete subclass, keyed by class name; see `registry`.</span>
+
+<span class="sd">    Populated automatically by `__init_subclass__` -- a class only appears here once its</span>
+<span class="sd">    defining module has actually been imported (this registry does not, by itself, import</span>
+<span class="sd">    anything).</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Instantiation                  #</span>
+    <span class="c1"># ------------------------------ #</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Register a concrete subclass in `_REGISTRY`, enforcing that it set its class variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Forwarded to :meth:`object.__init_subclass__` unchanged; this</span>
+<span class="sd">            class declares no class-keyword-argument options of its own.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If a concrete (non-abstract) subclass leaves `DEFAULT_MODEL` or</span>
+<span class="sd">            `DEFAULT_DURATION` unset.</span>
+<span class="sd">        """</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init_subclass__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Concrete subclasses must supply real values for both class variables (see the</span>
+        <span class="c1"># docstrings above). Enforcing this here, at class-definition time, turns a</span>
+        <span class="c1"># would-be `AttributeError`/`TypeError` buried inside `__init__` (or worse,</span>
+        <span class="c1"># inside a Monte Carlo loop) into an immediate, actionable error at import time.</span>
+        <span class="k">if</span> <span class="n">ABC</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">:</span>
+            <span class="c1"># `cls` is itself still abstract (e.g. `ExtragalacticTransient`) -- it's</span>
+            <span class="c1"># not required to have set concrete defaults yet; its own subclasses are.</span>
+            <span class="k">return</span>
+
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"DEFAULT_MODEL"</span><span class="p">,</span> <span class="s2">"DEFAULT_DURATION"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must override </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2"> with real values."</span><span class="p">)</span>
+
+        <span class="n">TransientBase</span><span class="o">.</span><span class="n">_REGISTRY</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+
+<div class="viewcode-block" id="TransientBase.registry">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.TransientBase.registry.html#uvex_transients.transients.supernovae.TransientBase.registry">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">registry</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="s2">"TransientBase"</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""dict[str, type[TransientBase]]: A copy of every concrete subclass imported so far, keyed by class name."""</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_REGISTRY</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cosmology</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Instantiate the transient class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">            The cosmology to use for this transient class. This is used to determine</span>
+<span class="sd">            the relevant luminosity distances of objects and to account for cosmological</span>
+<span class="sd">            volume corrections. If ``None`` (default), the configured default cosmology</span>
+<span class="sd">            is used; see `uvex_transients.utils.cosmology.get_cosmology`.</span>
+<span class="sd">        **_</span>
+<span class="sd">            Ignored. Lets subclasses (e.g. `ExtragalacticTransient`) forward extra</span>
+<span class="sd">            constructor arguments through a shared call signature without this base</span>
+<span class="sd">            `__init__` needing to know about them.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Resolve the cosmology (falling back to the configured default), then</span>
+        <span class="c1"># validate it before assigning it privately.</span>
+        <span class="n">cosmology</span> <span class="o">=</span> <span class="n">get_cosmology</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">Cosmology</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span><span class="p">:</span> <span class="n">Cosmology</span> <span class="o">=</span> <span class="n">cosmology</span>
+
+        <span class="c1"># Instantiate the SED and duration limit fresh for this instance.</span>
+        <span class="c1"># `__init_subclass__` guarantees both class variables are non-`None` by the time</span>
+        <span class="c1"># this runs.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">DEFAULT_MODEL</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">DEFAULT_DURATION</span>
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Properties                     #</span>
+    <span class="c1"># ------------------------------ #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cosmology</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
+
+<span class="sd">        Reassigning this only replaces the `Cosmology` instance itself; it does not</span>
+<span class="sd">        by itself invalidate any cached, cosmology-dependent quantities on subclasses</span>
+<span class="sd">        (see `ExtragalacticTransient.integrated_event_rate`/`ExtragalacticTransient.luminosity_distance_grid`,</span>
+<span class="sd">        which cache by cosmology and rebuild automatically when this changes).</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span>
+
+    <span class="nd">@cosmology</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the cosmology used for luminosity-distance/volume calculations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology</span>
+<span class="sd">            The new cosmology.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `cosmology` is not an `~astropy.cosmology.Cosmology` instance.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">Cosmology</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span> <span class="o">=</span> <span class="n">cosmology</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpectralModel</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.</span>
+
+<span class="sd">        See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API</span>
+<span class="sd">        (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and</span>
+<span class="sd">        ``generate_spectrum``), each of which resolves redshift/distance from a</span>
+<span class="sd">        cosmology directly and accepts an optional ``log_attenuation`` (or, for</span>
+<span class="sd">        ``as_source_spectrum``/``simulate_photometry``, ``ebv``/``dust_law``) for Milky</span>
+<span class="sd">        Way foreground reddening (see :class:`~m4opt.synphot.extinction.DustExtinction`).</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">duration_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: Upper bound on this transient's total duration.</span>
+
+<span class="sd">        Defaults to `DEFAULT_DURATION`. Used for windowing -- determining which</span>
+<span class="sd">        observations could plausibly have detected a given transient -- so this</span>
+<span class="sd">        should be a strict upper bound on the time between explosion and the</span>
+<span class="sd">        transient fading below any relevant detection threshold, not a typical</span>
+<span class="sd">        or characteristic duration.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span>
+
+    <span class="nd">@duration_limit</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">duration_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration_limit</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the upper bound on this transient's total duration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration_limit : ~astropy.units.Quantity</span>
+<span class="sd">            The new duration limit; see :attr:`duration_limit`.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_duration_limit</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_duration_limit</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `duration_limit`, shared by the setter and (implicitly) `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration_limit : ~astropy.units.Quantity</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            `duration_limit`, unchanged.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `duration_limit` is not a Quantity with time units.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `duration_limit` is not finite and positive.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="n">duration_limit</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">physical_type</span> <span class="o">!=</span> <span class="s2">"time"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`duration_limit` must be an astropy Quantity with time units, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span> <span class="ow">or</span> <span class="n">duration_limit</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`duration_limit` must be finite and positive, got </span><span class="si">{</span><span class="n">duration_limit</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">duration_limit</span></div>
+
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># Extragalactic Transient                                                     #</span>
+<span class="c1"># =========================================================================== #</span>
+<div class="viewcode-block" id="ExtragalacticTransient">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.supernovae.ExtragalacticTransient">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExtragalacticTransient</span><span class="p">(</span><span class="n">TransientBase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extragalactic transient with a cosmological volumetric event rate; see the module docstring.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        The cosmology to use for this transient class. See :meth:`__init__`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">DEFAULT_Z_GRID_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cosmology</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Instantiate the transient, and set up (but do not yet build) its lazy rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">            The cosmology to use for this transient class. See :meth:`TransientBase.__init__`.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Instantiate the parent class (resolves `None` to the configured default).</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">)</span>
+
+        <span class="c1"># Assign the z grid parameters.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_Z_LIM</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_Z_GRID_SIZE</span>
+
+        <span class="c1"># Ensure that the rate cache is cleared before proceeding. This</span>
+        <span class="c1"># also generates the appropriate attributes of the class for the</span>
+        <span class="c1"># rate caching, which is loaded lazily as needed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_invalidate_rate_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Clear the lazily-computed rate table; the next access rebuilds it."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance_grid</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z_cdf</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># ---------------------------------------- #</span>
+    <span class="c1"># Properties                               #</span>
+    <span class="c1"># ---------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cosmology</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
+
+<span class="sd">        Reassigning this invalidates the cached rate table -- see</span>
+<span class="sd">        `TransientBase.cosmology` and `integrated_event_rate`/`luminosity_distance_grid`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span>
+
+    <span class="nd">@cosmology</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Cosmology</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the cosmology used for luminosity-distance/volume calculations, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : ~astropy.cosmology.Cosmology</span>
+<span class="sd">            The new cosmology.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `value` is not an `~astropy.cosmology.Cosmology` instance.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Cosmology</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""float: Upper redshift bound of `redshift_grid`; reassigning invalidates the rate cache."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span>
+
+    <span class="nd">@redshift_limit</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the upper redshift bound of `redshift_grid`, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : float</span>
+<span class="sd">            The new redshift limit.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_redshift_limit</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_grid_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""int: Number of points in `redshift_grid`; reassigning invalidates the rate cache."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span>
+
+    <span class="nd">@redshift_grid_size</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_grid_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the number of points in `redshift_grid`, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : int</span>
+<span class="sd">            The new grid size.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_redshift_grid_size</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""numpy.ndarray: The cached redshift grid backing `integrated_event_rate`/sampling."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">luminosity_distance_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: :math:`D_L(z)` at each point of `redshift_grid`.</span>
+
+<span class="sd">        Cached alongside `redshift_grid` (built by the same `_ensure_rate_table` call,</span>
+<span class="sd">        against the same `cosmology`), so a caller with a batch of sampled redshifts</span>
+<span class="sd">        can get :math:`D_L` for all of them via ``numpy.interp(z, transient.redshift_grid,</span>
+<span class="sd">        transient.luminosity_distance_grid.value) * transient.luminosity_distance_grid.unit``</span>
+<span class="sd">        instead of a second, separate `cosmology.luminosity_distance` call.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance_grid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">integrated_event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: The cached :math:`dN/(d\Omega\,dt_\mathrm{obs})`.</span>
+
+<span class="sd">        A sampling call's expected count is ``integrated_event_rate * solid_angle * duration``</span>
+<span class="sd">        -- `solid_angle` rescales this (it doesn't change the shape of the redshift</span>
+<span class="sd">        distribution, since the rate model is isotropic), so this table is built once</span>
+<span class="sd">        per `(cosmology, z_max, n_grid)` and reused across every subsequent call,</span>
+<span class="sd">        whole-sky or per-cell alike.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_redshift_limit</span><span class="p">(</span><span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `redshift_limit`, shared by the setter and `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z_max : float</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            `z_max`, coerced to a plain Python ``float``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `z_max` is not finite and positive.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z_max</span><span class="p">)</span> <span class="ow">or</span> <span class="n">z_max</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`redshift_limit` must be finite and positive, got </span><span class="si">{</span><span class="n">z_max</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">z_max</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_redshift_grid_size</span><span class="p">(</span><span class="n">n_grid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `redshift_grid_size`, shared by the setter and `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_grid : int</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            `n_grid`, coerced to a plain Python ``int``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `n_grid` is not an integer &gt;= 2.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">n_grid</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`redshift_grid_size` must be an integer &gt;= 2, got </span><span class="si">{</span><span class="n">n_grid</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_grid</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Event Rate Computations        #</span>
+    <span class="c1"># ------------------------------ #</span>
+<div class="viewcode-block" id="ExtragalacticTransient.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.supernovae.ExtragalacticTransient.event_rate">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Compute the comoving event rate density at redshift(s) `z`.</span>
+
+<span class="sd">        Must be NumPy-vectorized (accept and return an array elementwise when `z` is</span>
+<span class="sd">        an array) -- `integrated_event_rate` evaluates this once, across the whole</span>
+<span class="sd">        `redshift_grid`, not in a per-point loop.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : float or numpy.ndarray</span>
+<span class="sd">            Redshift(s) at which to evaluate the event rate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or numpy.ndarray</span>
+<span class="sd">            The event rate, in events / Mpc^3 / yr.</span>
+<span class="sd">        """</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_rate_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Lazily (re)build the redshift grid, luminosity-distance grid, CDF, and integrated rate, if invalidated.</span>
+
+<span class="sd">        Tabulates :math:`w(z) = R(z) \cdot (dV_c/dz) / (1+z)` once on `redshift_grid` (`R`</span>
+<span class="sd">        being `event_rate`; the :math:`1/(1+z)` is the cosmological rate-dilation</span>
+<span class="sd">        correction between rest-frame event rate and observer-frame duration), then</span>
+<span class="sd">        derives `integrated_event_rate` (the total, un-normalized integral, scaled to</span>
+<span class="sd">        events per steradian per unit observer time), the CDF used for inversion</span>
+<span class="sd">        sampling from that single tabulated array, and `luminosity_distance_grid`</span>
+<span class="sd">        (:math:`D_L(z)` at the same grid points, for reuse by callers) -- `event_rate`</span>
+<span class="sd">        is evaluated exactly once per rebuild, regardless of how many subsequent</span>
+<span class="sd">        events are sampled from it. Explicit tabulate-and-invert (rather than treating</span>
+<span class="sd">        `event_rate` as a `~uvex_transients.models.core.priors.Prior`) is used</span>
+<span class="sd">        deliberately, since `event_rate` may be an arbitrary, non-smooth function for</span>
+<span class="sd">        which the polynomial-inversion machinery `Prior` relies on has no particular</span>
+<span class="sd">        guarantees.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%s</span><span class="s2">: (re)building rate table over z in [0, </span><span class="si">%s</span><span class="s2">] (</span><span class="si">%d</span><span class="s2"> grid points, cosmology=</span><span class="si">%s</span><span class="s2">)."</span><span class="p">,</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">z_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="n">z_grid</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">dVc_dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span><span class="o">.</span><span class="n">differential_comoving_volume</span><span class="p">(</span><span class="n">z_grid</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">dVc_dz</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z_grid</span><span class="p">)</span>
+
+        <span class="n">cumulative</span> <span class="o">=</span> <span class="n">cumulative_trapezoid</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">cumulative</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">total</span><span class="p">)</span> <span class="ow">or</span> <span class="n">total</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n_nonfinite</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rate</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The integrated event rate must be finite and positive, got </span><span class="si">{</span><span class="n">total</span><span class="si">!r}</span><span class="s2">; check `event_rate`. "</span>
+                <span class="sa">f</span><span class="s2">"`event_rate(z)` over `redshift_grid` (z in [0, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span><span class="si">}</span><span class="s2">]) returned values in "</span>
+                <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="si">!r}</span><span class="s2">, </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="si">!r}</span><span class="s2">] with </span><span class="si">{</span><span class="n">n_nonfinite</span><span class="si">}</span><span class="s2"> non-finite entries."</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span> <span class="o">=</span> <span class="n">z_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span><span class="o">.</span><span class="n">luminosity_distance</span><span class="p">(</span><span class="n">z_grid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z_cdf</span> <span class="o">=</span> <span class="n">cumulative</span> <span class="o">/</span> <span class="n">total</span>
+        <span class="c1"># events / Mpc^3 / yr (implicit units of `event_rate`) * Mpc^3/sr (from</span>
+        <span class="c1"># `differential_comoving_volume`) integrated over dz -&gt; events / sr / yr.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span> <span class="o">=</span> <span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">: rate table built; integrated_event_rate=</span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_duration</span><span class="p">(</span><span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_end</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Resolve a sampling-window length from either an explicit `duration` or a `t_start`/`t_end` pair.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration : ~astropy.units.Quantity, optional</span>
+<span class="sd">            The window length, given directly. Takes priority over `t_start`/`t_end`</span>
+<span class="sd">            if both are supplied (with a warning; see below).</span>
+<span class="sd">        t_start, t_end : ~astropy.time.Time, optional</span>
+<span class="sd">            The start/end of the window; `duration` is computed as ``t_end - t_start``</span>
+<span class="sd">            if `duration` itself isn't given.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The resolved window length.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `duration` is not a Quantity, or `t_start`/`t_end` are not Time objects.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If none of `duration` or the `t_start`/`t_end` pair is fully supplied.</span>
+<span class="sd">        """</span>
+        <span class="c1"># If duration is provided ab-initio, we just utilize that and proceed. We warn</span>
+        <span class="c1"># if `t_end` was *also* supplied, since -- unlike `t_start`, which callers may</span>
+        <span class="c1"># still need independently (e.g. `sample_events_on_healpix_grid` uses it to</span>
+        <span class="c1"># anchor sampled explosion times, not just to derive a duration) -- `t_end` is</span>
+        <span class="c1"># only ever used here, to compute a duration, so it's silently ignored once</span>
+        <span class="c1"># `duration` is given directly.</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Ensure duration is a quantity.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`duration` must be a Quantity, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">t_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"Parameter 't_end' ignored in favor of 'duration'."</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># Return the duration.</span>
+            <span class="k">return</span> <span class="n">duration</span>
+
+        <span class="c1"># In this case we can determine the duration from the</span>
+        <span class="c1"># t_start and the t_end.</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">t_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">t_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># Validate that the types are correct.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t_start</span><span class="p">,</span> <span class="n">Time</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`t_start` must be a Time, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">t_start</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t_end</span><span class="p">,</span> <span class="n">Time</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`t_end` must be a Time, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">t_end</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="c1"># Compute the duration. The redundant conversion here is to ensure</span>
+            <span class="c1"># that we go from a TimeDelta object to a quantity.</span>
+            <span class="n">_computed_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_end</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+
+            <span class="k">return</span> <span class="n">_computed_duration</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Either 'duration' or both 't_start' and 't_end' must be provided."</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_pixel_index_array</span><span class="p">(</span>
+        <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">pixel_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_ids</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Resolve a mask or explicit pixel list into a sorted array of unique pixel indices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nside : int</span>
+<span class="sd">            HEALPix resolution parameter of the grid `pixel_mask`/`pixel_ids` are</span>
+<span class="sd">            defined against.</span>
+<span class="sd">        pixel_mask : numpy.ndarray of bool, optional</span>
+<span class="sd">            Boolean mask, shape ``(ah.nside_to_npix(nside),)``, selecting pixels.</span>
+<span class="sd">            Mutually exclusive with `pixel_ids`.</span>
+<span class="sd">        pixel_ids : numpy.ndarray of int, optional</span>
+<span class="sd">            Explicit pixel indices, each in ``[0, ah.nside_to_npix(nside))``.</span>
+<span class="sd">            Mutually exclusive with `pixel_mask`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Sorted, deduplicated ``int64`` pixel indices. If neither `pixel_mask` nor</span>
+<span class="sd">            `pixel_ids` is given, every pixel in the grid is returned.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If both `pixel_mask` and `pixel_ids` are supplied, if `pixel_mask` has the</span>
+<span class="sd">            wrong shape, or if `pixel_ids` contains an out-of-range or non-1D value.</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `pixel_mask` is not Boolean, or `pixel_ids` is not integer-typed.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">pixel_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pixel_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Provide at most one of `pixel_mask` and `pixel_ids`."</span><span class="p">)</span>
+
+        <span class="n">npix</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">nside_to_npix</span><span class="p">(</span><span class="n">nside</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pixel_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pixel_mask</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"`pixel_mask` must have Boolean dtype."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">npix</span><span class="p">,):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`pixel_mask` must have shape (</span><span class="si">{</span><span class="n">npix</span><span class="si">}</span><span class="s2">,), got </span><span class="si">{</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pixel_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pixel_ids</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"`pixel_ids` must contain integers."</span><span class="p">)</span>
+
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">indices</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`pixel_ids` must be one-dimensional."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">indices</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">indices</span> <span class="o">&gt;=</span> <span class="n">npix</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`pixel_ids` must lie between 0 and </span><span class="si">{</span><span class="n">npix</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_event_table_buffer</span><span class="p">(</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">time_scale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"utc"</span><span class="p">,</span>
+        <span class="n">frame</span><span class="o">=</span><span class="n">ICRS</span><span class="p">(),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create an empty, fixed-size event table for later population.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : int</span>
+<span class="sd">            Number of event rows to allocate.</span>
+<span class="sd">        time_scale : str, optional</span>
+<span class="sd">            Astropy time scale for the explosion-time column.</span>
+<span class="sd">        frame : astropy.coordinates.BaseCoordinateFrame, optional</span>
+<span class="sd">            Coordinate frame for the event positions.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.QTable</span>
+<span class="sd">            Preallocated event table.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`size` must be an integer, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`size` must be non-negative, got </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">"healpix_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">"healpix_dx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">"healpix_dy"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Positional args (rather than `lon=`/`lat=` kwargs, which `SkyCoord` doesn't</span>
+        <span class="c1"># accept) so this works regardless of `frame`'s component names (`ra`/`dec`</span>
+        <span class="c1"># for `ICRS`, `l`/`b` for `Galactic`, etc.).</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+            <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Unlike the other columns, `Time` rejects non-finite values outright (for</span>
+        <span class="c1"># every numeric format, not just `jd`) -- `np.nan` isn't an option here. `jd=0`</span>
+        <span class="c1"># (4713 BCE) can't collide with any real survey date, so it serves the same</span>
+        <span class="c1"># "not yet populated" sentinel role as `healpix_id`'s `-1`.</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">),</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="n">time_scale</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">table</span><span class="p">[</span><span class="s2">"parameter_seed"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">table</span>
+
+<div class="viewcode-block" id="ExtragalacticTransient.sample_event_count">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_count.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_event_count">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_event_count</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">solid_angle</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">t_start</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">t_end</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">_SeedType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Sample the number of events in a given solid angle and duration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        solid_angle : ~astropy.units.Quantity</span>
+<span class="sd">            The solid angle over which to sample events.</span>
+<span class="sd">        duration : ~astropy.units.Quantity, optional</span>
+<span class="sd">            The duration over which to sample events. Mutually exclusive with</span>
+<span class="sd">            `t_start`/`t_end`; see `_resolve_duration`.</span>
+<span class="sd">        t_start, t_end : ~astropy.time.Time, optional</span>
+<span class="sd">            The start/end of the sampling window, used to derive `duration` if it</span>
+<span class="sd">            isn't supplied directly. See `_resolve_duration`.</span>
+<span class="sd">        seed : numpy.random.SeedSequence, int, or None, optional</span>
+<span class="sd">            Root seed for reproducibility; see `uvex_transients.utils.split_root_seed`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The sampled number of events.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Validate the duration.</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_duration</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">)</span>
+
+        <span class="c1"># Ensure that the rate table has been computed so that we can extract the</span>
+        <span class="c1"># correct integrated rate.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+
+        <span class="c1"># Determine the rate in this time period and solid angle.</span>
+        <span class="n">n_expected</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_event_rate</span> <span class="o">*</span> <span class="n">solid_angle</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span>
+
+        <span class="c1"># Generate the random realization.</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_root_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">n_expected</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ExtragalacticTransient.sample_event_redshift">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_redshift.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_event_redshift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_event_redshift</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Draw `n_samples` redshifts from the rate-weighted redshift distribution.</span>
+
+<span class="sd">        Uses inverse-transform sampling against the tabulated CDF built by</span>
+<span class="sd">        `_ensure_rate_table` -- see that method's docstring for why the CDF is</span>
+<span class="sd">        tabulated once and inverted, rather than treating `event_rate` as a</span>
+<span class="sd">        `~uvex_transients.models.core.priors.Prior`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            Number of redshifts to draw.</span>
+<span class="sd">        rng : numpy.random.Generator, int, or None, optional</span>
+<span class="sd">            Random-number source; see `uvex_transients.utils.get_rng`. Unlike</span>
+<span class="sd">            `sample_event_count`, this takes an already-materialized generator</span>
+<span class="sd">            (not a root seed to split) since it's meant to be handed one of the</span>
+<span class="sd">            independent streams a caller has already spawned (see</span>
+<span class="sd">            `sample_events_on_healpix_grid`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            ``float64`` array of shape ``(n_samples,)``.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="c1"># Draw uniform CDF values and invert them against the tabulated</span>
+        <span class="c1"># (redshift_grid, z_cdf) pairs -- `redshift_grid` is monotonically</span>
+        <span class="c1"># increasing in `z`, and `_ensure_rate_table` guarantees `z_cdf` is</span>
+        <span class="c1"># monotonically increasing too, so linear interpolation is a valid inverse.</span>
+        <span class="n">u_samples</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_cdf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ExtragalacticTransient.sample_events_on_healpix_grid">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.supernovae.ExtragalacticTransient.sample_events_on_healpix_grid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_events_on_healpix_grid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">t_start</span><span class="p">:</span> <span class="n">Time</span><span class="p">,</span>
+        <span class="n">t_end</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_ids</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nested"</span><span class="p">,</span>
+        <span class="n">jitter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">_SeedType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.</span>
+
+<span class="sd">        Each sampled event is placed uniformly at random within one of the selected</span>
+<span class="sd">        HEALPix pixels (optionally jittered to a sub-pixel position; see `jitter`),</span>
+<span class="sd">        assigned a redshift drawn from `sample_event_redshift`, an explosion time drawn</span>
+<span class="sd">        uniformly across ``[t_start, t_start + duration)``, and a per-event parameter</span>
+<span class="sd">        seed (see `spawn_seeds`) rather than fully-sampled physical parameters -- those</span>
+<span class="sd">        are meant to be regenerated lazily, on demand, from that seed (via</span>
+<span class="sd">        `SpectralModel.sample_parameters`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nside : int</span>
+<span class="sd">            HEALPix resolution parameter of the sampling grid.</span>
+<span class="sd">        t_start : ~astropy.time.Time</span>
+<span class="sd">            Start of the sampling window.</span>
+<span class="sd">        t_end : ~astropy.time.Time, optional</span>
+<span class="sd">            End of the sampling window. Mutually exclusive with `duration`; see</span>
+<span class="sd">            `_resolve_duration`.</span>
+<span class="sd">        duration : ~astropy.units.Quantity, optional</span>
+<span class="sd">            Length of the sampling window. Mutually exclusive with `t_end`; see</span>
+<span class="sd">            `_resolve_duration`.</span>
+<span class="sd">        pixel_mask : numpy.ndarray of bool, optional</span>
+<span class="sd">            Boolean mask, shape ``(ah.nside_to_npix(nside),)``, selecting which pixels</span>
+<span class="sd">            to sample events in. Mutually exclusive with `pixel_ids`. If neither is</span>
+<span class="sd">            given, every pixel in the grid is eligible.</span>
+<span class="sd">        pixel_ids : numpy.ndarray of int, optional</span>
+<span class="sd">            Explicit pixel indices to sample events in. Mutually exclusive with</span>
+<span class="sd">            `pixel_mask`.</span>
+<span class="sd">        order : str, optional</span>
+<span class="sd">            HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``), consistent with</span>
+<span class="sd">            whatever ordering `pixel_mask`/`pixel_ids` were defined against. The</span>
+<span class="sd">            default is ``"nested"``.</span>
+<span class="sd">        jitter : bool, optional</span>
+<span class="sd">            If `True` (the default), place each event at a random sub-pixel position.</span>
+<span class="sd">            If `False`, place every event at its pixel's center.</span>
+<span class="sd">        seed : numpy.random.SeedSequence, int, or None, optional</span>
+<span class="sd">            Root seed for reproducibility. A single tree of children is spawned from</span>
+<span class="sd">            this seed for every stochastic draw in this call -- including the event</span>
+<span class="sd">            count itself -- so that no two draws (however many events end up being</span>
+<span class="sd">            sampled) ever share a stream.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.QTable</span>
+<span class="sd">            Event table with one row per sampled event; see `_create_event_table_buffer`</span>
+<span class="sd">            for its columns. Empty (but still correctly typed) if zero events were</span>
+<span class="sd">            sampled.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Validate the duration and resolve the pixel selection down to a concrete</span>
+        <span class="c1"># array of pixel indices.</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_duration</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">)</span>
+        <span class="n">pixel_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_pixel_index_array</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixel_mask</span><span class="p">,</span> <span class="n">pixel_ids</span><span class="p">)</span>
+
+        <span class="c1"># Ensure that the rate table is loaded for our use.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+
+        <span class="c1"># Using nside, we now want to determine the solid angular size of a single pixel</span>
+        <span class="c1"># in this healpix discretization, then the total solid angle of the pixels</span>
+        <span class="c1"># we're actually sampling.</span>
+        <span class="n">solid_angle_per_pix</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">nside_to_pixel_area</span><span class="p">(</span><span class="n">nside</span><span class="p">)</span>
+        <span class="n">total_solid_angle</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pixel_indices</span><span class="p">)</span> <span class="o">*</span> <span class="n">solid_angle_per_pix</span>
+
+        <span class="c1"># Spawn one tree of independent random streams from the root seed -- one per</span>
+        <span class="c1"># stochastic draw below, plus a spawn point for the per-event parameter seeds</span>
+        <span class="c1"># -- rather than splitting the root seed separately for each consumer. This is</span>
+        <span class="c1"># what guarantees `count_seed` (below) can never collide with, e.g., `pixel_seed`,</span>
+        <span class="c1"># even though both ultimately derive from the same `seed` argument.</span>
+        <span class="n">root_seed</span> <span class="o">=</span> <span class="n">get_seed_sequence</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">count_seed</span><span class="p">,</span>
+            <span class="n">pixel_seed</span><span class="p">,</span>
+            <span class="n">jitter_seed</span><span class="p">,</span>
+            <span class="n">time_seed</span><span class="p">,</span>
+            <span class="n">redshift_seed</span><span class="p">,</span>
+            <span class="n">parameter_spawn_seed</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">root_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+        <span class="c1"># Compute the expected number of events that we will be generating.</span>
+        <span class="n">number_of_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_event_count</span><span class="p">(</span>
+            <span class="n">solid_angle</span><span class="o">=</span><span class="n">total_solid_angle</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">count_seed</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%s</span><span class="s2">: sampled </span><span class="si">%d</span><span class="s2"> events over </span><span class="si">%d</span><span class="s2"> pixels (nside=</span><span class="si">%d</span><span class="s2">), solid angle </span><span class="si">%s</span><span class="s2">, duration </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="n">number_of_events</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">pixel_indices</span><span class="p">),</span>
+            <span class="n">nside</span><span class="p">,</span>
+            <span class="n">total_solid_angle</span><span class="p">,</span>
+            <span class="n">duration</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">event_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_event_table_buffer</span><span class="p">(</span>
+            <span class="n">number_of_events</span><span class="p">,</span>
+            <span class="n">time_scale</span><span class="o">=</span><span class="n">t_start</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">number_of_events</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">event_buffer</span>
+
+        <span class="n">pixel_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">pixel_seed</span><span class="p">)</span>
+        <span class="n">jitter_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">jitter_seed</span><span class="p">)</span>
+        <span class="n">time_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">time_seed</span><span class="p">)</span>
+        <span class="n">redshift_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">redshift_seed</span><span class="p">)</span>
+
+        <span class="c1"># Sample redshifts and per-event host pixels.</span>
+        <span class="n">redshifts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_event_redshift</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">redshift_rng</span><span class="p">)</span>
+        <span class="n">event_pixel</span> <span class="o">=</span> <span class="n">pixel_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="n">pixel_indices</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">number_of_events</span><span class="p">,</span>
+            <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sample positions within each pixel.</span>
+        <span class="k">if</span> <span class="n">jitter</span><span class="p">:</span>
+            <span class="n">event_jitter</span> <span class="o">=</span> <span class="n">jitter_rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="n">number_of_events</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">event_jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">number_of_events</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="mf">0.5</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">healpix_to_lonlat</span><span class="p">(</span>
+            <span class="n">event_pixel</span><span class="p">,</span>
+            <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+            <span class="n">dx</span><span class="o">=</span><span class="n">event_jitter</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">dy</span><span class="o">=</span><span class="n">event_jitter</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">event_coords</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+            <span class="n">lon</span><span class="p">,</span>
+            <span class="n">lat</span><span class="p">,</span>
+            <span class="n">frame</span><span class="o">=</span><span class="n">ICRS</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sample explosion times uniformly across the sampling window.</span>
+        <span class="n">event_times</span> <span class="o">=</span> <span class="n">t_start</span> <span class="o">+</span> <span class="n">time_rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">)</span> <span class="o">*</span> <span class="n">duration</span>
+
+        <span class="c1"># Draw independent, individually storable per-event seeds -- for regenerating</span>
+        <span class="c1"># each event's physical lightcurve parameters later, on demand, without needing</span>
+        <span class="c1"># to replay the draws for any other event (see `spawn_seeds`).</span>
+        <span class="n">event_seed</span> <span class="o">=</span> <span class="n">spawn_seeds</span><span class="p">(</span><span class="n">parameter_spawn_seed</span><span class="p">,</span> <span class="n">number_of_events</span><span class="p">)</span>
+
+        <span class="c1"># Populate the table buffer.</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"healpix_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_pixel</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"healpix_dx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_jitter</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"healpix_dy"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_jitter</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_coords</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">]</span> <span class="o">=</span> <span class="n">redshifts</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_times</span>
+        <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"parameter_seed"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_seed</span>
+
+        <span class="n">event_buffer</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"healpix_nside"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">nside</span><span class="p">),</span>
+                <span class="s2">"healpix_order"</span><span class="p">:</span> <span class="n">order</span><span class="p">,</span>
+                <span class="s2">"coordinate_frame"</span><span class="p">:</span> <span class="s2">"icrs"</span><span class="p">,</span>
+                <span class="s2">"time_scale"</span><span class="p">:</span> <span class="n">t_start</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+                <span class="s2">"time_frame"</span><span class="p">:</span> <span class="s2">"observer"</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">event_buffer</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
