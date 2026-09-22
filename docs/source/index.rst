@@ -10,9 +10,19 @@
     <p align="center"><em>End-to-end simulations of transients from UVEX all-sky surveys.</em></p>
 
     <p align="center">
-      <img src="https://img.shields.io/badge/docstyle-numpydoc-459db9" alt="Docstring style: numpydoc">
-      <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
-      <img src="http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat" alt="Powered by Astropy">
+      <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/v/uvex-transients" alt="PyPI version"></a>
+      <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/pyversions/uvex-transients" alt="Supported Python versions"></a>
+      <a href="https://numpydoc.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/docstyle-numpydoc-459db9" alt="Docstring style: numpydoc"></a>
+      <a href="https://github.com/astral-sh/ruff" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+      <a href="https://github.com/pre-commit/pre-commit" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit" alt="pre-commit"></a>
+      <a href="https://commitizen-tools.github.io/commitizen/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commit style: Conventional + Gitmoji"></a>
+      <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white" alt="Commit style: Conventional Commits"></a>
+      <a href="https://transientsextragalactic.github.io/uvex-transients" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/docs-latest-brightgreen.svg" alt="Latest Docs"></a>
+      <a href="https://github.com/TransientsExtragalactic/uvex-transients/graphs/contributors" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/github/contributors/TransientsExtragalactic/uvex-transients" alt="GitHub Contributors"></a>
+      <a href="https://github.com/TransientsExtragalactic/uvex-transients" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/github/last-commit/TransientsExtragalactic/uvex-transients" alt="Last Commit"></a>
+      <a href="http://www.astropy.org/" target="_blank" rel="noopener noreferrer"><img src="http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat" alt="Powered by Astropy"></a>
+      <a href="https://numba.pydata.org/" target="_blank" rel="noopener noreferrer"><img src="http://img.shields.io/badge/powered%20by-Numba-00A3E0.svg?style=flat" alt="Powered by Numba"></a>
+      <a href="https://m4opt.readthedocs.io/" target="_blank" rel="noopener noreferrer"><img src="http://img.shields.io/badge/powered%20by-m4opt-6f42c1.svg?style=flat" alt="Powered by m4opt"></a>
     </p>
 
 Overview
@@ -225,32 +235,3 @@ Indices and tables
        Available under the GNU GPLv3 license.
      </p>
    </div>
-
-
-.. |PYPI| image:: https://img.shields.io/pypi/v/uvex-transients
-   :target: https://pypi.org/project/uvex-transients/
-   :alt: PyPI version
-
-.. |PYPI-PYTHON| image:: https://img.shields.io/pypi/pyversions/uvex-transients
-   :target: https://pypi.org/project/uvex-transients/
-   :alt: Supported Python versions
-
-.. |RUFF| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
-    :target: https://github.com/astral-sh/ruff
-    :alt: Ruff
-
-.. |NUMPYDOC| image:: https://img.shields.io/badge/docstyle-numpydoc-459db9
-   :target: https://numpydoc.readthedocs.io/en/latest/
-   :alt: Docstring style: numpydoc
-
-.. |CONTRIBUTORS| image:: https://img.shields.io/github/contributors/TransientsExtragalactic/uvex-transients
-   :target: https://github.com/TransientsExtragalactic/uvex-transients/graphs/contributors
-   :alt: GitHub Contributors
-
-.. |LAST-COMMIT| image:: https://img.shields.io/github/last-commit/TransientsExtragalactic/uvex-transients
-   :target: https://github.com/TransientsExtragalactic/uvex-transients
-   :alt: Last Commit
-
-.. |ASTROPY| image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
-   :target: http://www.astropy.org/
-   :alt: Powered by Astropy
