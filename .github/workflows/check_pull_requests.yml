@@ -6,7 +6,7 @@
 # consistency:
 #
 # 1. Pre-commit run on the codebase.
-# 2. Build the documentation with Sphinx.
+# 2. Run the test suite.
 name: Pull Request Checks
 
 on:
@@ -29,9 +29,9 @@ jobs:
       - name: Run pre-commit hooks
         run: pre-commit run --all-files
 
-  # Ensure that the docs generate properly.
-  docs:
-    name: Build documentation
+  # Ensure that the test suite passes.
+  test:
+    name: Run tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,9 +39,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install documentation dependencies
+      - name: Install dependencies
         run: |
-          pip install .[docs]
-      - name: Build documentation with Sphinx
-        run: |
-          sphinx-build -b html -n -W -j auto docs/source docs/_build/html
+          pip install -e ".[dev,test]"
+      - name: Run tests
+        run: pytest --tb=short --disable-warnings
