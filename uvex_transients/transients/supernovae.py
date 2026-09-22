@@ -7,6 +7,7 @@ from astropy import units as u
 from numpy.typing import NDArray
 
 from uvex_transients.models.supernovae import (
+    ArnettMagnetarSpindownSED,
     MoragShockCoolingSED,
     TypeIbSED,
     TypeIcSED,
@@ -35,6 +36,10 @@ _TYPE_IIB_FRACTION = 0.103
 _SESNE_FRACTION = 0.304
 _TYPE_IC_FRACTION = _SESNE_FRACTION * 0.411
 _TYPE_IB_FRACTION = _SESNE_FRACTION * 0.161
+
+# Type I superluminous SNe (SLSNe-I) as a fraction of the total CC SNe rate: a local ratio of ~1/3500
+# (+2800/-720), from the PTF rates of Frohmaier et al. 2021 (arXiv:2010.15270).
+_SLSN_FRACTION = 1 / 3500
 
 
 class TypeIIPSNe(ExtragalacticTransient):
@@ -128,3 +133,33 @@ class TypeIcSNe(ExtragalacticTransient):
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """Volumetric event rate: `core_collapse_rate(z)` times the Type Ic fraction (see module constants)."""
         return _TYPE_IC_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+
+
+class MagnetarSLSNe(ExtragalacticTransient):
+    """
+    Type I superluminous SNe powered by a magnetar spin-down engine: `ArnettMagnetarSpindownSED`.
+
+    The SED's default priors are the sample-wide magnetar-model posteriors of Nicholl et al. 2017
+    (38 SLSNe-I), so the population reproduces their peak luminosities (median ~3e44 erg/s, ~1e44--1e45
+    at 1 sigma) and rest-frame rise times (median ~30 d). The rate is a fixed fraction of the
+    core-collapse rate (~1/3500, Frohmaier et al. 2021), so it follows the star-formation history.
+
+    Events are long-lived: the bolometric light curve falls to 1e-3 of peak after ~250--1400 d
+    (16th--84th percentile of the prior, rest frame, median ~540 d). `DEFAULT_DURATION` covers the
+    bright part of the decline for most events, but the slowest ones are truncated by the window and
+    their faint tails are not simulated.
+
+    `DEFAULT_Z_LIM` is set from an actual `generate_events`/`filter_by_snr` run against the default
+    schedule (25 AB mag limiting-magnitude screen, SNR > 5): out to z = 8, 99.7% of detected events fall
+    below z = 4, and the detected count per redshift bin is already declining by z ~ 1.5, well inside that.
+    A lower `DEFAULT_Z_LIM` (e.g. the earlier value of 2) truncates a real, UV-bright, high-redshift tail
+    rather than one outside UVEX's reach.
+    """
+
+    DEFAULT_MODEL = ArnettMagnetarSpindownSED
+    DEFAULT_DURATION = 600 * u.day
+    DEFAULT_Z_LIM = 4
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """Volumetric event rate: `core_collapse_rate(z)` times the SLSN-I fraction (see module constants)."""
+        return _SLSN_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)

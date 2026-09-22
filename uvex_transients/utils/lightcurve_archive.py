@@ -9,9 +9,10 @@ an `~astropy.table.QTable` with ``time`` and ``<field>`` columns as unit-aware `
 columns, plus a ``reference`` entry in ``.meta`` recording the source.
 
 Supernovae are additionally split by spectroscopic classification, so their ``<transient_type>`` is
-``supernovae/<class>`` with ``<class>`` one of ``II``, ``IIP``, ``IIb``, ``Ib``, ``Ic`` or ``Ic-BL``
-(e.g. ``archive.table("supernovae/IIb", "2011dh_lyman2016", "L_bol")``). :meth:`LightcurveArchive.types`
-lists only top-level groups, so use :meth:`LightcurveArchive.events` on ``"supernovae"`` to list the classes.
+``supernovae/<class>`` with ``<class>`` one of ``II``, ``IIP``, ``IIb``, ``Ib``, ``Ic``, ``Ic-BL`` or
+``SLSN-I`` (e.g. ``archive.table("supernovae/IIb", "2011dh_lyman2016", "L_bol")``).
+:meth:`LightcurveArchive.types` lists only top-level groups, so use :meth:`LightcurveArchive.events`
+on ``"supernovae"`` to list the classes.
 """
 
 from pathlib import Path

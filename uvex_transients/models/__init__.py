@@ -1,6 +1,7 @@
 """Spectral modeling infrastructure for generating synthetic photometry."""
 
 __all__ = [
+    "arnett",
     "core",
     "kilonovae",
     "lfbots",
@@ -15,6 +16,12 @@ from . import core
 from .core import *
 
 __all__.extend(core.__all__)
+
+# Imports from the arnett submodule.
+from . import arnett
+from .arnett import *
+
+__all__.extend(arnett.__all__)
 
 # Imports from the spectra submodule.
 from . import spectra

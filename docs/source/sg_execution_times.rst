@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:03.212** total execution time for 5 files **from all galleries**:
+**00:02.922** total execution time for 5 files **from all galleries**:
 
 .. container::
 
@@ -33,7 +33,7 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
-     - 00:03.212
+     - 00:02.922
      - 0.0
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
      - 00:00.000

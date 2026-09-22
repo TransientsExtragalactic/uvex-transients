@@ -18,6 +18,7 @@ from uvex_transients.models.core.base import ComposedSpectralModel, SpectralMode
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from uvex_transients.models.supernovae import (
+    ArnettMagnetarSpindownSED,
     MoragShockCoolingBlackbodySED,
     MoragShockCoolingSED,
     TypeIbSED,
@@ -30,6 +31,10 @@ from uvex_transients.models.supernovae import (
 from uvex_transients.models.tdes import AlushStoneTDESED, VanVelzenTDESED
 
 from ._contracts import SpectralModelContract, assert_full_coverage
+
+
+class TestArnettMagnetarSpindownSED(SpectralModelContract):
+    model_class = ArnettMagnetarSpindownSED
 
 
 class TestVillarCoolingBlackbodySED(SpectralModelContract):
