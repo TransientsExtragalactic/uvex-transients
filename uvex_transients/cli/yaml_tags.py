@@ -64,7 +64,18 @@ def _construct_prior(constructor, node) -> Prior:
 
 
 def get_run_yaml() -> YAML:
-    """Return a `ruamel.yaml.YAML` instance that understands ``!prior`` (and ``!astropy_cosmology``)."""
+    """
+    Return the YAML serializer used for run configuration.
+
+    The returned `ruamel.yaml.YAML` instance supports both the ``!prior``
+    tag and the ``!astropy_cosmology`` tag inherited from
+    :func:`get_config_yaml`.
+
+    Returns
+    -------
+    ruamel.yaml.YAML
+        YAML serializer and deserializer configured for run files.
+    """
     yaml = get_config_yaml()
     yaml.constructor.add_constructor(_PRIOR_TAG, _construct_prior)
     return yaml

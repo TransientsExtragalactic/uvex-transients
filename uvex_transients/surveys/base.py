@@ -41,9 +41,22 @@ class ScheduleValidationError(ValueError):
     Collects every validation failure found across both the column-level and
     action-level validation stages, rather than surfacing only the first one, so a user
     fixing an invalid schedule can address every problem in a single pass.
+
+    Parameters
+    ----------
+    errors : list of str
+        Every validation failure message collected, in the order found.
     """
 
     def __init__(self, errors: list[str]):
+        """
+        Store `errors` and build the combined multi-line exception message.
+
+        Parameters
+        ----------
+        errors : list of str
+            Every validation failure message collected, in the order found.
+        """
         self.errors = list(errors)
 
         message = "Survey schedule failed validation with the following errors:\n" + "\n".join(
@@ -61,6 +74,18 @@ def _sanitize_masked_value(value):
     :meth:`SurveySchedule.to_disk` always writes columns in the one form astropy's
     ECSV reader is guaranteed to be able to reconstruct. Non-masked values pass
     through unchanged.
+
+    Parameters
+    ----------
+    value : ~astropy.utils.masked.Masked or any
+        A column value, possibly (but not necessarily) a
+        :class:`~astropy.utils.masked.Masked` array.
+
+    Returns
+    -------
+    same type as `value`
+        `value` unchanged if it isn't `Masked`; otherwise a fresh `Masked`
+        wrapping a plain `numpy.ndarray` and mask.
     """
     if isinstance(value, Masked):
         return Masked(np.asarray(np.ma.getdata(value)), mask=np.ma.getmaskarray(value))
@@ -79,13 +104,18 @@ def _max_angular_offset(region: SkyRegion | Regions, origin: SkyCoord) -> u.Quan
 
     Parameters
     ----------
-    region
+    region : ~regions.SkyRegion or ~regions.Regions
         A region already normalized by :func:`m4opt.fov.footprint` (or a
         :class:`~regions.Regions` collection of such), so the only leaf shapes that
         can appear are :class:`~regions.PolygonSkyRegion`, :class:`~regions.CircleSkyRegion`,
         and :class:`~regions.PointSkyRegion`.
-    origin
+    origin : ~astropy.coordinates.SkyCoord
         The point to measure separation from.
+
+    Returns
+    -------
+    ~astropy.units.Quantity
+        The greatest angular separation found.
 
     Raises
     ------
@@ -121,9 +151,9 @@ def _restyle_footprint(template: SkyRegion | Regions, positioned: SkyRegion | Re
 
     Parameters
     ----------
-    template
+    template : ~regions.SkyRegion or ~regions.Regions
         The original, unpositioned FOV (or one of its members).
-    positioned
+    positioned : ~regions.SkyRegion or ~regions.Regions
         The corresponding output of :func:`~m4opt.fov.footprint`, mutated in place.
 
     Returns
@@ -148,6 +178,17 @@ def _flatten_regions(regions_or_collections: list[SkyRegion | Regions]) -> list[
     Each `~regions.Regions` collection is treated as the union of its members (the same
     convention :func:`m4opt.fov.contains` and :func:`~m4opt.fov.footprint_healpix` use), so it
     is expanded in place rather than kept as a nested element.
+
+    Parameters
+    ----------
+    regions_or_collections : list of (~regions.SkyRegion or ~regions.Regions)
+        The regions/collections to flatten.
+
+    Returns
+    -------
+    list of ~regions.SkyRegion
+        Every leaf region, in order, with any `~regions.Regions` collections
+        expanded into their members.
     """
     flattened: list[SkyRegion] = []
 
@@ -180,7 +221,7 @@ def _bounding_radius(region: SkyRegion | Regions) -> u.Quantity:
 
     Parameters
     ----------
-    region
+    region : ~regions.SkyRegion or ~regions.Regions
         The field-of-view region, defined at RA=0deg/Dec=0deg/PA=0deg (the
         convention used throughout ``m4opt``, e.g. :attr:`m4opt.missions.Mission.fov`).
         May be a single :class:`~regions.SkyRegion` or a :class:`~regions.Regions`
@@ -216,6 +257,16 @@ class SurveySchedule:
     :attr:`_SCHEMA` (per-column checks) and :attr:`_ACTION_SCHEMA` (per-action required
     columns and custom checks). See :class:`ScheduleValidationError` for how validation
     failures are reported.
+
+    Parameters
+    ----------
+    schedule_table : ~astropy.table.QTable
+        A chronological table of scheduled spacecraft actions. See :meth:`__init__`.
+    instrument_fov : ~regions.SkyRegion or ~regions.Regions
+        The instrument's field of view. See :meth:`__init__`.
+    **kwargs
+        Forwarded to :meth:`_validate_table_columns`/:meth:`_validate_table_semantics`.
+        See :meth:`__init__`.
     """
 
     _SCHEMA = {
@@ -292,10 +343,10 @@ class SurveySchedule:
 
         Parameters
         ----------
-        schedule_table
+        schedule_table : ~astropy.table.QTable
             A chronological table of scheduled spacecraft actions. Copied on
             construction, so mutating it afterwards has no effect on this instance.
-        instrument_fov
+        instrument_fov : ~regions.SkyRegion or ~regions.Regions
             The instrument's field of view, defined at RA=0deg/Dec=0deg/PA=0deg
             (the convention used throughout ``m4opt``, e.g.
             :attr:`m4opt.missions.Mission.fov`). Either a single `~regions.SkyRegion`
@@ -397,7 +448,21 @@ class SurveySchedule:
             self._schedule_table = self._schedule_table[order]
 
     def _validate_table_columns(self, **_) -> list[str]:
-        """Validate each column against :attr:`_SCHEMA`, collecting every error found."""
+        """
+        Validate each column against :attr:`_SCHEMA`, collecting every error found.
+
+        Parameters
+        ----------
+        **_
+            Accepted and ignored; lets a subclass override this hook with
+            extra constructor keyword arguments without disturbing the base
+            call signature.
+
+        Returns
+        -------
+        list of str
+            Every column-schema validation failure found, if any.
+        """
         errors: list[str] = []
 
         for column_name, column_spec in self._SCHEMA.items():
@@ -412,6 +477,18 @@ class SurveySchedule:
         Checks that every value in the action column is declared, then delegates to each
         :class:`~uvex_transients.surveys.utils.ActionSpec` to check its action's required
         columns and any custom rules.
+
+        Parameters
+        ----------
+        **_
+            Accepted and ignored; lets a subclass override this hook with
+            extra constructor keyword arguments without disturbing the base
+            call signature.
+
+        Returns
+        -------
+        list of str
+            Every action-schema validation failure found, if any.
         """
         table = self._schedule_table
 
@@ -444,15 +521,58 @@ class SurveySchedule:
     # Dunder Methods                            #
     # ----------------------------------------- #
     def __len__(self) -> int:
+        """
+        Return the number of scheduled actions (rows of :attr:`table`).
+
+        Returns
+        -------
+        int
+            ``len(self.table)``.
+        """
         return len(self._schedule_table)
 
     def __iter__(self) -> Iterator[Row]:
+        """
+        Iterate over :attr:`table`'s rows, in schedule order.
+
+        Returns
+        -------
+        Iterator of ~astropy.table.Row
+            An iterator over the underlying table's rows.
+        """
         return iter(self._schedule_table)
 
     def __getitem__(self, key: str | int | slice | np.ndarray):
+        """
+        Index into the underlying schedule table.
+
+        Parameters
+        ----------
+        key : str, int, slice, or numpy.ndarray
+            Forwarded directly to :attr:`table`'s own ``__getitem__`` -- a
+            column name, row index/slice, or boolean/integer row mask.
+
+        Returns
+        -------
+        column, row, or ~astropy.table.QTable
+            Whatever :attr:`table`'s own indexing returns for `key`.
+        """
         return self._schedule_table[key]
 
     def __contains__(self, action: str) -> bool:
+        """
+        Check whether `action` is one of the action types present in :attr:`actions`.
+
+        Parameters
+        ----------
+        action : str
+            The action label to look for.
+
+        Returns
+        -------
+        bool
+            Whether any row has this action label.
+        """
         return action in self.actions
 
     def __add__(self, other: "SurveySchedule") -> "SurveySchedule":
@@ -471,7 +591,7 @@ class SurveySchedule:
 
         Parameters
         ----------
-        other
+        other : SurveySchedule
             The schedule to append after ``self``. Must share the same
             :attr:`fov` as ``self``.
 
@@ -506,6 +626,14 @@ class SurveySchedule:
         return type(self)(combined_table, self.fov)
 
     def __repr__(self) -> str:
+        """
+        Return a one-line summary showing the action count and time span.
+
+        Returns
+        -------
+        str
+            ``<ClassName n_actions=... start_time=... end_time=...>``.
+        """
         return (
             f"<{type(self).__name__} n_actions={self.n_actions} "
             f"start_time={self.start_time.iso!r} end_time={self.end_time.iso!r}>"
@@ -616,9 +744,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time
+        start_time : ~astropy.time.Time, optional
             Start of the interval, or `None` to use :attr:`start_time`.
-        end_time
+        end_time : ~astropy.time.Time, optional
             End of the interval, or `None` to use :attr:`end_time`.
 
         Returns
@@ -645,7 +773,7 @@ class SurveySchedule:
 
         Parameters
         ----------
-        phase
+        phase : str
             Label to assign to every row.
 
         Returns
@@ -665,7 +793,7 @@ class SurveySchedule:
 
         Parameters
         ----------
-        action
+        action : str
             One of the action names declared in :attr:`_ACTION_SCHEMA`.
 
         Returns
@@ -690,7 +818,7 @@ class SurveySchedule:
 
         Parameters
         ----------
-        time
+        time : ~astropy.time.Time
             A scalar time to look up.
 
         Returns
@@ -725,9 +853,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time
+        start_time : ~astropy.time.Time
             Start of the query window (inclusive).
-        end_time
+        end_time : ~astropy.time.Time
             End of the query window (exclusive).
 
         Returns
@@ -784,7 +912,7 @@ class SurveySchedule:
     @property
     def observe_rows(self) -> QTable:
         """
-        QTable: The ``"observe"`` subset of :attr:`table`, in schedule order.
+        QTable : The ``"observe"`` subset of :attr:`table`, in schedule order.
 
         Recomputed on every access -- a boolean-mask slice, cheap enough that it isn't
         worth caching alongside :meth:`get_healpix_coverage_index`'s pixel index, which
@@ -807,9 +935,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time
+        start_time : ~astropy.time.Time
             Beginning of the query interval, inclusive.
-        end_time
+        end_time : ~astropy.time.Time
             End of the query interval, exclusive.
 
         Returns
@@ -842,9 +970,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time
+        start_time : ~astropy.time.Time
             Beginning of the query interval, inclusive.
-        end_time
+        end_time : ~astropy.time.Time
             End of the query interval, exclusive.
 
         Returns
@@ -895,18 +1023,18 @@ class SurveySchedule:
 
         Parameters
         ----------
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use
             ``config["healpix.default_order"]``.
-        cache
+        cache : bool
             If `True` (the default), reuse a previously built index for this
             ``(nside, order)`` when available, and store the freshly built one for later
             reuse. If `False`, always rebuild and never store the result -- useful for a
             one-off query at a resolution not worth caching.
-        overwrite
+        overwrite : bool
             If `True`, rebuild even if a cached index for this ``(nside, order)``
             already exists. Ignored if ``cache`` is `False`, since every call already
             rebuilds in that case.
@@ -995,14 +1123,14 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time
+        start_time : ~astropy.time.Time
             Beginning of the query interval, inclusive.
-        end_time
+        end_time : ~astropy.time.Time
             End of the query interval, exclusive.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use
             ``config["healpix.default_order"]``.
 
@@ -1068,14 +1196,16 @@ class SurveySchedule:
 
         Parameters
         ----------
-        coord
+        coord : ~astropy.coordinates.SkyCoord
             Sky position(s) to test -- scalar or array, any shape (flattened
             internally).
-        nside, order
+        nside : int, optional
             Resolution and pixel ordering of the coverage index to query -- see
             :meth:`get_healpix_coverage_index`. Either may be `None` (the default) to
             use ``config["healpix.default_nside"]``/``config["healpix.default_order"]``.
-        start_time, end_time
+        order : str, optional
+            See ``nside`` above.
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time window to restrict matches to. Must be given together. Each
             may be scalar (one shared window for every query position) or an array the
             same length as flattened ``coord`` (one window per query position, e.g. an
@@ -1204,9 +1334,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        coord
+        coord : ~astropy.coordinates.SkyCoord
             Scalar sky position to test.
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time window to restrict the search to (see
             :meth:`get_rows_between_times`). Must be given together. If both are
             `None` (the default), every ``"observe"`` row in the schedule is
@@ -1281,13 +1411,13 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute visit counts. If omitted,
             the full survey duration is used.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -1338,13 +1468,13 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute visit times. If omitted,
             the full survey duration is used.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -1423,15 +1553,15 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute cadence separations.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
-        pairs
+        pairs : str
             Which pairs of observations to include: ``"all"`` for every
             unique pair, or ``"consecutive"`` for only pairs of
             temporally-adjacent visits.
@@ -1509,15 +1639,15 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute cadence statistics.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
-        pairs
+        pairs : str
             Which pairs of observations to include: ``"all"`` for every
             unique pair, or ``"consecutive"`` for only pairs of
             temporally-adjacent visits.
@@ -1583,12 +1713,12 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute the maximum gap.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -1623,6 +1753,11 @@ class SurveySchedule:
         """
         Check that ``timescale`` is a single, positive `~astropy.units.Quantity`.
 
+        Parameters
+        ----------
+        timescale : ~astropy.units.Quantity
+            The value to validate.
+
         Raises
         ------
         ValueError
@@ -1638,6 +1773,11 @@ class SurveySchedule:
     def _validate_pair_window_factors(minimum_factor: float, maximum_factor: float) -> None:
         """
         Check that a pair-separation window's bounding factors are well-formed.
+
+        Parameters
+        ----------
+        minimum_factor, maximum_factor : float
+            The bounds to validate.
 
         Raises
         ------
@@ -1655,6 +1795,11 @@ class SurveySchedule:
     def _validate_pairs_mode(pairs: str) -> None:
         """
         Check that a ``pairs`` mode selector is one of the supported values.
+
+        Parameters
+        ----------
+        pairs : str
+            The mode selector to validate; must be ``"all"`` or ``"consecutive"``.
 
         Raises
         ------
@@ -1681,9 +1826,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        visit_times
+        visit_times : numpy.ndarray
             Sorted elapsed observation times for one pixel.
-        lo, hi
+        lo, hi : float
             Bounds of the qualifying pair-separation window, in the same units
             as ``visit_times``.
 
@@ -1717,9 +1862,9 @@ class SurveySchedule:
 
         Parameters
         ----------
-        visit_times
+        visit_times : numpy.ndarray
             Sorted elapsed observation times for one pixel.
-        lo, hi
+        lo, hi : float
             Bounds of the qualifying pair-separation window, in the same units
             as ``visit_times``.
 
@@ -1739,6 +1884,11 @@ class SurveySchedule:
     def _validate_visibility_factor(visibility_factor: float) -> None:
         """
         Check that a control-time visibility factor is well-formed.
+
+        Parameters
+        ----------
+        visibility_factor : float
+            The value to validate.
 
         Raises
         ------
@@ -1782,15 +1932,15 @@ class SurveySchedule:
 
         Parameters
         ----------
-        visit_times
+        visit_times : numpy.ndarray
             Sorted elapsed observation times for one pixel.
-        minimum_separation, maximum_separation
+        minimum_separation, maximum_separation : float
             Bounds of the qualifying pair-separation window, in the same
             units as ``visit_times``.
-        visibility_window
+        visibility_window : float
             Maximum time after transient onset over which an observation is
             considered useful, in the same units as ``visit_times``.
-        maximum_time
+        maximum_time : float
             Upper boundary for allowed transient start times, in the same
             units as ``visit_times``.
 
@@ -1883,22 +2033,22 @@ class SurveySchedule:
 
         Parameters
         ----------
-        timescale
+        timescale : ~astropy.units.Quantity
             Characteristic transient timescale.
-        minimum_factor, maximum_factor
+        minimum_factor, maximum_factor : float, optional
             Bounds of the qualifying pair-separation window, relative to
             ``timescale``. Either may be `None` (the default) to use
             ``config["surveys.cadence.minimum_factor"]``/
             ``config["surveys.cadence.maximum_factor"]``.
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional survey interval to restrict the calculation to.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
-        pairs
+        pairs : str
             Which pairs of observations to include: ``"all"`` for every
             unique pair, or ``"consecutive"`` for only pairs of
             temporally-adjacent visits.
@@ -1982,22 +2132,22 @@ class SurveySchedule:
 
         Parameters
         ----------
-        timescales
+        timescales : ~astropy.units.Quantity
             Sequence of characteristic transient timescales.
-        minimum_factor, maximum_factor
+        minimum_factor, maximum_factor : float, optional
             Bounds of the qualifying pair-separation window, relative to each
             timescale. Either may be `None` (the default) to use
             ``config["surveys.cadence.minimum_factor"]``/
             ``config["surveys.cadence.maximum_factor"]``.
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional survey interval to restrict the calculation to.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
-        pairs
+        pairs : str
             Which pairs of observations to include: ``"all"`` for every
             unique pair, or ``"consecutive"`` for only pairs of
             temporally-adjacent visits.
@@ -2099,24 +2249,24 @@ class SurveySchedule:
 
         Parameters
         ----------
-        timescale
+        timescale : ~astropy.units.Quantity
             Characteristic transient timescale.
-        minimum_factor
+        minimum_factor : float, optional
             Minimum useful observation separation relative to ``timescale``, or
             `None` (the default) to use ``config["surveys.cadence.minimum_factor"]``.
-        maximum_factor
+        maximum_factor : float, optional
             Maximum useful observation separation relative to ``timescale``, or
             `None` (the default) to use ``config["surveys.cadence.maximum_factor"]``.
-        visibility_factor
+        visibility_factor : float, optional
             Duration over which the transient is assumed useful for temporal
             characterization, relative to ``timescale``, or `None` (the default) to
             use ``config["surveys.cadence.visibility_factor"]``.
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional survey interval over which to calculate control time.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -2204,23 +2354,23 @@ class SurveySchedule:
 
         Parameters
         ----------
-        timescales
+        timescales : ~astropy.units.Quantity
             Sequence of characteristic transient timescales.
-        minimum_factor, maximum_factor
+        minimum_factor, maximum_factor : float, optional
             Bounds of the qualifying pair-separation window, relative to each
             timescale. Either may be `None` (the default) to use
             ``config["surveys.cadence.minimum_factor"]``/
             ``config["surveys.cadence.maximum_factor"]``.
-        visibility_factor
+        visibility_factor : float, optional
             Duration over which the transient is assumed useful for temporal
             characterization, relative to each timescale, or `None` (the default) to
             use ``config["surveys.cadence.visibility_factor"]``.
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional survey interval over which to calculate control time.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -2309,12 +2459,12 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute visit counts.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -2357,12 +2507,12 @@ class SurveySchedule:
 
         Parameters
         ----------
-        start_time, end_time
+        start_time, end_time : ~astropy.time.Time, optional
             Optional time range over which to compute visit counts.
-        nside
+        nside : int, optional
             HEALPix resolution parameter, or `None` to use
             ``config["healpix.default_nside"]``.
-        order
+        order : str, optional
             HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to
             use ``config["healpix.default_order"]``.
 
@@ -2413,6 +2563,11 @@ class SurveySchedule:
         :class:`~astropy.utils.masked.MaskedANDArray`, regardless of what ndarray
         subclass they may have picked up upstream (e.g. through repeated
         :func:`~astropy.table.vstack` while a schedule is being assembled).
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            The sanitized copy.
         """
         table = self._schedule_table.copy()
 
@@ -2462,15 +2617,15 @@ class SurveySchedule:
 
         Parameters
         ----------
-        path
+        path : str or ~pathlib.Path
             Destination path for the schedule table.
-        fov_path
+        fov_path : str or ~pathlib.Path, optional
             Destination path for :attr:`fov`. If `None` (the default), the FOV is
             not written.
-        table_format
+        table_format : str, optional
             Passed through to :meth:`~astropy.table.QTable.write`; if `None`,
             the format is inferred from ``path``'s suffix.
-        overwrite
+        overwrite : bool
             Whether to overwrite an existing file at ``path`` and ``fov_path``.
         """
         self._sanitized_table().write(Path(path), format=table_format, overwrite=overwrite)
@@ -2501,11 +2656,11 @@ class SurveySchedule:
 
         Parameters
         ----------
-        path
+        path : str or ~pathlib.Path
             Path to the schedule table, as written by :meth:`to_disk`.
-        fov_path
+        fov_path : str or ~pathlib.Path
             Path to the instrument FOV region file, as written by :meth:`to_disk`.
-        table_format
+        table_format : str, optional
             Passed through to :meth:`~astropy.table.QTable.read`; if `None`, the
             format is inferred from ``path``'s suffix.
         **kwargs
@@ -2514,6 +2669,7 @@ class SurveySchedule:
         Returns
         -------
         SurveySchedule
+            The reconstructed schedule.
 
         Raises
         ------

@@ -1,4 +1,5 @@
-"""Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.
+"""
+Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.
 
 `uvex_transients.cli.main`'s subcommands are thin wrappers around these -- each one parses
 arguments, calls one of these, and reports a short summary.
@@ -14,7 +15,19 @@ from .config import RunConfig
 
 
 def run_generate(config: RunConfig) -> EventCatalog:
-    """Sample a Monte Carlo `EventCatalog` per the config's ``generate:`` section."""
+    """
+    Sample a Monte Carlo `EventCatalog` per the config's ``generate:`` section.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+
+    Returns
+    -------
+    EventCatalog
+        The generated catalog.
+    """
     settings = config.generate
     return config.simulator.generate_events(
         time_bins=settings.time_bins,
@@ -31,7 +44,9 @@ def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None =
     Parameters
     ----------
     config : RunConfig
+        The parsed run-config.
     catalog : EventCatalog
+        The catalog to filter.
     names : list of str, optional
         Which of the config's `cuts:` keys to run, and in what order. If `None` (the
         default), runs every declared cut, in the order it was declared in the config.
@@ -39,6 +54,7 @@ def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None =
     Returns
     -------
     EventCatalog
+        The filtered catalog.
     """
     cuts = config.cuts
 
@@ -58,7 +74,21 @@ def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None =
 
 
 def run_photometry(config: RunConfig, catalog: EventCatalog) -> QTable:
-    """Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section."""
+    """
+    Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+    catalog : EventCatalog
+        The catalog of events to simulate photometry for.
+
+    Returns
+    -------
+    ~astropy.table.QTable
+        One row per (event, time, band) synthetic observation.
+    """
     settings = config.photometry
     return catalog.simulate_photometry(
         config.mission,
@@ -87,6 +117,7 @@ def dry_run_report(
     Parameters
     ----------
     config : RunConfig
+        The parsed run-config.
     command : {"generate", "cut", "photometry", "run"}
         Which command is being dry-run; decides which config sections are validated. ``"run"``
         validates ``generate:``, ``cuts:`` (if declared) and ``photometry:``.

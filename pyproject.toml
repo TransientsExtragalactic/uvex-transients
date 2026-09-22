@@ -163,6 +163,34 @@ lint.exclude = [
 # for each submodule, which pycodestyle reads as imports not being at the top.
 "**/__init__.py" = ["E402"]
 
+[tool.numpydoc_validation]
+checks = [
+  "all",  # report on all checks, except the ones excluded below
+  "EX01", # Don't require an Examples section
+  "SA01", # Don't require a See Also section
+  "ES01", # Don't require an Extended Summary
+]
+# RT01 ("no Returns section") and SS02 ("summary must start with a capital letter") don't
+# recognize the numpydoc `"""type: description."""` one-liner convention this codebase uses
+# for simple `@property` attributes (its AST-based checker can't distinguish a `@property`
+# from a regular method, and a lowercase type name like `int:`/`numpy.ndarray:` is the
+# correct, intentional start of that convention). Suppress both specifically for docstrings
+# that open with that "type: " pattern, rather than forcing every property into a verbose
+# Parameters/Returns block it can't even semantically have (no parameters).
+override_RT01 = ['^[~\w][~\w\.\[\], ]*(?:\bor\b[~\w\.\[\], ]+)*:\s']
+override_SS02 = ['^[~\w][~\w\.\[\], ]*(?:\bor\b[~\w\.\[\], ]+)*:\s']
+
+
+# Don't validate private methods/functions.
+exclude = [
+  '\._[^_][^.]*$',
+  '\.__[^.]+__$',
+  ]
+
+# Only the library itself is held to full numpydoc compliance -- test helpers/fixtures and
+# documentation gallery/config scripts don't carry the same documentation obligations.
+exclude_files = ['^tests/', '^docs/']
+
 [tool.coverage.run]
 branch = true
 source = ["uvex_transients"]

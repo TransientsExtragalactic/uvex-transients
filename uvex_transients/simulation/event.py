@@ -39,6 +39,29 @@ class Event:
     ``[t_explosion, t_explosion + transient.duration_limit)`` -- no photometry is done
     here. :meth:`simulate_photometry` does the (comparatively expensive) per-observation,
     per-band synthetic photometry, on demand.
+
+    Parameters
+    ----------
+    event_id : int
+        See :meth:`__init__`.
+    schedule : ~uvex_transients.surveys.base.SurveySchedule
+        See :meth:`__init__`.
+    transient : ~uvex_transients.transients.base.TransientBase
+        See :meth:`__init__`.
+    coord : ~astropy.coordinates.SkyCoord
+        See :meth:`__init__`.
+    redshift : float
+        See :meth:`__init__`.
+    t_explosion : ~astropy.time.Time
+        See :meth:`__init__`.
+    seed : int
+        See :meth:`__init__`.
+    luminosity_distance : ~astropy.units.Quantity, optional
+        See :meth:`__init__`.
+    ebv : float, optional
+        See :meth:`__init__`.
+    transient_type : str, optional
+        See :meth:`__init__`.
     """
 
     def __init__(
@@ -116,6 +139,14 @@ class Event:
         self._observations = candidate[candidate["start_time"] >= t_explosion]
 
     def __repr__(self) -> str:
+        """
+        Return a one-line summary showing the event's id, type, redshift, and observation count.
+
+        Returns
+        -------
+        str
+            ``<Event id=... type=... z=... n_observations=...>``.
+        """
         return (
             f"<Event id={self._event_id} type={self._transient_type!r} "
             f"z={self._redshift:.4g} n_observations={len(self._observations)}>"
@@ -171,7 +202,8 @@ class Event:
 
     @property
     def observations(self) -> QTable:
-        """QTable: The schedule's ``"observe"`` rows that covered this event while active.
+        """
+        QTable: The schedule's ``"observe"`` rows that covered this event while active.
 
         One row per candidate observation, chronological, with the same columns as
         `SurveySchedule.table` (``start_time``, ``duration``, ``observer_location``
@@ -196,6 +228,11 @@ class Event:
         rather than sharing state with `simulate_photometry`, so this always returns
         the same values regardless of how many times it (or `simulate_photometry`)
         has already been called.
+
+        Returns
+        -------
+        dict
+            ``{name: value}`` for each of this event's transient type's SED parameters.
         """
         rng = get_rng(self._seed)
         return {name: value[0] for name, value in self._transient.sed.sample_parameters(size=1, rng=rng).items()}
@@ -204,11 +241,31 @@ class Event:
     # Theoretical Photometry         #
     # ------------------------------ #
     def _resolve_bandpass(self, mission: Mission, band: Hashable | None):
-        """Return the `~synphot.SpectralElement` named `band` in `mission.detector.bandpasses`.
+        """
+        Return the `~synphot.SpectralElement` named `band` in `mission.detector.bandpasses`.
 
         `band` may be omitted only if the detector has exactly one bandpass -- mirrors
         `~m4opt.synphot.Detector`'s own bandpass-resolution rule (see
         `~m4opt.synphot.Detector.get_snr`).
+
+        Parameters
+        ----------
+        mission : ~m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.
+        band : Hashable, optional
+            Which of `mission.detector`'s bandpasses to return. Required unless the
+            detector has exactly one.
+
+        Returns
+        -------
+        ~synphot.SpectralElement
+            The resolved bandpass.
+
+        Raises
+        ------
+        ValueError
+            If `mission` has no detector configured, `band` is required but not
+            given, or `band` isn't one of the detector's bandpasses.
         """
         detector = mission.detector
         if detector is None:
@@ -224,11 +281,23 @@ class Event:
         )
 
     def _pivot_nu_and_log_attenuation(self, bandpass) -> tuple[Quantity, np.ndarray]:
-        """`bandpass`'s pivot frequency, and this event's own dust attenuation there.
+        """
+        Return `bandpass`'s pivot frequency and this event's own dust attenuation there.
 
         The same single-wavelength approximation `simulate_photometry` uses for its
         noiseless flux (`SpectralElement.pivot`), not a full bandpass-throughput
         integral -- see :meth:`mag`'s docstring for why that distinction matters here.
+
+        Parameters
+        ----------
+        bandpass : ~synphot.SpectralElement
+            The bandpass to evaluate.
+
+        Returns
+        -------
+        tuple of (~astropy.units.Quantity, numpy.ndarray)
+            `bandpass`'s pivot frequency, and the natural log of this event's
+            dust attenuation there (see :func:`~uvex_transients.dust.log_attenuation`).
         """
         nu = bandpass.pivot().to(u.Hz, equivalencies=u.spectral())
         return nu, log_attenuation(nu, self._ebv)
@@ -249,11 +318,11 @@ class Event:
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Observed time(s) since explosion, any shape.
-        mission
+        mission : ~m4opt.missions.Mission
             Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.
-        band
+        band : Hashable, optional
             Which of `mission.detector`'s bandpasses to evaluate. Required unless the
             detector has exactly one.
 
@@ -281,6 +350,16 @@ class Event:
         Same inputs, and the same pivot-wavelength-plus-dust definition matching
         :meth:`simulate_photometry` exactly, as :meth:`mag` -- see its docstring.
 
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Observed time(s) since explosion, any shape.
+        mission : ~m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.
+        band : Hashable, optional
+            Which of `mission.detector`'s bandpasses to evaluate. Required unless the
+            detector has exactly one.
+
         Returns
         -------
         ~astropy.units.Quantity
@@ -306,6 +385,11 @@ class Event:
         :meth:`sample_parameters`) are supplied automatically. Wraps
         `~uvex_transients.models.core.base.SpectralModel.eval_bolometric`.
 
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time(s) since explosion, any shape.
+
         Returns
         -------
         ~astropy.units.Quantity
@@ -318,6 +402,17 @@ class Event:
     # ------------------------------ #
     @staticmethod
     def _empty_photometry_table() -> QTable:
+        """
+        Return a zero-row `QTable` with `simulate_photometry`'s columns and dtypes.
+
+        Returned as-is by `simulate_photometry` when there are no observations to
+        simulate, so a caller can always rely on the result having the right columns.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            An empty table with `simulate_photometry`'s schema.
+        """
         table = QTable()
         table["event_id"] = np.array([], dtype=np.int64)
         table["obs_time"] = Time([], format="jd")

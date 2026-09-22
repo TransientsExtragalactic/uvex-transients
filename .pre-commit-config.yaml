@@ -15,6 +15,16 @@ repos:
         args: [--maxkb=2000]
       - id: check-merge-conflict
       - id: mixed-line-ending
+      - id: check-case-conflict
+        # Check for files with names that would conflict on a case-insensitive
+        # filesystem like MacOS HFS+ or Windows FAT.
+      - id: check-symlinks
+        # Checks for symlinks which do not point to anything.
+      - id: detect-private-key
+        # Checks for the existence of private keys.
+      - id: check-json
+        # Attempts to load all json files to verify syntax (covers notebooks
+        # before nbstripout touches them).
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.6
@@ -33,3 +43,14 @@ repos:
     hooks:
       - id: nbstripout
         files: ^notebooks/
+
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.11.0
+    hooks:
+      - id: numpydoc-validation
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v1.17.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]

@@ -172,6 +172,18 @@ class ArnettMagnetarSpindownSED(SpectralModel):
         :math:`L(t)` in erg/s and :math:`T(t)` in K, from a single diffusion integral.
 
         The luminosity is the only expensive step; the temperature is derived from that same array.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        spin_period, B_perp, M_ej, v_ej, M_ns, kappa, kappa_gamma, T_floor : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+
+        Returns
+        -------
+        tuple of (numpy.ndarray, numpy.ndarray)
+            :math:`L(t)`, in erg/s, and :math:`T(t)`, in Kelvin.
         """
         t = np.asarray(t, dtype=np.float64)
         luminosity = _arnett_luminosity_cgs(
@@ -195,7 +207,21 @@ class ArnettMagnetarSpindownSED(SpectralModel):
 
     @classmethod
     def temperature(cls, t: u.Quantity, **parameters: u.Quantity) -> u.Quantity:
-        r""":math:`T(t)` in Kelvin."""
+        r"""
+        :math:`T(t)` in Kelvin.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`T(t)`, in Kelvin.
+        """
         cgs_parameters = {name: to_cgs_value(value) for name, value in parameters.items()}
         return cls._luminosity_and_temperature_cgs(t.cgs.value, **cgs_parameters)[1] * u.K
 
@@ -204,7 +230,21 @@ class ArnettMagnetarSpindownSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, the diffusion-integral luminosity."""
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, the diffusion-integral luminosity.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         luminosity, _ = cls._luminosity_and_temperature_cgs(t, **parameters)
         with np.errstate(divide="ignore"):
             return np.log(luminosity)
@@ -214,7 +254,23 @@ class ArnettMagnetarSpindownSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log S(\nu, T(t))`, a blackbody at the floored photospheric temperature."""
+        r"""
+        :math:`\log S(\nu, T(t))`, a blackbody at the floored photospheric temperature.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
+        """
         _, temperature = cls._luminosity_and_temperature_cgs(t, **parameters)
         return BlackbodySpectrum._eval(nu, temperature=temperature)
 
@@ -223,7 +279,23 @@ class ArnettMagnetarSpindownSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t) = \log L(t) + \log S(\nu, T(t))`, with :math:`L` integrated only once."""
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L(t) + \log S(\nu, T(t))`, with :math:`L` integrated only once.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         luminosity, temperature = cls._luminosity_and_temperature_cgs(t, **parameters)
         with np.errstate(divide="ignore"):
             log_luminosity = np.log(luminosity)

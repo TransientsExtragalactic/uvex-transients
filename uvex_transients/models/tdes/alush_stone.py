@@ -109,10 +109,6 @@ class AlushStoneTDESED(SpectralModel):
            :math:`\alpha_\mathrm{p} \sim \mathcal{N}(5/6,\, 0.2^2)`, centered on the
            magnetized-disk prediction of :footcite:t:`2025arXiv250303811A`.
 
-    See Also
-    --------
-    uvex_transients.models.tdes.VanVelzenTDESED
-
     References
     ----------
     .. footbibliography::
@@ -196,9 +192,9 @@ class AlushStoneTDESED(SpectralModel):
 
         Parameters
         ----------
-        nu
+        nu : numpy.ndarray
             Frequency, in Hz.
-        t
+        t : numpy.ndarray
             Time since explosion, in seconds. Always non-negative.
         **parameters
             This model's parameter values, in cgs units, broadcastable

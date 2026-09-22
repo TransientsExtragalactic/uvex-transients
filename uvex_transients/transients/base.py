@@ -59,6 +59,13 @@ class TransientBase(ABC):
     (:attr:`duration_limit`). All flux/magnitude/spectrum evaluation is the SED's
     own job -- see :class:`~uvex_transients.models.core.base.SpectralModel` and, for a
     composed lightcurve + spectral-shape SED, :class:`~uvex_transients.models.core.base.ComposedSpectralModel`.
+
+    Parameters
+    ----------
+    cosmology : ~astropy.cosmology.Cosmology, optional
+        The cosmology to use for this transient class. See :meth:`__init__`.
+    **_
+        Ignored. See :meth:`__init__`.
     """
 
     # ------------------------------ #
@@ -88,6 +95,21 @@ class TransientBase(ABC):
     # ------------------------------ #
 
     def __init_subclass__(cls, **kwargs):
+        """
+        Register a concrete subclass in `_REGISTRY`, enforcing that it set its class variables.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :meth:`object.__init_subclass__` unchanged; this
+            class declares no class-keyword-argument options of its own.
+
+        Raises
+        ------
+        TypeError
+            If a concrete (non-abstract) subclass leaves `DEFAULT_MODEL` or
+            `DEFAULT_DURATION` unset.
+        """
         super().__init_subclass__(**kwargs)
 
         # Concrete subclasses must supply real values for both class variables (see the
@@ -116,7 +138,7 @@ class TransientBase(ABC):
 
         Parameters
         ----------
-        cosmology: ~astropy.cosmology.Cosmology, optional
+        cosmology : ~astropy.cosmology.Cosmology, optional
             The cosmology to use for this transient class. This is used to determine
             the relevant luminosity distances of objects and to account for cosmological
             volume corrections. If ``None`` (default), the configured default cosmology
@@ -147,7 +169,8 @@ class TransientBase(ABC):
     # ------------------------------ #
     @property
     def cosmology(self) -> Cosmology:
-        """~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.
+        """
+        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.
 
         Reassigning this only replaces the `Cosmology` instance itself; it does not
         by itself invalidate any cached, cosmology-dependent quantities on subclasses
@@ -158,6 +181,19 @@ class TransientBase(ABC):
 
     @cosmology.setter
     def cosmology(self, cosmology: Cosmology):
+        """
+        Set the cosmology used for luminosity-distance/volume calculations.
+
+        Parameters
+        ----------
+        cosmology : ~astropy.cosmology.Cosmology
+            The new cosmology.
+
+        Raises
+        ------
+        TypeError
+            If `cosmology` is not an `~astropy.cosmology.Cosmology` instance.
+        """
         if not isinstance(cosmology, Cosmology):
             raise TypeError(
                 f"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not {type(cosmology)}."
@@ -166,7 +202,8 @@ class TransientBase(ABC):
 
     @property
     def sed(self) -> SpectralModel:
-        """SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.
+        """
+        SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.
 
         See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API
         (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and
@@ -179,7 +216,8 @@ class TransientBase(ABC):
 
     @property
     def duration_limit(self) -> Quantity:
-        """~astropy.units.Quantity: Upper bound on this transient's total duration.
+        """
+        ~astropy.units.Quantity: Upper bound on this transient's total duration.
 
         Defaults to `DEFAULT_DURATION`. Used for windowing -- determining which
         observations could plausibly have detected a given transient -- so this
@@ -191,11 +229,38 @@ class TransientBase(ABC):
 
     @duration_limit.setter
     def duration_limit(self, duration_limit: Quantity) -> None:
+        """
+        Set the upper bound on this transient's total duration.
+
+        Parameters
+        ----------
+        duration_limit : ~astropy.units.Quantity
+            The new duration limit; see :attr:`duration_limit`.
+        """
         self._duration_limit = self._validate_duration_limit(duration_limit)
 
     @staticmethod
     def _validate_duration_limit(duration_limit: Quantity) -> Quantity:
-        """Validate a candidate `duration_limit`, shared by the setter and (implicitly) `__init__`."""
+        """
+        Validate a candidate `duration_limit`, shared by the setter and (implicitly) `__init__`.
+
+        Parameters
+        ----------
+        duration_limit : ~astropy.units.Quantity
+            The candidate value to validate.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            `duration_limit`, unchanged.
+
+        Raises
+        ------
+        TypeError
+            If `duration_limit` is not a Quantity with time units.
+        ValueError
+            If `duration_limit` is not finite and positive.
+        """
         if not isinstance(duration_limit, Quantity) or duration_limit.unit.physical_type != "time":
             raise TypeError(
                 f"`duration_limit` must be an astropy Quantity with time units, not {type(duration_limit)!r}."
@@ -211,12 +276,27 @@ class TransientBase(ABC):
 # Extragalactic Transient                                                     #
 # =========================================================================== #
 class ExtragalacticTransient(TransientBase, ABC):
-    """Extragalactic transient with a cosmological volumetric event rate; see the module docstring."""
+    """
+    Extragalactic transient with a cosmological volumetric event rate; see the module docstring.
+
+    Parameters
+    ----------
+    cosmology : ~astropy.cosmology.Cosmology, optional
+        The cosmology to use for this transient class. See :meth:`__init__`.
+    """
 
     DEFAULT_Z_LIM = 10
     DEFAULT_Z_GRID_SIZE = 100
 
     def __init__(self, cosmology: Union[Cosmology, None] = None):
+        """
+        Instantiate the transient, and set up (but do not yet build) its lazy rate cache.
+
+        Parameters
+        ----------
+        cosmology : ~astropy.cosmology.Cosmology, optional
+            The cosmology to use for this transient class. See :meth:`TransientBase.__init__`.
+        """
         # Instantiate the parent class (resolves `None` to the configured default).
         super().__init__(cosmology=cosmology)
 
@@ -241,7 +321,8 @@ class ExtragalacticTransient(TransientBase, ABC):
     # ---------------------------------------- #
     @property
     def cosmology(self) -> Cosmology:
-        """~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.
+        """
+        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.
 
         Reassigning this invalidates the cached rate table -- see
         `TransientBase.cosmology` and `integrated_event_rate`/`luminosity_distance_grid`.
@@ -250,6 +331,19 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @cosmology.setter
     def cosmology(self, value: Cosmology) -> None:
+        """
+        Set the cosmology used for luminosity-distance/volume calculations, invalidating the rate cache.
+
+        Parameters
+        ----------
+        value : ~astropy.cosmology.Cosmology
+            The new cosmology.
+
+        Raises
+        ------
+        TypeError
+            If `value` is not an `~astropy.cosmology.Cosmology` instance.
+        """
         if not isinstance(value, Cosmology):
             raise TypeError(
                 f"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not {type(value)}."
@@ -264,6 +358,14 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @redshift_limit.setter
     def redshift_limit(self, value: float) -> None:
+        """
+        Set the upper redshift bound of `redshift_grid`, invalidating the rate cache.
+
+        Parameters
+        ----------
+        value : float
+            The new redshift limit.
+        """
         self._redshift_limit = self._validate_redshift_limit(value)
         self._invalidate_rate_cache()
 
@@ -274,6 +376,14 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @redshift_grid_size.setter
     def redshift_grid_size(self, value: int) -> None:
+        """
+        Set the number of points in `redshift_grid`, invalidating the rate cache.
+
+        Parameters
+        ----------
+        value : int
+            The new grid size.
+        """
         self._redshift_grid_size = self._validate_redshift_grid_size(value)
         self._invalidate_rate_cache()
 
@@ -285,7 +395,8 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @property
     def luminosity_distance_grid(self) -> Quantity:
-        r"""~astropy.units.Quantity: :math:`D_L(z)` at each point of `redshift_grid`.
+        r"""
+        ~astropy.units.Quantity: :math:`D_L(z)` at each point of `redshift_grid`.
 
         Cached alongside `redshift_grid` (built by the same `_ensure_rate_table` call,
         against the same `cosmology`), so a caller with a batch of sampled redshifts
@@ -312,12 +423,48 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @staticmethod
     def _validate_redshift_limit(z_max: float) -> float:
+        """
+        Validate a candidate `redshift_limit`, shared by the setter and `__init__`.
+
+        Parameters
+        ----------
+        z_max : float
+            The candidate value to validate.
+
+        Returns
+        -------
+        float
+            `z_max`, coerced to a plain Python ``float``.
+
+        Raises
+        ------
+        ValueError
+            If `z_max` is not finite and positive.
+        """
         if not np.isfinite(z_max) or z_max <= 0:
             raise ValueError(f"`redshift_limit` must be finite and positive, got {z_max!r}.")
         return float(z_max)
 
     @staticmethod
     def _validate_redshift_grid_size(n_grid: int) -> int:
+        """
+        Validate a candidate `redshift_grid_size`, shared by the setter and `__init__`.
+
+        Parameters
+        ----------
+        n_grid : int
+            The candidate value to validate.
+
+        Returns
+        -------
+        int
+            `n_grid`, coerced to a plain Python ``int``.
+
+        Raises
+        ------
+        ValueError
+            If `n_grid` is not an integer >= 2.
+        """
         if isinstance(n_grid, bool) or not isinstance(n_grid, (int, np.integer)) or n_grid < 2:
             raise ValueError(f"`redshift_grid_size` must be an integer >= 2, got {n_grid!r}.")
         return int(n_grid)

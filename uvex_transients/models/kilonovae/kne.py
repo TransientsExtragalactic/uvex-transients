@@ -59,7 +59,6 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
          - :math:`\alpha_T`
          - Early-time photospheric cooling power-law index.
 
-
     References
     ----------
     .. footbibliography::
@@ -144,12 +143,42 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
         alpha_T: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
-        r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/(t_\mathrm{peak}/5))^{-\alpha_T}`."""
+        r"""
+        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/(t_\mathrm{peak}/5))^{-\alpha_T}`.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        T0, T_floor, t_peak, alpha_T : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`T(t)`, in Kelvin.
+        """
         return T_floor + (T0 - T_floor) * (1.0 + t / t_peak) ** (-alpha_T)
 
     @classmethod
     def temperature(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`T(t)` in Kelvin."""
+        r"""
+        :math:`T(t)` in Kelvin.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`T(t)`, in Kelvin.
+        """
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
 
         return cls._temperature_cgs(t.cgs.value, **cgs_parameters) * u.K
@@ -159,9 +188,22 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`GaussianRiseBrokenPowerLawLightcurve`.
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`GaussianRiseBrokenPowerLawLightcurve`.
 
         Exact -- no integration needed.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
         """
         lightcurve_parameters = {
             name: parameters[name] for name in GaussianRiseBrokenPowerLawLightcurve._DEFAULT_PARAMETERS
@@ -173,9 +215,24 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.
+        r"""
+        :math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.
 
         Evaluated at this ``t``'s own cooling-law temperature.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
         """
         temperature = cls._temperature_cgs(t, **parameters)
         return BlackbodySpectrum._eval(nu, temperature=temperature)
@@ -185,5 +242,21 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`."""
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         return cls._eval_bolometric(t, **parameters) + cls._eval_spectrum(nu, t, **parameters)

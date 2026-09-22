@@ -47,7 +47,9 @@ def resolve_healpix_resolution(
     Returns
     -------
     nside : int
+        Resolved HEALPix resolution parameter.
     order : str
+        Resolved HEALPix pixel ordering scheme.
     """
     return (
         nside if nside is not None else config["healpix.default_nside"],
@@ -131,6 +133,7 @@ def get_seed_sequence(seed: Union[np.random.SeedSequence, int] | None = None) ->
     Returns
     -------
     numpy.random.SeedSequence
+        Seed sequence suitable for spawning independent random streams.
     """
     if isinstance(seed, np.random.SeedSequence):
         return seed

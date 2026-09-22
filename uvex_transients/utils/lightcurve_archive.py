@@ -51,20 +51,66 @@ class LightcurveArchive:
     """
 
     def __init__(self, path: str | Path | None = None):
+        """
+        Initialize the light-curve archive.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path, optional
+            Path to the archive HDF5 file. If not provided, use the packaged
+            ``test_data/transients/lightcurves.h5`` archive.
+        """
         self.path = Path(path) if path is not None else _default_archive_path()
 
     def types(self) -> list[str]:
-        """Return the sorted list of transient types (top-level groups) in the archive."""
+        """
+        Return the transient types available in the archive.
+
+        Returns
+        -------
+        list of str
+            Sorted names of the top-level transient-type groups.
+        """
         with h5py.File(self.path, "r") as f:
             return sorted(f.keys())
 
     def events(self, transient_type: str) -> list[str]:
-        """Return the sorted list of transients (``<designation>_<citekey>``) under ``transient_type``."""
+        """
+        Return the transients available under a transient type.
+
+        Parameters
+        ----------
+        transient_type : str
+            Name of the transient-type group, such as ``"kilonovae"`` or
+            ``"supernovae/IIb"``.
+
+        Returns
+        -------
+        list of str
+            Sorted transient identifiers of the form
+            ``<designation>_<citekey>``.
+        """
         with h5py.File(self.path, "r") as f:
             return sorted(f[transient_type].keys())
 
     def fields(self, transient_type: str, event: str) -> list[str]:
-        """Return the sorted list of observable fields (e.g. ``L_bol``, ``T_phot``) for one transient."""
+        """
+        Return the observable fields available for a transient.
+
+        Parameters
+        ----------
+        transient_type : str
+            Name of the transient-type group, such as ``"kilonovae"`` or
+            ``"supernovae/IIb"``.
+        event : str
+            Transient identifier of the form ``<designation>_<citekey>``.
+
+        Returns
+        -------
+        list of str
+            Sorted observable field names, such as ``"L_bol"`` or
+            ``"T_phot"``.
+        """
         with h5py.File(self.path, "r") as f:
             keys = f[f"{transient_type}/{event}"].keys()
             return sorted(k for k in keys if not k.endswith("__table_column_meta__"))

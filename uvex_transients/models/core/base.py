@@ -115,6 +115,15 @@ def _warn_if_not_converged(context: str, integral: FloatArray, err: float) -> No
     `quad_vec` returns its integral and a scalar error-norm estimate but never raises on
     poor convergence, so silent non-convergence in a normalization/bolometric integral
     would otherwise be invisible until it shows up as a subtly wrong downstream flux.
+
+    Parameters
+    ----------
+    context : str
+        Short label identifying the caller, used to prefix the warning message.
+    integral : numpy.ndarray
+        The `quad_vec` result being checked.
+    err : float
+        `quad_vec`'s own scalar error-norm estimate for `integral`.
     """
     scale = max(float(np.max(np.abs(integral))), np.finfo(float).tiny)
     if err > _QUAD_VEC_WARN_RTOL * scale:
@@ -143,6 +152,11 @@ class _ModelBase(Mapping[str, Parameter], ABC):
 
     Not part of the public API; use :class:`SpectralModel`,
     :class:`Lightcurve`, or :class:`Spectrum` instead.
+
+    Parameters
+    ----------
+    **overrides : Parameter, ~astropy.units.Quantity, float, or int
+        Per-parameter overrides. See :meth:`__init__`.
     """
 
     # -------------------------------------- #
@@ -171,7 +185,15 @@ class _ModelBase(Mapping[str, Parameter], ABC):
     # Subclass Validation                    #
     # -------------------------------------- #
     def __init_subclass__(cls, **kwargs) -> None:
-        """Validate a subclass's :attr:`_DEFAULT_PARAMETERS` and, if set, :attr:`_DOMAIN`."""
+        """
+        Validate a subclass's :attr:`_DEFAULT_PARAMETERS` and, if set, :attr:`_DOMAIN`.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :meth:`object.__init_subclass__` unchanged; this
+            class declares no class-keyword-argument options of its own.
+        """
         super().__init_subclass__(**kwargs)
 
         for name, parameter in cls._DEFAULT_PARAMETERS.items():
@@ -196,7 +218,14 @@ class _ModelBase(Mapping[str, Parameter], ABC):
     # Construction and Copying               #
     # -------------------------------------- #
     def _init_parameters(self, overrides: Mapping[str, OverrideValue]) -> None:
-        """Deep-copy :attr:`_DEFAULT_PARAMETERS` and apply constructor ``overrides`` on top."""
+        """
+        Deep-copy :attr:`_DEFAULT_PARAMETERS` and apply constructor ``overrides`` on top.
+
+        Parameters
+        ----------
+        overrides : mapping of str to (Parameter, Quantity, float, or int)
+            Per-parameter overrides, keyed by parameter name. See :meth:`__init__`.
+        """
         self._parameters = deepcopy(self._DEFAULT_PARAMETERS)
 
         unknown = [name for name in overrides if name not in self._parameters]
@@ -240,11 +269,36 @@ class _ModelBase(Mapping[str, Parameter], ABC):
         self._init_parameters(overrides)
 
     def __copy__(self) -> Self:
+        """
+        Return a shallow copy: a new instance sharing this one's `Parameter` objects.
+
+        Returns
+        -------
+        instance of this class
+            A new instance whose `_parameters` dict is a fresh mapping, but
+            whose individual `Parameter` values are the *same* objects as
+            `self`'s -- fixing or sampling a shared parameter through either
+            instance affects both.
+        """
         new = self.__class__.__new__(self.__class__)
         new._parameters = copy(self._parameters)
         return new
 
     def __deepcopy__(self, memo: dict) -> Self:
+        """
+        Return a deep copy: a new instance with its own independent `Parameter` objects.
+
+        Parameters
+        ----------
+        memo : dict
+            The `copy.deepcopy` memo dict, used to preserve shared/cyclic
+            references and avoid copying the same object twice.
+
+        Returns
+        -------
+        instance of this class
+            A new instance with an independently deep-copied `_parameters` dict.
+        """
         if id(self) in memo:
             return memo[id(self)]
 
@@ -257,21 +311,87 @@ class _ModelBase(Mapping[str, Parameter], ABC):
     # Mapping Interface                      #
     # -------------------------------------- #
     def __len__(self) -> int:
+        """
+        Return the number of parameters this model has.
+
+        Returns
+        -------
+        int
+            ``len(self._parameters)``.
+        """
         return len(self._parameters)
 
     def __iter__(self) -> Iterator[str]:
+        """
+        Iterate over this model's parameter names, in declaration order.
+
+        Returns
+        -------
+        Iterator of str
+            An iterator over `_parameters`' keys.
+        """
         return iter(self._parameters)
 
     def __getitem__(self, key: str) -> Parameter:
+        """
+        Look up one of this model's `Parameter` objects by name.
+
+        Parameters
+        ----------
+        key : str
+            The parameter name.
+
+        Returns
+        -------
+        Parameter
+            The named parameter.
+        """
         return self._parameters[key]
 
     def __setitem__(self, key: str, value: Parameter) -> None:
+        """
+        Refuse item assignment; parameters may only be modified in place.
+
+        Parameters
+        ----------
+        key : str
+            The parameter name (unused; every call raises).
+        value : Parameter
+            The value that would have been assigned (unused; every call raises).
+
+        Raises
+        ------
+        TypeError
+            Always -- model parameters cannot be replaced this way.
+        """
         raise TypeError("Model parameters cannot be replaced directly. Modify the existing parameter instead.")
 
     def __delitem__(self, key: str) -> None:
+        """
+        Refuse item deletion; a model's parameter set is fixed at construction.
+
+        Parameters
+        ----------
+        key : str
+            The parameter name that would have been deleted (unused; every call raises).
+
+        Raises
+        ------
+        TypeError
+            Always -- model parameters cannot be deleted.
+        """
         raise TypeError("Model parameters cannot be deleted.")
 
     def __repr__(self) -> str:
+        """
+        Return a multi-line representation listing every parameter's fixed value or prior.
+
+        Returns
+        -------
+        str
+            One line per parameter, showing either its fixed value
+            (``name: fixed=...``) or its prior (``name: free, prior=...``).
+        """
         rows = []
         for name, parameter in self._parameters.items():
             if parameter.is_fixed:
@@ -371,14 +491,14 @@ class _ModelBase(Mapping[str, Parameter], ABC):
 
         Parameters
         ----------
-        size
+        size : int
             Number of samples to draw per parameter.
-        rng
+        rng : numpy.random.Generator, int, or None
             Random-number source, forwarded to each
             :meth:`~uvex_transients.models.core.parameters.Parameter.sample`. Passing
             a shared :class:`~numpy.random.Generator` is recommended so that
             every parameter's draws come from the same reproducible stream.
-        parameters
+        parameters : list of str, optional
             Names of the parameters to sample. If ``None`` (the default),
             every parameter is sampled.
 
@@ -439,7 +559,7 @@ class Lightcurve(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : numpy.ndarray
             Time since explosion, in seconds. Always non-negative.
         **parameters
             This model's parameter values, in cgs units, broadcastable
@@ -459,7 +579,7 @@ class Lightcurve(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : array-like
             Time since explosion, in seconds.
         **parameters
             This model's parameter values, in cgs units. To evaluate several
@@ -487,7 +607,7 @@ class Lightcurve(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Time since explosion, with time units.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -511,7 +631,22 @@ class Lightcurve(_ModelBase):
 
     @classmethod
     def eval_cgs(cls, t: NumericalInput, **parameters: CGSParameterValue) -> FloatResult:
-        """Bolometric luminosity, taking and returning plain cgs numbers. See :meth:`eval_log_cgs`."""
+        r"""
+        Bolometric luminosity, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        t : array-like
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`L_\mathrm{bol}(t)`, in erg/s. A scalar is returned if the
+            result is 0-dimensional.
+        """
         return np.exp(cls.eval_log_cgs(t, **parameters))
 
     @classmethod
@@ -521,7 +656,7 @@ class Lightcurve(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Time since explosion.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -535,10 +670,23 @@ class Lightcurve(_ModelBase):
 
     @classmethod
     def eval_from_arrays(cls, t: Quantity, *parameters: ParameterValue) -> Quantity:
-        """
+        r"""
         Positional-argument form of :meth:`eval`.
 
         Equivalent to ``cls.eval(t, **cls.unpack_params_from_arrays(*parameters))``.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        *parameters
+            This model's parameter values, one per parameter, in this
+            model's parameter order. See :meth:`unpack_params_from_arrays`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`L_\mathrm{bol}(t)`, in erg/s.
 
         See Also
         --------
@@ -558,11 +706,11 @@ class Lightcurve(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Time since explosion. See :meth:`eval`.
-        size
+        size : int
             Number of realizations to draw.
-        rng
+        rng : numpy.random.Generator, int, or None
             Random-number source, forwarded to :meth:`sample_parameters`.
 
         Returns
@@ -632,7 +780,7 @@ class Spectrum(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : numpy.ndarray
             Frequency, in Hz.
         **parameters
             This model's parameter values, in cgs units, broadcastable
@@ -652,7 +800,7 @@ class Spectrum(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : array-like
             Frequency, in Hz.
         **parameters
             This model's parameter values, in cgs units. To evaluate several
@@ -680,7 +828,7 @@ class Spectrum(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency, with frequency units.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -704,7 +852,22 @@ class Spectrum(_ModelBase):
 
     @classmethod
     def eval_cgs(cls, nu: NumericalInput, **parameters: CGSParameterValue) -> FloatResult:
-        """Spectral shape, taking and returning plain cgs numbers. See :meth:`eval_log_cgs`."""
+        r"""
+        Spectral shape, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        nu : array-like
+            Frequency, in Hz.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`S(\nu)`, in 1/Hz. A scalar is returned if the result is
+            0-dimensional.
+        """
         return np.exp(cls.eval_log_cgs(nu, **parameters))
 
     @classmethod
@@ -714,7 +877,7 @@ class Spectrum(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency at which to evaluate the shape.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -728,10 +891,23 @@ class Spectrum(_ModelBase):
 
     @classmethod
     def eval_from_arrays(cls, nu: Quantity, *parameters: ParameterValue) -> Quantity:
-        """
+        r"""
         Positional-argument form of :meth:`eval`.
 
         Equivalent to ``cls.eval(nu, **cls.unpack_params_from_arrays(*parameters))``.
+
+        Parameters
+        ----------
+        nu : ~astropy.units.Quantity
+            Frequency at which to evaluate the shape.
+        *parameters
+            This model's parameter values, one per parameter, in this
+            model's parameter order. See :meth:`unpack_params_from_arrays`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`S(\nu)`, in 1/Hz.
 
         See Also
         --------
@@ -775,6 +951,19 @@ class Spectrum(_ModelBase):
         lo, hi = cls._DOMAIN
 
         def integrand(nu: float) -> FloatArray:
+            r"""
+            Evaluate :math:`\exp(\mathtt{\_eval}(\nu))` at one trial frequency, for `quad_vec`.
+
+            Parameters
+            ----------
+            nu : float
+                Trial frequency, in Hz, supplied by `quad_vec`.
+
+            Returns
+            -------
+            numpy.ndarray
+                :math:`S(\nu)` broadcast against `param_grids`.
+            """
             return np.exp(cls._eval(np.asarray(nu, dtype=np.float64), **param_grids))
 
         integral, err = quad_vec(integrand, float(to_cgs_value(lo)), float(to_cgs_value(hi)))
@@ -809,14 +998,39 @@ class Spectrum(_ModelBase):
 
     @classmethod
     def eval_normalization_log(cls, **parameters: ParameterValue) -> FloatResult:
-        """Natural log of the shape's frequency integral, given physical-unit inputs. See :meth:`eval_log`."""
+        r"""
+        Natural log of the shape's frequency integral, given physical-unit inputs.
+
+        Parameters
+        ----------
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The natural log of :math:`\int S(\nu)\,d\nu`.
+        """
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
 
         return cls.eval_normalization_log_cgs(**cgs_parameters)
 
     @classmethod
     def eval_normalization_cgs(cls, **parameters: CGSParameterValue) -> FloatResult:
-        """Return the shape's frequency integral as plain cgs numbers; see :meth:`eval_normalization_log_cgs`."""
+        r"""
+        Return the shape's frequency integral as plain cgs numbers; see :meth:`eval_normalization_log_cgs`.
+
+        Parameters
+        ----------
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_normalization_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`\int S(\nu)\,d\nu`. A scalar is returned if the result is
+            0-dimensional.
+        """
         return np.exp(cls.eval_normalization_log_cgs(**parameters))
 
     @classmethod
@@ -853,11 +1067,11 @@ class Spectrum(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency at which to evaluate the model. See :meth:`eval`.
-        size
+        size : int
             Number of realizations to draw.
-        rng
+        rng : numpy.random.Generator, int, or None
             Random-number source, forwarded to :meth:`sample_parameters`.
 
         Returns
@@ -889,7 +1103,6 @@ class SpectralModel(_ModelBase):
     normalized spectral shapes, observed flux densities, band-averaged
     fluxes, apparent magnitudes, and synthetic
     :class:`~synphot.SourceSpectrum` objects.
-
 
     Notes
     -----
@@ -954,9 +1167,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : numpy.ndarray
             Frequency, in Hz.
-        t
+        t : numpy.ndarray
             Time since explosion, in seconds. Always non-negative.
         **parameters
             This model's parameter values, in cgs units, broadcastable
@@ -976,9 +1189,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : array-like
             Frequency, in Hz.
-        t
+        t : array-like
             Time since explosion, in seconds.
         **parameters
             This model's parameter values, in cgs units. To evaluate several
@@ -1007,9 +1220,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency, with frequency units.
-        t
+        t : ~astropy.units.Quantity
             Time since explosion, with time units.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1035,7 +1248,24 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_cgs(cls, nu: NumericalInput, t: NumericalInput, **parameters: CGSParameterValue) -> FloatResult:
-        """Spectral luminosity, taking and returning plain cgs numbers. See :meth:`eval_log_cgs`."""
+        r"""
+        Spectral luminosity, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        nu : array-like
+            Frequency, in Hz.
+        t : array-like
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`L_\nu(\nu, t)`, in erg/s/Hz. A scalar is returned if the
+            result is 0-dimensional.
+        """
         return np.exp(cls.eval_log_cgs(nu, t, **parameters))
 
     @classmethod
@@ -1045,9 +1275,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency at which to evaluate the model.
-        t
+        t : ~astropy.units.Quantity
             Time since explosion.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1061,12 +1291,27 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_from_arrays(cls, nu: Quantity, t: Quantity, *parameters: ParameterValue) -> Quantity:
-        """
+        r"""
         Positional-argument form of :meth:`eval`.
 
         Equivalent to ``cls.eval(nu, t, **cls.unpack_params_from_arrays(*parameters))``.
         Useful when parameter values are already stored as a plain sequence
         (e.g. rows of an array) rather than a dict.
+
+        Parameters
+        ----------
+        nu : ~astropy.units.Quantity
+            Frequency at which to evaluate the model.
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        *parameters
+            This model's parameter values, one per parameter, in this
+            model's parameter order. See :meth:`unpack_params_from_arrays`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`L_\nu(\nu, t)`, in erg/s/Hz.
 
         See Also
         --------
@@ -1094,7 +1339,7 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : numpy.ndarray
             Time since explosion, in seconds, broadcastable against
             ``parameters``.
         **parameters
@@ -1112,6 +1357,19 @@ class SpectralModel(_ModelBase):
         lo, hi = cls._DOMAIN
 
         def integrand(nu: float) -> FloatArray:
+            r"""
+            Evaluate :math:`\exp(\mathtt{\_eval}(\nu, t))` at one trial frequency, for `quad_vec`.
+
+            Parameters
+            ----------
+            nu : float
+                Trial frequency, in Hz, supplied by `quad_vec`.
+
+            Returns
+            -------
+            numpy.ndarray
+                :math:`L_\nu(\nu, t)` broadcast against `t_grid`/`param_grids`.
+            """
             return np.exp(cls._eval(np.asarray(nu, dtype=np.float64), t_grid, **param_grids))
 
         integral, err = quad_vec(integrand, float(to_cgs_value(lo)), float(to_cgs_value(hi)))
@@ -1126,7 +1384,7 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : array-like
             Time since explosion, in seconds.
         **parameters
             This model's parameter values, in cgs units. To evaluate several
@@ -1149,7 +1407,26 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_bolometric_log(cls, t: Quantity, **parameters: ParameterValue) -> FloatResult:
-        """Natural log of the bolometric luminosity, given physical-unit inputs. See :meth:`eval_log`."""
+        """
+        Natural log of the bolometric luminosity, given physical-unit inputs.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The natural log of the bolometric luminosity, in erg/s.
+
+        Raises
+        ------
+        TypeError
+            If ``t`` is not a Quantity with time units.
+        """
         if not isinstance(t, Quantity) or t.unit.physical_type != "time":
             raise TypeError("`t` must be an astropy Quantity with time units.")
 
@@ -1159,7 +1436,22 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_bolometric_cgs(cls, t: NumericalInput, **parameters: CGSParameterValue) -> FloatResult:
-        """Bolometric luminosity, taking and returning plain cgs numbers. See :meth:`eval_log_cgs`."""
+        """
+        Bolometric luminosity, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        t : array-like
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The bolometric luminosity, in erg/s. A scalar is returned if the
+            result is 0-dimensional.
+        """
         return np.exp(cls.eval_bolometric_log_cgs(t, **parameters))
 
     @classmethod
@@ -1169,7 +1461,7 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Time since explosion.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1203,9 +1495,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : numpy.ndarray
             Frequency, in Hz.
-        t
+        t : numpy.ndarray
             Time since explosion, in seconds.
         **parameters
             This model's parameter values, in cgs units, broadcastable
@@ -1227,9 +1519,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : array-like
             Frequency, in Hz.
-        t
+        t : array-like
             Time since explosion, in seconds.
         **parameters
             This model's parameter values, in cgs units. To evaluate several
@@ -1253,7 +1545,28 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_spectrum_log(cls, nu: Quantity, t: Quantity, **parameters: ParameterValue) -> FloatResult:
-        """Natural log of the normalized spectral shape, given physical-unit inputs. See :meth:`eval_log`."""
+        """
+        Natural log of the normalized spectral shape, given physical-unit inputs.
+
+        Parameters
+        ----------
+        nu : ~astropy.units.Quantity
+            Frequency at which to evaluate the shape.
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The natural log of the normalized spectral shape, in 1/Hz.
+
+        Raises
+        ------
+        TypeError
+            If ``nu``/``t`` are not Quantities with frequency/time units.
+        """
         if not isinstance(nu, Quantity) or nu.unit.physical_type != "frequency":
             raise TypeError("`nu` must be an astropy Quantity with frequency units.")
         if not isinstance(t, Quantity) or t.unit.physical_type != "time":
@@ -1265,7 +1578,24 @@ class SpectralModel(_ModelBase):
 
     @classmethod
     def eval_spectrum_cgs(cls, nu: NumericalInput, t: NumericalInput, **parameters: CGSParameterValue) -> FloatResult:
-        """Return the normalized spectral shape as plain cgs numbers; see :meth:`eval_log_cgs`."""
+        """
+        Return the normalized spectral shape as plain cgs numbers; see :meth:`eval_log_cgs`.
+
+        Parameters
+        ----------
+        nu : array-like
+            Frequency, in Hz.
+        t : array-like
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The normalized spectral shape, in 1/Hz. A scalar is returned if
+            the result is 0-dimensional.
+        """
         return np.exp(cls.eval_spectrum_log_cgs(nu, t, **parameters))
 
     @classmethod
@@ -1275,9 +1605,9 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency at which to evaluate the shape.
-        t
+        t : ~astropy.units.Quantity
             Time since explosion.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1334,23 +1664,23 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        x_type
+        x_type : str
             ``"lambda"`` (the default) if the model's first input is a
             wavelength, or ``"nu"`` if it is a frequency.
-        y_type
+        y_type : str
             ``"lambda"`` (the default) if the output is expressed per unit
             wavelength, or ``"nu"`` if per unit frequency.
-        y_kind
+        y_kind : str
             ``"energy"`` (the default) for an energy-flux density, or
             ``"photon"`` for a photon-count-flux density (dividing by the
             photon energy :math:`h\nu`).
-        wave_unit
+        wave_unit : str or ~astropy.units.UnitBase
             The wavelength unit used wherever ``x_type``/``y_type`` is
             ``"lambda"``.
-        freq_unit
+        freq_unit : str or ~astropy.units.UnitBase
             The frequency unit used wherever ``x_type``/``y_type`` is
             ``"nu"``.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             If any of ``redshift``/``luminosity_distance``/
             ``angular_diameter_distance``/``proper_distance`` is given,
             exactly one of them must be given; the rest (and
@@ -1358,6 +1688,14 @@ class SpectralModel(_ModelBase):
             the observed, diluted flux. If none of the four is given, the
             output is the rest-frame luminosity and ``cosmology`` is
             ignored.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        proper_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See ``redshift`` above.
         **parameters
             This model's parameter values, either
             :class:`~astropy.units.Quantity` or already unit-stripped cgs
@@ -1475,6 +1813,26 @@ class SpectralModel(_ModelBase):
 
         # Generate the final evaluator.
         def _evaluate(x: FloatArray, t: FloatArray) -> FloatResult:
+            """
+            Evaluate the composed model at unit-stripped ``(x, t)``, in the resolved output units.
+
+            Chains `_x_to_nu`, `_eval_native`, `_to_dlambda`, and
+            `_to_output_flux` (each resolved above, based on `x_type`/
+            `y_type`/`y_kind`) into the single callable passed to
+            :class:`~astropy.modeling.custom_model`.
+
+            Parameters
+            ----------
+            x : numpy.ndarray
+                Wavelength or frequency, in `wave_unit`/`freq_unit`, per `x_type`.
+            t : numpy.ndarray
+                Time since explosion, in seconds.
+
+            Returns
+            -------
+            float or numpy.ndarray
+                The evaluated flux/luminosity density, unit-stripped, in `output_unit`.
+            """
             nu_hz = _x_to_nu(x)
             y = _eval_native(nu_hz, t)
             y = _to_dlambda(nu_hz, y)
@@ -1547,15 +1905,23 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : array-like or Quantity
             Observed time since explosion, either a
             :class:`~astropy.units.Quantity` with time units or an already
             unit-stripped cgs (seconds) value. May carry leading batch
             axes, broadcastable against ``parameters``.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             Exactly one of ``redshift`` or the three distance keywords must
             be given; the rest are derived from it using ``cosmology``. See
             :meth:`as_astropy_model`.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        proper_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See ``redshift`` above.
         ebv : float, ~astropy.units.Quantity, or array-like, optional
             Already-resolved, dimensionless E(B-V) (see
             :func:`~uvex_transients.dust.resolve_ebv`). ``None`` (the default)
@@ -1661,13 +2027,13 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu, t
+        nu, t : numpy.ndarray
             Observed frequency (Hz) and time since explosion (s).
-        redshift
+        redshift : numpy.ndarray
             Cosmological redshift, dimensionless.
-        luminosity_distance
+        luminosity_distance : numpy.ndarray
             Luminosity distance, in cm.
-        log_attenuation
+        log_attenuation : numpy.ndarray, optional
             Natural log of an observed-frame multiplicative attenuation
             (e.g. the log of Milky Way dust transmission), added directly to
             the log flux. ``None`` (the default) applies no attenuation.
@@ -1712,13 +2078,13 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu, t
+        nu, t : array-like
             Observed frequency (Hz) and time since explosion (s).
-        redshift
+        redshift : array-like
             Cosmological redshift, dimensionless.
-        luminosity_distance
+        luminosity_distance : array-like
             Luminosity distance, in cm.
-        log_attenuation
+        log_attenuation : array-like, optional
             Natural log of an observed-frame multiplicative attenuation,
             added directly to the log flux. Must already broadcast against
             the natural output shape of this call.
@@ -1768,16 +2134,24 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Observed frequency.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             Exactly one of ``redshift`` or the three distance keywords must
             be given; the rest are derived from it using ``cosmology`` (see
             :func:`~uvex_transients.utils.cosmology.resolve_cosmological_distances`).
             ``cosmology`` defaults to that function's configured default.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        proper_distance : ~astropy.units.Quantity, optional
+            See ``redshift`` above.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See ``redshift`` above.
+        log_attenuation : array-like, optional
             See :meth:`flux_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1821,7 +2195,30 @@ class SpectralModel(_ModelBase):
         log_attenuation: NumericalInput | None = None,
         **parameters: CGSParameterValue,
     ) -> FloatResult:
-        """Observed flux density, taking and returning plain cgs numbers. See :meth:`flux_log_cgs`."""
+        r"""
+        Observed flux density, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        nu : array-like
+            Observed frequency, in Hz.
+        t : array-like
+            Observed time since explosion, in seconds.
+        redshift : array-like
+            Cosmological redshift, dimensionless.
+        luminosity_distance : array-like
+            Luminosity distance, in cm.
+        log_attenuation : array-like, optional
+            See :meth:`flux_log_cgs`.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`flux_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`F_\nu(\nu, t)`, in erg/s/cm^2/Hz. A scalar is returned if
+            the result is 0-dimensional.
+        """
         return np.exp(
             cls.flux_log_cgs(
                 nu,
@@ -1852,13 +2249,21 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Observed frequency.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`flux_log`.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
             See :meth:`flux_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -1908,6 +2313,23 @@ class SpectralModel(_ModelBase):
         observed frequency and substituting :math:`\nu_\mathrm{emit} =
         \nu_\mathrm{obs}(1+z)` makes that factor cancel exactly against the
         Jacobian of the substitution.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Observed time since explosion, in seconds.
+        redshift : numpy.ndarray
+            Cosmological redshift, dimensionless, broadcastable against ``t``.
+        luminosity_distance : numpy.ndarray
+            Luminosity distance, in cm, broadcastable against ``t``.
+        **parameters
+            This model's parameter values, in cgs units, broadcastable
+            against ``t``.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the observed bolometric flux, in erg/s/cm^2.
         """
         return (
             cls._eval_bolometric(t / (1.0 + redshift), **parameters)
@@ -1928,11 +2350,11 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : array-like
             Time since explosion, in seconds.
-        redshift
+        redshift : array-like
             Cosmological redshift, dimensionless.
-        luminosity_distance
+        luminosity_distance : array-like
             Luminosity distance, in cm.
         **parameters
             This model's parameter values, in cgs units; must already
@@ -1967,7 +2389,36 @@ class SpectralModel(_ModelBase):
         cosmology: FLRW | None = None,
         **parameters: ParameterValue,
     ) -> FloatResult:
-        """Natural log of the observed bolometric flux, given physical-unit inputs. See :meth:`flux_log`."""
+        """
+        Natural log of the observed bolometric flux, given physical-unit inputs.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Observed time since explosion.
+        redshift : array-like or ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The natural log of the observed bolometric flux, in erg/s/cm^2.
+
+        Raises
+        ------
+        TypeError
+            If ``t`` is not a Quantity with time units.
+        """
         if not isinstance(t, Quantity) or t.unit.physical_type != "time":
             raise TypeError("`t` must be an astropy Quantity with time units.")
 
@@ -1996,7 +2447,26 @@ class SpectralModel(_ModelBase):
         luminosity_distance: NumericalInput,
         **parameters: CGSParameterValue,
     ) -> FloatResult:
-        """Observed bolometric flux, taking and returning plain cgs numbers. See :meth:`flux_log_cgs`."""
+        """
+        Observed bolometric flux, taking and returning plain cgs numbers.
+
+        Parameters
+        ----------
+        t : array-like
+            Time since explosion, in seconds.
+        redshift : array-like
+            Cosmological redshift, dimensionless.
+        luminosity_distance : array-like
+            Luminosity distance, in cm.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`flux_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The observed bolometric flux, in erg/s/cm^2. A scalar is
+            returned if the result is 0-dimensional.
+        """
         return np.exp(cls.flux_bolometric_log_cgs(t, redshift, luminosity_distance, **parameters))
 
     @classmethod
@@ -2016,9 +2486,17 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
             See :meth:`flux_log`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2079,19 +2557,19 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : array-like
             Observed frequency grid to integrate over, in Hz, shape ``(K,)``.
             Need not be sorted.
-        throughput
+        throughput : array-like
             Dimensionless bandpass response at each ``nu`` sample, shape
             ``(K,)``.
-        t
+        t : array-like
             Observed time since explosion, in seconds, any shape.
-        redshift
+        redshift : array-like
             Cosmological redshift, dimensionless, any shape.
-        luminosity_distance
+        luminosity_distance : array-like
             Luminosity distance, in cm, any shape.
-        log_attenuation
+        log_attenuation : array-like, optional
             Natural log of an observed-frame multiplicative attenuation,
             sampled at the same ``nu`` grid (its last axis must have length
             ``K``, in ``nu``'s original, pre-sort order). Any leading axes
@@ -2148,7 +2626,42 @@ class SpectralModel(_ModelBase):
         log_attenuation: NumericalInput | None = None,
         **parameters: ParameterValue,
     ) -> FloatResult:
-        """Natural log of the band-averaged observed flux density, given physical-unit inputs. See :meth:`flux_log`."""
+        r"""
+        Natural log of the band-averaged observed flux density, given physical-unit inputs.
+
+        Parameters
+        ----------
+        nu : ~astropy.units.Quantity
+            Observed frequency grid to integrate over. Need not be sorted.
+        throughput : array-like
+            Dimensionless bandpass response at each ``nu`` sample.
+        t : ~astropy.units.Quantity
+            Observed time since explosion.
+        redshift : array-like or ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
+            See :meth:`flux_band_log_cgs`.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The natural log of :math:`\\bar{F}_\\nu`, in erg/s/cm^2/Hz.
+
+        Raises
+        ------
+        TypeError
+            If ``nu``/``t`` are not Quantities with frequency/time units.
+        """
         if not isinstance(nu, Quantity) or nu.unit.physical_type != "frequency":
             raise TypeError("`nu` must be an astropy Quantity with frequency units.")
         if not isinstance(t, Quantity) or t.unit.physical_type != "time":
@@ -2185,7 +2698,32 @@ class SpectralModel(_ModelBase):
         log_attenuation: NumericalInput | None = None,
         **parameters: CGSParameterValue,
     ) -> FloatResult:
-        """Band-averaged observed flux density as plain cgs numbers; see :meth:`flux_band_log_cgs`."""
+        r"""
+        Band-averaged observed flux density as plain cgs numbers; see :meth:`flux_band_log_cgs`.
+
+        Parameters
+        ----------
+        nu : array-like
+            Observed frequency grid to integrate over, in Hz. Need not be sorted.
+        throughput : array-like
+            Dimensionless bandpass response at each ``nu`` sample.
+        t : array-like
+            Observed time since explosion, in seconds.
+        redshift : array-like
+            Cosmological redshift, dimensionless.
+        luminosity_distance : array-like
+            Luminosity distance, in cm.
+        log_attenuation : array-like, optional
+            See :meth:`flux_band_log_cgs`.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`flux_band_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            :math:`\bar{F}_\nu`, in erg/s/cm^2/Hz. A scalar is returned if
+            the result is 0-dimensional.
+        """
         return np.exp(
             cls.flux_band_log_cgs(
                 nu,
@@ -2218,15 +2756,23 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Observed frequency grid to integrate over. Need not be sorted.
-        throughput
+        throughput : array-like
             Dimensionless bandpass response at each ``nu`` sample.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`flux_log`.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
             See :meth:`flux_band_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2277,6 +2823,27 @@ class SpectralModel(_ModelBase):
         :math:`F_\nu` is :meth:`flux_cgs`'s observed flux density;
         :math:`F_{\mathrm{AB},0} = 3631` Jy. See :meth:`flux_log_cgs` for the
         meaning of ``log_attenuation``.
+
+        Parameters
+        ----------
+        nu : array-like
+            Observed frequency, in Hz.
+        t : array-like
+            Observed time since explosion, in seconds.
+        redshift : array-like
+            Cosmological redshift, dimensionless.
+        luminosity_distance : array-like
+            Luminosity distance, in cm.
+        log_attenuation : array-like, optional
+            See :meth:`flux_log_cgs`.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`flux_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The apparent AB magnitude. A scalar is returned if the result is
+            0-dimensional.
         """
         F_nu = cls.flux_cgs(
             nu,
@@ -2308,13 +2875,21 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Observed frequency.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`flux_log`.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
             See :meth:`flux_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2366,6 +2941,29 @@ class SpectralModel(_ModelBase):
         Apparent AB magnitude of the band-averaged flux density. See :meth:`flux_band_cgs`/:meth:`mag_cgs`.
 
         Broadcasting (including ``log_attenuation``'s) follows :meth:`flux_band_cgs`'s rules exactly.
+
+        Parameters
+        ----------
+        nu : array-like
+            Observed frequency grid to integrate over, in Hz. Need not be sorted.
+        throughput : array-like
+            Dimensionless bandpass response at each ``nu`` sample.
+        t : array-like
+            Observed time since explosion, in seconds.
+        redshift : array-like
+            Cosmological redshift, dimensionless.
+        luminosity_distance : array-like
+            Luminosity distance, in cm.
+        log_attenuation : array-like, optional
+            See :meth:`flux_band_log_cgs`.
+        **parameters
+            This model's parameter values, in cgs units. See :meth:`flux_band_log_cgs`.
+
+        Returns
+        -------
+        numpy.ndarray or float
+            The apparent AB magnitude of the band-averaged flux density. A
+            scalar is returned if the result is 0-dimensional.
         """
         F_nu = cls.flux_band_cgs(
             nu,
@@ -2399,15 +2997,23 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Observed frequency grid to integrate over. Need not be sorted.
-        throughput
+        throughput : array-like
             Dimensionless bandpass response at each ``nu`` sample.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`flux_log`.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
             See :meth:`flux_band_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2467,15 +3073,23 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        bandpass
+        bandpass : ~synphot.SpectralElement
             The bandpass to average over, e.g. one of an
             `~m4opt.synphot.Detector`'s own
             `~m4opt.synphot.Detector.bandpasses`.
-        t
+        t : ~astropy.units.Quantity
             Observed time since explosion.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`flux_log`.
-        log_attenuation
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`flux_log`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`flux_log`.
+        log_attenuation : array-like, optional
             See :meth:`flux_band_log_cgs`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2566,7 +3180,7 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        t
+        t : array-like or Quantity
             Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape
             ``(1,)``) -- one entry per requested observation. Unlike
             :meth:`as_source_spectrum`, no manual trailing batch axis is needed; this
@@ -2594,9 +3208,17 @@ class SpectralModel(_ModelBase):
         obstime : ~astropy.time.Time, optional
             See above; defaults to a fixed placeholder epoch, correct whenever
             `background` doesn't depend on it.
-        redshift, luminosity_distance, angular_diameter_distance, proper_distance, cosmology
+        redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`as_source_spectrum`.
-        ebv, dust_law
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`as_source_spectrum`.
+        ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional
             See :meth:`as_source_spectrum`.
         n_sigma : float, optional
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
@@ -2614,7 +3236,7 @@ class SpectralModel(_ModelBase):
             A bare `float` applies the same floor to every band in `bands`; a mapping
             must have an entry for every band in `bands`. If `None` (the default, and
             the prior behavior), no systematic floor is added.
-        rng
+        rng : numpy.random.Generator, int, or None
             Random-number source for the noise realization; see :func:`~uvex_transients.utils.get_rng`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
@@ -2754,13 +3376,13 @@ class SpectralModel(_ModelBase):
 
         Parameters
         ----------
-        nu
+        nu : ~astropy.units.Quantity
             Frequency at which to evaluate the model. See :meth:`eval`.
-        t
+        t : ~astropy.units.Quantity
             Time since explosion. See :meth:`eval`.
-        size
+        size : int
             Number of realizations to draw.
-        rng
+        rng : numpy.random.Generator, int, or None
             Random-number source, forwarded to :meth:`sample_parameters`.
 
         Returns
@@ -2842,7 +3464,15 @@ class ComposedSpectralModel(SpectralModel):
     # Subclass Validation                    #
     # -------------------------------------- #
     def __init_subclass__(cls, **kwargs) -> None:
-        """Merge the component classes' parameters into :attr:`_DEFAULT_PARAMETERS`."""
+        """
+        Merge the component classes' parameters into :attr:`_DEFAULT_PARAMETERS`.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :meth:`object.__init_subclass__` unchanged; this
+            class declares no class-keyword-argument options of its own.
+        """
         super().__init_subclass__(**kwargs)
 
         if cls._LIGHTCURVE_CLASS is None or cls._SPECTRUM_CLASS is None:
@@ -2874,7 +3504,25 @@ class ComposedSpectralModel(SpectralModel):
     def _split_parameters(
         cls, parameters: Mapping[str, CGSParameterValue]
     ) -> tuple[dict[str, CGSParameterValue], dict[str, CGSParameterValue]]:
-        """Split a flat ``parameters`` dict into ``(lightcurve_parameters, spectrum_parameters)``."""
+        """
+        Split a flat ``parameters`` dict into ``(lightcurve_parameters, spectrum_parameters)``.
+
+        Parameters
+        ----------
+        parameters : mapping of str to (float or numpy.ndarray)
+            This model's full, flat parameter dict, keyed by name.
+
+        Returns
+        -------
+        tuple of (dict of str to (float or numpy.ndarray))
+            ``(lightcurve_parameters, spectrum_parameters)``, each holding
+            only the entries of `parameters` belonging to that component.
+
+        Raises
+        ------
+        TypeError
+            If :attr:`_LIGHTCURVE_CLASS` or :attr:`_SPECTRUM_CLASS` is unset.
+        """
         if cls._LIGHTCURVE_CLASS is None or cls._SPECTRUM_CLASS is None:
             raise TypeError(
                 f"{cls.__name__} must be subclassed with both _LIGHTCURVE_CLASS "
@@ -2899,6 +3547,19 @@ class ComposedSpectralModel(SpectralModel):
         fallback, no integration is needed here -- the lightcurve's own
         :meth:`Lightcurve._eval` already *is* the bolometric luminosity, by
         construction.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units, broadcastable
+            against ``t``.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
         """
         lightcurve_parameters, _ = cls._split_parameters(parameters)
 
@@ -2918,6 +3579,23 @@ class ComposedSpectralModel(SpectralModel):
         :meth:`Spectrum._eval_normalization` directly, rather than falling
         back to :meth:`SpectralModel._eval_spectrum`'s
         bolometric-integral-subtraction default.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds. Unused (the shape is already
+            normalized independently of time); accepted only to match
+            :meth:`SpectralModel._eval_spectrum`'s signature.
+        **parameters
+            This model's parameter values, in cgs units, broadcastable
+            against ``nu``.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`S(\nu)`, in 1/Hz.
         """
         _, spectrum_parameters = cls._split_parameters(parameters)
 
@@ -2939,5 +3617,20 @@ class ComposedSpectralModel(SpectralModel):
         :meth:`_eval_spectrum`'s (``nu``-shaped) results, ``nu``/``t`` must
         already broadcast against each other the way the caller wants --
         see :meth:`SpectralModel._eval`'s broadcasting contract.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units, broadcastable
+            against ``nu``/``t``.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
         """
         return cls._eval_bolometric(t, **parameters) + cls._eval_spectrum(nu, t, **parameters)

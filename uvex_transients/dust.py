@@ -36,7 +36,21 @@ from uvex_transients.utils import config, logger
 class DustMapLike(Protocol):
     """Structural type for anything queryable for E(B-V) at a sky position, like `PlanckGNILCQuery`."""
 
-    def query(self, coord: SkyCoord) -> float: ...
+    def query(self, coord: SkyCoord) -> float:
+        """
+        Query the dust map at a sky coordinate.
+
+        Parameters
+        ----------
+        coord : astropy.coordinates.SkyCoord
+            Sky coordinate at which to evaluate the dust map.
+
+        Returns
+        -------
+        float
+            Dust-map value at the specified coordinate.
+        """
+        ...
 
 
 Reddening = Union[float, Quantity, NDArray[np.float64], DustMapLike]

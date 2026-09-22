@@ -79,6 +79,21 @@ class TopHatLightcurve(Lightcurve):
 
     @classmethod
     def _eval(cls, t: NDArray[np.float64], **parameters: CGSParameterValue) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude, duration = parameters["amplitude"], parameters["duration"]
 
         with np.errstate(divide="ignore"):
@@ -142,6 +157,21 @@ class GaussianPulseLightcurve(Lightcurve):
 
     @classmethod
     def _eval(cls, t: NDArray[np.float64], **parameters: CGSParameterValue) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude, t_peak, sigma = (
             parameters["amplitude"],
             parameters["t_peak"],
@@ -212,6 +242,21 @@ class FREDLightcurve(Lightcurve):
 
     @classmethod
     def _eval(cls, t: NDArray[np.float64], **parameters: CGSParameterValue) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude, rise, decay = (
             parameters["amplitude"],
             parameters["rise"],
@@ -291,6 +336,21 @@ class GREDLightcurve(Lightcurve):
 
     @classmethod
     def _eval(cls, t: NDArray[np.float64], **parameters: CGSParameterValue) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         sigma_rise = parameters["sigma_rise"]
         t_peak = 5 * sigma_rise
@@ -388,6 +448,21 @@ class GaussianRisePowerLawLightcurve(Lightcurve):
         t_peak: CGSParameterValue,
         decline_index: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        amplitude, t_peak, decline_index : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         sigma_rise = t_peak / 5
         log_rise = -0.5 * ((t - t_peak) / sigma_rise) ** 2
 
@@ -510,6 +585,21 @@ class GaussianRiseBrokenPowerLawLightcurve(Lightcurve):
         decline_index_2: CGSParameterValue,
         t_break: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        amplitude, t_peak, decline_index_1, decline_index_2, t_break : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         sigma_rise = t_peak / 5
         log_rise = -0.5 * ((t - t_peak) / sigma_rise) ** 2
 
@@ -620,6 +710,21 @@ class BazinLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t0 = parameters["t0"]
         rise = parameters["rise"]
@@ -701,6 +806,21 @@ class PowerLawLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_ref = parameters["t_ref"]
         index = parameters["index"]
@@ -790,6 +910,21 @@ class BrokenPowerLawLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_peak = parameters["t_peak"]
         rise_index = parameters["rise_index"]
@@ -911,6 +1046,21 @@ class SmoothBrokenPowerLawLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_peak = parameters["t_peak"]
         rise_index = parameters["rise_index"]
@@ -1021,6 +1171,21 @@ class DelayedExponentialLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_peak = parameters["t_peak"]
         shape = parameters["shape"]
@@ -1108,6 +1273,21 @@ class LogNormalPulseLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_peak = parameters["t_peak"]
         sigma = parameters["sigma"]
@@ -1187,6 +1367,21 @@ class PlateauPowerLawLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         amplitude = parameters["amplitude"]
         t_break = parameters["t_break"]
         index = parameters["index"]
@@ -1260,7 +1455,8 @@ class VillarLightcurve(Lightcurve):
 
     See Also
     --------
-    uvex_transients.models.supernovae.VillarCoolingBlackbodySED
+    uvex_transients.models.supernovae.VillarCoolingBlackbodySED :
+        Pairs this bolometric light curve with a cooling-blackbody spectrum.
 
     References
     ----------
@@ -1323,6 +1519,21 @@ class VillarLightcurve(Lightcurve):
         tau_rise: CGSParameterValue,
         tau_fall: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        amplitude, t0, gamma, beta, tau_rise, tau_fall : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         x = t - t0
         t1 = t0 + gamma
         is_rise = t < t1
@@ -1400,7 +1611,8 @@ class TwoComponentBazinLightcurve(Lightcurve):
 
     See Also
     --------
-    BazinLightcurve
+    BazinLightcurve :
+        The single-pulse form this combines two of.
     """
 
     _LIGHTCURVE_TYPE = "bolometric"
@@ -1462,6 +1674,21 @@ class TwoComponentBazinLightcurve(Lightcurve):
         t: NDArray[np.float64],
         **parameters: CGSParameterValue,
     ) -> NDArray[np.float64]:
+        r"""
+        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         x0 = t - parameters["t0"]
         log_bazin_0 = -x0 / parameters["fall_0"] - np.logaddexp(0.0, -x0 / parameters["rise_0"])
 

@@ -188,6 +188,7 @@ class EventCatalog:
         Returns
         -------
         Event or list[Event]
+            Reconstructed event or events corresponding to the requested event ids.
 
         Raises
         ------
@@ -292,12 +293,12 @@ class EventCatalog:
 
         Parameters
         ----------
-        path
+        path : str or ~pathlib.Path
             Destination path.
-        table_format
+        table_format : str, optional
             Passed through to :meth:`~astropy.table.QTable.write`; if `None`, inferred from
             ``path``'s suffix.
-        overwrite
+        overwrite : bool
             Whether to overwrite an existing file at ``path``.
         """
         table = self.table.copy()
@@ -319,15 +320,16 @@ class EventCatalog:
 
         Parameters
         ----------
-        path
+        path : str or ~pathlib.Path
             Path to the event table, as written by :meth:`to_disk`.
-        table_format
+        table_format : str, optional
             Passed through to :meth:`~astropy.table.QTable.read`; if `None`, inferred from
             ``path``'s suffix.
 
         Returns
         -------
         EventCatalog
+            Event catalog reconstructed from the serialized table and metadata.
         """
         path = Path(path)
         if not path.exists():

@@ -1,4 +1,5 @@
-"""Parsing/validation for a CLI run-config YAML file.
+"""
+Parsing/validation for a CLI run-config YAML file.
 
 A single YAML file drives every CLI command (see `uvex_transients.cli.main`); each
 command only needs the section(s) relevant to it (`generate:` for ``generate``,
@@ -50,7 +51,21 @@ def _import_known_transients() -> None:
 
 
 def _parse_quantity(value: Any, default_unit: u.UnitBase) -> Quantity:
-    """Resolve a YAML value (a `Quantity`, a unit string like ``"200 day"``, or a bare number) to a `Quantity`."""
+    """
+    Resolve a YAML value (a `Quantity`, a unit string like ``"200 day"``, or a bare number) to a `Quantity`.
+
+    Parameters
+    ----------
+    value : ~astropy.units.Quantity, str, or float
+        The raw YAML value.
+    default_unit : ~astropy.units.UnitBase
+        Unit to apply if `value` is a bare number.
+
+    Returns
+    -------
+    ~astropy.units.Quantity
+        The resolved quantity.
+    """
     if isinstance(value, Quantity):
         return value
     if isinstance(value, str):
@@ -59,7 +74,24 @@ def _parse_quantity(value: Any, default_unit: u.UnitBase) -> Quantity:
 
 
 def _resolve_mission(name: str) -> Mission:
-    """Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance."""
+    """
+    Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance.
+
+    Parameters
+    ----------
+    name : str
+        The mission's attribute name in `m4opt.missions`.
+
+    Returns
+    -------
+    m4opt.missions.Mission
+        The resolved mission.
+
+    Raises
+    ------
+    ValueError
+        If `name` is not a known `m4opt.missions.Mission` attribute.
+    """
     mission = getattr(m4opt.missions, name, None)
     if not isinstance(mission, Mission):
         available = sorted(attr for attr, value in vars(m4opt.missions).items() if isinstance(value, Mission))
@@ -68,7 +100,25 @@ def _resolve_mission(name: str) -> Mission:
 
 
 def _resolve_schedule(section: Mapping) -> SurveySchedule:
-    """Resolve a ``schedule:`` block's ``name:`` / ``url:`` / ``path:``+``fov_path:`` (mutually exclusive)."""
+    """
+    Resolve a ``schedule:`` block's ``name:`` / ``url:`` / ``path:``+``fov_path:`` (mutually exclusive).
+
+    Parameters
+    ----------
+    section : Mapping
+        The parsed ``schedule:`` YAML block.
+
+    Returns
+    -------
+    SurveySchedule
+        The resolved schedule.
+
+    Raises
+    ------
+    ValueError
+        If more than one of ``name``/``url``/``path``+``fov_path`` is given, or
+        ``path`` is given without ``fov_path`` (or vice versa).
+    """
     name = section.get("name")
     url = section.get("url")
     path = section.get("path")
@@ -87,7 +137,21 @@ def _resolve_schedule(section: Mapping) -> SurveySchedule:
 
 
 def _apply_parameter_overrides(sed, overrides: Mapping) -> None:
-    """Apply a ``parameters:`` block's per-parameter overrides via `Parameter.fix`/`Parameter.set_prior`."""
+    """
+    Apply a ``parameters:`` block's per-parameter overrides via `Parameter.fix`/`Parameter.set_prior`.
+
+    Parameters
+    ----------
+    sed : SpectralModel, Lightcurve, or Spectrum
+        The model whose parameters to override, keyed by name.
+    overrides : Mapping
+        The parsed ``parameters:`` YAML block.
+
+    Raises
+    ------
+    KeyError
+        If `overrides` names a parameter `sed` doesn't have.
+    """
     for name, value in overrides.items():
         try:
             parameter = sed[name]
@@ -106,7 +170,25 @@ def _apply_parameter_overrides(sed, overrides: Mapping) -> None:
 
 
 def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
-    """Resolve a ``transients:`` block into ``{key: TransientBase instance}``."""
+    """
+    Resolve a ``transients:`` block into ``{key: TransientBase instance}``.
+
+    Parameters
+    ----------
+    section : Mapping
+        The parsed ``transients:`` YAML block.
+
+    Returns
+    -------
+    dict of str to TransientBase
+        One constructed, configured transient instance per declared key.
+
+    Raises
+    ------
+    ValueError
+        If `section` is empty, an entry is missing its required ``class`` key,
+        names an unknown transient class, or has unrecognized key(s) left over.
+    """
     if not section:
         raise ValueError("'transients:' must declare at least one transient type.")
 
@@ -150,7 +232,25 @@ def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
 
 
 def _resolve_cuts(section: Mapping) -> dict[str, "CutSpec"]:
-    """Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`."""
+    """
+    Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`.
+
+    Parameters
+    ----------
+    section : Mapping
+        The parsed ``cuts:`` YAML block.
+
+    Returns
+    -------
+    dict of str to CutSpec
+        One resolved `CutSpec` per declared key, in declared order.
+
+    Raises
+    ------
+    ValueError
+        If an entry is missing its required ``type`` key, names an unknown
+        cut type, or uses a reserved parameter name.
+    """
     available = SurveySimulator.available_cuts()
 
     cuts: dict[str, CutSpec] = {}
@@ -207,9 +307,26 @@ class RunConfig:
     `cut` reads `.schedule`/`.transients`/`.mission`/`.cuts`; `photometry` reads
     `.schedule`/`.transients`/`.mission`/`.photometry`), so a config missing an unrelated
     section (e.g. no `photometry:` block, if you never run that command) still works.
+
+    Parameters
+    ----------
+    raw : Mapping
+        The parsed run-config YAML, as a nested mapping.
+    source : str or ~pathlib.Path, optional
+        The config file's path, used only to make error messages more specific.
     """
 
     def __init__(self, raw: Mapping, source: Path | None = None):
+        """
+        Store the parsed config; every section is resolved lazily on first access.
+
+        Parameters
+        ----------
+        raw : Mapping
+            The parsed run-config YAML, as a nested mapping.
+        source : str or ~pathlib.Path, optional
+            The config file's path, used only to make error messages more specific.
+        """
         self._raw = raw
         self._source = source
 
@@ -223,17 +340,61 @@ class RunConfig:
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "RunConfig":
-        """Parse a run-config YAML file (see `uvex_transients.cli.yaml_tags.get_run_yaml`)."""
+        """
+        Parse a run-config YAML file (see `uvex_transients.cli.yaml_tags.get_run_yaml`).
+
+        Parameters
+        ----------
+        path : str or ~pathlib.Path
+            Path to the run-config YAML file.
+
+        Returns
+        -------
+        RunConfig
+            The parsed config.
+        """
         path = Path(path)
         with open(path) as f:
             raw = get_run_yaml().load(f) or {}
         return cls(raw, source=path)
 
     def has_section(self, name: str) -> bool:
-        """Whether the parsed config has a top-level ``name:`` section at all."""
+        """
+        Whether the parsed config has a top-level ``name:`` section at all.
+
+        Parameters
+        ----------
+        name : str
+            The section name to check for.
+
+        Returns
+        -------
+        bool
+            Whether the section is present.
+        """
         return name in self._raw
 
     def _require_section(self, name: str, command: str) -> Mapping:
+        """
+        Return a required top-level section, raising a clear error if it's missing.
+
+        Parameters
+        ----------
+        name : str
+            The section name to look up.
+        command : str
+            The CLI command that requires it, used to phrase the error message.
+
+        Returns
+        -------
+        Mapping
+            The section's parsed contents.
+
+        Raises
+        ------
+        ValueError
+            If the section is missing.
+        """
         section = self._raw.get(name)
         if section is None:
             where = f" ({self._source})" if self._source else ""
@@ -242,28 +403,56 @@ class RunConfig:
 
     @property
     def schedule(self) -> SurveySchedule:
-        """The resolved `SurveySchedule` (``schedule:`` section; falls back to the package default)."""
+        """
+        The resolved `SurveySchedule` (``schedule:`` section; falls back to the package default).
+
+        Returns
+        -------
+        SurveySchedule
+            The resolved schedule.
+        """
         if self._schedule is None:
             self._schedule = _resolve_schedule(self._raw.get("schedule") or {})
         return self._schedule
 
     @property
     def mission(self) -> Mission:
-        """The resolved `Mission` (``mission:`` section; defaults to ``"uvex"``)."""
+        """
+        The resolved `Mission` (``mission:`` section; defaults to ``"uvex"``).
+
+        Returns
+        -------
+        m4opt.missions.Mission
+            The resolved mission.
+        """
         if self._mission is None:
             self._mission = _resolve_mission(self._raw.get("mission", _DEFAULT_MISSION))
         return self._mission
 
     @property
     def transients(self) -> dict[str, TransientBase]:
-        """The resolved ``{key: TransientBase instance}`` (``transients:`` section, required)."""
+        """
+        The resolved ``{key: TransientBase instance}`` (``transients:`` section, required).
+
+        Returns
+        -------
+        dict of str to TransientBase
+            One constructed, configured transient instance per declared key.
+        """
         if self._transients is None:
             self._transients = _resolve_transients(self._require_section("transients", "generate/cut/photometry"))
         return self._transients
 
     @property
     def simulator(self) -> SurveySimulator:
-        """A `SurveySimulator` built from `.schedule`/`.transients` (cached across one CLI invocation)."""
+        """
+        A `SurveySimulator` built from `.schedule`/`.transients` (cached across one CLI invocation).
+
+        Returns
+        -------
+        SurveySimulator
+            The resolved simulator.
+        """
         if self._simulator is None:
             seed = (self._raw.get("generate") or {}).get("seed")
             self._simulator = SurveySimulator(self.schedule, transients=self.transients, simulation_seed=seed)
@@ -271,7 +460,14 @@ class RunConfig:
 
     @property
     def generate(self) -> GenerateConfig:
-        """The parsed ``generate:`` section (required by the ``generate`` command)."""
+        """
+        The parsed ``generate:`` section (required by the ``generate`` command).
+
+        Returns
+        -------
+        GenerateConfig
+            The parsed section.
+        """
         if self._generate is None:
             section = self._require_section("generate", "generate")
             if "time_bins" not in section:
@@ -286,14 +482,28 @@ class RunConfig:
 
     @property
     def cuts(self) -> dict[str, CutSpec]:
-        """The parsed ``cuts:`` section, in declared order (required by the ``cut`` command)."""
+        """
+        The parsed ``cuts:`` section, in declared order (required by the ``cut`` command).
+
+        Returns
+        -------
+        dict of str to CutSpec
+            One resolved `CutSpec` per declared key, in declared order.
+        """
         if self._cuts is None:
             self._cuts = _resolve_cuts(self._require_section("cuts", "cut"))
         return self._cuts
 
     @property
     def photometry(self) -> PhotometryConfig:
-        """The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default)."""
+        """
+        The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default).
+
+        Returns
+        -------
+        PhotometryConfig
+            The parsed section.
+        """
         if self._photometry is None:
             section = self._raw.get("photometry") or {}
             self._photometry = PhotometryConfig(bands=section.get("bands"), n_sigma=section.get("n_sigma"))

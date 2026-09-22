@@ -50,7 +50,20 @@ class TypeIIPSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 0.8
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIP fraction (see module docstring)."""
+        """
+        Return the volumetric Type IIP supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type IIP volumetric event rate, given by the core-collapse
+            supernova rate multiplied by the adopted Type IIP fraction.
+        """
         return _TYPE_IIP_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -62,7 +75,21 @@ class TypeIIPExcessSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 1.2
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIP-excess fraction (see module docstring)."""
+        """
+        Return the volumetric early-interacting Type IIP supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Early-interacting Type IIP volumetric event rate, given by the
+            core-collapse supernova rate multiplied by the adopted Type IIP
+            excess fraction.
+        """
         return _TYPE_IIP_EXCESS_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -83,7 +110,20 @@ class ShockCoolingIIb(ExtragalacticTransient):
     DEFAULT_Z_LIM = 1
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""
+        """
+        Return the volumetric Type IIb supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type IIb volumetric event rate, given by the core-collapse
+            supernova rate multiplied by the adopted Type IIb fraction.
+        """
         return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -107,7 +147,20 @@ class TypeIIbSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 0.5
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type IIb fraction (see module docstring)."""
+        """
+        Return the volumetric Type Ib supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type Ib volumetric event rate, given by the core-collapse
+            supernova rate multiplied by the adopted Type Ib fraction.
+        """
         return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -119,7 +172,20 @@ class TypeIbSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 0.5
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type Ib fraction (see module constants)."""
+        """
+        Return the volumetric Type Ib supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type Ib volumetric event rate, given by the core-collapse
+            supernova rate multiplied by the adopted Type Ib fraction.
+        """
         return _TYPE_IB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -131,7 +197,20 @@ class TypeIcSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 0.5
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the Type Ic fraction (see module constants)."""
+        """
+        Return the volumetric Type Ic supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type Ic volumetric event rate, given by the core-collapse
+            supernova rate multiplied by the adopted Type Ic fraction.
+        """
         return _TYPE_IC_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
 
 
@@ -161,5 +240,19 @@ class MagnetarSLSNe(ExtragalacticTransient):
     DEFAULT_Z_LIM = 4
 
     def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """Volumetric event rate: `core_collapse_rate(z)` times the SLSN-I fraction (see module constants)."""
+        """
+        Return the volumetric Type I superluminous supernova rate.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift at which to evaluate the event rate.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Type I superluminous supernova volumetric event rate, given by
+            the core-collapse supernova rate multiplied by the adopted
+            SLSN-I fraction.
+        """
         return _SLSN_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)

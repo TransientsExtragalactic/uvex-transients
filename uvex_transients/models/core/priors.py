@@ -52,17 +52,51 @@ class _LogPDFDistribution:
     Required by :class:`~scipy.stats.sampling.NumericalInversePolynomial`.
     UNU.RAN evaluates the density one Python float at a time, whereas
     :meth:`Prior._logpdf` is vectorized; this adapter bridges the two.
+
+    Parameters
+    ----------
+    prior : Prior
+        The prior to adapt.
     """
 
     __slots__ = ("_prior",)
 
     def __init__(self, prior: "Prior") -> None:
+        """
+        Store the `Prior` to adapt.
+
+        Parameters
+        ----------
+        prior : Prior
+            The prior to adapt.
+        """
         self._prior = prior
 
     def logpdf(self, x: float) -> float:
+        """
+        Evaluate the prior's log-density at one scalar point.
+
+        Parameters
+        ----------
+        x : float
+            The point at which to evaluate the log-density.
+
+        Returns
+        -------
+        float
+            `Prior._logpdf` evaluated at `x`.
+        """
         return float(self._prior._logpdf(np.asarray(x, dtype=np.float64)))
 
     def support(self) -> tuple[float, float]:
+        """
+        Return the adapted prior's support.
+
+        Returns
+        -------
+        tuple of float
+            The ``(lower, upper)`` support, from `Prior.support`.
+        """
         return self._prior.support
 
 
@@ -80,6 +114,11 @@ class Prior(ABC):
     distribution's log-density (:meth:`_logpdf`). Everything else — sampling,
     :meth:`pdf`, :meth:`cdf`, :meth:`logpdf`, :meth:`logcdf` — is derived from
     ``_logpdf`` automatically.
+
+    See Also
+    --------
+    scipy.stats.sampling.NumericalInversePolynomial :
+        Backs the generic :meth:`_sample` fallback.
 
     Notes
     -----
@@ -113,11 +152,6 @@ class Prior(ABC):
                 return rng.normal(
                     self.mean, self.sigma, size=size
                 )
-
-    See Also
-    --------
-    scipy.stats.sampling.NumericalInversePolynomial :
-        Backs the generic :meth:`_sample` fallback.
     """
 
     # ----------------------------------- #
@@ -152,7 +186,15 @@ class Prior(ABC):
     # Registration                        #
     # ----------------------------------- #
     def __init_subclass__(cls, **kwargs) -> None:
-        """Register a concrete subclass in `_REGISTRY`, keyed by its own `DISTRIBUTION_NAME`."""
+        """
+        Register a concrete subclass in `_REGISTRY`, keyed by its own `DISTRIBUTION_NAME`.
+
+        Parameters
+        ----------
+        **kwargs
+            Forwarded to :meth:`object.__init_subclass__` unchanged; this
+            class declares no class-keyword-argument options of its own.
+        """
         # Explicit two-argument `super()` -- `Prior` is a `@dataclass(slots=True)` class,
         # which rebuilds the class object to add `__slots__`; a zero-argument `super()`
         # here would close over the pre-rebuild `Prior`, raising a `TypeError` at every
@@ -195,10 +237,30 @@ class Prior(ABC):
         Draw random samples from the prior.
 
         This is a convenience alias for :meth:`sample`.
+
+        Parameters
+        ----------
+        size : int, optional
+            Number of samples to draw.
+        rng : numpy.random.Generator, int, or None, optional
+            Random-number source; see :meth:`sample`.
+
+        Returns
+        -------
+        numpy.ndarray
+            A one-dimensional ``float64`` array with shape ``(size,)``.
         """
         return self.sample(size=size, rng=rng)
 
     def __copy__(self) -> "Prior":
+        """
+        Return a copy with a freshly rebuilt (not shared) sampler cache.
+
+        Returns
+        -------
+        Prior
+            A new instance with the same field values, via `dataclasses.replace`.
+        """
         # `replace` re-runs `__init__`/`_validate`, so `_sampler` (init=False)
         # is rebuilt from its `default_factory` rather than shared with the
         # original — the cached sampler closes over `_LogPDFDistribution(self)`,
@@ -206,6 +268,20 @@ class Prior(ABC):
         return replace(self)
 
     def __deepcopy__(self, memo: dict) -> "Prior":
+        """
+        Return a deep copy, with every field (and the sampler cache) independently copied.
+
+        Parameters
+        ----------
+        memo : dict
+            The `copy.deepcopy` memo dict, used to preserve shared/cyclic
+            references and avoid copying the same object twice.
+
+        Returns
+        -------
+        Prior
+            A new, independent instance.
+        """
         if id(self) in memo:
             return memo[id(self)]
 
@@ -328,6 +404,19 @@ class Prior(ABC):
         lower, _ = self.support
 
         def _pdf_scalar(t: float) -> float:
+            """
+            Evaluate the density at one scalar point, for `scipy.integrate.quad`.
+
+            Parameters
+            ----------
+            t : float
+                The point at which to evaluate the density.
+
+            Returns
+            -------
+            float
+                :meth:`pdf` at `t`.
+            """
             return float(np.exp(self._logpdf(np.asarray(t, dtype=np.float64))))
 
         result = np.array([integrate.quad(_pdf_scalar, lower, xi)[0] for xi in np.atleast_1d(x_arr)])
@@ -361,6 +450,21 @@ class Prior(ABC):
         Only meaningful for discrete priors (see :class:`DiscretePrior`); the
         base implementation raises, since :class:`Prior` models continuous
         distributions by default.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-pmf.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-pmf at each point in ``x``.
+
+        Raises
+        ------
+        NotImplementedError
+            Always, for a continuous distribution.
         """
         raise NotImplementedError(
             f"{self.__class__.__name__} is a continuous distribution and has no "
@@ -414,7 +518,7 @@ class Prior(ABC):
     # ----------------------------------- #
     @property
     def name(self) -> str:
-        """Human-readable name of the distribution."""
+        """str: Human-readable name of the distribution."""
         return self.DISTRIBUTION_NAME
 
     def _sample(
@@ -509,6 +613,16 @@ class Prior(ABC):
         Thin wrapper around :func:`uvex_transients.utils.get_rng`, giving
         :meth:`sample` a single, overridable hook for constructing the
         random-number generator.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator, int, or None
+            Random-number source; see :func:`uvex_transients.utils.get_rng`.
+
+        Returns
+        -------
+        numpy.random.Generator
+            The resolved generator.
         """
         return get_rng(rng)
 
@@ -563,7 +677,7 @@ class ConstantPrior(Prior):
     """
     Prior which always returns a single constant value.
 
-    Parameters
+    Attributes
     ----------
     value : float
         Constant value to return.
@@ -581,14 +695,29 @@ class ConstantPrior(Prior):
     value: float
 
     def _validate(self) -> None:
+        """Check that :attr:`value` is finite."""
         if not np.isfinite(self.value):
             raise ValueError("`value` must be finite.")
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(value, value)`` -- a degenerate point mass has no width."""
         return (self.value, self.value)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Raise, since a point mass has no probability density.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Unused; every call raises.
+
+        Raises
+        ------
+        NotImplementedError
+            Always.
+        """
         raise NotImplementedError(
             "ConstantPrior is a degenerate point mass and has no probability density; "
             "use `sample()`, which does not require `_logpdf`."
@@ -599,6 +728,21 @@ class ConstantPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Return :attr:`value`, repeated `size` times.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Unused; every draw is the same constant.
+        size : int
+            Number of (identical) samples to return.
+
+        Returns
+        -------
+        numpy.ndarray
+            `value`, repeated `size` times.
+        """
         return np.full(size, self.value, dtype=float)
 
 
@@ -607,7 +751,7 @@ class UniformPrior(Prior):
     """
     Uniform prior over the interval ``[lower, upper)``.
 
-    Parameters
+    Attributes
     ----------
     lower : float
         Lower bound.
@@ -621,6 +765,7 @@ class UniformPrior(Prior):
     upper: float
 
     def _validate(self) -> None:
+        """Check that :attr:`lower`/:attr:`upper` are finite and ``upper > lower``."""
         if not np.isfinite(self.lower):
             raise ValueError("`lower` must be finite.")
 
@@ -632,9 +777,23 @@ class UniformPrior(Prior):
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(lower, upper)``."""
         return (self.lower, self.upper)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the uniform log-density via :func:`scipy.stats.uniform.logpdf`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
         return stats.uniform.logpdf(x, loc=self.lower, scale=self.upper - self.lower)
 
     def _sample(
@@ -642,6 +801,21 @@ class UniformPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Draw samples via :meth:`numpy.random.Generator.uniform`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn uniformly from ``[lower, upper)``.
+        """
         return rng.uniform(
             self.lower,
             self.upper,
@@ -654,7 +828,7 @@ class NormalPrior(Prior):
     """
     Gaussian prior.
 
-    Parameters
+    Attributes
     ----------
     mean : float
         Mean of the distribution.
@@ -668,6 +842,7 @@ class NormalPrior(Prior):
     sigma: float
 
     def _validate(self) -> None:
+        """Check that :attr:`mean` is finite and :attr:`sigma` is positive."""
         if not np.isfinite(self.mean):
             raise ValueError("`mean` must be finite.")
 
@@ -675,6 +850,19 @@ class NormalPrior(Prior):
             raise ValueError("`sigma` must be positive.")
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the Gaussian log-density via :func:`scipy.stats.norm.logpdf`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
         return stats.norm.logpdf(x, loc=self.mean, scale=self.sigma)
 
     def _sample(
@@ -682,6 +870,21 @@ class NormalPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        r"""
+        Draw samples via :meth:`numpy.random.Generator.normal`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from :math:`\mathcal{N}(\mathrm{mean}, \mathrm{sigma})`.
+        """
         return rng.normal(
             self.mean,
             self.sigma,
@@ -706,7 +909,7 @@ class LogNormalPrior(Prior):
 
         y \\sim \\mathcal{N}(\\mu, \\sigma).
 
-    Parameters
+    Attributes
     ----------
     mean : float
         Mean of the underlying normal distribution.
@@ -720,6 +923,7 @@ class LogNormalPrior(Prior):
     sigma: float
 
     def _validate(self) -> None:
+        """Check that :attr:`mean` is finite and :attr:`sigma` is positive."""
         if not np.isfinite(self.mean):
             raise ValueError("`mean` must be finite.")
 
@@ -728,9 +932,23 @@ class LogNormalPrior(Prior):
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(0.0, inf)``."""
         return (0.0, np.inf)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the log-normal log-density via :func:`scipy.stats.lognorm.logpdf`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
         return stats.lognorm.logpdf(x, s=self.sigma, scale=np.exp(self.mean))
 
     def _sample(
@@ -738,6 +956,21 @@ class LogNormalPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Draw samples via :meth:`numpy.random.Generator.lognormal`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from this log-normal distribution.
+        """
         return rng.lognormal(
             self.mean,
             self.sigma,
@@ -750,7 +983,7 @@ class TruncatedNormalPrior(Prior):
     """
     Truncated normal prior.
 
-    Parameters
+    Attributes
     ----------
     mean : float
         Mean of the parent normal distribution.
@@ -770,6 +1003,7 @@ class TruncatedNormalPrior(Prior):
     upper: float
 
     def _validate(self) -> None:
+        """Check that :attr:`sigma` is positive and ``upper > lower``."""
         if self.sigma <= 0:
             raise ValueError("`sigma` must be positive.")
 
@@ -778,9 +1012,23 @@ class TruncatedNormalPrior(Prior):
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(lower, upper)``."""
         return (self.lower, self.upper)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the truncated-normal log-density via :func:`scipy.stats.truncnorm.logpdf`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
         a = (self.lower - self.mean) / self.sigma
         b = (self.upper - self.mean) / self.sigma
 
@@ -791,6 +1039,25 @@ class TruncatedNormalPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        r"""
+        Draw samples via rejection sampling from the parent normal distribution.
+
+        Repeatedly draws from :math:`\mathcal{N}(\mathrm{mean}, \mathrm{sigma})`
+        and keeps only the draws falling inside ``[lower, upper]``, until `size`
+        accepted samples have been collected.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` accepted samples.
+        """
         samples = np.empty(size)
 
         n = 0
@@ -816,7 +1083,7 @@ class ExponentialPrior(Prior):
     """
     Exponential prior.
 
-    Parameters
+    Attributes
     ----------
     scale : float
         Exponential scale length.
@@ -827,14 +1094,29 @@ class ExponentialPrior(Prior):
     scale: float
 
     def _validate(self) -> None:
+        """Check that :attr:`scale` is positive."""
         if self.scale <= 0:
             raise ValueError("`scale` must be positive.")
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(0.0, inf)``."""
         return (0.0, np.inf)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the exponential log-density via :func:`scipy.stats.expon.logpdf`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
         return stats.expon.logpdf(x, scale=self.scale)
 
     def _sample(
@@ -842,6 +1124,21 @@ class ExponentialPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Draw samples via :meth:`numpy.random.Generator.exponential`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from this exponential distribution.
+        """
         return rng.exponential(
             self.scale,
             size=size,
@@ -861,7 +1158,7 @@ class PowerLawPrior(Prior):
 
     over the interval ``[lower, upper]``.
 
-    Parameters
+    Attributes
     ----------
     alpha : float
         Power-law index.
@@ -878,6 +1175,7 @@ class PowerLawPrior(Prior):
     upper: float
 
     def _validate(self) -> None:
+        """Check that :attr:`lower` is positive and ``upper > lower``."""
         if self.lower <= 0:
             raise ValueError("`lower` must be positive.")
 
@@ -886,9 +1184,27 @@ class PowerLawPrior(Prior):
 
     @property
     def support(self) -> tuple[float, float]:
+        """Tuple of float: ``(lower, upper)``."""
         return (self.lower, self.upper)
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the power-law log-density in closed form.
+
+        Handles the ``alpha == 1`` case (log-uniform) separately, since the
+        general normalization has a removable singularity there.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`; ``-inf`` outside
+            ``[lower, upper]``.
+        """
         x = np.asarray(x, dtype=np.float64)
         inside = (x >= self.lower) & (x <= self.upper)
 
@@ -908,6 +1224,23 @@ class PowerLawPrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Draw samples via inverse-CDF transform of a uniform draw.
+
+        Closed-form for a power law, so no numerical inversion is needed.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from this power-law distribution.
+        """
         u = rng.random(size)
 
         if np.isclose(self.alpha, 1.0):
@@ -923,7 +1256,7 @@ class DiscretePrior(Prior):
     """
     Discrete weighted prior.
 
-    Parameters
+    Attributes
     ----------
     values : ndarray
         Possible sampled values.
@@ -944,6 +1277,7 @@ class DiscretePrior(Prior):
     probabilities: np.ndarray
 
     def _validate(self) -> None:
+        """Check that :attr:`values`/:attr:`probabilities` match in length and form a valid distribution."""
         if len(self.values) != len(self.probabilities):
             raise ValueError("`values` and `probabilities` must have the same length.")
 
@@ -954,11 +1288,41 @@ class DiscretePrior(Prior):
             raise ValueError("At least one probability must be positive.")
 
     def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Raise, since a discrete distribution has no probability density.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Unused; every call raises.
+
+        Raises
+        ------
+        NotImplementedError
+            Always.
+        """
         raise NotImplementedError(
             "DiscretePrior is a discrete distribution and has no probability density; use `logpmf`/`pmf` instead."
         )
 
     def _logpmf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the log probability mass at each point in `x`.
+
+        Points not matching any of :attr:`values` (within floating-point
+        tolerance) get probability 0 (log-probability ``-inf``).
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-pmf.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-pmf at each point in `x`, normalized so :attr:`probabilities`
+            sums to 1.
+        """
         x = np.atleast_1d(np.asarray(x, dtype=np.float64))
         values = np.asarray(self.values, dtype=np.float64)
         p = np.asarray(self.probabilities, dtype=np.float64)
@@ -975,6 +1339,22 @@ class DiscretePrior(Prior):
         rng: np.random.Generator,
         size: int,
     ) -> NDArray[np.float64]:
+        """
+        Draw samples via :meth:`numpy.random.Generator.choice`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from :attr:`values`, weighted by
+            (normalized) :attr:`probabilities`.
+        """
         p = self.probabilities / np.sum(self.probabilities)
 
         return rng.choice(

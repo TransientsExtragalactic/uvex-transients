@@ -73,3 +73,15 @@ KELVIN_PER_EV: float = (1.0 * u.eV / const.k_B).to_value(u.K)
 """float: Kelvin per electronvolt, i.e. :math:`1/k_B` in eV/K -- multiply a temperature in eV by
 this to get Kelvin."""
 LOG_KELVIN_PER_EV: float = np.log(KELVIN_PER_EV)
+
+# ------------------------------------------ #
+# Decay Efficiencies                         #
+# ------------------------------------------ #
+nickel_decay_yield: u.Quantity = 3.9e10 * u.Unit("erg g^-1 s^-1")
+""" ~astropy.units.Quantity: The yield from decay of Nickel-56.
+
+Taken from :footcite:t:`
+"""
+cobalt_decay_yield: u.Quantity = 6.78e9 * u.Unit("erg g^-1 s^-1")
+nickel_decay_time: u.Quantity = 8.8 * u.day
+cobalt_decay_time: u.Quantity = 113.6 * u.day

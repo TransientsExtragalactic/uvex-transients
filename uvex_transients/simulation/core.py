@@ -84,9 +84,27 @@ def cut(name: str):
     ----------
     name : str
         The registry key this method should be reachable under.
+
+    Returns
+    -------
+    Callable
+        A decorator that tags the method with `name` and returns it unchanged.
     """
 
     def decorator(method):
+        """
+        Tag `method` with its registry name and return it unchanged.
+
+        Parameters
+        ----------
+        method : Callable
+            The method to tag.
+
+        Returns
+        -------
+        Callable
+            `method`, unchanged, with `_cut_name` set.
+        """
         method._cut_name = name
         return method
 
@@ -94,7 +112,8 @@ def cut(name: str):
 
 
 class _CutRegistryMeta(type):
-    """Metaclass collecting every `@cut`-tagged method (across the whole MRO) into ``cls._CUT_REGISTRY``.
+    """
+    Metaclass collecting every `@cut`-tagged method (across the whole MRO) into ``cls._CUT_REGISTRY``.
 
     Subclassing `SurveySimulator` and adding more `@cut`-decorated methods extends the
     registry automatically -- no separate ``Cut`` class hierarchy or manual registration
@@ -102,6 +121,27 @@ class _CutRegistryMeta(type):
     """
 
     def __new__(mcls, name, bases, namespace, **kwargs):
+        """
+        Build the class, then collect every `@cut`-tagged method across its MRO into ``_CUT_REGISTRY``.
+
+        Parameters
+        ----------
+        mcls : type
+            This metaclass.
+        name : str
+            The new class's name.
+        bases : tuple of type
+            The new class's base classes.
+        namespace : dict
+            The new class's namespace (methods, class attributes, ...).
+        **kwargs
+            Forwarded to :meth:`type.__new__` unchanged.
+
+        Returns
+        -------
+        type
+            The newly created class, with ``_CUT_REGISTRY`` set.
+        """
         cls = super().__new__(mcls, name, bases, namespace, **kwargs)
         registry: dict[str, str] = {}
         for base in reversed(cls.__mro__):
@@ -114,7 +154,18 @@ class _CutRegistryMeta(type):
 
 
 class SurveySimulator(metaclass=_CutRegistryMeta):
-    """Samples transient populations against a survey schedule."""
+    """
+    Samples transient populations against a survey schedule.
+
+    Parameters
+    ----------
+    survey_schedule : ~uvex_transients.surveys.base.SurveySchedule
+        The schedule to sample events against. See :meth:`__init__`.
+    transients : dict of str to ExtragalacticTransient, optional
+        The transient types to register. See :meth:`__init__`.
+    simulation_seed : int, optional
+        Root seed for Monte Carlo sampling. See :meth:`__init__`.
+    """
 
     def __init__(
         self,
@@ -122,6 +173,27 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
         transients: dict[str, ExtragalacticTransient] | None = None,
         simulation_seed: int | None = None,
     ):
+        """
+        Store the survey schedule, register any given transient types, and store the root seed.
+
+        Parameters
+        ----------
+        survey_schedule : ~uvex_transients.surveys.base.SurveySchedule
+            The schedule to sample events against.
+        transients : dict of str to ExtragalacticTransient, optional
+            Transient types to register up front, keyed by name. More may be
+            added later via :attr:`transient_collection`.
+        simulation_seed : int, optional
+            Root seed for Monte Carlo sampling.
+
+        Raises
+        ------
+        TypeError
+            If `survey_schedule` is not a `SurveySchedule`, or `transients`
+            contains a value that isn't an `ExtragalacticTransient`.
+        ValueError
+            If `transients` has a duplicate key.
+        """
         # Ensure that the survey schedule is valid.
         if not isinstance(survey_schedule, SurveySchedule):
             raise TypeError(
@@ -152,21 +224,45 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
     # ---------------------------------------------- #
     @property
     def survey_schedule(self) -> SurveySchedule:
+        """~uvex_transients.surveys.base.SurveySchedule: The schedule events are sampled against."""
         return self._survey_schedule
 
     @property
     def transient_collection(self) -> dict[str, ExtragalacticTransient]:
+        """Dict of str to ExtragalacticTransient: The registered transient types, keyed by name."""
         return self._transients
 
     @property
     def simulation_seed(self) -> _SeedType:
+        """int, ~numpy.random.SeedSequence, or None: Root seed for Monte Carlo sampling."""
         return self._simulation_seed
 
     # -------------------------------------------------- #
     # Event Generation                                   #
     # -------------------------------------------------- #
     def _resolve_time_bins(self, time_bins: Time | int) -> Time:
-        """Resolve `generate_events`'s `time_bins` argument down to a concrete array of edges."""
+        """
+        Resolve `generate_events`'s `time_bins` argument down to a concrete array of edges.
+
+        Parameters
+        ----------
+        time_bins : ~astropy.time.Time or int
+            Either explicit bin edges, or a positive number of equal-width
+            bins spanning the whole survey.
+
+        Returns
+        -------
+        ~astropy.time.Time
+            The concrete array of bin edges.
+
+        Raises
+        ------
+        TypeError
+            If `time_bins` is neither a `~astropy.time.Time` array nor an int.
+        ValueError
+            If `time_bins` is a `Time` array with fewer than 2 edges, or a
+            non-positive int.
+        """
         if isinstance(time_bins, Time):
             if time_bins.isscalar or time_bins.size < 2:
                 raise ValueError("`time_bins`, given as a Time array, must contain at least 2 edges.")
@@ -229,6 +325,7 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
         Returns
         -------
         EventCatalog
+            One row per sampled event, across every registered transient type and time bin.
         """
         # Validate the inputs and ensure that there are actually registered transients to model.
         if not self._transients:
@@ -374,7 +471,9 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
         name : str
             One of `available_cuts`.
         catalog : EventCatalog
+            The catalog to filter.
         mission : m4opt.missions.Mission
+            The mission whose detector(s)/bandpasses the cut evaluates against.
         **params
             Forwarded to the underlying cut method (e.g. `mag_limit` for the
             ``"limiting_magnitude"`` cut, `snr_threshold` for ``"snr"``).
@@ -382,6 +481,7 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
         Returns
         -------
         EventCatalog
+            The filtered catalog.
         """
         try:
             method_name = self._CUT_REGISTRY[name]

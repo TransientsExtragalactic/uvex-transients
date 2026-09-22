@@ -12,7 +12,14 @@ _LOGO_PATH = Path(__file__).resolve().parents[1] / "_logo.txt"
 
 
 def _logo_text() -> str:
-    """Read the package's ASCII banner, or an empty string if it's ever missing (never fatal)."""
+    """
+    Read the package's ASCII banner, or an empty string if it's ever missing (never fatal).
+
+    Returns
+    -------
+    str
+        The banner text, or ``""`` if `_LOGO_PATH` doesn't exist or can't be read.
+    """
     try:
         return _LOGO_PATH.read_text()
     except OSError:
@@ -23,6 +30,16 @@ class _LogoGroup(click.Group):
     """A `click.Group` that prints the package's ASCII banner above its usual help text."""
 
     def format_help(self, ctx, formatter):
+        """
+        Print the package's ASCII banner, then delegate to `click.Group.format_help`.
+
+        Parameters
+        ----------
+        ctx : click.Context
+            The current click context.
+        formatter : click.HelpFormatter
+            The formatter to write help text to.
+        """
         logo = _logo_text()
         if logo:
             formatter.write(logo)
@@ -43,7 +60,22 @@ DRY_RUN_OPTION = click.option(
 
 
 def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, cut_names=None) -> None:
-    """Print `pipeline.dry_run_report` and exit non-zero if the real command would fail on an existing output."""
+    """
+    Print `pipeline.dry_run_report` and exit non-zero if the real command would fail on an existing output.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+    command : str
+        The CLI command being dry-run (e.g. ``"generate"``).
+    outputs : list of Path
+        The output path(s) the real command would write.
+    overwrite : bool
+        Whether the real command would be allowed to overwrite existing outputs.
+    cut_names : list of str, optional
+        For the ``"cut"`` command, the cut names that would run.
+    """
     try:
         lines, ok = pipeline.dry_run_report(config, command, outputs=outputs, overwrite=overwrite, cut_names=cut_names)
     except (ValueError, KeyError, OSError) as error:
@@ -65,7 +97,25 @@ def cli():
 @OVERWRITE_OPTION
 @DRY_RUN_OPTION
 def generate_command(config_path: Path, out_path: Path, overwrite: bool, dry_run: bool) -> None:
-    """Sample a Monte Carlo event catalog (needs CONFIG's schedule/transients/mission/generate sections)."""
+    """
+    Sample a Monte Carlo event catalog (needs CONFIG's schedule/transients/mission/generate sections).
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the run-config YAML file (``CONFIG``).
+    out_path : Path
+        Destination path for the generated event catalog.
+    overwrite : bool
+        Whether to overwrite an existing file at `out_path`.
+    dry_run : bool
+        If True, validate and report without sampling or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
+    """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
         return _dry_run(config, "generate", [out_path], overwrite)
@@ -89,6 +139,27 @@ def cut_command(
 
     NAMES are keys from CONFIG's ``cuts:`` section; with none given, every declared cut
     runs, in declared order.
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the run-config YAML file (``CONFIG``).
+    names : tuple of str
+        Cut names to run, from CONFIG's ``cuts:`` section (``NAMES``); empty runs every
+        declared cut.
+    in_path : Path
+        Path to the input event catalog.
+    out_path : Path
+        Destination path for the filtered catalog.
+    overwrite : bool
+        Whether to overwrite an existing file at `out_path`.
+    dry_run : bool
+        If True, validate and report without filtering or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
     """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
@@ -106,7 +177,27 @@ def cut_command(
 @OVERWRITE_OPTION
 @DRY_RUN_OPTION
 def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwrite: bool, dry_run: bool) -> None:
-    """Run synthetic photometry over every event in a catalog."""
+    """
+    Run synthetic photometry over every event in a catalog.
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the run-config YAML file (``CONFIG``).
+    in_path : Path
+        Path to the input event catalog.
+    out_path : Path
+        Destination path for the photometry table.
+    overwrite : bool
+        Whether to overwrite an existing file at `out_path`.
+    dry_run : bool
+        If True, validate and report without simulating or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
+    """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
         return _dry_run(config, "photometry", [out_path], overwrite)
@@ -122,7 +213,25 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
 @OVERWRITE_OPTION
 @DRY_RUN_OPTION
 def run_command(config_path: Path, out_dir: Path, overwrite: bool, dry_run: bool) -> None:
-    """Chain generate -> every declared cut -> photometry in one process, writing each stage's catalog to OUT_DIR."""
+    """
+    Chain generate -> every declared cut -> photometry in one process, writing each stage's catalog to OUT_DIR.
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the run-config YAML file (``CONFIG``).
+    out_dir : Path
+        Directory to write each stage's catalog into.
+    overwrite : bool
+        Whether to overwrite existing files in `out_dir`.
+    dry_run : bool
+        If True, validate and report without running any stage or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
+    """
     logo = _logo_text()
     if logo:
         click.echo(logo)

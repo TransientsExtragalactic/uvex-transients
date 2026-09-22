@@ -70,6 +70,31 @@ def _log_morag_components(
     log_envelope_mass: CGSParameterValue,
     log_core_mass: CGSParameterValue,
 ) -> _MoragComponents:
+    """
+    Precompute the intermediate scalings/break points shared by Morag+24's shock-cooling relations.
+
+    Parameters
+    ----------
+    log_time : ~numpy.ndarray or float
+        The logarithm of the time, in seconds, since the epoch of explosion.
+    log_v_star : ~numpy.ndarray or float
+        The logarithm of the scale velocity of the shock near the surface, in cm/s.
+    log_radius : ~numpy.ndarray or float
+        The logarithm of the stellar radius, in cm.
+    log_opacity : ~numpy.ndarray or float
+        The logarithm of the Rosseland mean opacity, in cm^2/g.
+    log_envelope_mass : ~numpy.ndarray or float
+        The logarithm of the envelope mass, in g.
+    log_core_mass : ~numpy.ndarray or float
+        The logarithm of the core mass, in g.
+
+    Returns
+    -------
+    _MoragComponents
+        The precomputed scalings, break time/temperature/luminosity, validity
+        time bounds, and a boolean ``valid`` mask, shared by
+        :func:`_log_morag_temperature_log_K` and :func:`_log_morag_bolometric`.
+    """
     # Coerce inputs. Equations in the paper are normalized against standard scalings for
     # v, R, and kappa.
     log_time = np.asarray(log_time, dtype=np.float64)
@@ -139,6 +164,21 @@ def _log_morag_temperature_log_K(
     Shared by :func:`_log_morag_Tcolor` (which computes :attr:`components` itself, for
     standalone use) and any caller that already has :attr:`components` in hand, to avoid
     recomputing :func:`_log_morag_components`.
+
+    Parameters
+    ----------
+    components : _MoragComponents
+        Precomputed scalings/break points, from :func:`_log_morag_components`.
+    log_time : ~numpy.ndarray or float
+        The logarithm of the time, in seconds, since the epoch of explosion.
+    mask_invalid : bool, optional
+        If ``True``, mask out invalid parameter ranges (see
+        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.
+
+    Returns
+    -------
+    ~numpy.ndarray or float
+        The natural log of the color temperature, in Kelvin.
     """
     log_t_rel = log_time - components.log_t_break
     log_T = components.log_T_break + np.minimum(
@@ -163,6 +203,21 @@ def _log_morag_bolometric(
     :math:`L(t) = L_\mathrm{break} \left[ \tilde t^{-4/3} +
     0.9\,e^{-\sqrt{2t/t_\mathrm{tr}}}\,\tilde t^{-0.17} \right]`,
     where :math:`\tilde t = t / t_\mathrm{break}`.
+
+    Parameters
+    ----------
+    components : _MoragComponents
+        Precomputed scalings/break points, from :func:`_log_morag_components`.
+    log_time : ~numpy.ndarray or float
+        The logarithm of the time, in seconds, since the epoch of explosion.
+    mask_invalid : bool, optional
+        If ``True``, mask out invalid parameter ranges (see
+        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.
+
+    Returns
+    -------
+    ~numpy.ndarray or float
+        The natural log of the bolometric luminosity, in erg/s.
     """
     log_t_rel = components.log_t_rel
     log_sqrt_arg = 0.5 * (np.log(2.0) + log_time - components.log_t_tr)
@@ -191,29 +246,27 @@ def _log_morag_Tcolor(
 
     Parameters
     ----------
-    log_time: ~numpy.ndarray or float
+    log_time : ~numpy.ndarray or float
         The logarithm of the time, in seconds, since the epoch of explosion.
-    log_v_star: ~numpy.ndarray or float
+    log_v_star : ~numpy.ndarray or float
         The logarithm of the scale velocity of the shock near the surface in :math:`{\rm cm/s}`.
         See equations (2) and (3) of :footcite:t:`2024MNRAS.528.7137M`.
-    log_radius: ~numpy.ndarray or float
+    log_radius : ~numpy.ndarray or float
         The logarithm of the stellar radius in :math:`{\rm cm}`.
-    log_opacity: ~numpy.ndarray or float
+    log_opacity : ~numpy.ndarray or float
         The logarithm of the Rosseland mean opacity in :math:`{\rm cm^2/g}`.
-    log_envelope_mass: ~numpy.ndarray or float
+    log_envelope_mass : ~numpy.ndarray or float
         The logarithm of the envelope mass in :math:`{\rm g}`.
-    log_core_mass: ~numpy.ndarray or float
+    log_core_mass : ~numpy.ndarray or float
         The logarithm of the core mass in :math:`{\rm g}`.
-    mask_invalid: bool
+    mask_invalid : bool
         If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise
         they will be retained. By default, this is ``False``.
 
-
     Returns
     -------
-    log_T: ~numpy.ndarray or float
+    ~numpy.ndarray or float
         The logarithmic temperature produced by the model.
-
     """
     # Coerce inputs. Equations in the paper are normalized against standard scalings for
     # v, R, and kappa.
@@ -252,28 +305,28 @@ def _log_morag_Lnu(
 
     Parameters
     ----------
-    log_time: ~numpy.ndarray or float
+    log_time : ~numpy.ndarray or float
         The logarithm of the time, in seconds, since the epoch of explosion.
-    log_frequency: ~numpy.ndarray or float
+    log_frequency : ~numpy.ndarray or float
         The logarithm of the (rest-frame) frequency in :math:`{\rm Hz}`.
-    log_v_star: ~numpy.ndarray or float
+    log_v_star : ~numpy.ndarray or float
         The logarithm of the scale velocity of the shock near the surface in :math:`{\rm cm/s}`.
         See equations (2) and (3) of :footcite:t:`2024MNRAS.528.7137M`.
-    log_radius: ~numpy.ndarray or float
+    log_radius : ~numpy.ndarray or float
         The logarithm of the stellar radius in :math:`{\rm cm}`.
-    log_opacity: ~numpy.ndarray or float
+    log_opacity : ~numpy.ndarray or float
         The logarithm of the Rosseland mean opacity in :math:`{\rm cm^2/g}`.
-    log_envelope_mass: ~numpy.ndarray or float
+    log_envelope_mass : ~numpy.ndarray or float
         The logarithm of the envelope mass in :math:`{\rm g}`.
-    log_core_mass: ~numpy.ndarray or float
+    log_core_mass : ~numpy.ndarray or float
         The logarithm of the core mass in :math:`{\rm g}`.
-    mask_invalid: bool
+    mask_invalid : bool
         If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise
         they will be retained. By default, this is ``False``.
 
     Returns
     -------
-    log_L_nu: ~numpy.ndarray or float
+    ~numpy.ndarray or float
         The logarithm of the specific luminosity, in :math:`{\rm erg\,s^{-1}\,Hz^{-1}}`.
     """
     # Coerce components.
@@ -438,6 +491,23 @@ class _MoragShockCoolingBase(SpectralModel):
         core_mass: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> _MoragComponents:
+        """
+        Compute this SED's :func:`_log_morag_components` from its own cgs parameter values.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        v_star, radius, opacity, envelope_mass, core_mass : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        _MoragComponents
+            The precomputed scalings/break points, from :func:`_log_morag_components`.
+        """
         log_time = np.log(np.asarray(t, dtype=np.float64))
         return _log_morag_components(
             log_time=log_time,
@@ -450,10 +520,23 @@ class _MoragShockCoolingBase(SpectralModel):
 
     @classmethod
     def temperature(cls, t: u.Quantity, **parameters: CGSParameterValue) -> u.Quantity:
-        r""":math:`T_\mathrm{col}(t)` in Kelvin -- the color temperature shared by both subclasses.
+        r"""
+        :math:`T_\mathrm{col}(t)` in Kelvin -- the color temperature shared by both subclasses.
 
         For :class:`MoragShockCoolingSED`, this is the underlying blackbody temperature Eq. A7
         reshapes in frequency, not a temperature that alone characterizes its emergent spectrum.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`T_\mathrm{col}(t)`, in Kelvin.
         """
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
         log_time = np.log(t.cgs.value)
@@ -510,6 +593,25 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
         core_mass: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
+        """
+        Compute :func:`_log_morag_Lnu` from this SED's own cgs parameter values.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        v_star, radius, opacity, envelope_mass, core_mass : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the specific luminosity, in erg/s/Hz.
+        """
         return _log_morag_Lnu(
             log_time=np.log(t),
             log_frequency=np.log(nu),
@@ -523,12 +625,42 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
 
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t)`, delegated to :func:`_log_morag_Lnu`."""
+        r"""
+        :math:`\log L_\nu(\nu, t)`, delegated to :func:`_log_morag_Lnu`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         return cls._log_Lnu(nu, t, **parameters)
 
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, via the fixed-grid quadrature described in the class docstring."""
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, via the fixed-grid quadrature described in the class docstring.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         t_grid, *param_arrays = np.broadcast_arrays(np.asarray(t, dtype=np.float64), *parameters.values())
         param_grids = dict(zip(parameters, param_arrays))
 
@@ -575,14 +707,44 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
 
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed."""
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
+        """
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
         return _log_morag_bolometric(components, log_time, mask_invalid=cls._MASK_INVALID)
 
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`."""
+        r"""
+        :math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
+        """
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
         log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=cls._MASK_INVALID)
@@ -590,7 +752,23 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
 
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T_\mathrm{col}(t))`."""
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T_\mathrm{col}(t))`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         return cls._eval_bolometric(t, **parameters) + cls._eval_spectrum(nu, t, **parameters)
 
 
@@ -783,12 +961,42 @@ class TypeIIbSED(SpectralModel):
         alpha_T: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
-        r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`."""
+        r"""
+        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`T(t)`, in Kelvin.
+        """
         return cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=tau_T, alpha=alpha_T)
 
     @classmethod
     def temperature(cls, t: u.Quantity, **parameters: CGSParameterValue) -> u.Quantity:
-        r""":math:`T(t)` in Kelvin."""
+        r"""
+        :math:`T(t)` in Kelvin.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`T(t)`, in Kelvin.
+        """
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
         return cls._temperature_cgs(t.cgs.value, **cgs_parameters) * u.K
 
@@ -797,9 +1005,22 @@ class TypeIIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`TwoComponentBazinLightcurve`.
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`TwoComponentBazinLightcurve`.
 
         Exact -- no integration needed.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
         """
         lightcurve_parameters = {name: parameters[name] for name in TwoComponentBazinLightcurve._DEFAULT_PARAMETERS}
         return TwoComponentBazinLightcurve._eval(t, **lightcurve_parameters)
@@ -809,9 +1030,24 @@ class TypeIIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.
+        r"""
+        :math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.
 
         Evaluated at this ``t``'s own cooling-law temperature.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
         """
         temperature = cls._temperature_cgs(t, **parameters)
         return BlackbodySpectrum._eval(nu, temperature=temperature)
@@ -821,5 +1057,21 @@ class TypeIIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`."""
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         return cls._eval_bolometric(t, **parameters) + cls._eval_spectrum(nu, t, **parameters)

@@ -37,6 +37,13 @@ class QTableColumnSpec:
         """
         Validate this specification against one column in a QTable.
 
+        Parameters
+        ----------
+        table : ~astropy.table.QTable
+            The table containing the column to validate.
+        column_name : str
+            Name of the column to validate.
+
         Returns
         -------
         list[str]
@@ -124,7 +131,19 @@ class QTableColumnSpec:
         self,
         actual_dtype: np.dtype,
     ) -> bool:
-        """Return whether a concrete dtype satisfies this specification."""
+        """
+        Return whether a concrete dtype satisfies this specification.
+
+        Parameters
+        ----------
+        actual_dtype : numpy.dtype
+            The column's actual dtype.
+
+        Returns
+        -------
+        bool
+            Whether `actual_dtype` is compatible with :attr:`dtype`.
+        """
         try:
             return bool(np.issubdtype(actual_dtype, self.dtype))
         except TypeError:
@@ -137,7 +156,19 @@ class QTableColumnSpec:
     def _format_types(
         expected: type | tuple[type, ...],
     ) -> str:
-        """Format one or more expected classes for an error message."""
+        """
+        Format one or more expected classes for an error message.
+
+        Parameters
+        ----------
+        expected : type or tuple of type
+            The class(es) to format.
+
+        Returns
+        -------
+        str
+            `expected`'s class name(s), joined by ``" or "`` if more than one.
+        """
         if isinstance(expected, tuple):
             return " or ".join(cls.__name__ for cls in expected)
 
@@ -149,7 +180,7 @@ class ActionSpec:
     """
     Validation rules for one survey-schedule action.
 
-    Parameters
+    Attributes
     ----------
     required_columns
         Columns that must contain valid, unmasked values for every row
@@ -182,11 +213,11 @@ class ActionSpec:
 
         Parameters
         ----------
-        table
+        table : ~astropy.table.QTable
             Complete survey schedule.
-        action_name
+        action_name : str
             Action value governed by this specification.
-        action_column
+        action_column : str
             Name of the column containing action labels.
 
         Returns
@@ -248,6 +279,16 @@ class ActionSpec:
 
         Supports ordinary columns, masked columns, Quantity columns, and
         common Astropy mixin columns such as SkyCoord.
+
+        Parameters
+        ----------
+        column : ~astropy.table.Column, ~astropy.units.Quantity, or mixin column
+            The column to check.
+
+        Returns
+        -------
+        numpy.ndarray
+            A boolean mask, one entry per row, ``True`` where the value is missing.
         """
         # MaskedColumn, MaskedQuantity, and many Astropy mixins expose
         # either ``mask`` directly or masks on their coordinate components.
@@ -298,7 +339,21 @@ class ActionSpec:
         *,
         action_name: str,
     ) -> list[str]:
-        """Convert a custom-validator result into error messages."""
+        """
+        Convert a custom-validator result into error messages.
+
+        Parameters
+        ----------
+        result : bool, str, or list of str
+            The value returned by a user-supplied validator.
+        action_name : str
+            Action value the validator was called for, used to prefix messages.
+
+        Returns
+        -------
+        list of str
+            Validation errors. An empty list indicates success.
+        """
         if isinstance(result, str):
             return [f"Action {action_name!r}: {result}"]
 
@@ -328,6 +383,23 @@ def _resolve_schedule_url(name: str | None, url: str | None) -> str:
 
     ``name`` and ``url`` are mutually exclusive; if neither is given, ``name`` falls back to
     ``config["schedules.default_schedule"]``.
+
+    Parameters
+    ----------
+    name : str, optional
+        Short identifier for a pre-configured schedule; see :func:`get_schedule`.
+    url : str, optional
+        Direct HTTP/HTTPS URL to the schedule file.
+
+    Returns
+    -------
+    str
+        The resolved URL.
+
+    Raises
+    ------
+    ValueError
+        If both ``name`` and ``url`` are given, or ``name`` is not a known registry entry.
     """
     if name is not None and url is not None:
         raise ValueError("Provide at most one of 'name' or 'url'.")
@@ -363,17 +435,17 @@ def download_schedule_from_url(
 
     Parameters
     ----------
-    url
+    url : str
         Direct HTTP/HTTPS URL to the schedule file.
-    path
+    path : str or ~pathlib.Path
         Local destination path. Parent directories are created as needed.
-    overwrite
+    overwrite : bool
         Whether to overwrite an existing file at ``path``.
-    timeout
+    timeout : float, optional
         Timeout in seconds for the network request, or `None` (the default) to use
         ``config["surveys.download_timeout"]`` -- itself `None` (astropy's own
         default) out of the box.
-    show_progress
+    show_progress : bool
         Whether to show a progress bar while downloading.
 
     Returns
@@ -422,13 +494,13 @@ def get_schedule(
 
     Parameters
     ----------
-    name
+    name : str, optional
         Short identifier for a pre-configured schedule, looked up in
         ``config["schedules.schedule_urls"]``. Mutually exclusive with ``url``. If neither
         ``name`` nor ``url`` is given, falls back to ``config["schedules.default_schedule"]``.
-    url
+    url : str, optional
         Direct HTTP/HTTPS URL to the schedule file. Mutually exclusive with ``name``.
-    cache
+    cache : bool
         Whether to cache the downloaded file locally (see
         :func:`~astropy.utils.data.download_file`) rather than re-fetching it on every call.
     **kwargs

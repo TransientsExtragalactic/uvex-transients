@@ -257,13 +257,13 @@ def model_class_from_kernel(
 
     Parameters
     ----------
-    name
+    name : str
         Class name for the generated :class:`~astropy.modeling.Model` subclass.
-    inputs
+    inputs : dict of str to ~astropy.units.UnitBase
         ``{name: unit}`` for each positional input, in call order.
-    outputs
+    outputs : dict of str to ~astropy.units.UnitBase
         ``{name: unit}`` for this model's output. Exactly one entry.
-    evaluate
+    evaluate : callable
         ``evaluate(*input_values) -> FloatResult``, operating on
         unit-stripped, broadcastable NumPy arrays -- e.g. a closure over
         one of a :class:`~uvex_transients.models.core.base.SpectralModel` subclass's

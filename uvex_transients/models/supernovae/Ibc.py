@@ -155,12 +155,42 @@ class TypeIbSED(SpectralModel):
         alpha_T: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
-        r""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`."""
+        r"""
+        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`T(t)`, in Kelvin.
+        """
         return cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=tau_T, alpha=alpha_T)
 
     @classmethod
     def temperature(cls, t: u.Quantity, **parameters: CGSParameterValue) -> u.Quantity:
-        r""":math:`T(t)` in Kelvin."""
+        r"""
+        :math:`T(t)` in Kelvin.
+
+        Parameters
+        ----------
+        t : ~astropy.units.Quantity
+            Time since explosion.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            :math:`T(t)`, in Kelvin.
+        """
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
         return cls._temperature_cgs(t.cgs.value, **cgs_parameters) * u.K
 
@@ -169,9 +199,22 @@ class TypeIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\mathrm{bol}(t)`, delegated to :class:`BazinLightcurve` with ``rise = t0 / _RISE_DIVISOR``.
+        r"""
+        :math:`\log L_\mathrm{bol}(t)`, delegated to :class:`BazinLightcurve` with ``rise = t0 / _RISE_DIVISOR``.
 
         Exact -- no integration needed.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.
         """
         t0 = parameters["t0"]
         return BazinLightcurve._eval(
@@ -183,9 +226,24 @@ class TypeIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.
+        r"""
+        :math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.
 
         Evaluated at this ``t``'s own cooling-law temperature.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
         """
         temperature = cls._temperature_cgs(t, **parameters)
         return BlackbodySpectrum._eval(nu, temperature=temperature)
@@ -195,7 +253,23 @@ class TypeIbSED(SpectralModel):
     # -------------------------------------- #
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
-        r""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`."""
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
         return cls._eval_bolometric(t, **parameters) + cls._eval_spectrum(nu, t, **parameters)
 
 

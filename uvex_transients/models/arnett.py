@@ -30,7 +30,14 @@ import numpy as np
 from astropy import units as u
 from numba import njit
 
-from uvex_transients.models._constants import C_CGS, MSUN_G
+from uvex_transients.models._constants import (
+    C_CGS,
+    MSUN_G,
+    cobalt_decay_time,
+    cobalt_decay_yield,
+    nickel_decay_time,
+    nickel_decay_yield,
+)
 from uvex_transients.models._typing import FloatArray, FloatValue, PhysicalInput
 from uvex_transients.models._utils import ensure_in_units
 
@@ -91,6 +98,50 @@ def _magnetar_timescale_cgs(spin_period: FloatValue, magnetic_field: FloatValue,
 def _magnetar_luminosity_cgs(t: FloatArray, energy: FloatValue, timescale: FloatValue) -> FloatArray:
     r"""Magnetar spin-down power :math:`F(t) = (E/t_m)(1 + t/t_m)^{-2}`, in erg/s."""
     return energy / timescale / (1.0 + np.asarray(t, dtype=np.float64) / timescale) ** 2
+
+
+def _radioactive_luminosity_cgs(
+    t: FloatArray,
+    nickel_mass: FloatValue,
+    nickel_yield: FloatValue = nickel_decay_yield.cgs.value,
+    nickel_decay: FloatValue = nickel_decay_time.cgs.value,
+    cobalt_yield: FloatValue = cobalt_decay_yield.cgs.value,
+    cobalt_decay: FloatValue = cobalt_decay_time.cgs.value,
+) -> FloatArray:
+    """Compute the radioactive heating luminosity from the Ni-56 decay chain.
+
+    The heating rate includes energy released by the decay chain
+
+        Ni-56 -> Co-56 -> Fe-56,
+
+    assuming that all radioactive decay energy is deposited locally. Gamma-ray
+    leakage is therefore not included.
+
+    Parameters
+    ----------
+    t:
+        Time since explosion in seconds.
+    nickel_mass:
+        Initial Ni-56 mass in grams.
+    nickel_yield:
+        Specific heating rate from Ni-56 decay in erg s^-1 g^-1.
+    nickel_decay:
+        Ni-56 e-folding decay time in seconds.
+    cobalt_yield:
+        Specific heating rate from Co-56 decay in erg s^-1 g^-1.
+    cobalt_decay:
+        Co-56 e-folding decay time in seconds.
+
+    Returns
+    -------
+    FloatArray
+        Radioactive heating luminosity in erg s^-1.
+
+    """
+    nickel_heating = nickel_yield * np.exp(-t / nickel_decay)
+    cobalt_heating = cobalt_yield * (np.exp(-t / cobalt_decay) - np.exp(-t / nickel_decay))
+
+    return nickel_mass * (nickel_heating + cobalt_heating)
 
 
 # ================================================= #
@@ -312,10 +363,72 @@ def get_magnetar_engine(
     energy = _magnetar_energy_cgs(period, mass)
     timescale = _magnetar_timescale_cgs(period, field, mass)
 
-    def engine(t: PhysicalInput) -> FloatArray:
+    def _engine(t: PhysicalInput) -> FloatArray:
         return _magnetar_luminosity_cgs(ensure_in_units(t, u.s), energy, timescale)
 
-    return engine
+    return _engine
+
+
+def get_nickel_engine(
+    nickel_mass: PhysicalInput,
+    nickel_yield: PhysicalInput = nickel_decay_yield,
+    nickel_decay: PhysicalInput = nickel_decay_time,
+    cobalt_yield: PhysicalInput = cobalt_decay_yield,
+    cobalt_decay: PhysicalInput = cobalt_decay_time,
+) -> Callable[[PhysicalInput], FloatArray]:
+    r"""Construct a radioactive Ni-56/Co-56 heating engine.
+
+    The returned function evaluates the instantaneous radioactive heating
+    luminosity produced by the decay chain
+
+    .. math::
+
+        {}^{56}{\rm Ni} \to {}^{56}{\rm Co} \to {}^{56}{\rm Fe}
+
+    assuming complete local deposition of the radioactive decay energy.
+    Gamma-ray leakage is not included.
+
+    Parameters
+    ----------
+    nickel_mass : ~astropy.units.Quantity or float
+        Initial Ni-56 mass. Must have dimensions of mass.
+    nickel_yield : ~astropy.units.Quantity or float, optional
+        Specific heating rate from Ni-56 decay. Must have dimensions of
+        energy per unit mass per unit time.
+    nickel_decay : ~astropy.units.Quantity or float, optional
+        Ni-56 e-folding decay time. Must have dimensions of time.
+    cobalt_yield : ~astropy.units.Quantity or float, optional
+        Specific heating rate from Co-56 decay. Must have dimensions of
+        energy per unit mass per unit time.
+    cobalt_decay : ~astropy.units.Quantity or float, optional
+        Co-56 e-folding decay time. Must have dimensions of time.
+
+    Returns
+    -------
+    Callable[[PhysicalInput], FloatArray]
+        Function that accepts the time since explosion and returns the
+        radioactive heating luminosity in erg s^-1.
+    """
+    # Coerce model parameters to CGS units.
+    nickel_mass_cgs = float(ensure_in_units(nickel_mass, u.g))
+    nickel_yield_cgs = float(ensure_in_units(nickel_yield, u.erg / (u.g * u.s)))
+    cobalt_yield_cgs = float(ensure_in_units(cobalt_yield, u.erg / (u.g * u.s)))
+    nickel_decay_cgs = float(ensure_in_units(nickel_decay, u.s))
+    cobalt_decay_cgs = float(ensure_in_units(cobalt_decay, u.s))
+
+    def _engine(t: PhysicalInput) -> FloatArray:
+        t_cgs = np.asarray(ensure_in_units(t, u.s), dtype=float)
+
+        return _radioactive_luminosity_cgs(
+            t=t_cgs,
+            nickel_mass=nickel_mass_cgs,
+            nickel_yield=nickel_yield_cgs,
+            nickel_decay=nickel_decay_cgs,
+            cobalt_yield=cobalt_yield_cgs,
+            cobalt_decay=cobalt_decay_cgs,
+        )
+
+    return _engine
 
 
 def compute_arnett_luminosity(
@@ -406,7 +519,7 @@ def compute_arnett_luminosity(
         if not 0 < min_fraction < 1:
             raise ValueError("t_min must satisfy 0 < t_min < t_max")
 
-    def source(grid: FloatArray) -> FloatArray:
+    def _source(grid: FloatArray) -> FloatArray:
         power = np.asarray(energy_function(grid[0]), dtype=np.float64)
         if power.shape != grid[0].shape or not np.all(np.isfinite(power)):
             raise ValueError("energy_function must return a finite array with the same shape as its input")
@@ -416,7 +529,7 @@ def compute_arnett_luminosity(
         t_eval_cgs,
         _diffusion_time_cgs(kappa_cgs, mass, velocity),
         _leakage_parameter_cgs(kappa_gamma_cgs, mass, velocity),
-        source,
+        _source,
         n_grid=n_grid,
         t_grid=grid_cgs,
         t_end=t_end,

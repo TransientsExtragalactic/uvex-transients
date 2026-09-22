@@ -36,7 +36,19 @@ def _construct_cosmology(constructor, node) -> FLRW:
 
 
 def get_config_yaml() -> YAML:
-    """Return a `ruamel.yaml.YAML` instance that understands ``!astropy_cosmology``."""
+    """
+    Return a YAML serializer configured for Astropy cosmologies.
+
+    The returned `ruamel.yaml.YAML` instance supports the
+    ``!astropy_cosmology`` tag for serializing and deserializing named
+    Astropy cosmology realizations.
+
+    Returns
+    -------
+    ruamel.yaml.YAML
+        YAML serializer and deserializer configured with the
+        ``!astropy_cosmology`` representer and constructor.
+    """
     yaml = YAML(typ="rt")
 
     # Registered for both the concrete `FlatLambdaCDM` (what all of Astropy's
@@ -44,6 +56,7 @@ def get_config_yaml() -> YAML:
     # `FLRW` base, since ruamel dispatches representers by exact type.
     for cosmology_type in (FlatLambdaCDM, FLRW):
         yaml.representer.add_representer(cosmology_type, _represent_cosmology)
+
     yaml.constructor.add_constructor(_COSMOLOGY_TAG, _construct_cosmology)
 
     return yaml

@@ -1,3 +1,5 @@
+"""Utility functions for working with models."""
+
 import numpy as np
 
 from uvex_transients.models._constants import C_CGS, H_CGS, K_B_CGS, LOG_SIGMA_SB_CGS, SIGMA_SB_CGS
