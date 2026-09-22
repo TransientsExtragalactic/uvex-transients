@@ -30,7 +30,11 @@ Overview
 
 **UVEX Transients** is a Python toolkit for simulating transient science with `UVEX <https://www.uvex.caltech.edu/>`__.
 It provides everything needed to simulate the discovery and follow-up of transient populations with UVEX, across
-both target-of-opportunity (TOO) observations and UVEX's planned surveys.
+both target-of-opportunity (TOO) observations and UVEX's planned surveys. Users can simulate transient population yields
+from survey schedules, generate light curves from realistic transients, and explore the impact of survey design choices
+on transient science.
+Custom transient models and classes are easy to implement, and the simulation framework is flexible
+enough to accommodate new survey strategies.
 
 .. card:: Key capabilities
    :class-card: sd-shadow-md sd-rounded-3 capabilities-box
@@ -76,6 +80,8 @@ both target-of-opportunity (TOO) observations and UVEX's planned surveys.
          **End-to-end yield simulations**
 
          Turns a sampled transient population into detections and light curves in a single pipeline.
+
+----
 
 Installation
 =============
