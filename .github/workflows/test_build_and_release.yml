@@ -1,0 +1,46 @@
+# ------------------------------------------ #
+# Build + Package Validation Workflow
+# ------------------------------------------ #
+# This workflow builds the package and runs
+# metadata validation (twine check) on every
+# push and pull request. It does NOT publish.
+name: Test Build and Release to PyPI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Clean previous build artifacts
+        run: rm -rf dist/ build/ *.egg-info
+
+      - name: Build package
+        run: python -m build
+
+      - name: Validate package metadata
+        run: python -m twine check dist/*
+
+      - name: Test install from built wheel
+        run: |
+          pip install dist/*.whl
+          cd /tmp && python -c "import uvex_transients; print(uvex_transients.__name__)"

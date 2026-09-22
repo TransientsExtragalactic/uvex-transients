@@ -1,0 +1,59 @@
+# .github/workflows/build_and_release.yml
+# ------------------------------------------ #
+# GitHub Actions Workflow for PyPI Release
+# ------------------------------------------ #
+# Builds the sdist and a universal (pure-Python) wheel and publishes them to
+# PyPI when a version tag (v*) is pushed.
+name: Build and Release to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  # ------------------------------------------ #
+  # Build sdist + wheel                         #
+  # ------------------------------------------ #
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build sdist and wheel
+        run: pipx run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+  # ------------------------------------------ #
+  # Publish everything to PyPI                  #
+  # ------------------------------------------ #
+  upload_pypi:
+    name: Publish to PyPI
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Check distributions
+        run: pipx run twine check --strict dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
