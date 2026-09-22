@@ -594,6 +594,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Event or list[Event]</span>
+<span class="sd">            Reconstructed event or events corresponding to the requested event ids.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -704,12 +705,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path</span>
+<span class="sd">        path : str or ~pathlib.Path</span>
 <span class="sd">            Destination path.</span>
-<span class="sd">        table_format</span>
+<span class="sd">        table_format : str, optional</span>
 <span class="sd">            Passed through to :meth:`~astropy.table.QTable.write`; if `None`, inferred from</span>
 <span class="sd">            ``path``'s suffix.</span>
-<span class="sd">        overwrite</span>
+<span class="sd">        overwrite : bool</span>
 <span class="sd">            Whether to overwrite an existing file at ``path``.</span>
 <span class="sd">        """</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -734,15 +735,16 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path</span>
+<span class="sd">        path : str or ~pathlib.Path</span>
 <span class="sd">            Path to the event table, as written by :meth:`to_disk`.</span>
-<span class="sd">        table_format</span>
+<span class="sd">        table_format : str, optional</span>
 <span class="sd">            Passed through to :meth:`~astropy.table.QTable.read`; if `None`, inferred from</span>
 <span class="sd">            ``path``'s suffix.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        EventCatalog</span>
+<span class="sd">            Event catalog reconstructed from the serialized table and metadata.</span>
 <span class="sd">        """</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>

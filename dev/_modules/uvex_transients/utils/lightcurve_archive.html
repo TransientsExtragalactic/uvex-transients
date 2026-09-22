@@ -411,9 +411,10 @@
 <span class="sd">columns, plus a ``reference`` entry in ``.meta`` recording the source.</span>
 
 <span class="sd">Supernovae are additionally split by spectroscopic classification, so their ``&lt;transient_type&gt;`` is</span>
-<span class="sd">``supernovae/&lt;class&gt;`` with ``&lt;class&gt;`` one of ``II``, ``IIP``, ``IIb``, ``Ib``, ``Ic`` or ``Ic-BL``</span>
-<span class="sd">(e.g. ``archive.table("supernovae/IIb", "2011dh_lyman2016", "L_bol")``). :meth:`LightcurveArchive.types`</span>
-<span class="sd">lists only top-level groups, so use :meth:`LightcurveArchive.events` on ``"supernovae"`` to list the classes.</span>
+<span class="sd">``supernovae/&lt;class&gt;`` with ``&lt;class&gt;`` one of ``II``, ``IIP``, ``IIb``, ``Ib``, ``Ic``, ``Ic-BL`` or</span>
+<span class="sd">``SLSN-I`` (e.g. ``archive.table("supernovae/IIb", "2011dh_lyman2016", "L_bol")``).</span>
+<span class="sd">:meth:`LightcurveArchive.types` lists only top-level groups, so use :meth:`LightcurveArchive.events`</span>
+<span class="sd">on ``"supernovae"`` to list the classes.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -454,12 +455,28 @@
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Initialize the light-curve archive.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str or pathlib.Path, optional</span>
+<span class="sd">            Path to the archive HDF5 file. If not provided, use the packaged</span>
+<span class="sd">            ``test_data/transients/lightcurves.h5`` archive.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_default_archive_path</span><span class="p">()</span>
 
 <div class="viewcode-block" id="LightcurveArchive.types">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.lightcurve_archive.LightcurveArchive.types.html#uvex_transients.utils.lightcurve_archive.LightcurveArchive.types">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Return the sorted list of transient types (top-level groups) in the archive."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the transient types available in the archive.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Sorted names of the top-level transient-type groups.</span>
+<span class="sd">        """</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
@@ -467,7 +484,21 @@
 <div class="viewcode-block" id="LightcurveArchive.events">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.lightcurve_archive.LightcurveArchive.events.html#uvex_transients.utils.lightcurve_archive.LightcurveArchive.events">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transient_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Return the sorted list of transients (``&lt;designation&gt;_&lt;citekey&gt;``) under ``transient_type``."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the transients available under a transient type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transient_type : str</span>
+<span class="sd">            Name of the transient-type group, such as ``"kilonovae"`` or</span>
+<span class="sd">            ``"supernovae/IIb"``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Sorted transient identifiers of the form</span>
+<span class="sd">            ``&lt;designation&gt;_&lt;citekey&gt;``.</span>
+<span class="sd">        """</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">transient_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
@@ -475,7 +506,23 @@
 <div class="viewcode-block" id="LightcurveArchive.fields">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.lightcurve_archive.LightcurveArchive.fields.html#uvex_transients.utils.lightcurve_archive.LightcurveArchive.fields">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transient_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Return the sorted list of observable fields (e.g. ``L_bol``, ``T_phot``) for one transient."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the observable fields available for a transient.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transient_type : str</span>
+<span class="sd">            Name of the transient-type group, such as ``"kilonovae"`` or</span>
+<span class="sd">            ``"supernovae/IIb"``.</span>
+<span class="sd">        event : str</span>
+<span class="sd">            Transient identifier of the form ``&lt;designation&gt;_&lt;citekey&gt;``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Sorted observable field names, such as ``"L_bol"`` or</span>
+<span class="sd">            ``"T_phot"``.</span>
+<span class="sd">        """</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">keys</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">transient_type</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
             <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"__table_column_meta__"</span><span class="p">))</span></div>

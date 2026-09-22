@@ -397,7 +397,8 @@
                 <article class="bd-article">
                   
   <h1>Source code for uvex_transients.cli.pipeline</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.</span>
 
 <span class="sd">`uvex_transients.cli.main`'s subcommands are thin wrappers around these -- each one parses</span>
 <span class="sd">arguments, calls one of these, and reports a short summary.</span>
@@ -415,7 +416,19 @@
 <div class="viewcode-block" id="run_generate">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_generate.html#uvex_transients.cli.pipeline.run_generate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_generate</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Sample a Monte Carlo `EventCatalog` per the config's ``generate:`` section."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Sample a Monte Carlo `EventCatalog` per the config's ``generate:`` section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EventCatalog</span>
+<span class="sd">        The generated catalog.</span>
+<span class="sd">    """</span>
     <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">generate</span>
     <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">generate_events</span><span class="p">(</span>
         <span class="n">time_bins</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
@@ -435,7 +448,9 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
 <span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The catalog to filter.</span>
 <span class="sd">    names : list of str, optional</span>
 <span class="sd">        Which of the config's `cuts:` keys to run, and in what order. If `None` (the</span>
 <span class="sd">        default), runs every declared cut, in the order it was declared in the config.</span>
@@ -443,6 +458,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    EventCatalog</span>
+<span class="sd">        The filtered catalog.</span>
 <span class="sd">    """</span>
     <span class="n">cuts</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">cuts</span>
 
@@ -465,7 +481,21 @@
 <div class="viewcode-block" id="run_photometry">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_photometry.html#uvex_transients.cli.pipeline.run_photometry">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_photometry</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The catalog of events to simulate photometry for.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.table.QTable</span>
+<span class="sd">        One row per (event, time, band) synthetic observation.</span>
+<span class="sd">    """</span>
     <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">photometry</span>
     <span class="k">return</span> <span class="n">catalog</span><span class="o">.</span><span class="n">simulate_photometry</span><span class="p">(</span>
         <span class="n">config</span><span class="o">.</span><span class="n">mission</span><span class="p">,</span>
@@ -497,6 +527,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
 <span class="sd">    command : {"generate", "cut", "photometry", "run"}</span>
 <span class="sd">        Which command is being dry-run; decides which config sections are validated. ``"run"``</span>
 <span class="sd">        validates ``generate:``, ``cuts:`` (if declared) and ``photometry:``.</span>

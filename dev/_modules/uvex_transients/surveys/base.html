@@ -440,9 +440,22 @@
 <span class="sd">    Collects every validation failure found across both the column-level and</span>
 <span class="sd">    action-level validation stages, rather than surfacing only the first one, so a user</span>
 <span class="sd">    fixing an invalid schedule can address every problem in a single pass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    errors : list of str</span>
+<span class="sd">        Every validation failure message collected, in the order found.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Store `errors` and build the combined multi-line exception message.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        errors : list of str</span>
+<span class="sd">            Every validation failure message collected, in the order found.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
 
         <span class="n">message</span> <span class="o">=</span> <span class="s2">"Survey schedule failed validation with the following errors:</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -460,6 +473,18 @@
 <span class="sd">    :meth:`SurveySchedule.to_disk` always writes columns in the one form astropy's</span>
 <span class="sd">    ECSV reader is guaranteed to be able to reconstruct. Non-masked values pass</span>
 <span class="sd">    through unchanged.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : ~astropy.utils.masked.Masked or any</span>
+<span class="sd">        A column value, possibly (but not necessarily) a</span>
+<span class="sd">        :class:`~astropy.utils.masked.Masked` array.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    same type as `value`</span>
+<span class="sd">        `value` unchanged if it isn't `Masked`; otherwise a fresh `Masked`</span>
+<span class="sd">        wrapping a plain `numpy.ndarray` and mask.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Masked</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Masked</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">value</span><span class="p">)),</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -478,13 +503,18 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    region</span>
+<span class="sd">    region : ~regions.SkyRegion or ~regions.Regions</span>
 <span class="sd">        A region already normalized by :func:`m4opt.fov.footprint` (or a</span>
 <span class="sd">        :class:`~regions.Regions` collection of such), so the only leaf shapes that</span>
 <span class="sd">        can appear are :class:`~regions.PolygonSkyRegion`, :class:`~regions.CircleSkyRegion`,</span>
 <span class="sd">        and :class:`~regions.PointSkyRegion`.</span>
-<span class="sd">    origin</span>
+<span class="sd">    origin : ~astropy.coordinates.SkyCoord</span>
 <span class="sd">        The point to measure separation from.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The greatest angular separation found.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -520,9 +550,9 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    template</span>
+<span class="sd">    template : ~regions.SkyRegion or ~regions.Regions</span>
 <span class="sd">        The original, unpositioned FOV (or one of its members).</span>
-<span class="sd">    positioned</span>
+<span class="sd">    positioned : ~regions.SkyRegion or ~regions.Regions</span>
 <span class="sd">        The corresponding output of :func:`~m4opt.fov.footprint`, mutated in place.</span>
 
 <span class="sd">    Returns</span>
@@ -547,6 +577,17 @@
 <span class="sd">    Each `~regions.Regions` collection is treated as the union of its members (the same</span>
 <span class="sd">    convention :func:`m4opt.fov.contains` and :func:`~m4opt.fov.footprint_healpix` use), so it</span>
 <span class="sd">    is expanded in place rather than kept as a nested element.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    regions_or_collections : list of (~regions.SkyRegion or ~regions.Regions)</span>
+<span class="sd">        The regions/collections to flatten.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of ~regions.SkyRegion</span>
+<span class="sd">        Every leaf region, in order, with any `~regions.Regions` collections</span>
+<span class="sd">        expanded into their members.</span>
 <span class="sd">    """</span>
     <span class="n">flattened</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SkyRegion</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -579,7 +620,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    region</span>
+<span class="sd">    region : ~regions.SkyRegion or ~regions.Regions</span>
 <span class="sd">        The field-of-view region, defined at RA=0deg/Dec=0deg/PA=0deg (the</span>
 <span class="sd">        convention used throughout ``m4opt``, e.g. :attr:`m4opt.missions.Mission.fov`).</span>
 <span class="sd">        May be a single :class:`~regions.SkyRegion` or a :class:`~regions.Regions`</span>
@@ -617,6 +658,16 @@
 <span class="sd">    :attr:`_SCHEMA` (per-column checks) and :attr:`_ACTION_SCHEMA` (per-action required</span>
 <span class="sd">    columns and custom checks). See :class:`ScheduleValidationError` for how validation</span>
 <span class="sd">    failures are reported.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schedule_table : ~astropy.table.QTable</span>
+<span class="sd">        A chronological table of scheduled spacecraft actions. See :meth:`__init__`.</span>
+<span class="sd">    instrument_fov : ~regions.SkyRegion or ~regions.Regions</span>
+<span class="sd">        The instrument's field of view. See :meth:`__init__`.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Forwarded to :meth:`_validate_table_columns`/:meth:`_validate_table_semantics`.</span>
+<span class="sd">        See :meth:`__init__`.</span>
 <span class="sd">    """</span>
 
     <span class="n">_SCHEMA</span> <span class="o">=</span> <span class="p">{</span>
@@ -693,10 +744,10 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        schedule_table</span>
+<span class="sd">        schedule_table : ~astropy.table.QTable</span>
 <span class="sd">            A chronological table of scheduled spacecraft actions. Copied on</span>
 <span class="sd">            construction, so mutating it afterwards has no effect on this instance.</span>
-<span class="sd">        instrument_fov</span>
+<span class="sd">        instrument_fov : ~regions.SkyRegion or ~regions.Regions</span>
 <span class="sd">            The instrument's field of view, defined at RA=0deg/Dec=0deg/PA=0deg</span>
 <span class="sd">            (the convention used throughout ``m4opt``, e.g.</span>
 <span class="sd">            :attr:`m4opt.missions.Mission.fov`). Either a single `~regions.SkyRegion`</span>
@@ -798,7 +849,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_table_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Validate each column against :attr:`_SCHEMA`, collecting every error found."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate each column against :attr:`_SCHEMA`, collecting every error found.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **_</span>
+<span class="sd">            Accepted and ignored; lets a subclass override this hook with</span>
+<span class="sd">            extra constructor keyword arguments without disturbing the base</span>
+<span class="sd">            call signature.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Every column-schema validation failure found, if any.</span>
+<span class="sd">        """</span>
         <span class="n">errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">column_name</span><span class="p">,</span> <span class="n">column_spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SCHEMA</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -813,6 +878,18 @@
 <span class="sd">        Checks that every value in the action column is declared, then delegates to each</span>
 <span class="sd">        :class:`~uvex_transients.surveys.utils.ActionSpec` to check its action's required</span>
 <span class="sd">        columns and any custom rules.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **_</span>
+<span class="sd">            Accepted and ignored; lets a subclass override this hook with</span>
+<span class="sd">            extra constructor keyword arguments without disturbing the base</span>
+<span class="sd">            call signature.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of str</span>
+<span class="sd">            Every action-schema validation failure found, if any.</span>
 <span class="sd">        """</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span>
 
@@ -845,15 +922,58 @@
     <span class="c1"># Dunder Methods                            #</span>
     <span class="c1"># ----------------------------------------- #</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the number of scheduled actions (rows of :attr:`table`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            ``len(self.table)``.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Row</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Iterate over :attr:`table`'s rows, in schedule order.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Iterator of ~astropy.table.Row</span>
+<span class="sd">            An iterator over the underlying table's rows.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">slice</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Index into the underlying schedule table.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str, int, slice, or numpy.ndarray</span>
+<span class="sd">            Forwarded directly to :attr:`table`'s own ``__getitem__`` -- a</span>
+<span class="sd">            column name, row index/slice, or boolean/integer row mask.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        column, row, or ~astropy.table.QTable</span>
+<span class="sd">            Whatever :attr:`table`'s own indexing returns for `key`.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Check whether `action` is one of the action types present in :attr:`actions`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        action : str</span>
+<span class="sd">            The action label to look for.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether any row has this action label.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">action</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"SurveySchedule"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SurveySchedule"</span><span class="p">:</span>
@@ -872,7 +992,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        other</span>
+<span class="sd">        other : SurveySchedule</span>
 <span class="sd">            The schedule to append after ``self``. Must share the same</span>
 <span class="sd">            :attr:`fov` as ``self``.</span>
 
@@ -907,6 +1027,14 @@
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">combined_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fov</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a one-line summary showing the action count and time span.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            ``&lt;ClassName n_actions=... start_time=... end_time=...&gt;``.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> n_actions=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_actions</span><span class="si">}</span><span class="s2"> "</span>
             <span class="sa">f</span><span class="s2">"start_time=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">iso</span><span class="si">!r}</span><span class="s2"> end_time=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end_time</span><span class="o">.</span><span class="n">iso</span><span class="si">!r}</span><span class="s2">&gt;"</span>
@@ -1017,9 +1145,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time</span>
+<span class="sd">        start_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Start of the interval, or `None` to use :attr:`start_time`.</span>
-<span class="sd">        end_time</span>
+<span class="sd">        end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            End of the interval, or `None` to use :attr:`end_time`.</span>
 
 <span class="sd">        Returns</span>
@@ -1048,7 +1176,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        phase</span>
+<span class="sd">        phase : str</span>
 <span class="sd">            Label to assign to every row.</span>
 
 <span class="sd">        Returns</span>
@@ -1071,7 +1199,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        action</span>
+<span class="sd">        action : str</span>
 <span class="sd">            One of the action names declared in :attr:`_ACTION_SCHEMA`.</span>
 
 <span class="sd">        Returns</span>
@@ -1099,7 +1227,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        time</span>
+<span class="sd">        time : ~astropy.time.Time</span>
 <span class="sd">            A scalar time to look up.</span>
 
 <span class="sd">        Returns</span>
@@ -1137,9 +1265,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time</span>
+<span class="sd">        start_time : ~astropy.time.Time</span>
 <span class="sd">            Start of the query window (inclusive).</span>
-<span class="sd">        end_time</span>
+<span class="sd">        end_time : ~astropy.time.Time</span>
 <span class="sd">            End of the query window (exclusive).</span>
 
 <span class="sd">        Returns</span>
@@ -1197,7 +1325,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">observe_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        QTable: The ``"observe"`` subset of :attr:`table`, in schedule order.</span>
+<span class="sd">        QTable : The ``"observe"`` subset of :attr:`table`, in schedule order.</span>
 
 <span class="sd">        Recomputed on every access -- a boolean-mask slice, cheap enough that it isn't</span>
 <span class="sd">        worth caching alongside :meth:`get_healpix_coverage_index`'s pixel index, which</span>
@@ -1222,9 +1350,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time</span>
+<span class="sd">        start_time : ~astropy.time.Time</span>
 <span class="sd">            Beginning of the query interval, inclusive.</span>
-<span class="sd">        end_time</span>
+<span class="sd">        end_time : ~astropy.time.Time</span>
 <span class="sd">            End of the query interval, exclusive.</span>
 
 <span class="sd">        Returns</span>
@@ -1260,9 +1388,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time</span>
+<span class="sd">        start_time : ~astropy.time.Time</span>
 <span class="sd">            Beginning of the query interval, inclusive.</span>
-<span class="sd">        end_time</span>
+<span class="sd">        end_time : ~astropy.time.Time</span>
 <span class="sd">            End of the query interval, exclusive.</span>
 
 <span class="sd">        Returns</span>
@@ -1316,18 +1444,18 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_order"]``.</span>
-<span class="sd">        cache</span>
+<span class="sd">        cache : bool</span>
 <span class="sd">            If `True` (the default), reuse a previously built index for this</span>
 <span class="sd">            ``(nside, order)`` when available, and store the freshly built one for later</span>
 <span class="sd">            reuse. If `False`, always rebuild and never store the result -- useful for a</span>
 <span class="sd">            one-off query at a resolution not worth caching.</span>
-<span class="sd">        overwrite</span>
+<span class="sd">        overwrite : bool</span>
 <span class="sd">            If `True`, rebuild even if a cached index for this ``(nside, order)``</span>
 <span class="sd">            already exists. Ignored if ``cache`` is `False`, since every call already</span>
 <span class="sd">            rebuilds in that case.</span>
@@ -1419,14 +1547,14 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time</span>
+<span class="sd">        start_time : ~astropy.time.Time</span>
 <span class="sd">            Beginning of the query interval, inclusive.</span>
-<span class="sd">        end_time</span>
+<span class="sd">        end_time : ~astropy.time.Time</span>
 <span class="sd">            End of the query interval, exclusive.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_order"]``.</span>
 
@@ -1495,14 +1623,16 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        coord</span>
+<span class="sd">        coord : ~astropy.coordinates.SkyCoord</span>
 <span class="sd">            Sky position(s) to test -- scalar or array, any shape (flattened</span>
 <span class="sd">            internally).</span>
-<span class="sd">        nside, order</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            Resolution and pixel ordering of the coverage index to query -- see</span>
 <span class="sd">            :meth:`get_healpix_coverage_index`. Either may be `None` (the default) to</span>
 <span class="sd">            use ``config["healpix.default_nside"]``/``config["healpix.default_order"]``.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        order : str, optional</span>
+<span class="sd">            See ``nside`` above.</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time window to restrict matches to. Must be given together. Each</span>
 <span class="sd">            may be scalar (one shared window for every query position) or an array the</span>
 <span class="sd">            same length as flattened ``coord`` (one window per query position, e.g. an</span>
@@ -1634,9 +1764,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        coord</span>
+<span class="sd">        coord : ~astropy.coordinates.SkyCoord</span>
 <span class="sd">            Scalar sky position to test.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time window to restrict the search to (see</span>
 <span class="sd">            :meth:`get_rows_between_times`). Must be given together. If both are</span>
 <span class="sd">            `None` (the default), every ``"observe"`` row in the schedule is</span>
@@ -1714,13 +1844,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute visit counts. If omitted,</span>
 <span class="sd">            the full survey duration is used.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -1774,13 +1904,13 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute visit times. If omitted,</span>
 <span class="sd">            the full survey duration is used.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -1862,15 +1992,15 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute cadence separations.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
-<span class="sd">        pairs</span>
+<span class="sd">        pairs : str</span>
 <span class="sd">            Which pairs of observations to include: ``"all"`` for every</span>
 <span class="sd">            unique pair, or ``"consecutive"`` for only pairs of</span>
 <span class="sd">            temporally-adjacent visits.</span>
@@ -1951,15 +2081,15 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute cadence statistics.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
-<span class="sd">        pairs</span>
+<span class="sd">        pairs : str</span>
 <span class="sd">            Which pairs of observations to include: ``"all"`` for every</span>
 <span class="sd">            unique pair, or ``"consecutive"`` for only pairs of</span>
 <span class="sd">            temporally-adjacent visits.</span>
@@ -2028,12 +2158,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute the maximum gap.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -2069,6 +2199,11 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check that ``timescale`` is a single, positive `~astropy.units.Quantity`.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        timescale : ~astropy.units.Quantity</span>
+<span class="sd">            The value to validate.</span>
+
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
@@ -2084,6 +2219,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_pair_window_factors</span><span class="p">(</span><span class="n">minimum_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">maximum_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check that a pair-separation window's bounding factors are well-formed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        minimum_factor, maximum_factor : float</span>
+<span class="sd">            The bounds to validate.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -2101,6 +2241,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_pairs_mode</span><span class="p">(</span><span class="n">pairs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check that a ``pairs`` mode selector is one of the supported values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pairs : str</span>
+<span class="sd">            The mode selector to validate; must be ``"all"`` or ``"consecutive"``.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -2127,9 +2272,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        visit_times</span>
+<span class="sd">        visit_times : numpy.ndarray</span>
 <span class="sd">            Sorted elapsed observation times for one pixel.</span>
-<span class="sd">        lo, hi</span>
+<span class="sd">        lo, hi : float</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, in the same units</span>
 <span class="sd">            as ``visit_times``.</span>
 
@@ -2163,9 +2308,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        visit_times</span>
+<span class="sd">        visit_times : numpy.ndarray</span>
 <span class="sd">            Sorted elapsed observation times for one pixel.</span>
-<span class="sd">        lo, hi</span>
+<span class="sd">        lo, hi : float</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, in the same units</span>
 <span class="sd">            as ``visit_times``.</span>
 
@@ -2185,6 +2330,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_visibility_factor</span><span class="p">(</span><span class="n">visibility_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check that a control-time visibility factor is well-formed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        visibility_factor : float</span>
+<span class="sd">            The value to validate.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -2228,15 +2378,15 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        visit_times</span>
+<span class="sd">        visit_times : numpy.ndarray</span>
 <span class="sd">            Sorted elapsed observation times for one pixel.</span>
-<span class="sd">        minimum_separation, maximum_separation</span>
+<span class="sd">        minimum_separation, maximum_separation : float</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, in the same</span>
 <span class="sd">            units as ``visit_times``.</span>
-<span class="sd">        visibility_window</span>
+<span class="sd">        visibility_window : float</span>
 <span class="sd">            Maximum time after transient onset over which an observation is</span>
 <span class="sd">            considered useful, in the same units as ``visit_times``.</span>
-<span class="sd">        maximum_time</span>
+<span class="sd">        maximum_time : float</span>
 <span class="sd">            Upper boundary for allowed transient start times, in the same</span>
 <span class="sd">            units as ``visit_times``.</span>
 
@@ -2331,22 +2481,22 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        timescale</span>
+<span class="sd">        timescale : ~astropy.units.Quantity</span>
 <span class="sd">            Characteristic transient timescale.</span>
-<span class="sd">        minimum_factor, maximum_factor</span>
+<span class="sd">        minimum_factor, maximum_factor : float, optional</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, relative to</span>
 <span class="sd">            ``timescale``. Either may be `None` (the default) to use</span>
 <span class="sd">            ``config["surveys.cadence.minimum_factor"]``/</span>
 <span class="sd">            ``config["surveys.cadence.maximum_factor"]``.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional survey interval to restrict the calculation to.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
-<span class="sd">        pairs</span>
+<span class="sd">        pairs : str</span>
 <span class="sd">            Which pairs of observations to include: ``"all"`` for every</span>
 <span class="sd">            unique pair, or ``"consecutive"`` for only pairs of</span>
 <span class="sd">            temporally-adjacent visits.</span>
@@ -2433,22 +2583,22 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        timescales</span>
+<span class="sd">        timescales : ~astropy.units.Quantity</span>
 <span class="sd">            Sequence of characteristic transient timescales.</span>
-<span class="sd">        minimum_factor, maximum_factor</span>
+<span class="sd">        minimum_factor, maximum_factor : float, optional</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, relative to each</span>
 <span class="sd">            timescale. Either may be `None` (the default) to use</span>
 <span class="sd">            ``config["surveys.cadence.minimum_factor"]``/</span>
 <span class="sd">            ``config["surveys.cadence.maximum_factor"]``.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional survey interval to restrict the calculation to.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
-<span class="sd">        pairs</span>
+<span class="sd">        pairs : str</span>
 <span class="sd">            Which pairs of observations to include: ``"all"`` for every</span>
 <span class="sd">            unique pair, or ``"consecutive"`` for only pairs of</span>
 <span class="sd">            temporally-adjacent visits.</span>
@@ -2553,24 +2703,24 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        timescale</span>
+<span class="sd">        timescale : ~astropy.units.Quantity</span>
 <span class="sd">            Characteristic transient timescale.</span>
-<span class="sd">        minimum_factor</span>
+<span class="sd">        minimum_factor : float, optional</span>
 <span class="sd">            Minimum useful observation separation relative to ``timescale``, or</span>
 <span class="sd">            `None` (the default) to use ``config["surveys.cadence.minimum_factor"]``.</span>
-<span class="sd">        maximum_factor</span>
+<span class="sd">        maximum_factor : float, optional</span>
 <span class="sd">            Maximum useful observation separation relative to ``timescale``, or</span>
 <span class="sd">            `None` (the default) to use ``config["surveys.cadence.maximum_factor"]``.</span>
-<span class="sd">        visibility_factor</span>
+<span class="sd">        visibility_factor : float, optional</span>
 <span class="sd">            Duration over which the transient is assumed useful for temporal</span>
 <span class="sd">            characterization, relative to ``timescale``, or `None` (the default) to</span>
 <span class="sd">            use ``config["surveys.cadence.visibility_factor"]``.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional survey interval over which to calculate control time.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -2661,23 +2811,23 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        timescales</span>
+<span class="sd">        timescales : ~astropy.units.Quantity</span>
 <span class="sd">            Sequence of characteristic transient timescales.</span>
-<span class="sd">        minimum_factor, maximum_factor</span>
+<span class="sd">        minimum_factor, maximum_factor : float, optional</span>
 <span class="sd">            Bounds of the qualifying pair-separation window, relative to each</span>
 <span class="sd">            timescale. Either may be `None` (the default) to use</span>
 <span class="sd">            ``config["surveys.cadence.minimum_factor"]``/</span>
 <span class="sd">            ``config["surveys.cadence.maximum_factor"]``.</span>
-<span class="sd">        visibility_factor</span>
+<span class="sd">        visibility_factor : float, optional</span>
 <span class="sd">            Duration over which the transient is assumed useful for temporal</span>
 <span class="sd">            characterization, relative to each timescale, or `None` (the default) to</span>
 <span class="sd">            use ``config["surveys.cadence.visibility_factor"]``.</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional survey interval over which to calculate control time.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -2769,12 +2919,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute visit counts.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -2820,12 +2970,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start_time, end_time</span>
+<span class="sd">        start_time, end_time : ~astropy.time.Time, optional</span>
 <span class="sd">            Optional time range over which to compute visit counts.</span>
-<span class="sd">        nside</span>
+<span class="sd">        nside : int, optional</span>
 <span class="sd">            HEALPix resolution parameter, or `None` to use</span>
 <span class="sd">            ``config["healpix.default_nside"]``.</span>
-<span class="sd">        order</span>
+<span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix ordering scheme, either ``"nested"`` or ``"ring"``, or `None` to</span>
 <span class="sd">            use ``config["healpix.default_order"]``.</span>
 
@@ -2877,6 +3027,11 @@
 <span class="sd">        :class:`~astropy.utils.masked.MaskedANDArray`, regardless of what ndarray</span>
 <span class="sd">        subclass they may have picked up upstream (e.g. through repeated</span>
 <span class="sd">        :func:`~astropy.table.vstack` while a schedule is being assembled).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.table.QTable</span>
+<span class="sd">            The sanitized copy.</span>
 <span class="sd">        """</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -2928,15 +3083,15 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path</span>
+<span class="sd">        path : str or ~pathlib.Path</span>
 <span class="sd">            Destination path for the schedule table.</span>
-<span class="sd">        fov_path</span>
+<span class="sd">        fov_path : str or ~pathlib.Path, optional</span>
 <span class="sd">            Destination path for :attr:`fov`. If `None` (the default), the FOV is</span>
 <span class="sd">            not written.</span>
-<span class="sd">        table_format</span>
+<span class="sd">        table_format : str, optional</span>
 <span class="sd">            Passed through to :meth:`~astropy.table.QTable.write`; if `None`,</span>
 <span class="sd">            the format is inferred from ``path``'s suffix.</span>
-<span class="sd">        overwrite</span>
+<span class="sd">        overwrite : bool</span>
 <span class="sd">            Whether to overwrite an existing file at ``path`` and ``fov_path``.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sanitized_table</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="n">table_format</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
@@ -2970,11 +3125,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        path</span>
+<span class="sd">        path : str or ~pathlib.Path</span>
 <span class="sd">            Path to the schedule table, as written by :meth:`to_disk`.</span>
-<span class="sd">        fov_path</span>
+<span class="sd">        fov_path : str or ~pathlib.Path</span>
 <span class="sd">            Path to the instrument FOV region file, as written by :meth:`to_disk`.</span>
-<span class="sd">        table_format</span>
+<span class="sd">        table_format : str, optional</span>
 <span class="sd">            Passed through to :meth:`~astropy.table.QTable.read`; if `None`, the</span>
 <span class="sd">            format is inferred from ``path``'s suffix.</span>
 <span class="sd">        **kwargs</span>
@@ -2983,6 +3138,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        SurveySchedule</span>
+<span class="sd">            The reconstructed schedule.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>

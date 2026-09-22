@@ -440,6 +440,29 @@
 <span class="sd">    ``[t_explosion, t_explosion + transient.duration_limit)`` -- no photometry is done</span>
 <span class="sd">    here. :meth:`simulate_photometry` does the (comparatively expensive) per-observation,</span>
 <span class="sd">    per-band synthetic photometry, on demand.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event_id : int</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    transient : ~uvex_transients.transients.base.TransientBase</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    coord : ~astropy.coordinates.SkyCoord</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    t_explosion : ~astropy.time.Time</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    luminosity_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    ebv : float, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    transient_type : str, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -517,6 +540,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">t_explosion</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a one-line summary showing the event's id, type, redshift, and observation count.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            ``&lt;Event id=... type=... z=... n_observations=...&gt;``.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">"&lt;Event id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="si">}</span><span class="s2"> type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_transient_type</span><span class="si">!r}</span><span class="s2"> "</span>
             <span class="sa">f</span><span class="s2">"z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> n_observations=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span>
@@ -572,7 +603,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""QTable: The schedule's ``"observe"`` rows that covered this event while active.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        QTable: The schedule's ``"observe"`` rows that covered this event while active.</span>
 
 <span class="sd">        One row per candidate observation, chronological, with the same columns as</span>
 <span class="sd">        `SurveySchedule.table` (``start_time``, ``duration``, ``observer_location``</span>
@@ -599,6 +631,11 @@
 <span class="sd">        rather than sharing state with `simulate_photometry`, so this always returns</span>
 <span class="sd">        the same values regardless of how many times it (or `simulate_photometry`)</span>
 <span class="sd">        has already been called.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            ``{name: value}`` for each of this event's transient type's SED parameters.</span>
 <span class="sd">        """</span>
         <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
@@ -608,11 +645,31 @@
     <span class="c1"># Theoretical Photometry         #</span>
     <span class="c1"># ------------------------------ #</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_bandpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="n">Hashable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Return the `~synphot.SpectralElement` named `band` in `mission.detector.bandpasses`.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the `~synphot.SpectralElement` named `band` in `mission.detector.bandpasses`.</span>
 
 <span class="sd">        `band` may be omitted only if the detector has exactly one bandpass -- mirrors</span>
 <span class="sd">        `~m4opt.synphot.Detector`'s own bandpass-resolution rule (see</span>
 <span class="sd">        `~m4opt.synphot.Detector.get_snr`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
+<span class="sd">        band : Hashable, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to return. Required unless the</span>
+<span class="sd">            detector has exactly one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~synphot.SpectralElement</span>
+<span class="sd">            The resolved bandpass.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `mission` has no detector configured, `band` is required but not</span>
+<span class="sd">            given, or `band` isn't one of the detector's bandpasses.</span>
 <span class="sd">        """</span>
         <span class="n">detector</span> <span class="o">=</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span>
         <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -628,11 +685,23 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bandpass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""`bandpass`'s pivot frequency, and this event's own dust attenuation there.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return `bandpass`'s pivot frequency and this event's own dust attenuation there.</span>
 
 <span class="sd">        The same single-wavelength approximation `simulate_photometry` uses for its</span>
 <span class="sd">        noiseless flux (`SpectralElement.pivot`), not a full bandpass-throughput</span>
 <span class="sd">        integral -- see :meth:`mag`'s docstring for why that distinction matters here.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bandpass : ~synphot.SpectralElement</span>
+<span class="sd">            The bandpass to evaluate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of (~astropy.units.Quantity, numpy.ndarray)</span>
+<span class="sd">            `bandpass`'s pivot frequency, and the natural log of this event's</span>
+<span class="sd">            dust attenuation there (see :func:`~uvex_transients.dust.log_attenuation`).</span>
 <span class="sd">        """</span>
         <span class="n">nu</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">pivot</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">log_attenuation</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">)</span>
@@ -655,11 +724,11 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        t</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
 <span class="sd">            Observed time(s) since explosion, any shape.</span>
-<span class="sd">        mission</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
 <span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
-<span class="sd">        band</span>
+<span class="sd">        band : Hashable, optional</span>
 <span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Required unless the</span>
 <span class="sd">            detector has exactly one.</span>
 
@@ -690,6 +759,16 @@
 <span class="sd">        Same inputs, and the same pivot-wavelength-plus-dust definition matching</span>
 <span class="sd">        :meth:`simulate_photometry` exactly, as :meth:`mag` -- see its docstring.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Observed time(s) since explosion, any shape.</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
+<span class="sd">        band : Hashable, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Required unless the</span>
+<span class="sd">            detector has exactly one.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ~astropy.units.Quantity</span>
@@ -718,6 +797,11 @@
 <span class="sd">        :meth:`sample_parameters`) are supplied automatically. Wraps</span>
 <span class="sd">        `~uvex_transients.models.core.base.SpectralModel.eval_bolometric`.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time(s) since explosion, any shape.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ~astropy.units.Quantity</span>
@@ -731,6 +815,17 @@
     <span class="c1"># ------------------------------ #</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_empty_photometry_table</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a zero-row `QTable` with `simulate_photometry`'s columns and dtypes.</span>
+
+<span class="sd">        Returned as-is by `simulate_photometry` when there are no observations to</span>
+<span class="sd">        simulate, so a caller can always rely on the result having the right columns.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.table.QTable</span>
+<span class="sd">            An empty table with `simulate_photometry`'s schema.</span>
+<span class="sd">        """</span>
         <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
         <span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="n">table</span><span class="p">[</span><span class="s2">"obs_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">([],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">)</span>

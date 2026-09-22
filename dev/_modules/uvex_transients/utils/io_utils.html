@@ -440,7 +440,19 @@
 <div class="viewcode-block" id="get_config_yaml">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.io_utils.get_config_yaml.html#uvex_transients.utils.io_utils.get_config_yaml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_config_yaml</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">YAML</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return a `ruamel.yaml.YAML` instance that understands ``!astropy_cosmology``."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a YAML serializer configured for Astropy cosmologies.</span>
+
+<span class="sd">    The returned `ruamel.yaml.YAML` instance supports the</span>
+<span class="sd">    ``!astropy_cosmology`` tag for serializing and deserializing named</span>
+<span class="sd">    Astropy cosmology realizations.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ruamel.yaml.YAML</span>
+<span class="sd">        YAML serializer and deserializer configured with the</span>
+<span class="sd">        ``!astropy_cosmology`` representer and constructor.</span>
+<span class="sd">    """</span>
     <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s2">"rt"</span><span class="p">)</span>
 
     <span class="c1"># Registered for both the concrete `FlatLambdaCDM` (what all of Astropy's</span>
@@ -448,6 +460,7 @@
     <span class="c1"># `FLRW` base, since ruamel dispatches representers by exact type.</span>
     <span class="k">for</span> <span class="n">cosmology_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">FlatLambdaCDM</span><span class="p">,</span> <span class="n">FLRW</span><span class="p">):</span>
         <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">cosmology_type</span><span class="p">,</span> <span class="n">_represent_cosmology</span><span class="p">)</span>
+
     <span class="n">yaml</span><span class="o">.</span><span class="n">constructor</span><span class="o">.</span><span class="n">add_constructor</span><span class="p">(</span><span class="n">_COSMOLOGY_TAG</span><span class="p">,</span> <span class="n">_construct_cosmology</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">yaml</span></div>

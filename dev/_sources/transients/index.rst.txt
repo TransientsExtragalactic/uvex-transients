@@ -8,8 +8,14 @@ Transients
 ===========
 
 To allow users to simulate observations of transient populations with UVEX, a number of transient are already implemented
-in the code base. The intention of these implementations is **intentionally minimal**, reflecting the phenomenological nature
-of the models and the goals of the code base.
+in the code base. Roughly speaking, transients are categorized as either **phenomenological**, or **physical**. Phenomenological
+models are template-based and empirically motivated (i.e. fit to observed light curves), and are generally used in favor of
+complex models when the underlying physics is not well understood, or when the goal is to generate a large number of light curves quickly.
+These are the models which are primarily used in yield calculations.
+
+The **physical** models represent more detailed, physically informed models, and are generally used when considering the feasibility
+of detailed analysis, or when considering TOO science. These may be more computationally expensive; however, they are still available
+for use in computationally heavy workflows.
 
 Each page below documents one transient class or group: what the transient physically is, how its
 volumetric rate is determined, the SED model and default parameter priors used to simulate it, and
@@ -105,6 +111,17 @@ empirical shape fit directly to observed light curves.
       +++
       :math:`z \le 1` · 20 day window
 
+   .. grid-item-card:: Superluminous Supernovae
+      :link: slsne
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1
+
+      Hydrogen-poor SLSNe-I: a magnetar spin-down power source diffusing through Arnett-style
+      homologously expanding ejecta, with gamma-ray leakage and a cooling blackbody photosphere.
+
+      +++
+      :math:`z \le 4` · 600 day window
+
 .. note::
 
    Other kinds of first-principles physical models (e.g. full radiative transfer or
@@ -122,3 +139,4 @@ empirical shape fit directly to observed light curves.
    type_ii
    type_i
    shock_cooling_iib
+   slsne

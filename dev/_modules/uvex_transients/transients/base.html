@@ -460,6 +460,13 @@
 <span class="sd">    (:attr:`duration_limit`). All flux/magnitude/spectrum evaluation is the SED's</span>
 <span class="sd">    own job -- see :class:`~uvex_transients.models.core.base.SpectralModel` and, for a</span>
 <span class="sd">    composed lightcurve + spectral-shape SED, :class:`~uvex_transients.models.core.base.ComposedSpectralModel`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        The cosmology to use for this transient class. See :meth:`__init__`.</span>
+<span class="sd">    **_</span>
+<span class="sd">        Ignored. See :meth:`__init__`.</span>
 <span class="sd">    """</span>
 
     <span class="c1"># ------------------------------ #</span>
@@ -489,6 +496,21 @@
     <span class="c1"># ------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Register a concrete subclass in `_REGISTRY`, enforcing that it set its class variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Forwarded to :meth:`object.__init_subclass__` unchanged; this</span>
+<span class="sd">            class declares no class-keyword-argument options of its own.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If a concrete (non-abstract) subclass leaves `DEFAULT_MODEL` or</span>
+<span class="sd">            `DEFAULT_DURATION` unset.</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init_subclass__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># Concrete subclasses must supply real values for both class variables (see the</span>
@@ -520,7 +542,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        cosmology: ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology, optional</span>
 <span class="sd">            The cosmology to use for this transient class. This is used to determine</span>
 <span class="sd">            the relevant luminosity distances of objects and to account for cosmological</span>
 <span class="sd">            volume corrections. If ``None`` (default), the configured default cosmology</span>
@@ -551,7 +573,8 @@
     <span class="c1"># ------------------------------ #</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cosmology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
 
 <span class="sd">        Reassigning this only replaces the `Cosmology` instance itself; it does not</span>
 <span class="sd">        by itself invalidate any cached, cosmology-dependent quantities on subclasses</span>
@@ -562,6 +585,19 @@
 
     <span class="nd">@cosmology</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the cosmology used for luminosity-distance/volume calculations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology</span>
+<span class="sd">            The new cosmology.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `cosmology` is not an `~astropy.cosmology.Cosmology` instance.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">Cosmology</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
@@ -570,7 +606,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpectralModel</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        SpectralModel: This instance's SED -- flux, magnitude, and spectrum evaluation all live here.</span>
 
 <span class="sd">        See :class:`~uvex_transients.models.core.base.SpectralModel` for the full API</span>
 <span class="sd">        (``flux``/``flux_bolometric``/``flux_band``, their ``mag*`` counterparts, and</span>
@@ -583,7 +620,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">duration_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""~astropy.units.Quantity: Upper bound on this transient's total duration.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: Upper bound on this transient's total duration.</span>
 
 <span class="sd">        Defaults to `DEFAULT_DURATION`. Used for windowing -- determining which</span>
 <span class="sd">        observations could plausibly have detected a given transient -- so this</span>
@@ -595,11 +633,38 @@
 
     <span class="nd">@duration_limit</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">duration_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration_limit</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the upper bound on this transient's total duration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration_limit : ~astropy.units.Quantity</span>
+<span class="sd">            The new duration limit; see :attr:`duration_limit`.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_duration_limit</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_duration_limit</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Validate a candidate `duration_limit`, shared by the setter and (implicitly) `__init__`."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `duration_limit`, shared by the setter and (implicitly) `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration_limit : ~astropy.units.Quantity</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            `duration_limit`, unchanged.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `duration_limit` is not a Quantity with time units.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `duration_limit` is not finite and positive.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="n">duration_limit</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">physical_type</span> <span class="o">!=</span> <span class="s2">"time"</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"`duration_limit` must be an astropy Quantity with time units, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span><span class="si">!r}</span><span class="s2">."</span>
@@ -618,12 +683,27 @@
 <div class="viewcode-block" id="ExtragalacticTransient">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.supernovae.ExtragalacticTransient">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExtragalacticTransient</span><span class="p">(</span><span class="n">TransientBase</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Extragalactic transient with a cosmological volumetric event rate; see the module docstring."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extragalactic transient with a cosmological volumetric event rate; see the module docstring.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        The cosmology to use for this transient class. See :meth:`__init__`.</span>
+<span class="sd">    """</span>
 
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_Z_GRID_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cosmology</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Instantiate the transient, and set up (but do not yet build) its lazy rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">            The cosmology to use for this transient class. See :meth:`TransientBase.__init__`.</span>
+<span class="sd">        """</span>
         <span class="c1"># Instantiate the parent class (resolves `None` to the configured default).</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">)</span>
 
@@ -648,7 +728,8 @@
     <span class="c1"># ---------------------------------------- #</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cosmology</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
 
 <span class="sd">        Reassigning this invalidates the cached rate table -- see</span>
 <span class="sd">        `TransientBase.cosmology` and `integrated_event_rate`/`luminosity_distance_grid`.</span>
@@ -657,6 +738,19 @@
 
     <span class="nd">@cosmology</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cosmology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Cosmology</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the cosmology used for luminosity-distance/volume calculations, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : ~astropy.cosmology.Cosmology</span>
+<span class="sd">            The new cosmology.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `value` is not an `~astropy.cosmology.Cosmology` instance.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Cosmology</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Parameter 'cosmology' must be an instance of astropy.cosmology.Cosmology, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
@@ -671,6 +765,14 @@
 
     <span class="nd">@redshift_limit</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the upper redshift bound of `redshift_grid`, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : float</span>
+<span class="sd">            The new redshift limit.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_redshift_limit</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
 
@@ -681,6 +783,14 @@
 
     <span class="nd">@redshift_grid_size</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">redshift_grid_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the number of points in `redshift_grid`, invalidating the rate cache.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : int</span>
+<span class="sd">            The new grid size.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_redshift_grid_size</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_invalidate_rate_cache</span><span class="p">()</span>
 
@@ -692,7 +802,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">luminosity_distance_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""~astropy.units.Quantity: :math:`D_L(z)` at each point of `redshift_grid`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: :math:`D_L(z)` at each point of `redshift_grid`.</span>
 
 <span class="sd">        Cached alongside `redshift_grid` (built by the same `_ensure_rate_table` call,</span>
 <span class="sd">        against the same `cosmology`), so a caller with a batch of sampled redshifts</span>
@@ -719,12 +830,48 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_redshift_limit</span><span class="p">(</span><span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `redshift_limit`, shared by the setter and `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z_max : float</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            `z_max`, coerced to a plain Python ``float``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `z_max` is not finite and positive.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z_max</span><span class="p">)</span> <span class="ow">or</span> <span class="n">z_max</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`redshift_limit` must be finite and positive, got </span><span class="si">{</span><span class="n">z_max</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">z_max</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_redshift_grid_size</span><span class="p">(</span><span class="n">n_grid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `redshift_grid_size`, shared by the setter and `__init__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_grid : int</span>
+<span class="sd">            The candidate value to validate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            `n_grid`, coerced to a plain Python ``int``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `n_grid` is not an integer &gt;= 2.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">n_grid</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`redshift_grid_size` must be an integer &gt;= 2, got </span><span class="si">{</span><span class="n">n_grid</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_grid</span><span class="p">)</span>

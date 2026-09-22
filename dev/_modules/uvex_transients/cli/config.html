@@ -397,7 +397,8 @@
                 <article class="bd-article">
                   
   <h1>Source code for uvex_transients.cli.config</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Parsing/validation for a CLI run-config YAML file.</span>
+<span></span><span class="sd">"""</span>
+<span class="sd">Parsing/validation for a CLI run-config YAML file.</span>
 
 <span class="sd">A single YAML file drives every CLI command (see `uvex_transients.cli.main`); each</span>
 <span class="sd">command only needs the section(s) relevant to it (`generate:` for ``generate``,</span>
@@ -449,7 +450,21 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_quantity</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default_unit</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">UnitBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resolve a YAML value (a `Quantity`, a unit string like ``"200 day"``, or a bare number) to a `Quantity`."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a YAML value (a `Quantity`, a unit string like ``"200 day"``, or a bare number) to a `Quantity`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : ~astropy.units.Quantity, str, or float</span>
+<span class="sd">        The raw YAML value.</span>
+<span class="sd">    default_unit : ~astropy.units.UnitBase</span>
+<span class="sd">        Unit to apply if `value` is a bare number.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The resolved quantity.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">value</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -458,7 +473,24 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_mission</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The mission's attribute name in `m4opt.missions`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    m4opt.missions.Mission</span>
+<span class="sd">        The resolved mission.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `name` is not a known `m4opt.missions.Mission` attribute.</span>
+<span class="sd">    """</span>
     <span class="n">mission</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">Mission</span><span class="p">):</span>
         <span class="n">available</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mission</span><span class="p">))</span>
@@ -467,7 +499,25 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_schedule</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveySchedule</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resolve a ``schedule:`` block's ``name:`` / ``url:`` / ``path:``+``fov_path:`` (mutually exclusive)."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a ``schedule:`` block's ``name:`` / ``url:`` / ``path:``+``fov_path:`` (mutually exclusive).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section : Mapping</span>
+<span class="sd">        The parsed ``schedule:`` YAML block.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SurveySchedule</span>
+<span class="sd">        The resolved schedule.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If more than one of ``name``/``url``/``path``+``fov_path`` is given, or</span>
+<span class="sd">        ``path`` is given without ``fov_path`` (or vice versa).</span>
+<span class="sd">    """</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"url"</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">)</span>
@@ -486,7 +536,21 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_apply_parameter_overrides</span><span class="p">(</span><span class="n">sed</span><span class="p">,</span> <span class="n">overrides</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Apply a ``parameters:`` block's per-parameter overrides via `Parameter.fix`/`Parameter.set_prior`."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Apply a ``parameters:`` block's per-parameter overrides via `Parameter.fix`/`Parameter.set_prior`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sed : SpectralModel, Lightcurve, or Spectrum</span>
+<span class="sd">        The model whose parameters to override, keyed by name.</span>
+<span class="sd">    overrides : Mapping</span>
+<span class="sd">        The parsed ``parameters:`` YAML block.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If `overrides` names a parameter `sed` doesn't have.</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">parameter</span> <span class="o">=</span> <span class="n">sed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -505,7 +569,25 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_transients</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TransientBase</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Resolve a ``transients:`` block into ``{key: TransientBase instance}``."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a ``transients:`` block into ``{key: TransientBase instance}``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section : Mapping</span>
+<span class="sd">        The parsed ``transients:`` YAML block.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to TransientBase</span>
+<span class="sd">        One constructed, configured transient instance per declared key.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `section` is empty, an entry is missing its required ``class`` key,</span>
+<span class="sd">        names an unknown transient class, or has unrecognized key(s) left over.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">section</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'transients:' must declare at least one transient type."</span><span class="p">)</span>
 
@@ -549,7 +631,25 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_cuts</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"CutSpec"</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section : Mapping</span>
+<span class="sd">        The parsed ``cuts:`` YAML block.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to CutSpec</span>
+<span class="sd">        One resolved `CutSpec` per declared key, in declared order.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If an entry is missing its required ``type`` key, names an unknown</span>
+<span class="sd">        cut type, or uses a reserved parameter name.</span>
+<span class="sd">    """</span>
     <span class="n">available</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span>
 
     <span class="n">cuts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -617,9 +717,26 @@
 <span class="sd">    `cut` reads `.schedule`/`.transients`/`.mission`/`.cuts`; `photometry` reads</span>
 <span class="sd">    `.schedule`/`.transients`/`.mission`/`.photometry`), so a config missing an unrelated</span>
 <span class="sd">    section (e.g. no `photometry:` block, if you never run that command) still works.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw : Mapping</span>
+<span class="sd">        The parsed run-config YAML, as a nested mapping.</span>
+<span class="sd">    source : str or ~pathlib.Path, optional</span>
+<span class="sd">        The config file's path, used only to make error messages more specific.</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Store the parsed config; every section is resolved lazily on first access.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw : Mapping</span>
+<span class="sd">            The parsed run-config YAML, as a nested mapping.</span>
+<span class="sd">        source : str or ~pathlib.Path, optional</span>
+<span class="sd">            The config file's path, used only to make error messages more specific.</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span> <span class="o">=</span> <span class="n">raw</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span>
 
@@ -635,7 +752,19 @@
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.RunConfig.from_yaml.html#uvex_transients.cli.config.RunConfig.from_yaml">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"RunConfig"</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Parse a run-config YAML file (see `uvex_transients.cli.yaml_tags.get_run_yaml`)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Parse a run-config YAML file (see `uvex_transients.cli.yaml_tags.get_run_yaml`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str or ~pathlib.Path</span>
+<span class="sd">            Path to the run-config YAML file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        RunConfig</span>
+<span class="sd">            The parsed config.</span>
+<span class="sd">        """</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">raw</span> <span class="o">=</span> <span class="n">get_run_yaml</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -645,11 +774,43 @@
 <div class="viewcode-block" id="RunConfig.has_section">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.RunConfig.has_section.html#uvex_transients.cli.config.RunConfig.has_section">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Whether the parsed config has a top-level ``name:`` section at all."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether the parsed config has a top-level ``name:`` section at all.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The section name to check for.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether the section is present.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_require_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a required top-level section, raising a clear error if it's missing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The section name to look up.</span>
+<span class="sd">        command : str</span>
+<span class="sd">            The CLI command that requires it, used to phrase the error message.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Mapping</span>
+<span class="sd">            The section's parsed contents.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the section is missing.</span>
+<span class="sd">        """</span>
         <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">section</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="k">else</span> <span class="s2">""</span>
@@ -658,28 +819,56 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveySchedule</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The resolved `SurveySchedule` (``schedule:`` section; falls back to the package default)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The resolved `SurveySchedule` (``schedule:`` section; falls back to the package default).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SurveySchedule</span>
+<span class="sd">            The resolved schedule.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span> <span class="o">=</span> <span class="n">_resolve_schedule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"schedule"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mission</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The resolved `Mission` (``mission:`` section; defaults to ``"uvex"``)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The resolved `Mission` (``mission:`` section; defaults to ``"uvex"``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        m4opt.missions.Mission</span>
+<span class="sd">            The resolved mission.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mission</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mission</span> <span class="o">=</span> <span class="n">_resolve_mission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mission"</span><span class="p">,</span> <span class="n">_DEFAULT_MISSION</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mission</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">transients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TransientBase</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""The resolved ``{key: TransientBase instance}`` (``transients:`` section, required)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The resolved ``{key: TransientBase instance}`` (``transients:`` section, required).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to TransientBase</span>
+<span class="sd">            One constructed, configured transient instance per declared key.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span> <span class="o">=</span> <span class="n">_resolve_transients</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"transients"</span><span class="p">,</span> <span class="s2">"generate/cut/photometry"</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveySimulator</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""A `SurveySimulator` built from `.schedule`/`.transients` (cached across one CLI invocation)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        A `SurveySimulator` built from `.schedule`/`.transients` (cached across one CLI invocation).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SurveySimulator</span>
+<span class="sd">            The resolved simulator.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">seed</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"generate"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"seed"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span> <span class="n">transients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transients</span><span class="p">,</span> <span class="n">simulation_seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
@@ -687,7 +876,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The parsed ``generate:`` section (required by the ``generate`` command)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The parsed ``generate:`` section (required by the ``generate`` command).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GenerateConfig</span>
+<span class="sd">            The parsed section.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"generate"</span><span class="p">,</span> <span class="s2">"generate"</span><span class="p">)</span>
             <span class="k">if</span> <span class="s2">"time_bins"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
@@ -702,14 +898,28 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""The parsed ``cuts:`` section, in declared order (required by the ``cut`` command)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The parsed ``cuts:`` section, in declared order (required by the ``cut`` command).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to CutSpec</span>
+<span class="sd">            One resolved `CutSpec` per declared key, in declared order.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span> <span class="o">=</span> <span class="n">_resolve_cuts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"cuts"</span><span class="p">,</span> <span class="s2">"cut"</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">photometry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhotometryConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default)."""</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PhotometryConfig</span>
+<span class="sd">            The parsed section.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"photometry"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="o">=</span> <span class="n">PhotometryConfig</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bands"</span><span class="p">),</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"n_sigma"</span><span class="p">))</span>

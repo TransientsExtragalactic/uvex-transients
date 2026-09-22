@@ -469,6 +469,31 @@
     <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_MoragComponents</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Precompute the intermediate scalings/break points shared by Morag+24's shock-cooling relations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_time : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
+<span class="sd">    log_v_star : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the scale velocity of the shock near the surface, in cm/s.</span>
+<span class="sd">    log_radius : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the stellar radius, in cm.</span>
+<span class="sd">    log_opacity : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the Rosseland mean opacity, in cm^2/g.</span>
+<span class="sd">    log_envelope_mass : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the envelope mass, in g.</span>
+<span class="sd">    log_core_mass : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the core mass, in g.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    _MoragComponents</span>
+<span class="sd">        The precomputed scalings, break time/temperature/luminosity, validity</span>
+<span class="sd">        time bounds, and a boolean ``valid`` mask, shared by</span>
+<span class="sd">        :func:`_log_morag_temperature_log_K` and :func:`_log_morag_bolometric`.</span>
+<span class="sd">    """</span>
     <span class="c1"># Coerce inputs. Equations in the paper are normalized against standard scalings for</span>
     <span class="c1"># v, R, and kappa.</span>
     <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">log_time</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -538,6 +563,21 @@
 <span class="sd">    Shared by :func:`_log_morag_Tcolor` (which computes :attr:`components` itself, for</span>
 <span class="sd">    standalone use) and any caller that already has :attr:`components` in hand, to avoid</span>
 <span class="sd">    recomputing :func:`_log_morag_components`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    components : _MoragComponents</span>
+<span class="sd">        Precomputed scalings/break points, from :func:`_log_morag_components`.</span>
+<span class="sd">    log_time : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
+<span class="sd">    mask_invalid : bool, optional</span>
+<span class="sd">        If ``True``, mask out invalid parameter ranges (see</span>
+<span class="sd">        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~numpy.ndarray or float</span>
+<span class="sd">        The natural log of the color temperature, in Kelvin.</span>
 <span class="sd">    """</span>
     <span class="n">log_t_rel</span> <span class="o">=</span> <span class="n">log_time</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_break</span>
     <span class="n">log_T</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_T_break</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
@@ -562,6 +602,21 @@
 <span class="sd">    :math:`L(t) = L_\mathrm{break} \left[ \tilde t^{-4/3} +</span>
 <span class="sd">    0.9\,e^{-\sqrt{2t/t_\mathrm{tr}}}\,\tilde t^{-0.17} \right]`,</span>
 <span class="sd">    where :math:`\tilde t = t / t_\mathrm{break}`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    components : _MoragComponents</span>
+<span class="sd">        Precomputed scalings/break points, from :func:`_log_morag_components`.</span>
+<span class="sd">    log_time : ~numpy.ndarray or float</span>
+<span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
+<span class="sd">    mask_invalid : bool, optional</span>
+<span class="sd">        If ``True``, mask out invalid parameter ranges (see</span>
+<span class="sd">        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~numpy.ndarray or float</span>
+<span class="sd">        The natural log of the bolometric luminosity, in erg/s.</span>
 <span class="sd">    """</span>
     <span class="n">log_t_rel</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_rel</span>
     <span class="n">log_sqrt_arg</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_time</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_tr</span><span class="p">)</span>
@@ -590,29 +645,27 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    log_time: ~numpy.ndarray or float</span>
+<span class="sd">    log_time : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
-<span class="sd">    log_v_star: ~numpy.ndarray or float</span>
+<span class="sd">    log_v_star : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the scale velocity of the shock near the surface in :math:`{\rm cm/s}`.</span>
 <span class="sd">        See equations (2) and (3) of :footcite:t:`2024MNRAS.528.7137M`.</span>
-<span class="sd">    log_radius: ~numpy.ndarray or float</span>
+<span class="sd">    log_radius : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the stellar radius in :math:`{\rm cm}`.</span>
-<span class="sd">    log_opacity: ~numpy.ndarray or float</span>
+<span class="sd">    log_opacity : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the Rosseland mean opacity in :math:`{\rm cm^2/g}`.</span>
-<span class="sd">    log_envelope_mass: ~numpy.ndarray or float</span>
+<span class="sd">    log_envelope_mass : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the envelope mass in :math:`{\rm g}`.</span>
-<span class="sd">    log_core_mass: ~numpy.ndarray or float</span>
+<span class="sd">    log_core_mass : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the core mass in :math:`{\rm g}`.</span>
-<span class="sd">    mask_invalid: bool</span>
+<span class="sd">    mask_invalid : bool</span>
 <span class="sd">        If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise</span>
 <span class="sd">        they will be retained. By default, this is ``False``.</span>
 
-
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    log_T: ~numpy.ndarray or float</span>
+<span class="sd">    ~numpy.ndarray or float</span>
 <span class="sd">        The logarithmic temperature produced by the model.</span>
-
 <span class="sd">    """</span>
     <span class="c1"># Coerce inputs. Equations in the paper are normalized against standard scalings for</span>
     <span class="c1"># v, R, and kappa.</span>
@@ -651,28 +704,28 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    log_time: ~numpy.ndarray or float</span>
+<span class="sd">    log_time : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
-<span class="sd">    log_frequency: ~numpy.ndarray or float</span>
+<span class="sd">    log_frequency : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the (rest-frame) frequency in :math:`{\rm Hz}`.</span>
-<span class="sd">    log_v_star: ~numpy.ndarray or float</span>
+<span class="sd">    log_v_star : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the scale velocity of the shock near the surface in :math:`{\rm cm/s}`.</span>
 <span class="sd">        See equations (2) and (3) of :footcite:t:`2024MNRAS.528.7137M`.</span>
-<span class="sd">    log_radius: ~numpy.ndarray or float</span>
+<span class="sd">    log_radius : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the stellar radius in :math:`{\rm cm}`.</span>
-<span class="sd">    log_opacity: ~numpy.ndarray or float</span>
+<span class="sd">    log_opacity : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the Rosseland mean opacity in :math:`{\rm cm^2/g}`.</span>
-<span class="sd">    log_envelope_mass: ~numpy.ndarray or float</span>
+<span class="sd">    log_envelope_mass : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the envelope mass in :math:`{\rm g}`.</span>
-<span class="sd">    log_core_mass: ~numpy.ndarray or float</span>
+<span class="sd">    log_core_mass : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the core mass in :math:`{\rm g}`.</span>
-<span class="sd">    mask_invalid: bool</span>
+<span class="sd">    mask_invalid : bool</span>
 <span class="sd">        If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise</span>
 <span class="sd">        they will be retained. By default, this is ``False``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    log_L_nu: ~numpy.ndarray or float</span>
+<span class="sd">    ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the specific luminosity, in :math:`{\rm erg\,s^{-1}\,Hz^{-1}}`.</span>
 <span class="sd">    """</span>
     <span class="c1"># Coerce components.</span>
@@ -837,6 +890,23 @@
         <span class="n">core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_MoragComponents</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Compute this SED's :func:`_log_morag_components` from its own cgs parameter values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        v_star, radius, opacity, envelope_mass, core_mass : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        _MoragComponents</span>
+<span class="sd">            The precomputed scalings/break points, from :func:`_log_morag_components`.</span>
+<span class="sd">        """</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">_log_morag_components</span><span class="p">(</span>
             <span class="n">log_time</span><span class="o">=</span><span class="n">log_time</span><span class="p">,</span>
@@ -849,10 +919,23 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`T_\mathrm{col}(t)` in Kelvin -- the color temperature shared by both subclasses.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T_\mathrm{col}(t)` in Kelvin -- the color temperature shared by both subclasses.</span>
 
 <span class="sd">        For :class:`MoragShockCoolingSED`, this is the underlying blackbody temperature Eq. A7</span>
 <span class="sd">        reshapes in frequency, not a temperature that alone characterizes its emergent spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            :math:`T_\mathrm{col}(t)`, in Kelvin.</span>
 <span class="sd">        """</span>
         <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -911,6 +994,25 @@
         <span class="n">core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Compute :func:`_log_morag_Lnu` from this SED's own cgs parameter values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        v_star, radius, opacity, envelope_mass, core_mass : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the specific luminosity, in erg/s/Hz.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">_log_morag_Lnu</span><span class="p">(</span>
             <span class="n">log_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
             <span class="n">log_frequency</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">nu</span><span class="p">),</span>
@@ -924,12 +1026,42 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\nu(\nu, t)`, delegated to :func:`_log_morag_Lnu`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\nu(\nu, t)`, delegated to :func:`_log_morag_Lnu`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_Lnu</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\mathrm{bol}(t)`, via the fixed-grid quadrature described in the class docstring."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\mathrm{bol}(t)`, via the fixed-grid quadrature described in the class docstring.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
         <span class="n">t_grid</span><span class="p">,</span> <span class="o">*</span><span class="n">param_arrays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="o">*</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">param_grids</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">param_arrays</span><span class="p">))</span>
 
@@ -979,14 +1111,44 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\mathrm{bol}(t)`, Eq. A1 -- exact, no integration needed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_log_morag_bolometric</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log S(\nu, T_\mathrm{col}(t))`, delegated to :func:`planck_shape_log_cgs`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
+<span class="sd">        """</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
         <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
@@ -994,7 +1156,23 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T_\mathrm{col}(t))`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T_\mathrm{col}(t))`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
 
 
@@ -1190,14 +1368,44 @@
         <span class="n">alpha_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`T(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">cooling_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">T0</span><span class="o">=</span><span class="n">T0</span><span class="p">,</span> <span class="n">T_floor</span><span class="o">=</span><span class="n">T_floor</span><span class="p">,</span> <span class="n">timescale</span><span class="o">=</span><span class="n">tau_T</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_T</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TypeIIbSED.temperature">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIb.TypeIIbSED.temperature.html#uvex_transients.models.supernovae.IIb.TypeIIbSED.temperature">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`T(t)` in Kelvin."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T(t)` in Kelvin.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            :math:`T(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
         <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
 
@@ -1207,9 +1415,22 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`TwoComponentBazinLightcurve`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`TwoComponentBazinLightcurve`.</span>
 
 <span class="sd">        Exact -- no integration needed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
 <span class="sd">        """</span>
         <span class="n">lightcurve_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">TwoComponentBazinLightcurve</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">TwoComponentBazinLightcurve</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">lightcurve_parameters</span><span class="p">)</span>
@@ -1219,9 +1440,24 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.</span>
 
 <span class="sd">        Evaluated at this ``t``'s own cooling-law temperature.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
 <span class="sd">        """</span>
         <span class="n">temperature</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
@@ -1231,7 +1467,23 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
 
 </pre></div>

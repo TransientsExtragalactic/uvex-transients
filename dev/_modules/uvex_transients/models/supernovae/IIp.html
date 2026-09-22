@@ -654,7 +654,8 @@
         <span class="n">s_1</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""Doubly-broken power-law photospheric temperature; see the class docstring.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Doubly-broken power-law photospheric temperature; see the class docstring.</span>
 
 <span class="sd">        Reuses the light curve's own ``t0``/``t_P``. Evaluated in days -- ``t``, ``t0``, ``t_P``</span>
 <span class="sd">        arrive in cgs (seconds), converted back here since (unlike the rest of this model) the</span>
@@ -662,6 +663,20 @@
 
 <span class="sd">        Floored at ``_T_FLOOR_K`` -- well before ``t0`` (unconstrained; ``L_bol`` is already ~0</span>
 <span class="sd">        there) the early branch can otherwise underflow toward 0 K.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        t0, t_P, T_0, alpha_r, alpha_c, alpha_p, s_0, s_1 : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`T(t)`, in Kelvin.</span>
 <span class="sd">        """</span>
         <span class="n">t_day</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
         <span class="n">t0_day</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
@@ -678,7 +693,21 @@
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature.html#uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`T(t)` in Kelvin."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T(t)` in Kelvin.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            :math:`T(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
         <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
 
@@ -688,10 +717,23 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\ln L_\mathrm{bol}(t)`; see the class docstring.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\mathrm{bol}(t)`; see the class docstring.</span>
 
 <span class="sd">        Floored at ``_L_BOL_FLOOR_CGS`` -- well before ``t0``/well after ``t_P`` this is already</span>
 <span class="sd">        ~0 and otherwise unconstrained, and can underflow toward 0 in float64.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
 <span class="sd">        """</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t0"</span><span class="p">]</span>
         <span class="n">t_P</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_P"</span><span class="p">]</span>
@@ -720,9 +762,24 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.</span>
 
 <span class="sd">        Evaluated at this ``t``'s own cooling-law temperature.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
 <span class="sd">        """</span>
         <span class="n">temperature</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
@@ -732,7 +789,23 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">""":math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`."""</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
 
 
