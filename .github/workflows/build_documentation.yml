@@ -4,18 +4,16 @@
 # Docs                                                          #
 # ------------------------------------------------------------- #
 # This workflow builds and deploys the documentation for the
-# UVEX Transients project using Sphinx. It supports two deployment modes:
+# UVEX Transients project using Sphinx, only on release: a `vX.Y.Z` tag push
+# deploys versioned docs to `/vX.Y.Z`, updates `versions.json` (consumed by
+# the pydata-sphinx-theme version switcher in the built docs), and refreshes
+# the root `/` redirect to point at the newest tag.
 #
-# 1. Dev docs:   pushed to `/dev` when a `dev_*` branch is updated
-# 2. Stable docs: pushed to `/stable` when a `vX.Y.Z` tag is pushed
-#
-# A redirect index is also deployed to root `/` on main or version tag.
+# `workflow_dispatch` is kept so docs can be rebuilt on demand without
+# cutting a release (e.g. to pick up a docs-only fix for the latest tag).
 name: Build and Deploy Documentation
 on:
   push:
-    branches:
-      - main
-      - dev-*              # Match dev branches like dev_v1.4.0
     tags:
       - "v*"               # Match version tags like v1.2.0
   workflow_dispatch:
@@ -65,12 +63,14 @@ jobs:
       # Actually build the documentation. We use the `-j auto` flag to
       # allow Sphinx to use all available CPU cores for faster builds.
       - name: Build documentation with Sphinx
+        env:
+          SPHINX_VERSION_MATCH: ${{ github.ref_name }}
         run: |
           mkdir -p docs/_build/html
           sphinx-build -b html -j auto docs/source docs/_build/html
 
       # ---------------------------------------------------------
-      # 1️⃣ Deploy versioned docs (vX.Y.Z or dev)
+      # 1️⃣ Deploy versioned docs (vX.Y.Z)
       # ---------------------------------------------------------
       - name: Deploy versioned documentation
         uses: peaceiris/actions-gh-pages@v4
@@ -78,7 +78,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: docs/_build/html
-          destination_dir: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}
+          destination_dir: ${{ github.ref_name }}
       # ---------------------------------------------------------
       # 2️⃣ Update versions.json + root redirect
       # ---------------------------------------------------------
@@ -103,16 +103,6 @@ jobs:
           BASE_URL = "${BASE_URL}"
           root = Path(".")
 
-          versions = []
-
-          # Include dev if exists
-          if (root / "dev").is_dir():
-              versions.append({
-                  "name": "dev",
-                  "version": "dev",
-                  "url": f"{BASE_URL}/dev/"
-              })
-
           tag_dirs = []
           for p in root.iterdir():
               if p.is_dir() and re.match(r"^v\d+\.\d+\.\d+", p.name):
@@ -120,27 +110,26 @@ jobs:
 
           tag_dirs.sort(reverse=True)
 
-          for tag in tag_dirs:
-              versions.append({
+          versions = []
+          for i, tag in enumerate(tag_dirs):
+              entry = {
                   "name": tag,
                   "version": tag,
-                  "url": f"{BASE_URL}/{tag}/"
-              })
+                  "url": f"{BASE_URL}/{tag}/",
+              }
+              if i == 0:
+                  entry["preferred"] = True
+              versions.append(entry)
 
           (root / "versions.json").write_text(json.dumps(versions, indent=2) + "\n")
           print("Updated versions.json")
           PY
 
-          # Root redirect (only on main or tag)
-          if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == refs/tags/* ]]; then
+          # Root redirect to the latest released version.
+          LATEST=$(ls -d v*/ 2>/dev/null | sed 's:/*$::' | sort -Vr | head -n 1)
 
-            LATEST=$(ls -d v*/ 2>/dev/null | sed 's:/*$::' | sort -Vr | head -n 1)
-
-            if [ -n "$LATEST" ]; then
-              TARGET="$BASE_URL/$LATEST/"
-            else
-              TARGET="$BASE_URL/dev/"
-            fi
+          if [ -n "$LATEST" ]; then
+            TARGET="$BASE_URL/$LATEST/"
 
             echo "Creating root redirect to $TARGET"
 

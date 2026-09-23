@@ -62,6 +62,11 @@ exclude_patterns = [
 # Set the HTML theme to "pydata_sphinx_theme" and configure theme options for the project.
 html_theme = "pydata_sphinx_theme"
 
+# Version selector for the docs switcher dropdown. Set by CI (`build_documentation.yml`)
+# to the tag being built (e.g. "v1.2.0") so it matches an entry in `versions.json`;
+# falls back to "dev" for local builds, which simply won't highlight any entry.
+version_match = os.environ.get("SPHINX_VERSION_MATCH", "dev")
+
 html_theme_options = {
     "logo": {
         "text": "UVEX Transients",
@@ -81,6 +86,14 @@ html_theme_options = {
             "type": "fontawesome",
         }
     ],
+    "switcher": {
+        "json_url": "https://transientsextragalactic.github.io/uvex-transients/versions.json",
+        "version_match": version_match,
+    },
+    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    # Local/dev builds have no matching entry in versions.json (and no network
+    # guarantee); don't fail the build over it.
+    "check_switcher": False,
 }
 
 html_favicon = "images/trex_logo.png"
