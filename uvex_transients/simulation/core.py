@@ -36,6 +36,7 @@ from uvex_transients.utils import config, get_seed_sequence, logger, resolve_hea
 from ..surveys.base import SurveySchedule
 from ..transients.base import ExtragalacticTransient
 from .event_catalog import EventCatalog
+from .exposure_catalog import ExposureCatalog
 
 _SeedType = Union[np.random.SeedSequence, int, None]
 
@@ -474,7 +475,7 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
         time_bins: Time | int,
         nside: int | None = None,
         order: str | None = None,
-    ) -> QTable:
+    ) -> ExposureCatalog:
         r"""
         Tabulate each registered transient type's effective exposure per time bin.
 
@@ -522,11 +523,13 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
 
         Returns
         -------
-        ~astropy.table.QTable
+        ExposureCatalog
             One row per ``(transient type, time bin)``, sorted by transient type then
             bin index, with columns ``transient_type``, ``time_bin``, ``t_start``,
             ``t_end``, ``n_pixels_visited``, ``solid_angle``, ``duration``,
-            ``effective_exposure``, and ``expected_events``.
+            ``effective_exposure``, and ``expected_events``. See
+            `ExposureCatalog.total_effective_exposure`/`ExposureCatalog.total_expected_events`
+            for the per-type sums over every bin.
 
         Raises
         ------
@@ -592,7 +595,7 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
             for name, exposure in zip(table["transient_type"], table["effective_exposure"])
         ]
 
-        return table
+        return ExposureCatalog(table=table, nside=nside, order=order, time_bins=edges)
 
     # -------------------------------------------------- #
     # Filtering                                          #
