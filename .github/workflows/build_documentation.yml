@@ -1,155 +1,34 @@
 # .github/workflows/build_documentation.yml
 # ------------------------------------------------------------- #
-# GitHub Actions Workflow to Build and Deploy UVEX Transients   #
-# Docs                                                          #
+# GitHub Actions Workflow to Build and Deploy Versioned Docs     #
 # ------------------------------------------------------------- #
-# This workflow builds and deploys the documentation for the
-# UVEX Transients project using Sphinx, only on release: a `vX.Y.Z` tag push
-# deploys versioned docs to `/vX.Y.Z`, updates `versions.json` (consumed by
-# the pydata-sphinx-theme version switcher in the built docs), and refreshes
-# the root `/` redirect to point at the newest tag.
+# Deploys versioned docs to `/vX.Y.Z` via the shared `_docs_build_deploy.yml`
+# pipeline, updates `versions.json`, and refreshes the root `/` redirect to
+# point at the newest tag.
 #
-# `workflow_dispatch` is kept so docs can be rebuilt on demand without
-# cutting a release (e.g. to pick up a docs-only fix for the latest tag).
+# Deliberately *not* triggered directly by the `vX.Y.Z` tag push: a GitHub
+# Release for that tag (and this run's `report/` page needs its
+# `yield_summary.ecsv`/`detection_counts.ecsv` assets) doesn't exist until
+# `build_and_release.yml`'s `release_data_products` job finishes its
+# full-population run and uploads them -- often well after the tag is
+# pushed. That job dispatches this workflow itself (`gh workflow run
+# build_documentation.yml --ref <tag>`) once those assets are actually
+# there, so this only ever builds against a complete release.
+#
+# `workflow_dispatch` doubles as the manual escape hatch: rebuild on demand
+# without cutting a release (e.g. a docs-only fix for the latest tag), or
+# retry if the automatic dispatch above ever fails.
 name: Build and Deploy Documentation
+
 on:
-  push:
-    tags:
-      - "v*"               # Match version tags like v1.2.0
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# Perform the workflow.
 jobs:
   docs:
-    name: Build and Deploy Documentation
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python-version: ["3.12"]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0  # required for setuptools-scm tag-based versioning
-
-      # Setup the python environment for the operation.
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      # Cache pip dependencies to speed up builds. This
-      # depends on the os and the hash of the pyproject.toml file.
-      # It will therefore be invalidated when the dependencies change.
-      - name: Cache pip
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-docs-
-
-      # Install the dependencies required to build the documentation.
-      - name: Install documentation dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -e .[docs]
-
-      # Actually build the documentation. We use the `-j auto` flag to
-      # allow Sphinx to use all available CPU cores for faster builds.
-      - name: Build documentation with Sphinx
-        env:
-          SPHINX_VERSION_MATCH: ${{ github.ref_name }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p docs/_build/html
-          sphinx-build -b html -j auto docs/source docs/_build/html
-
-      # ---------------------------------------------------------
-      # 1️⃣ Deploy versioned docs (vX.Y.Z)
-      # ---------------------------------------------------------
-      - name: Deploy versioned documentation
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: docs/_build/html
-          destination_dir: ${{ github.ref_name }}
-      # ---------------------------------------------------------
-      # 2️⃣ Update versions.json + root redirect
-      # ---------------------------------------------------------
-      - name: Update versions.json and root redirect
-        run: |
-          set -e
-
-          BASE_URL="https://transientsextragalactic.github.io/uvex-transients"
-
-          echo "Cloning gh-pages branch..."
-          git clone --depth 1 --branch gh-pages https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
-          cd gh-pages
-          git pull origin gh-pages
-
-          echo "Generating versions.json..."
-
-          python - << PY
-          import json
-          import re
-          from pathlib import Path
-
-          BASE_URL = "${BASE_URL}"
-          root = Path(".")
-
-          tag_dirs = []
-          for p in root.iterdir():
-              if p.is_dir() and re.match(r"^v\d+\.\d+\.\d+", p.name):
-                  tag_dirs.append(p.name)
-
-          tag_dirs.sort(reverse=True)
-
-          versions = []
-          for i, tag in enumerate(tag_dirs):
-              entry = {
-                  "name": tag,
-                  "version": tag,
-                  "url": f"{BASE_URL}/{tag}/",
-              }
-              if i == 0:
-                  entry["preferred"] = True
-              versions.append(entry)
-
-          (root / "versions.json").write_text(json.dumps(versions, indent=2) + "\n")
-          print("Updated versions.json")
-          PY
-
-          # Root redirect to the latest released version.
-          LATEST=$(ls -d v*/ 2>/dev/null | sed 's:/*$::' | sort -Vr | head -n 1)
-
-          if [ -n "$LATEST" ]; then
-            TARGET="$BASE_URL/$LATEST/"
-
-            echo "Creating root redirect to $TARGET"
-
-            cat > index.html <<EOF
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta http-equiv="refresh" content="0; url=$TARGET" />
-            </head>
-            <body>
-              Redirecting to <a href="$TARGET">$TARGET</a>
-            </body>
-          </html>
-          EOF
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add versions.json index.html || true
-          git diff --cached --quiet && echo "No changes" || git commit -m "Update versions.json and redirect"
-          git push
+    uses: ./.github/workflows/_docs_build_deploy.yml
+    with:
+      destination_dir: ${{ github.ref_name }}
+    secrets: inherit

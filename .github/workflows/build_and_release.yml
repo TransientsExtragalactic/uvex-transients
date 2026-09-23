@@ -4,8 +4,11 @@
 # ------------------------------------------ #
 # Builds the sdist and a universal (pure-Python) wheel and publishes them to
 # PyPI when a version tag (v*) is pushed. Independently (so it can't hold up
-# the PyPI publish), also runs the full-population pipeline and attaches its
-# output data products to the corresponding GitHub Release.
+# the PyPI publish), also runs the full-population pipeline, attaches its
+# output data products to the corresponding GitHub Release, and then
+# dispatches `build_documentation.yml` (see that workflow's own header for
+# why the versioned docs build has to be triggered from here rather than
+# from the tag push directly).
 name: Build and Release to PyPI
 
 on:
@@ -71,6 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write  # required to dispatch build_documentation.yml below
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,3 +96,13 @@ jobs:
         with:
           files: results/release/*
           fail_on_unmatched_files: true
+
+      # The versioned docs build (build_documentation.yml) reads this
+      # release's yield_summary.ecsv/detection_counts.ecsv for its "Report"
+      # page, so it can't run until the assets above are actually uploaded --
+      # it's dispatched from here, after that, rather than off the tag push
+      # itself (which would race this job).
+      - name: Trigger versioned documentation build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run build_documentation.yml --ref ${{ github.ref_name }}

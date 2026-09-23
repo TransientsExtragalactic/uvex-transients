@@ -1,0 +1,30 @@
+# .github/workflows/docs_dev.yml
+# ------------------------------------------------------------- #
+# GitHub Actions Workflow to Build and Deploy "dev" Docs         #
+# ------------------------------------------------------------- #
+# Live, unreleased docs: every push to `dev` rebuilds and redeploys to
+# `/dev/` on gh-pages, via the shared `_docs_build_deploy.yml` pipeline
+# (cached, so most pushes only pay for what actually changed -- see that
+# workflow for the caching strategy).
+#
+# Deliberately scoped to `dev` alone, not `main` or `dev-*` branches: tags
+# (which the separate `build_documentation.yml` workflow reacts to) are cut
+# from `main` once a PR from `dev` merges, so `dev` pushes and version tags
+# never race for the same docs build.
+name: Build Dev Documentation
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    uses: ./.github/workflows/_docs_build_deploy.yml
+    with:
+      destination_dir: dev
+      version_match: dev
+    secrets: inherit
