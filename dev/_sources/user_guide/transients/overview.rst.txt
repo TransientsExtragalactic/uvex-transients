@@ -100,7 +100,7 @@ through a Monte Carlo run):
        used for windowing, so an overly generous value costs some wasted sampling but an overly
        tight one silently drops real detections.
 
-Nine populations ship with the package today, each pairing one of these SEDs with a rate and
+Ten populations ship with the package today, each pairing one of these SEDs with a rate and
 duration -- see the linked :ref:`transients` page for each one's astrophysics and priors:
 
 .. list-table::
@@ -147,6 +147,10 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED`
      - 100 d
      - 0.5
+   * - :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`
+     - :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`
+     - 600 d
+     - 4
 
 .. seealso::
 
@@ -160,10 +164,17 @@ Volumetric Rates and Redshift Sampling
 ------------------------------------------
 
 :class:`~uvex_transients.transients.base.ExtragalacticTransient` is the abstract base every
-extragalactic population above subclasses. Concrete subclasses implement exactly one abstract
-method, :meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate`: the comoving
-event rate density :math:`R(z)`, in events / Mpc\ :sup:`3` / yr, as a function of redshift. It
-must be NumPy-vectorized -- called once, across a whole grid, never in a per-event loop:
+extragalactic population above subclasses. Concrete subclasses implement two abstract members --
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.rate`, the fiducial rate
+*normalization* :math:`R_0` (a single, possibly ``cosmology``-dependent
+:class:`~astropy.units.Quantity`), and
+:meth:`~uvex_transients.transients.base.ExtragalacticTransient.rate_shape`, the dimensionless
+redshift *shape* :math:`f(z)` -- rather than
+:meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate` directly.
+:meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate` itself is a thin,
+already-implemented product of the two, :math:`R(z;A)=A f(z)`, the comoving event rate density in
+events / Mpc\ :sup:`3` / yr as a function of redshift. ``rate_shape`` must be NumPy-vectorized --
+called once, across a whole grid, never in a per-event loop:
 
 .. code-block:: python
 
@@ -180,7 +191,7 @@ probability distribution, and it needs to be weighted by the comoving volume ele
 cosmological time-dilation between rest-frame rate and observer-frame duration. On first access,
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.redshift_grid`,
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid`, and
-:attr:`~uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate` all trigger
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate` all trigger
 one lazy build: ``event_rate`` is tabulated once, on a grid of
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size` points spanning
 ``[0, redshift_limit]``, weighted by
@@ -190,7 +201,7 @@ one lazy build: ``event_rate`` is tabulated once, on a grid of
    w(z) = R(z) \, \frac{dV_c}{dz} \Big/ (1+z),
 
 then integrated (via cumulative trapezoidal quadrature) into both a total --
-``integrated_event_rate``, the expected count per steradian per unit *observer* time -- and a CDF
+``integrated_rate``, the expected count per steradian per unit *observer* time -- and a CDF
 used to draw redshifts by inverse-transform sampling:
 
 .. plot::
@@ -224,6 +235,71 @@ grid points, so a caller with a batch of already-sampled redshifts gets :math:`D
 
 ----
 
+.. _user_guide_transients_rate_uncertainty:
+
+Rate Uncertainty and All-Sky Yield
+--------------------------------------
+
+Everything above assumes the rate normalization :math:`R_0=` ``rate`` is known exactly. In
+practice, a literature rate comes with its own uncertainty, and :ref:`yield-statistics` derives
+confidence bounds throughout that carry it through to a final expected-detection estimate. On the
+transient class itself, that uncertainty is a single class variable:
+
+.. code-block:: python
+
+    TidalDisruptionEvent.RATE_CI    # None -- no rate uncertainty sourced for this class yet
+    Kilonova.RATE_CI                # (0.0755..., 4.3208...) -- multiplicative (lower, upper) factors
+
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI` is a pair of
+*multiplicative* factors on ``rate`` (not absolute bounds), at a 90% confidence level by
+convention -- if a publication reports :math:`R_0{}^{+\Delta R_+}_{-\Delta R_-}`, that's
+``((R_0 - dR_minus) / R_0, (R_0 + dR_plus) / R_0)``. Multiplicative factors, rather than a fixed
+``Quantity`` pair, mean the same ``RATE_CI`` applies unchanged to a `rate` that is itself
+``cosmology``-dependent. Leaving it at its default of `None` (as every built-in population does
+today, except :class:`~uvex_transients.transients.kilonovae.Kilonova`) means no rate uncertainty
+has been sourced yet -- every bound below then collapses to the point estimate, twice over, rather
+than silently reading as "the rate is known exactly."
+
+Every rate-derived quantity has a plain point-estimate property and a ``..._ci``-suffixed bounds
+counterpart built from ``RATE_CI``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Point estimate
+     - Bounds
+     - Meaning
+   * - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.rate`
+     - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.rate_ci`
+     - The fiducial normalization :math:`R_0` itself.
+   * - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate`
+     - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci`
+     - Per-steradian, per-observer-year rate integrated over redshift (see above).
+   * - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate`
+     - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate_ci`
+     - ``integrated_rate`` restored to the full :math:`4\pi` sky.
+   * - :meth:`~uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield`
+     - :meth:`~uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield_ci`
+     - ``all_sky_rate`` times an observer-frame duration -- the expected intrinsic event count
+       over the whole sky and that window, with no survey footprint or detection selection
+       applied.
+
+None of these know anything about a particular survey's footprint -- they're the :math:`\mu_0`
+that :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` and
+:meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary` restrict down
+to the footprint an actual schedule swept out (see :ref:`user_guide_simulation`).
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.effective_volume` (:math:`\mathcal
+V` in :ref:`yield-statistics`) is the rate-weighted comoving volume ``integrated_rate`` is built
+from, with `rate`'s own normalization divided back out -- it depends only on ``rate_shape``,
+``cosmology``, and ``redshift_limit``, so it carries no rate-normalization uncertainty of its own.
+
+See :ref:`yield-statistics` for the full derivation of every bound above, and
+:ref:`user_guide_simulation` for how they combine with a real survey schedule's footprint and a
+Monte Carlo catalog's detection efficiency into a final yield estimate.
+
+----
+
 Sampling Events
 ------------------
 
@@ -234,7 +310,7 @@ How Many Events
 ^^^^^^^^^^^^^^^^^
 
 :meth:`~uvex_transients.transients.base.ExtragalacticTransient.sample_event_count` converts
-``integrated_event_rate`` into an expected count over a given solid angle and duration, then draws
+``integrated_rate`` into an expected count over a given solid angle and duration, then draws
 a Poisson realization of it:
 
 .. code-block:: python

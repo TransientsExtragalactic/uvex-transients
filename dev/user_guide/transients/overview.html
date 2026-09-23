@@ -379,6 +379,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
@@ -542,7 +543,7 @@ tight one silently drops real detections.</p></td>
 </tbody>
 </table>
 </div>
-<p>Nine populations ship with the package today, each pairing one of these SEDs with a rate and
+<p>Ten populations ship with the package today, each pairing one of these SEDs with a rate and
 duration – see the linked <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a> page for each one’s astrophysics and priors:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
@@ -604,6 +605,11 @@ duration – see the linked <a class="reference internal" href="../../transients
 <td><p>100 d</p></td>
 <td><p>0.5</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">MagnetarSLSNe</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED.html#uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED" title="uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettMagnetarSpindownSED</span></code></a></p></td>
+<td><p>600 d</p></td>
+<td><p>4</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -618,10 +624,17 @@ an <code class="docutils literal notranslate"><span class="pre">event_rate(z)</s
 <section id="volumetric-rates-and-redshift-sampling">
 <h2>Volumetric Rates and Redshift Sampling<a class="headerlink" href="#volumetric-rates-and-redshift-sampling" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a> is the abstract base every
-extragalactic population above subclasses. Concrete subclasses implement exactly one abstract
-method, <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a>: the comoving
-event rate density <span class="math notranslate nohighlight">\(R(z)\)</span>, in events / Mpc<sup>3</sup> / yr, as a function of redshift. It
-must be NumPy-vectorized – called once, across a whole grid, never in a per-event loop:</p>
+extragalactic population above subclasses. Concrete subclasses implement two abstract members –
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate.html#uvex_transients.transients.base.ExtragalacticTransient.rate" title="uvex_transients.transients.base.ExtragalacticTransient.rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate</span></code></a>, the fiducial rate
+<em>normalization</em> <span class="math notranslate nohighlight">\(R_0\)</span> (a single, possibly <code class="docutils literal notranslate"><span class="pre">cosmology</span></code>-dependent
+<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a>), and
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate_shape.html#uvex_transients.transients.base.ExtragalacticTransient.rate_shape" title="uvex_transients.transients.base.ExtragalacticTransient.rate_shape"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rate_shape()</span></code></a>, the dimensionless
+redshift <em>shape</em> <span class="math notranslate nohighlight">\(f(z)\)</span> – rather than
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a> directly.
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a> itself is a thin,
+already-implemented product of the two, <span class="math notranslate nohighlight">\(R(z;A)=A f(z)\)</span>, the comoving event rate density in
+events / Mpc<sup>3</sup> / yr as a function of redshift. <code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> must be NumPy-vectorized –
+called once, across a whole grid, never in a per-event loop:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tde</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>                      <span class="c1"># a scalar rate at z=0.5</span>
 <span class="n">tde</span><span class="o">.</span><span class="n">event_rate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>    <span class="c1"># the same function, vectorized</span>
 </pre></div>
@@ -633,14 +646,14 @@ probability distribution, and it needs to be weighted by the comoving volume ele
 cosmological time-dilation between rest-frame rate and observer-frame duration. On first access,
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_grid.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_grid" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_grid</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid.html#uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid" title="uvex_transients.transients.base.ExtragalacticTransient.luminosity_distance_grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">luminosity_distance_grid</span></code></a>, and
-<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.integrated_event_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_event_rate</span></code></a> all trigger
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_rate.html#uvex_transients.transients.base.ExtragalacticTransient.integrated_rate" title="uvex_transients.transients.base.ExtragalacticTransient.integrated_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_rate</span></code></a> all trigger
 one lazy build: <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> is tabulated once, on a grid of
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_grid_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_grid_size</span></code></a> points spanning
 <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">redshift_limit]</span></code>, weighted by</p>
 <div class="math notranslate nohighlight">
 \[w(z) = R(z) \, \frac{dV_c}{dz} \Big/ (1+z),\]</div>
 <p>then integrated (via cumulative trapezoidal quadrature) into both a total –
-<code class="docutils literal notranslate"><span class="pre">integrated_event_rate</span></code>, the expected count per steradian per unit <em>observer</em> time – and a CDF
+<code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code>, the expected count per steradian per unit <em>observer</em> time – and a CDF
 used to draw redshifts by inverse-transform sampling:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">z_samples</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sample_event_redshift</span><span class="p">(</span><span class="mi">20000</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -680,7 +693,75 @@ the cache, so the next access rebuilds it against the new value rather than sile
 stale one. <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> itself is only ever evaluated once per rebuild, no matter how many
 events are subsequently sampled from it.</p>
 </div>
+<hr class="docutils" />
 </section>
+</section>
+<section id="rate-uncertainty-and-all-sky-yield">
+<span id="user-guide-transients-rate-uncertainty"></span><h2>Rate Uncertainty and All-Sky Yield<a class="headerlink" href="#rate-uncertainty-and-all-sky-yield" title="Link to this heading">#</a></h2>
+<p>Everything above assumes the rate normalization <span class="math notranslate nohighlight">\(R_0=\)</span> <code class="docutils literal notranslate"><span class="pre">rate</span></code> is known exactly. In
+practice, a literature rate comes with its own uncertainty, and <a class="reference internal" href="../simulation/yield_statistics.html#yield-statistics"><span class="std std-ref">Yield Statistics</span></a> derives
+confidence bounds throughout that carry it through to a final expected-detection estimate. On the
+transient class itself, that uncertainty is a single class variable:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TidalDisruptionEvent</span><span class="o">.</span><span class="n">RATE_CI</span>    <span class="c1"># None -- no rate uncertainty sourced for this class yet</span>
+<span class="n">Kilonova</span><span class="o">.</span><span class="n">RATE_CI</span>                <span class="c1"># (0.0755..., 4.3208...) -- multiplicative (lower, upper) factors</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.RATE_CI.html#uvex_transients.transients.base.ExtragalacticTransient.RATE_CI" title="uvex_transients.transients.base.ExtragalacticTransient.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> is a pair of
+<em>multiplicative</em> factors on <code class="docutils literal notranslate"><span class="pre">rate</span></code> (not absolute bounds), at a 90% confidence level by
+convention – if a publication reports <span class="math notranslate nohighlight">\(R_0{}^{+\Delta R_+}_{-\Delta R_-}\)</span>, that’s
+<code class="docutils literal notranslate"><span class="pre">((R_0</span> <span class="pre">-</span> <span class="pre">dR_minus)</span> <span class="pre">/</span> <span class="pre">R_0,</span> <span class="pre">(R_0</span> <span class="pre">+</span> <span class="pre">dR_plus)</span> <span class="pre">/</span> <span class="pre">R_0)</span></code>. Multiplicative factors, rather than a fixed
+<code class="docutils literal notranslate"><span class="pre">Quantity</span></code> pair, mean the same <code class="docutils literal notranslate"><span class="pre">RATE_CI</span></code> applies unchanged to a <cite>rate</cite> that is itself
+<code class="docutils literal notranslate"><span class="pre">cosmology</span></code>-dependent. Leaving it at its default of <cite>None</cite> (as every built-in population does
+today, except <a class="reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova" title="uvex_transients.transients.kilonovae.Kilonova"><code class="xref py py-class docutils literal notranslate"><span class="pre">Kilonova</span></code></a>) means no rate uncertainty
+has been sourced yet – every bound below then collapses to the point estimate, twice over, rather
+than silently reading as “the rate is known exactly.”</p>
+<p>Every rate-derived quantity has a plain point-estimate property and a <code class="docutils literal notranslate"><span class="pre">..._ci</span></code>-suffixed bounds
+counterpart built from <code class="docutils literal notranslate"><span class="pre">RATE_CI</span></code>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Point estimate</p></th>
+<th class="head"><p>Bounds</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate.html#uvex_transients.transients.base.ExtragalacticTransient.rate" title="uvex_transients.transients.base.ExtragalacticTransient.rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate_ci.html#uvex_transients.transients.base.ExtragalacticTransient.rate_ci" title="uvex_transients.transients.base.ExtragalacticTransient.rate_ci"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate_ci</span></code></a></p></td>
+<td><p>The fiducial normalization <span class="math notranslate nohighlight">\(R_0\)</span> itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_rate.html#uvex_transients.transients.base.ExtragalacticTransient.integrated_rate" title="uvex_transients.transients.base.ExtragalacticTransient.integrated_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_rate</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci.html#uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci" title="uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci"><code class="xref py py-attr docutils literal notranslate"><span class="pre">integrated_rate_ci</span></code></a></p></td>
+<td><p>Per-steradian, per-observer-year rate integrated over redshift (see above).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate.html#uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate" title="uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">all_sky_rate</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate_ci.html#uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate_ci" title="uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate_ci"><code class="xref py py-attr docutils literal notranslate"><span class="pre">all_sky_rate_ci</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code> restored to the full <span class="math notranslate nohighlight">\(4\pi\)</span> sky.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield.html#uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield" title="uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_all_sky_yield()</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield_ci.html#uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield_ci" title="uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield_ci"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_all_sky_yield_ci()</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">all_sky_rate</span></code> times an observer-frame duration – the expected intrinsic event count
+over the whole sky and that window, with no survey footprint or detection selection
+applied.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>None of these know anything about a particular survey’s footprint – they’re the <span class="math notranslate nohighlight">\(\mu_0\)</span>
+that <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary" title="uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_yield_summary()</span></code></a> restrict down
+to the footprint an actual schedule swept out (see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>).
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.effective_volume.html#uvex_transients.transients.base.ExtragalacticTransient.effective_volume" title="uvex_transients.transients.base.ExtragalacticTransient.effective_volume"><code class="xref py py-attr docutils literal notranslate"><span class="pre">effective_volume</span></code></a> (<span class="math notranslate nohighlight">\(\mathcal
+V\)</span> in <a class="reference internal" href="../simulation/yield_statistics.html#yield-statistics"><span class="std std-ref">Yield Statistics</span></a>) is the rate-weighted comoving volume <code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code> is built
+from, with <cite>rate</cite>’s own normalization divided back out – it depends only on <code class="docutils literal notranslate"><span class="pre">rate_shape</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cosmology</span></code>, and <code class="docutils literal notranslate"><span class="pre">redshift_limit</span></code>, so it carries no rate-normalization uncertainty of its own.</p>
+<p>See <a class="reference internal" href="../simulation/yield_statistics.html#yield-statistics"><span class="std std-ref">Yield Statistics</span></a> for the full derivation of every bound above, and
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for how they combine with a real survey schedule’s footprint and a
+Monte Carlo catalog’s detection efficiency into a final yield estimate.</p>
 </section>
 <hr class="docutils" />
 <section id="sampling-events">
@@ -690,7 +771,7 @@ population: how many events, where, when, and with which SED parameters.</p>
 <section id="how-many-events">
 <h3>How Many Events<a class="headerlink" href="#how-many-events" title="Link to this heading">#</a></h3>
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_event_count.html#uvex_transients.transients.base.ExtragalacticTransient.sample_event_count" title="uvex_transients.transients.base.ExtragalacticTransient.sample_event_count"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_event_count()</span></code></a> converts
-<code class="docutils literal notranslate"><span class="pre">integrated_event_rate</span></code> into an expected count over a given solid angle and duration, then draws
+<code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code> into an expected count over a given solid angle and duration, then draws
 a Poisson realization of it:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">sample_event_count</span><span class="p">(</span><span class="n">solid_angle</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -891,6 +972,7 @@ detail.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-rate-to-a-redshift-distribution">From Rate to a Redshift Distribution</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rate-uncertainty-and-all-sky-yield">Rate Uncertainty and All-Sky Yield</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling-events">Sampling Events</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-many-events">How Many Events</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drawing-a-full-population">Drawing a Full Population</a></li>

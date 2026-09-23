@@ -807,6 +807,69 @@
 
 
 
+<div class="viewcode-block" id="core_collapse_rate_coefficient">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.cosmology.core_collapse_rate_coefficient.html#uvex_transients.utils.cosmology.core_collapse_rate_coefficient">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">core_collapse_rate_coefficient</span><span class="p">(</span><span class="n">cosmology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cosmology</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the (redshift-independent) normalization of the total volumetric core-collapse SNe rate.</span>
+
+<span class="sd">    This is the amplitude `A` in ``core_collapse_rate(z) = core_collapse_rate_coefficient()</span>
+<span class="sd">    * core_collapse_rate_shape(z)``, i.e. the class-level ``rate`` each core-collapse subtype</span>
+<span class="sd">    in `uvex_transients.transients.supernovae` reports (scaled by its own subtype fraction) --</span>
+<span class="sd">    see that module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cosmology : `~astropy.cosmology.FLRW`, optional</span>
+<span class="sd">        Cosmology whose little Hubble parameter `h` rescales the rate (see Notes).</span>
+<span class="sd">        If ``None``, the configured default cosmology is used; see `get_cosmology`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The rate normalization, in events per cubic megaparsec per year.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Madau &amp; Dickinson (2014) coefficient this is built from is quoted for</span>
+<span class="sd">    :math:`h = 0.7`; its :math:`h^2` scaling is applied here using the actual</span>
+<span class="sd">    little Hubble parameter of ``cosmology`` rather than a hardcoded value, so the</span>
+<span class="sd">    rate stays consistent with whatever cosmology the caller is using elsewhere.</span>
+<span class="sd">    """</span>
+    <span class="n">cosmo</span> <span class="o">=</span> <span class="n">get_cosmology</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span>
+
+    <span class="c1"># Madau &amp; Dickinson (2014) coefficient * CC rate from LGS 2015, rescaled by h^2</span>
+    <span class="c1"># from the cosmology's actual little Hubble parameter rather than the h=0.7</span>
+    <span class="c1"># value the coefficient was originally quoted at.</span>
+    <span class="k">return</span> <span class="mf">0.0001365</span> <span class="o">*</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="core_collapse_rate_shape">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.cosmology.core_collapse_rate_shape.html#uvex_transients.utils.cosmology.core_collapse_rate_shape">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">core_collapse_rate_shape</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the dimensionless Madau &amp; Dickinson (2014) redshift shape of the core-collapse SNe rate.</span>
+
+<span class="sd">    This is the shape `f(z)` in ``core_collapse_rate(z) = core_collapse_rate_coefficient()</span>
+<span class="sd">    * core_collapse_rate_shape(z)``; see `core_collapse_rate_coefficient`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    z : float or array-like</span>
+<span class="sd">        Redshift(s) at which to evaluate the shape.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float or array-like</span>
+<span class="sd">        The dimensionless rate shape at the specified redshift(s).</span>
+<span class="sd">    """</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.7</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.9</span><span class="p">)</span> <span class="o">**</span> <span class="mf">5.6</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+
+
 <div class="viewcode-block" id="core_collapse_rate">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.cosmology.core_collapse_rate.html#uvex_transients.utils.cosmology.core_collapse_rate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">core_collapse_rate</span><span class="p">(</span>
@@ -816,38 +879,29 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the total (all-subtype) volumetric core-collapse SNe rate at redshift(s) `z`.</span>
 
-<span class="sd">    Shared by each core-collapse subtype class's own ``event_rate`` (see</span>
+<span class="sd">    Shared by each core-collapse subtype class's own ``rate``/``rate_shape`` (see</span>
 <span class="sd">    `uvex_transients.transients.supernovae`), so the per-subtype rates always stay a</span>
 <span class="sd">    fixed fraction of the same underlying total rather than risking independent drift.</span>
+<span class="sd">    A thin convenience wrapper around `core_collapse_rate_coefficient` *</span>
+<span class="sd">    `core_collapse_rate_shape`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    z : float or array-like</span>
 <span class="sd">        Redshift(s) at which to evaluate the event rate.</span>
 <span class="sd">    cosmology : `~astropy.cosmology.FLRW`, optional</span>
-<span class="sd">        Cosmology whose little Hubble parameter `h` rescales the rate (see Notes).</span>
-<span class="sd">        If ``None``, the configured default cosmology is used; see `get_cosmology`.</span>
+<span class="sd">        Cosmology whose little Hubble parameter `h` rescales the rate (see</span>
+<span class="sd">        `core_collapse_rate_coefficient`). If ``None``, the configured default</span>
+<span class="sd">        cosmology is used; see `get_cosmology`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    float or array-like</span>
 <span class="sd">        The volumetric event rate at the specified redshift(s), in events per cubic megaparsec per year.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    The Madau &amp; Dickinson (2014) coefficient this rate is built from is quoted for</span>
-<span class="sd">    :math:`h = 0.7`; its :math:`h^2` scaling is applied here using the actual</span>
-<span class="sd">    little Hubble parameter of ``cosmology`` rather than a hardcoded value, so the</span>
-<span class="sd">    rate stays consistent with whatever cosmology the caller is using elsewhere.</span>
 <span class="sd">    """</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-    <span class="n">cosmo</span> <span class="o">=</span> <span class="n">get_cosmology</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span>
-
-    <span class="c1"># Madau &amp; Dickinson (2014) coefficient * CC rate from LGS 2015, rescaled by h^2</span>
-    <span class="c1"># from the cosmology's actual little Hubble parameter rather than the h=0.7</span>
-    <span class="c1"># value the coefficient was originally quoted at.</span>
-    <span class="n">_coefficient</span> <span class="o">=</span> <span class="mf">0.0001365</span> <span class="o">*</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">h</span><span class="o">**</span><span class="mi">2</span>
-    <span class="n">rate</span> <span class="o">=</span> <span class="n">_coefficient</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.7</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.9</span><span class="p">)</span> <span class="o">**</span> <span class="mf">5.6</span><span class="p">)</span>
+    <span class="n">coefficient</span> <span class="o">=</span> <span class="n">core_collapse_rate_coefficient</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">coefficient</span> <span class="o">*</span> <span class="n">core_collapse_rate_shape</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span></div>
 

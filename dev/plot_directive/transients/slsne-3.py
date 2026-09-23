@@ -13,8 +13,8 @@ redshift = slsne.sample_event_redshift(n_samples, rng=rng)
 params = slsne.sed.sample_parameters(size=n_samples, rng=rng)
 params_grid = {name: value[:, None] for name, value in params.items()}
 
-# Convert the integrated rate per steradian to an all-sky rate.
-all_sky_rate = 4 * np.pi * slsne.integrated_event_rate * u.sr
+# The all-sky rate, with no survey footprint applied.
+all_sky_rate = slsne.all_sky_rate
 
 t_grid_rest = np.geomspace(1, 600, 250) * u.day
 t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]

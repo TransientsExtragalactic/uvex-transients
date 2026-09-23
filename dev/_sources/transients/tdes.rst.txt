@@ -329,8 +329,8 @@ in comoving volume out to :math:`z=2`:
     redshift = tde.sample_event_redshift(n_samples, rng=rng)
     params = tde.sed.sample_parameters(size=n_samples, rng=rng)
 
-    # Convert the integrated rate per steradian to an all-sky rate.
-    all_sky_rate = 4 * np.pi * tde.integrated_event_rate * u.sr
+    # The all-sky rate, with no survey footprint applied.
+    all_sky_rate = tde.all_sky_rate
 
     # Observed-frame time corresponding to the rest-frame peak.
     t_peak_obs = 5 * params["sigma_rise"] * (1 + redshift)

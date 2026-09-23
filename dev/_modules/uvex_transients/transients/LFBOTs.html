@@ -411,7 +411,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
 
 <span class="c1"># Constant (redshift-independent) volumetric rate, Perley et al. 2026 / Ho &amp; Lu</span>
-<span class="c1"># et al. 2026: 10 Gpc^-3 yr^-1.</span>
+<span class="c1"># et al. 2026: 10 Gpc^-3 yr^-1. No published uncertainty is adopted here yet, so</span>
+<span class="c1"># `RATE_CI` is left at its default (unset).</span>
 <span class="n">_LFBOT_RATE</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Gpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
 
 
@@ -433,29 +434,30 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">3</span>
 
-<div class="viewcode-block" id="LuminousFastBlueOpticalTransient.event_rate">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.event_rate.html#uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.event_rate">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.units.Quantity: The volumetric LFBOT rate, constant in `z` (Perley/Ho &amp; Lu et al. 2026)."""</span>
+        <span class="k">return</span> <span class="n">_LFBOT_RATE</span>
+
+<div class="viewcode-block" id="LuminousFastBlueOpticalTransient.rate_shape">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.rate_shape.html#uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.rate_shape">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return the volumetric event rate of LFBOTs at a given redshift.</span>
+<span class="sd">        Return the (trivial, constant) rate shape of LFBOTs at a given redshift.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        z : float or array-like</span>
-<span class="sd">            Redshift(s) at which to evaluate the event rate.</span>
+<span class="sd">            Redshift(s) at which to evaluate the rate shape.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float or array-like</span>
-<span class="sd">            The volumetric event rate of LFBOTs at the specified redshift(s), in units of</span>
-<span class="sd">            events per cubic megaparsec per year. Constant in `z` (Perley et al. 2026;</span>
-<span class="sd">            Ho &amp; Lu et al. 2026).</span>
+<span class="sd">            Ones, since the LFBOT rate is constant in `z` (Perley et al. 2026; Ho &amp; Lu et al. 2026).</span>
 <span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">_LFBOT_RATE</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span></div>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span></div>
 </div>
 
 </pre></div>

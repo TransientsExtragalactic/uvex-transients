@@ -578,7 +578,7 @@
 
 <span class="sd">        Reassigning this only replaces the `Cosmology` instance itself; it does not</span>
 <span class="sd">        by itself invalidate any cached, cosmology-dependent quantities on subclasses</span>
-<span class="sd">        (see `ExtragalacticTransient.integrated_event_rate`/`ExtragalacticTransient.luminosity_distance_grid`,</span>
+<span class="sd">        (see `ExtragalacticTransient.integrated_rate`/`ExtragalacticTransient.luminosity_distance_grid`,</span>
 <span class="sd">        which cache by cosmology and rebuild automatically when this changes).</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span>
@@ -695,6 +695,18 @@
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_Z_GRID_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
 
+    <span class="n">RATE_CI</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""tuple[float, float] | None: Multiplicative (lower, upper) 90% confidence factors on `rate`.</span>
+
+<span class="sd">    If a publication reports a rate :math:`R_0 {}^{+\\Delta R_+}_{-\\Delta R_-}`, this is</span>
+<span class="sd">    ``((R_0 - dR_minus) / R_0, (R_0 + dR_plus) / R_0)`` -- see :ref:`yield-statistics`.</span>
+<span class="sd">    Expressed as multiplicative factors (rather than absolute `Quantity` bounds) so that it</span>
+<span class="sd">    applies unchanged to a `rate` that is itself cosmology-dependent (e.g. a core-collapse</span>
+<span class="sd">    SNe subtype, whose `rate` scales with the instance's `cosmology`). `None` (the default)</span>
+<span class="sd">    means no rate uncertainty has been sourced for this class yet; `rate_ci` then degenerates</span>
+<span class="sd">    to the point value `rate` twice over.</span>
+<span class="sd">    """</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Cosmology</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Instantiate the transient, and set up (but do not yet build) its lazy rate cache.</span>
@@ -732,7 +744,7 @@
 <span class="sd">        ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.</span>
 
 <span class="sd">        Reassigning this invalidates the cached rate table -- see</span>
-<span class="sd">        `TransientBase.cosmology` and `integrated_event_rate`/`luminosity_distance_grid`.</span>
+<span class="sd">        `TransientBase.cosmology` and `integrated_rate`/`luminosity_distance_grid`.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cosmology</span>
 
@@ -796,7 +808,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">redshift_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""numpy.ndarray: The cached redshift grid backing `integrated_event_rate`/sampling."""</span>
+<span class="w">        </span><span class="sd">"""numpy.ndarray: The cached redshift grid backing `integrated_rate`/sampling."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span>
 
@@ -814,19 +826,196 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance_grid</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">integrated_event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        ~astropy.units.Quantity: The cached :math:`dN/(d\Omega\,dt_\mathrm{obs})`.</span>
+    <span class="c1"># ======================================= #</span>
+    <span class="c1"># Rates and Statistics                    #</span>
+    <span class="c1"># ======================================= #</span>
 
-<span class="sd">        A sampling call's expected count is ``integrated_event_rate * solid_angle * duration``</span>
-<span class="sd">        -- `solid_angle` rescales this (it doesn't change the shape of the redshift</span>
-<span class="sd">        distribution, since the rate model is isotropic), so this table is built once</span>
-<span class="sd">        per `(cosmology, z_max, n_grid)` and reused across every subsequent call,</span>
-<span class="sd">        whole-sky or per-cell alike.</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">integrated_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: Expected event rate per observer time and solid angle.</span>
+
+<span class="sd">        Integrate the intrinsic volumetric rate :math:`R(z)` over the population's</span>
+<span class="sd">        redshift domain:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mathcal R_\Omega</span>
+<span class="sd">            = \int_0^{z_{\max}}</span>
+<span class="sd">              \frac{R(z)}{1+z}</span>
+<span class="sd">              \frac{dV_c}{dz\,d\Omega}\,dz.</span>
+
+<span class="sd">        Here, :math:`R(z)` is defined per comoving volume and source-frame time.</span>
+<span class="sd">        The factor :math:`(1+z)^{-1}` converts the rate to observer-frame time.</span>
+
+<span class="sd">        This rate includes no survey footprint or detection selection. Its units</span>
+<span class="sd">        are equivalent to :math:`\mathrm{yr}^{-1}\,\mathrm{sr}^{-1}`.</span>
 <span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">integrated_rate_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Tuple of ~astropy.units.Quantity: Rate-only bounds on :attr:`integrated_rate`.</span>
+
+<span class="sd">        Assume the volumetric rate has a fixed redshift dependence,</span>
+<span class="sd">        :math:`R(z;A)=A f(z)`, with uncertainty only in its normalization.</span>
+<span class="sd">        For a fiducial normalization :math:`R_0`, ``RATE_CI`` contains the</span>
+<span class="sd">        dimensionless endpoint multipliers</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            b_{\mathrm L} = \frac{R_{\mathrm L}}{R_0},</span>
+<span class="sd">            \qquad</span>
+<span class="sd">            b_{\mathrm U} = \frac{R_{\mathrm U}}{R_0}.</span>
+
+<span class="sd">        The returned lower and upper bounds are</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            [\mathcal R_{\Omega,\mathrm L},\mathcal R_{\Omega,\mathrm U}]</span>
+<span class="sd">            = [b_{\mathrm L}\mathcal R_\Omega,</span>
+<span class="sd">               b_{\mathrm U}\mathcal R_\Omega].</span>
+
+<span class="sd">        The multipliers specify absolute endpoints relative to the fiducial</span>
+<span class="sd">        rate, not fractional error magnitudes. The bounds retain the confidence</span>
+<span class="sd">        level assigned to ``RATE_CI``.</span>
+
+<span class="sd">        If ``RATE_CI`` is ``None``, both bounds equal :attr:`integrated_rate`.</span>
+<span class="sd">        This convention indicates that rate uncertainty is not represented;</span>
+<span class="sd">        it does not establish that the physical rate is known exactly.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">RATE_CI</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">integrated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">integrated</span><span class="p">,</span> <span class="n">integrated</span><span class="p">)</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RATE_CI</span>
+        <span class="n">integrated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">integrated</span> <span class="o">*</span> <span class="n">lower</span><span class="p">,</span> <span class="n">integrated</span> <span class="o">*</span> <span class="n">upper</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_sky_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: Expected all-sky event rate per observer year.</span>
+
+<span class="sd">        For an isotropic population, integrate :attr:`integrated_rate` over</span>
+<span class="sd">        the full sky:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mathcal R = (4\pi\,\mathrm{sr})\,\mathcal R_\Omega.</span>
+
+<span class="sd">        The result includes events throughout the population's redshift domain,</span>
+<span class="sd">        before applying any survey footprint or detection selection, and is</span>
+<span class="sd">        returned in inverse years. See :ref:`yield-statistics`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_sky_rate_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Tuple of ~astropy.units.Quantity: Rate-only bounds on :attr:`all_sky_rate`.</span>
+
+<span class="sd">        Multiply each endpoint of :attr:`integrated_rate_ci` by the full-sky</span>
+<span class="sd">        solid angle:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            [\mathcal R_{\mathrm L},\mathcal R_{\mathrm U}]</span>
+<span class="sd">            = (4\pi\,\mathrm{sr})</span>
+<span class="sd">              [\mathcal R_{\Omega,\mathrm L},\mathcal R_{\Omega,\mathrm U}].</span>
+
+<span class="sd">        Return the lower and upper bounds in inverse years, preserving the</span>
+<span class="sd">        confidence level and uncertainty convention of :attr:`integrated_rate_ci`.</span>
+<span class="sd">        These bounds describe uncertainty in the expected rate, not fluctuations</span>
+<span class="sd">        in a realized event count.</span>
+<span class="sd">        """</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate_ci</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">lower</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">upper</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ExtragalacticTransient.compute_all_sky_yield">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield.html#uvex_transients.transients.supernovae.ExtragalacticTransient.compute_all_sky_yield">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_all_sky_yield</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Compute the expected intrinsic event count over the full sky.</span>
+
+<span class="sd">        Multiply :attr:`all_sky_rate` by the observer-frame sampling duration:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mu_0 = \mathcal R T.</span>
+
+<span class="sd">        No survey footprint or detection selection is applied.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration : ~astropy.units.Quantity</span>
+<span class="sd">            Nonnegative observer-frame sampling-window duration, convertible</span>
+<span class="sd">            to time units. Include any temporal padding used to generate the</span>
+<span class="sd">            event catalog.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Expected number of intrinsic events within the population's</span>
+<span class="sd">            redshift domain and the specified time window. This expectation</span>
+<span class="sd">            need not be an integer.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Cosmological time dilation is already included in :attr:`all_sky_rate`;</span>
+<span class="sd">        no additional redshift factor is applied to ``duration``.</span>
+
+<span class="sd">        When using this count to normalize a simulated catalog, the duration</span>
+<span class="sd">        must match the catalog's sampling window. See :ref:`yield-statistics`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_sky_rate</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ExtragalacticTransient.compute_all_sky_yield_ci">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield_ci.html#uvex_transients.transients.supernovae.ExtragalacticTransient.compute_all_sky_yield_ci">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_all_sky_yield_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Compute rate-only bounds on the expected all-sky intrinsic event count.</span>
+
+<span class="sd">        For a fixed observer-frame duration, transform the bounds on</span>
+<span class="sd">        :attr:`all_sky_rate` as</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            [\mu_{\mathrm L},\mu_{\mathrm U}]</span>
+<span class="sd">            = [T\mathcal R_{\mathrm L},T\mathcal R_{\mathrm U}].</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration : ~astropy.units.Quantity</span>
+<span class="sd">            Nonnegative observer-frame sampling-window duration, convertible</span>
+<span class="sd">            to time units. Use the same window as for</span>
+<span class="sd">            :meth:`compute_all_sky_yield`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of float</span>
+<span class="sd">            Lower and upper bounds on the expected intrinsic event count.</span>
+<span class="sd">            The endpoints need not be integers and retain the confidence</span>
+<span class="sd">            level assigned to the rate bounds.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        These bounds propagate only the uncertainty represented by ``RATE_CI``.</span>
+<span class="sd">        They include neither survey selection nor Poisson fluctuations in a</span>
+<span class="sd">        realized count, and are not a prediction interval for a future catalog.</span>
+
+<span class="sd">        If ``RATE_CI`` is ``None``, both endpoints equal the expected count.</span>
+<span class="sd">        See :ref:`yield-statistics`.</span>
+<span class="sd">        """</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_sky_rate_ci</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">lower</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">upper</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_redshift_limit</span><span class="p">(</span><span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -879,16 +1068,52 @@
     <span class="c1"># ------------------------------ #</span>
     <span class="c1"># Event Rate Computations        #</span>
     <span class="c1"># ------------------------------ #</span>
-<div class="viewcode-block" id="ExtragalacticTransient.event_rate">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.supernovae.ExtragalacticTransient.event_rate">[docs]</a>
+    <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Compute the comoving event rate density at redshift(s) `z`.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: The fiducial rate normalization :math:`R_0` (this class's :math:`A`).</span>
+
+<span class="sd">        Concrete subclasses implement this -- and `rate_shape` below -- instead of `event_rate`</span>
+<span class="sd">        directly: ``event_rate(z) = rate * rate_shape(z)``, i.e. :math:`R(z;A)=A f(z)`; see</span>
+<span class="sd">        :ref:`yield-statistics`. May depend on `cosmology` (e.g. a core-collapse SNe subtype's</span>
+<span class="sd">        rate, whose overall coefficient scales with :math:`h^2`) -- it is a property, not a</span>
+<span class="sd">        `ClassVar`, precisely to allow that.</span>
+<span class="sd">        """</span>
+
+<div class="viewcode-block" id="ExtragalacticTransient.rate_shape">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate_shape.html#uvex_transients.transients.supernovae.ExtragalacticTransient.rate_shape">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Compute the dimensionless redshift shape :math:`f(z)` of the comoving event rate.</span>
 
 <span class="sd">        Must be NumPy-vectorized (accept and return an array elementwise when `z` is</span>
-<span class="sd">        an array) -- `integrated_event_rate` evaluates this once, across the whole</span>
-<span class="sd">        `redshift_grid`, not in a per-point loop.</span>
+<span class="sd">        an array) -- `event_rate` (and, through it, `integrated_rate`) evaluates this once,</span>
+<span class="sd">        across the whole `redshift_grid`, not in a per-point loop. By convention (not</span>
+<span class="sd">        enforced) :math:`f(0)=1`, making `rate` the local volumetric rate; see</span>
+<span class="sd">        :ref:`yield-statistics`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : float or numpy.ndarray</span>
+<span class="sd">            Redshift(s) at which to evaluate the rate shape.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or numpy.ndarray</span>
+<span class="sd">            The dimensionless rate shape, :math:`f(z)`.</span>
+<span class="sd">        """</span></div>
+
+
+<div class="viewcode-block" id="ExtragalacticTransient.event_rate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.supernovae.ExtragalacticTransient.event_rate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Compute the comoving event rate density at redshift(s) `z`, :math:`R(z;A)=A f(z)`.</span>
+
+<span class="sd">        A thin product of `rate` (:math:`A`) and `rate_shape` (:math:`f(z)`); see those</span>
+<span class="sd">        properties/methods, which concrete subclasses implement instead of this one.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -899,8 +1124,39 @@
 <span class="sd">        -------</span>
 <span class="sd">        float or numpy.ndarray</span>
 <span class="sd">            The event rate, in events / Mpc^3 / yr.</span>
-<span class="sd">        """</span></div>
+<span class="sd">        """</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rate_shape</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">rate_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rate_value</span> <span class="o">*</span> <span class="n">shape</span>
+        <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">result</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        tuple[~astropy.units.Quantity, ~astropy.units.Quantity]: ``(R_L, R_U)``, the confidence bounds on `rate`.</span>
+
+<span class="sd">        Derived from `rate` and `RATE_CI`; see `RATE_CI` for the confidence level and for what</span>
+<span class="sd">        it means for this to be `(rate, rate)` when `RATE_CI` is unset.</span>
+<span class="sd">        """</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">RATE_CI</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">rate</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RATE_CI</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">rate</span> <span class="o">*</span> <span class="n">lower</span><span class="p">,</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">upper</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effective_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: :math:`\mathcal V`, the all-sky rate-weighted comoving volume.</span>
+
+<span class="sd">        Depends only on `rate_shape`, `cosmology`, and `redshift_limit` -- not on `rate` -- so,</span>
+<span class="sd">        unlike `rate`, it carries no rate-normalization uncertainty; see :ref:`yield-statistics`.</span>
+<span class="sd">        Derived from `integrated_rate` (the per-steradian, :math:`R_0`-normalized quantity) by</span>
+<span class="sd">        dividing out `rate` and restoring the :math:`4\pi` sky factor, rather than retabulating.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_rate_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -909,7 +1165,7 @@
 <span class="sd">        Tabulates :math:`w(z) = R(z) \cdot (dV_c/dz) / (1+z)` once on `redshift_grid` (`R`</span>
 <span class="sd">        being `event_rate`; the :math:`1/(1+z)` is the cosmological rate-dilation</span>
 <span class="sd">        correction between rest-frame event rate and observer-frame duration), then</span>
-<span class="sd">        derives `integrated_event_rate` (the total, un-normalized integral, scaled to</span>
+<span class="sd">        derives `integrated_rate` (the total, un-normalized integral, scaled to</span>
 <span class="sd">        events per steradian per unit observer time), the CDF used for inversion</span>
 <span class="sd">        sampling from that single tabulated array, and `luminosity_distance_grid`</span>
 <span class="sd">        (:math:`D_L(z)` at the same grid points, for reuse by callers) -- `event_rate`</span>
@@ -954,7 +1210,7 @@
         <span class="c1"># `differential_comoving_volume`) integrated over dz -&gt; events / sr / yr.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span> <span class="o">=</span> <span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">: rate table built; integrated_event_rate=</span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2">: rate table built; integrated_rate=</span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_duration</span><span class="p">(</span><span class="n">duration</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_start</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_end</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
@@ -1207,7 +1463,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
 
         <span class="c1"># Determine the rate in this time period and solid angle.</span>
-        <span class="n">n_expected</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_event_rate</span> <span class="o">*</span> <span class="n">solid_angle</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span>
+        <span class="n">n_expected</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span> <span class="o">*</span> <span class="n">solid_angle</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span>
 
         <span class="c1"># Generate the random realization.</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_root_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>

@@ -22,10 +22,14 @@ class ToyNova(ExtragalacticTransient):
     DEFAULT_DURATION = 20 * u.day
     DEFAULT_Z_LIM = 0.05
 
-    def event_rate(self, z):
+    @property
+    def rate(self):
+        return _TOY_NOVA_RATE
+
+    def rate_shape(self, z):
         z = np.asarray(z)
-        rate = np.full_like(z, _TOY_NOVA_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
-        return rate if z.ndim > 0 else rate.item()
+        shape = np.ones_like(z, dtype=np.float64)
+        return shape if z.ndim > 0 else shape.item()
 
 nova = ToyNova()
 

@@ -412,6 +412,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">vstack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
@@ -422,8 +423,12 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransientBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span><span class="p">,</span> <span class="n">TransientBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">clopper_pearson_interval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exposure_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExposureCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.photometry_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.yield_table</span><span class="w"> </span><span class="kn">import</span> <span class="n">YieldTable</span>
 
 <span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
@@ -478,6 +483,15 @@
 
     <span class="n">seed</span><span class="p">:</span> <span class="n">_SeedType</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""numpy.random.SeedSequence, int, or None: The root seed this catalog was generated from."""</span>
+
+    <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""int, dict of str to int, or None: The downsample factor(s) generation was run with.</span>
+
+<span class="sd">    Either a single factor applied to every transient type, a ``{transient key: factor}``</span>
+<span class="sd">    mapping giving a per-type factor (a type missing from the mapping wasn't downsampled), or</span>
+<span class="sd">    `None` if generation wasn't downsampled at all -- see</span>
+<span class="sd">    `~uvex_transients.simulation.core.SurveySimulator.generate_events`.</span>
+<span class="sd">    """</span>
 
     <span class="c1"># ----------------------------------------- #</span>
     <span class="c1"># Dunder Methods                            #</span>
@@ -694,6 +708,290 @@
         <span class="k">return</span> <span class="n">vstack</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="n">metadata_conflicts</span><span class="o">=</span><span class="s2">"silent"</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="EventCatalog.compute_photometry_catalog">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_photometry_catalog</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
+        <span class="n">transients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TransientBase</span><span class="p">],</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhotometryCatalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        `simulate_photometry`, wrapped as a `PhotometryCatalog` rather than a bare `QTable`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mission : m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` (bandpasses, background, ...) evaluated</span>
+<span class="sd">            against.</span>
+<span class="sd">        transients : dict[str, TransientBase]</span>
+<span class="sd">            Transient-type instances, keyed by the same names used in this catalog's</span>
+<span class="sd">            ``transient_type`` column -- forwarded to `get_events`.</span>
+<span class="sd">        schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">            The survey schedule to check each event's visibility against -- forwarded to</span>
+<span class="sd">            `get_events`.</span>
+<span class="sd">        bands : list of str, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every</span>
+<span class="sd">            bandpass the detector has.</span>
+<span class="sd">        n_sigma : float, optional</span>
+<span class="sd">            Forwarded to `Event.simulate_photometry`; see its own docstring.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PhotometryCatalog</span>
+<span class="sd">            This catalog's full synthetic photometry.</span>
+<span class="sd">        """</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_photometry</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">transients</span><span class="p">,</span> <span class="n">schedule</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PhotometryCatalog</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EventCatalog.compute_detection_efficiency">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_detection_efficiency.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_detection_efficiency">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_detection_efficiency</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">detected</span><span class="p">:</span> <span class="s2">"EventCatalog"</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Estimate each transient type's detection efficiency :math:`\hat\epsilon = k/n`.</span>
+
+<span class="sd">        ``n`` is this catalog's own row count for a type -- the number of *feasible*</span>
+<span class="sd">        Monte Carlo events actually drawn for it (within the survey's footprint and</span>
+<span class="sd">        the transient's redshift limit, before any detection cut) -- and ``k`` is</span>
+<span class="sd">        `detected`'s row count for that same type, after whatever cut(s) produced it</span>
+<span class="sd">        (see `~uvex_transients.simulation.core.SurveySimulator.run_cut`). This is</span>
+<span class="sd">        exactly :ref:`yield-statistics`'s "Estimating the expected yield" and</span>
+<span class="sd">        "Confidence bounds from the simulated catalog" sections; see</span>
+<span class="sd">        `clopper_pearson_interval` for the binomial bounds themselves.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        detected : EventCatalog</span>
+<span class="sd">            The subset of `self` that satisfied the detection criterion -- typically</span>
+<span class="sd">            one or more `SurveySimulator.run_cut` calls applied to `self`.</span>
+<span class="sd">        confidence : float, optional</span>
+<span class="sd">            Confidence level for the Clopper-Pearson interval. The default is ``0.9``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict[str, dict[str, float]]</span>
+<span class="sd">            ``{transient type: {"n", "k", "efficiency", "efficiency_lower",</span>
+<span class="sd">            "efficiency_upper"}}``, one entry per distinct `transient_type` present in</span>
+<span class="sd">            `self`. ``efficiency`` is `numpy.nan` when ``n == 0`` (unidentified; see</span>
+<span class="sd">            :ref:`yield-statistics` -- this is deliberately not read as zero).</span>
+<span class="sd">        """</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient_type</span>
+        <span class="n">detected_types</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">transient_type</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">types</span><span class="p">):</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">detected_types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">clopper_pearson_interval</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">confidence</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">"n"</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span>
+                <span class="s2">"k"</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span>
+                <span class="s2">"efficiency"</span><span class="p">:</span> <span class="p">(</span><span class="n">k</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s2">"efficiency_lower"</span><span class="p">:</span> <span class="n">lower</span><span class="p">,</span>
+                <span class="s2">"efficiency_upper"</span><span class="p">:</span> <span class="n">upper</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="EventCatalog.compute_yield_summary">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_yield_summary</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">detected</span><span class="p">:</span> <span class="s2">"EventCatalog"</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">:</span> <span class="n">ExposureCatalog</span><span class="p">,</span>
+        <span class="n">transients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ExtragalacticTransient</span><span class="p">],</span>
+        <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YieldTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Build a per-transient-type yield summary, combining this catalog, `detected`, and `exposure`.</span>
+
+<span class="sd">        One row per transient type in `transients`, with:</span>
+
+<span class="sd">        - ``total_exposure``/``total_exposure_fraction``:</span>
+<span class="sd">          `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_effective_exposure`/</span>
+<span class="sd">          `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.coverage_fraction`.</span>
+<span class="sd">        - ``integrated_rate``: `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate`</span>
+<span class="sd">          (the per-steradian, per-year rate integrated over redshift).</span>
+<span class="sd">        - ``all_sky_rate``: that same rate restored to the full :math:`4\pi` sky</span>
+<span class="sd">          (`~uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate`), with no survey</span>
+<span class="sd">          footprint applied.</span>
+<span class="sd">        - ``uvex_intrinsic_rate``/``uvex_intrinsic_events``: the footprint-aware analogues of the</span>
+<span class="sd">          previous two, derived from `exposure` rather than the full sky -- ``uvex_intrinsic_events``</span>
+<span class="sd">          is exactly `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_expected_events`</span>
+<span class="sd">          (:math:`\mu_0` in :ref:`yield-statistics`), and ``uvex_intrinsic_rate`` is that same count</span>
+<span class="sd">          divided by `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_duration`.</span>
+<span class="sd">        - ``detected_events``: :math:`k`, from `compute_detection_efficiency`.</span>
+<span class="sd">        - ``detection_probability``: :math:`\hat\epsilon=k/n` (`compute_detection_efficiency`).</span>
+<span class="sd">        - ``expected_detections``: :math:`\hat\lambda=\mu_0\hat\epsilon`, :ref:`yield-statistics`'s</span>
+<span class="sd">          boxed yield estimator.</span>
+
+<span class="sd">        Every rate-derived quantity (``integrated_rate``, ``all_sky_rate``,</span>
+<span class="sd">        ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by</span>
+<span class="sd">        each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to</span>
+<span class="sd">        the point estimate when ``RATE_CI`` is unset, exactly like</span>
+<span class="sd">        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.</span>
+
+<span class="sd">        ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided</span>
+<span class="sd">        intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.</span>
+<span class="sd">        "rate-only" bounds, kept apart so either source of uncertainty stays inspectable on its</span>
+<span class="sd">        own): ``..._binom_lower``/``..._binom_upper`` (Clopper-Pearson, propagated through</span>
+<span class="sd">        :math:`\hat\lambda=\mu_0\hat\epsilon` for `expected_detections`) and ``..._rate_lower``/</span>
+<span class="sd">        ``..._rate_upper`` (``RATE_CI``, holding :math:`\hat\epsilon` fixed). `detection_probability`</span>
+<span class="sd">        itself doesn't depend on the rate normalization at all -- it's a ratio of Monte Carlo counts</span>
+<span class="sd">        -- so its ``..._rate_lower``/``..._rate_upper`` columns always equal its own point estimate;</span>
+<span class="sd">        they're included only so every row shares one column schema.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        detected : EventCatalog</span>
+<span class="sd">            Forwarded to `compute_detection_efficiency`.</span>
+<span class="sd">        exposure : ExposureCatalog</span>
+<span class="sd">            Supplies every footprint-aware quantity above; see the column list.</span>
+<span class="sd">        transients : dict[str, ExtragalacticTransient]</span>
+<span class="sd">            Transient-type instances, keyed the same way as `self.transient_type` and</span>
+<span class="sd">            `exposure.transient_type`. One output row per key, sorted by name.</span>
+<span class="sd">        confidence : float, optional</span>
+<span class="sd">            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        YieldTable</span>
+<span class="sd">            One row per transient type, sorted by name; see the column list above.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If `exposure` has no tabulated exposure for a type named in `transients`.</span>
+<span class="sd">        """</span>
+        <span class="n">efficiencies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_detection_efficiency</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">)</span>
+        <span class="n">total_exposure</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">total_effective_exposure</span>
+        <span class="n">total_events</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">total_expected_events</span>
+        <span class="n">coverage</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">coverage_fraction</span>
+        <span class="n">total_duration</span> <span class="o">=</span> <span class="n">exposure</span><span class="o">.</span><span class="n">total_duration</span>
+
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">transients</span><span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">total_exposure</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"No exposure tabulated for transient type(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">total_exposure</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"transient_type"</span><span class="p">,</span>
+            <span class="s2">"total_exposure"</span><span class="p">,</span>
+            <span class="s2">"total_exposure_fraction"</span><span class="p">,</span>
+            <span class="s2">"integrated_rate"</span><span class="p">,</span>
+            <span class="s2">"integrated_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"integrated_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_events"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_events_lower"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_events_upper"</span><span class="p">,</span>
+            <span class="s2">"detected_events"</span><span class="p">,</span>
+            <span class="s2">"detection_probability"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_binom_lower"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_binom_upper"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"expected_detections"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_binom_lower"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_binom_upper"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_rate_upper"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">{</span><span class="n">column</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">}</span>
+
+        <span class="n">default_efficiency</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"efficiency"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="s2">"efficiency_lower"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"efficiency_upper"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">transient</span> <span class="o">=</span> <span class="n">transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">lower_factor</span><span class="p">,</span> <span class="n">upper_factor</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">RATE_CI</span> <span class="k">if</span> <span class="n">transient</span><span class="o">.</span><span class="n">RATE_CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+            <span class="n">mu0</span> <span class="o">=</span> <span class="n">total_events</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">intrinsic_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu0</span> <span class="o">/</span> <span class="n">total_duration</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">eff</span> <span class="o">=</span> <span class="n">efficiencies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default_efficiency</span><span class="p">)</span>
+            <span class="n">eps</span> <span class="o">=</span> <span class="n">eff</span><span class="p">[</span><span class="s2">"efficiency"</span><span class="p">]</span>
+            <span class="n">eps_lower</span><span class="p">,</span> <span class="n">eps_upper</span> <span class="o">=</span> <span class="n">eff</span><span class="p">[</span><span class="s2">"efficiency_lower"</span><span class="p">],</span> <span class="n">eff</span><span class="p">[</span><span class="s2">"efficiency_upper"</span><span class="p">]</span>
+
+            <span class="n">lambda_hat</span> <span class="o">=</span> <span class="n">mu0</span> <span class="o">*</span> <span class="n">eps</span>
+
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"total_exposure"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_exposure</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"total_exposure_fraction"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coverage</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"integrated_rate"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">integrated_rate</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"integrated_rate_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">integrated_rate_ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"integrated_rate_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">integrated_rate_ci</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"all_sky_rate"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">all_sky_rate</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"all_sky_rate_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">all_sky_rate_ci</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"all_sky_rate_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">all_sky_rate_ci</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_rate"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">intrinsic_rate</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_rate_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">intrinsic_rate</span> <span class="o">*</span> <span class="n">lower_factor</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_rate_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">intrinsic_rate</span> <span class="o">*</span> <span class="n">upper_factor</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu0</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">lower_factor</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">upper_factor</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detected_events"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eff</span><span class="p">[</span><span class="s2">"k"</span><span class="p">])</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detection_probability"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detection_probability_binom_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps_lower</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detection_probability_binom_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps_upper</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detection_probability_rate_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"detection_probability_rate_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"expected_detections"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lambda_hat</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"expected_detections_binom_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">eps_lower</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"expected_detections_binom_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">eps_upper</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"expected_detections_rate_lower"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lambda_hat</span> <span class="o">*</span> <span class="n">lower_factor</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="s2">"expected_detections_rate_upper"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lambda_hat</span> <span class="o">*</span> <span class="n">upper_factor</span><span class="p">)</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"total_exposure"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"total_exposure"</span><span class="p">])</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"total_exposure_fraction"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"total_exposure_fraction"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">"integrated_rate"</span><span class="p">,</span>
+            <span class="s2">"integrated_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"integrated_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"all_sky_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"uvex_intrinsic_rate_upper"</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">table</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_lower"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_lower"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"uvex_intrinsic_events_upper"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"detected_events"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="s2">"detected_events"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">"detection_probability"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_binom_lower"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_binom_upper"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"detection_probability_rate_upper"</span><span class="p">,</span>
+            <span class="s2">"expected_detections"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_binom_lower"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_binom_upper"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_rate_lower"</span><span class="p">,</span>
+            <span class="s2">"expected_detections_rate_upper"</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="n">table</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">YieldTable</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">)</span></div>
+
+
     <span class="c1"># ----------------------------------------- #</span>
     <span class="c1"># IO Methods                                #</span>
     <span class="c1"># ----------------------------------------- #</span>
@@ -720,6 +1018,7 @@
                 <span class="s2">"order"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="s2">"time_bins"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
                 <span class="s2">"seed"</span><span class="p">:</span> <span class="n">_seed_to_meta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">),</span>
+                <span class="s2">"downsample"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="n">table_format</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
@@ -761,6 +1060,7 @@
             <span class="n">order</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"order"</span><span class="p">),</span>
             <span class="n">time_bins</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"time_bins"</span><span class="p">),</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"seed"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">downsample</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"downsample"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">)</span></div>
 </div>
 

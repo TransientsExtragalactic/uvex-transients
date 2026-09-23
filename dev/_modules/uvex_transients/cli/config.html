@@ -680,7 +680,7 @@
     <span class="n">time_bins</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+    <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 
@@ -703,6 +703,27 @@
 
     <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="YieldConfig">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.YieldConfig.html#uvex_transients.cli.config.YieldConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">YieldConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Parsed ``yield:`` section -- see `EventCatalog.compute_yield_summary`."""</span>
+
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span></div>
+
+
+
+<div class="viewcode-block" id="DetectionCountsConfig">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.DetectionCountsConfig.html#uvex_transients.cli.config.DetectionCountsConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectionCountsConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Parsed ``detection_counts:`` section -- see `PhotometryCatalog.compute_detection_count_table`."""</span>
+
+    <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span></div>
 
 
 
@@ -747,6 +768,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span><span class="p">:</span> <span class="n">GenerateConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span><span class="p">:</span> <span class="n">PhotometryConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span><span class="p">:</span> <span class="n">YieldConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span><span class="p">:</span> <span class="n">DetectionCountsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keep_intermediate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="RunConfig.from_yaml">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.RunConfig.from_yaml.html#uvex_transients.cli.config.RunConfig.from_yaml">[docs]</a>
@@ -923,7 +947,59 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"photometry"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="o">=</span> <span class="n">PhotometryConfig</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bands"</span><span class="p">),</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"n_sigma"</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">yield_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YieldConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The parsed ``yield:`` section (optional; defaults to a ``0.9`` Clopper-Pearson confidence level).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        YieldConfig</span>
+<span class="sd">            The parsed section.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"yield"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span> <span class="o">=</span> <span class="n">YieldConfig</span><span class="p">(</span><span class="n">confidence</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detection_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectionCountsConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The parsed ``detection_counts:`` section (required by the ``detection-counts`` command).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DetectionCountsConfig</span>
+<span class="sd">            The parsed section.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"detection_counts"</span><span class="p">,</span> <span class="s2">"detection-counts"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"snr_threshold"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'detection_counts:' is missing required key 'snr_threshold'."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span> <span class="o">=</span> <span class="n">DetectionCountsConfig</span><span class="p">(</span>
+                <span class="n">snr_threshold</span><span class="o">=</span><span class="n">section</span><span class="p">[</span><span class="s2">"snr_threshold"</span><span class="p">],</span>
+                <span class="n">confidence</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">keep_intermediate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether the ``run`` command should keep each stage's catalog on disk (top-level ``keep_intermediate:``).</span>
+
+<span class="sd">        Defaults to `True`; set to `False` to have ``run`` write only the final photometry</span>
+<span class="sd">        table, discarding the generated/cut catalogs once the next stage no longer needs them.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether to keep intermediate stage files.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_intermediate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keep_intermediate</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"keep_intermediate"</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_intermediate</span></div>
 
 </pre></div>
 

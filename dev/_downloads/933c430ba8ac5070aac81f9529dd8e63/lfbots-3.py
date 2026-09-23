@@ -14,8 +14,8 @@ lfbot = LuminousFastBlueOpticalTransient()
 redshift = lfbot.sample_event_redshift(n_samples, rng=rng)
 params = lfbot.sed.sample_parameters(size=n_samples, rng=rng)
 
-# Convert the integrated rate per steradian to an all-sky rate.
-all_sky_rate = 4 * np.pi * lfbot.integrated_event_rate * u.sr
+# The all-sky rate, with no survey footprint applied.
+all_sky_rate = lfbot.all_sky_rate
 
 # Observed-frame time corresponding to the rest-frame peak.
 t_peak_obs = params["t_peak"] * (1 + redshift)

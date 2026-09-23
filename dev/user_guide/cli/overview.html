@@ -54,13 +54,14 @@
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/cli/overview';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/trex_logo.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Transients" href="../../transients/index.html" />
-    <link rel="prev" title="Simulation" href="../simulation/overview.html" />
+    <link rel="prev" title="Yield Statistics" href="../simulation/yield_statistics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -378,6 +379,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Command-Line Interface</a></li>
@@ -462,16 +464,18 @@ checkout registers the <code class="docutils literal notranslate"><span class="p
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>quickstart_results/
 </pre></div>
 </div>
-<p>That samples tidal disruption events against the default UVEX schedule, screens them by magnitude
-and then by SNR, runs synthetic photometry on whatever survives, and leaves every intermediate
-catalog in <code class="docutils literal notranslate"><span class="pre">quickstart_results/</span></code>: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, one numbered file per cut, and a final
-<code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>. The rest of this page explains the config file that made that happen and the
-commands it works with, so you can build your own.</p>
+<p>That samples tidal disruption events against the default UVEX schedule, tabulates the survey’s
+effective exposure to them, screens them by magnitude and then by SNR, summarizes the resulting
+yield, and runs synthetic photometry on whatever survives – leaving every intermediate catalog in
+<code class="docutils literal notranslate"><span class="pre">quickstart_results/</span></code>: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, one numbered file per cut,
+<code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code>, and a final <code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>. The rest of this
+page explains the config file that made that happen and the commands it works with, so you can
+build your own.</p>
 </section>
 <hr class="docutils" />
 <section id="the-run-config-file">
 <h2>The Run-Config File<a class="headerlink" href="#the-run-config-file" title="Link to this heading">#</a></h2>
-<p>A run-config is a single YAML file with up to six top-level sections. Every CLI command reads the
+<p>A run-config is a single YAML file with up to seven top-level sections. Every CLI command reads the
 <em>same</em> file (there’s no separate config per command), but each command only needs the section(s)
 it actually touches, resolved lazily by <a class="reference internal" href="../../_as_gen/uvex_transients.cli.config.RunConfig.html#uvex_transients.cli.config.RunConfig" title="uvex_transients.cli.config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a>: a config
 with no <code class="docutils literal notranslate"><span class="pre">photometry:</span></code> block is perfectly valid as long as you never run
@@ -518,6 +522,25 @@ Required.</p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry.html#uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry" title="uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a>’s
 optional <code class="docutils literal notranslate"><span class="pre">bands</span></code>/<code class="docutils literal notranslate"><span class="pre">n_sigma</span></code> arguments. Optional; omit entirely to use every band at the
 package’s default detection significance.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">yield:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary" title="uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_yield_summary()</span></code></a>’s
+optional <code class="docutils literal notranslate"><span class="pre">confidence</span></code> argument. Optional; defaults to a <code class="docutils literal notranslate"><span class="pre">0.9</span></code> Clopper-Pearson
+confidence level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">detection-counts</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code> (if declared)</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_detection_count_table()</span></code></a>’s
+<code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>/<code class="docutils literal notranslate"><span class="pre">confidence</span></code> arguments. Optional; <code class="docutils literal notranslate"><span class="pre">run</span></code> skips this stage entirely if
+the section is omitted.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">keep_intermediate:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p>Whether <code class="docutils literal notranslate"><span class="pre">run</span></code> writes each <em>intermediate</em> stage’s catalog to <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>, in addition to
+the final event catalog and photometry table (always written). Optional bool; defaults to
+<code class="docutils literal notranslate"><span class="pre">true</span></code>. Overridden either way by <code class="docutils literal notranslate"><span class="pre">run</span></code>’s own <code class="docutils literal notranslate"><span class="pre">--keep-intermediate</span></code>/
+<code class="docutils literal notranslate"><span class="pre">--no-keep-intermediate</span></code> flag.</p></td>
 </tr>
 </tbody>
 </table>
@@ -749,6 +772,17 @@ or a <code class="docutils literal notranslate"><span class="pre">!prior</span><
 <p>A direct pass-through to
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a>; see
 <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for what each field means.</p>
+<p><code class="docutils literal notranslate"><span class="pre">downsample:</span></code> can also give a different factor per transient type instead of one number for
+every type – keys are the <code class="docutils literal notranslate"><span class="pre">transients:</span></code> section’s own keys, and a type left out isn’t
+downsampled at all:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generate</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">time_bins</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">downsample</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">tde</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">kilonova</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
+</pre></div>
+</div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>generate<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out<span class="w"> </span>catalog.ecsv
 </pre></div>
 </div>
@@ -780,9 +814,11 @@ or a <code class="docutils literal notranslate"><span class="pre">!prior</span><
 <code class="docutils literal notranslate"><span class="pre">healpix.default_order</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">downsample</span></code></p></td>
-<td><p>int</p></td>
-<td><p>Draw a random <code class="docutils literal notranslate"><span class="pre">1/downsample</span></code> subset instead of the full population. Optional; no
-downsampling by default.</p></td>
+<td><p>int or mapping of str to int</p></td>
+<td><p>Draw a random <code class="docutils literal notranslate"><span class="pre">1/downsample</span></code> subset instead of the full population. Either a single
+factor applied to every registered transient type, or a <code class="docutils literal notranslate"><span class="pre">{transient</span> <span class="pre">key:</span> <span class="pre">factor}</span></code>
+mapping to downsample types individually (a type left out of the mapping is not
+downsampled). Optional; no downsampling by default.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p>int</p></td>
@@ -897,15 +933,122 @@ defaults to the package’s <code class="docutils literal notranslate"><span cla
 </div>
 </section>
 <hr class="docutils" />
+<section id="yield-and-exposure">
+<h2>Yield and Exposure<a class="headerlink" href="#yield-and-exposure" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">yield</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+</pre></div>
+</div>
+<p>Optional; the one field defaults to a <code class="docutils literal notranslate"><span class="pre">0.9</span></code> Clopper-Pearson confidence level if the whole
+section is omitted. Unlike the other sections, there’s no standalone <code class="docutils literal notranslate"><span class="pre">yield</span></code> subcommand – a
+yield summary needs a raw (pre-cut) catalog, a detected (post-cut) catalog, <em>and</em> an exposure
+tabulation all at once (see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation-yield"><span class="std std-ref">Exposure and Yield</span></a>), so it’s only ever produced as
+part of <code class="docutils literal notranslate"><span class="pre">run</span></code>, which already has all three in hand.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id9">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">yield:</span></code> parameters</span><a class="headerlink" href="#id9" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">confidence</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">0.9</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">run</span></code> (see below) always computes an
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a> and a
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.html#uvex_transients.simulation.yield_table.YieldTable" title="uvex_transients.simulation.yield_table.YieldTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">YieldTable</span></code></a> alongside the event catalog and
+photometry, writing <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>, and a human-readable
+<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code> into <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="estimating-detection-counts">
+<h2>Estimating Detection Counts<a class="headerlink" href="#estimating-detection-counts" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detection_counts</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">snr_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+</pre></div>
+</div>
+<p>Estimates, per transient type, how many events would show <span class="math notranslate nohighlight">\(N_{\rm det}\geq k\)</span> detected
+epochs, for every <span class="math notranslate nohighlight">\(k\)</span> at once – see
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_detection_count_table()</span></code></a>
+and <a class="reference internal" href="../simulation/overview.html#user-guide-simulation-yield"><span class="std std-ref">Exposure and Yield</span></a>. Unlike <code class="docutils literal notranslate"><span class="pre">yield:</span></code>, this section is entirely optional even
+for <code class="docutils literal notranslate"><span class="pre">run</span></code>: leaving it out of the config skips this stage everywhere, including <code class="docutils literal notranslate"><span class="pre">run</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>detection-counts<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--catalog<span class="w"> </span>catalog.ecsv<span class="w"> </span>--photometry<span class="w"> </span>photometry.ecsv<span class="w"> </span>--exposure<span class="w"> </span>exposure.ecsv<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--out<span class="w"> </span>detection_counts.ecsv
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id10">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> parameters</span><a class="headerlink" href="#id10" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code></p></td>
+<td><p>float</p></td>
+<td><p>An observation epoch counts as detected if at least one band’s SNR exceeds this value.
+Required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">confidence</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">0.9</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--catalog</span></code> is the event catalog <code class="docutils literal notranslate"><span class="pre">--photometry</span></code> was computed over (typically the same catalog
+<code class="docutils literal notranslate"><span class="pre">photometry</span></code> ran against, i.e. whatever survived every declared cut) – it’s needed alongside
+the photometry table itself so that events with zero qualifying epochs (including ones the
+schedule never observed at all) are still counted at <span class="math notranslate nohighlight">\(N_{\rm det}=0\)</span>. <code class="docutils literal notranslate"><span class="pre">--exposure</span></code> is an
+exposure catalog as written by <code class="docutils literal notranslate"><span class="pre">run</span></code> (or
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure.html#uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure" title="uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_effective_exposure()</span></code></a> directly).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> is declared, <code class="docutils literal notranslate"><span class="pre">run</span></code> runs this stage automatically too, writing
+<code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code> into <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>.</p>
+</section>
+<hr class="docutils" />
 <section id="running-the-whole-pipeline">
 <h2>Running the Whole Pipeline<a class="headerlink" href="#running-the-whole-pipeline" title="Link to this heading">#</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/
 </pre></div>
 </div>
-<p>Chains <code class="docutils literal notranslate"><span class="pre">generate</span></code> then every declared cut, in order, then <code class="docutils literal notranslate"><span class="pre">photometry</span></code> in one process,
-writing each stage’s catalog to <code class="docutils literal notranslate"><span class="pre">results/</span></code> as it goes: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, then one
-<code class="docutils literal notranslate"><span class="pre">NN_&lt;cut</span> <span class="pre">key&gt;.ecsv</span></code> per cut, then <code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>. A config with no <code class="docutils literal notranslate"><span class="pre">cuts:</span></code> section at all
-is fine here too; <code class="docutils literal notranslate"><span class="pre">run</span></code> goes straight from <code class="docutils literal notranslate"><span class="pre">generate</span></code> to <code class="docutils literal notranslate"><span class="pre">photometry</span></code>.</p>
+<p>Chains <code class="docutils literal notranslate"><span class="pre">generate</span></code>, an <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a>
+tabulation, every declared cut (in order), a
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.html#uvex_transients.simulation.yield_table.YieldTable" title="uvex_transients.simulation.yield_table.YieldTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">YieldTable</span></code></a> summary, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>, and (if
+<code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> is declared) a detection-count table, all in one process, writing each
+stage’s output to <code class="docutils literal notranslate"><span class="pre">results/</span></code> as it goes: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, then one
+<code class="docutils literal notranslate"><span class="pre">NN_&lt;cut</span> <span class="pre">key&gt;.ecsv</span></code> per cut, then <code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code>,
+<code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>, and (if declared) <code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code>. A config with no <code class="docutils literal notranslate"><span class="pre">cuts:</span></code>
+section at all is fine here too; <code class="docutils literal notranslate"><span class="pre">run</span></code> goes straight from <code class="docutils literal notranslate"><span class="pre">generate</span></code> to the yield summary and
+<code class="docutils literal notranslate"><span class="pre">photometry</span></code>.</p>
+<p>Every stage’s catalog stays in memory and feeds the next stage regardless, so writing the
+<em>intermediate</em> event catalogs (everything up to, but not including, the catalog that photometry
+actually runs against – <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.*</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>/
+<code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code> are always written regardless) is purely for inspection/debugging – set
+the config’s top-level <code class="docutils literal notranslate"><span class="pre">keep_intermediate:</span> <span class="pre">false</span></code> (or pass <code class="docutils literal notranslate"><span class="pre">--no-keep-intermediate</span></code>, which
+overrides the config either way) to have <code class="docutils literal notranslate"><span class="pre">run</span></code> skip those and write only <code class="docutils literal notranslate"><span class="pre">final_catalog.ecsv</span></code>
+(the catalog photometry ran against) instead of <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">NN_&lt;cut</span> <span class="pre">key&gt;.ecsv</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/<span class="w"> </span>--no-keep-intermediate
+</pre></div>
+</div>
 <p>Every command accepts <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> to replace an existing output file/directory contents
 instead of raising.</p>
 <p>Every command also accepts <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>, which validates the config and prints what the real
@@ -917,35 +1060,45 @@ command would do without sampling, computing photometry, or writing anything:</p
 <code class="docutils literal notranslate"><span class="pre">parameters:</span></code> override, an unknown cut type or cut name, an unknown mission, or an unreadable
 schedule fails here exactly as it would in the real run (as a short <code class="docutils literal notranslate"><span class="pre">dry</span> <span class="pre">run</span> <span class="pre">failed:</span> <span class="pre">...</span></code>
 message). On success it reports the mission, the size of the schedule, each transient population
-(class, SED, redshift limit, duration window), the <code class="docutils literal notranslate"><span class="pre">generate:</span></code>, <code class="docutils literal notranslate"><span class="pre">cuts:</span></code> and <code class="docutils literal notranslate"><span class="pre">photometry:</span></code>
-settings, and each output file it would write. If a real run would refuse to overwrite one that
-already exists, the dry run flags it as <code class="docutils literal notranslate"><span class="pre">WOULD</span> <span class="pre">FAIL</span></code> and exits non-zero unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> is
-also given. The schedule is loaded (and downloaded on first use), but the command never reads the
-<code class="docutils literal notranslate"><span class="pre">--in</span></code> catalog of <code class="docutils literal notranslate"><span class="pre">cut</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry</span></code>, only checks that it exists.</p>
+(class, SED, redshift limit, duration window), the <code class="docutils literal notranslate"><span class="pre">generate:</span></code>, <code class="docutils literal notranslate"><span class="pre">cuts:</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">yield:</span></code> (for <code class="docutils literal notranslate"><span class="pre">run</span></code>), and <code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> (if declared) settings, and each output file it
+would write. If a real run would refuse to overwrite one that already exists, the dry run flags it
+as <code class="docutils literal notranslate"><span class="pre">WOULD</span> <span class="pre">FAIL</span></code> and exits non-zero unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> is also given. The schedule is loaded
+(and downloaded on first use), but the command never reads the <code class="docutils literal notranslate"><span class="pre">--in</span></code>/<code class="docutils literal notranslate"><span class="pre">--catalog</span></code>/
+<code class="docutils literal notranslate"><span class="pre">--photometry</span></code>/<code class="docutils literal notranslate"><span class="pre">--exposure</span></code> inputs of <code class="docutils literal notranslate"><span class="pre">cut</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry</span></code>/<code class="docutils literal notranslate"><span class="pre">detection-counts</span></code>, only checks
+that they exist.</p>
 </section>
 <hr class="docutils" />
 <section id="using-it-from-python">
 <h2>Using It From Python<a class="headerlink" href="#using-it-from-python" title="Link to this heading">#</a></h2>
 <p>Every command is a thin wrapper: <a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.html#module-uvex_transients.cli.pipeline" title="uvex_transients.cli.pipeline"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.cli.pipeline</span></code></a>’s
 <a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_generate.html#uvex_transients.cli.pipeline.run_generate" title="uvex_transients.cli.pipeline.run_generate"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_generate()</span></code></a>,
-<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_cuts.html#uvex_transients.cli.pipeline.run_cuts" title="uvex_transients.cli.pipeline.run_cuts"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_cuts()</span></code></a>, and
-<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_photometry.html#uvex_transients.cli.pipeline.run_photometry" title="uvex_transients.cli.pipeline.run_photometry"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_photometry()</span></code></a> take a parsed
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_exposure.html#uvex_transients.cli.pipeline.run_exposure" title="uvex_transients.cli.pipeline.run_exposure"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_exposure()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_cuts.html#uvex_transients.cli.pipeline.run_cuts" title="uvex_transients.cli.pipeline.run_cuts"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_cuts()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_yield_summary.html#uvex_transients.cli.pipeline.run_yield_summary" title="uvex_transients.cli.pipeline.run_yield_summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_yield_summary()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_photometry.html#uvex_transients.cli.pipeline.run_photometry" title="uvex_transients.cli.pipeline.run_photometry"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_photometry()</span></code></a>, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_detection_counts.html#uvex_transients.cli.pipeline.run_detection_counts" title="uvex_transients.cli.pipeline.run_detection_counts"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_detection_counts()</span></code></a> take a parsed
 <a class="reference internal" href="../../_as_gen/uvex_transients.cli.config.RunConfig.html#uvex_transients.cli.config.RunConfig" title="uvex_transients.cli.config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a> and do the real work, with no <code class="docutils literal notranslate"><span class="pre">click</span></code>
 dependency, useful if you want the same config-driven setup inside a notebook or a larger script
 instead of a fresh subprocess per stage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.cli.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunConfig</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.cli.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_cuts</span><span class="p">,</span> <span class="n">run_generate</span><span class="p">,</span> <span class="n">run_photometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.cli.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">run_cuts</span><span class="p">,</span> <span class="n">run_detection_counts</span><span class="p">,</span> <span class="n">run_exposure</span><span class="p">,</span> <span class="n">run_generate</span><span class="p">,</span> <span class="n">run_photometry</span><span class="p">,</span> <span class="n">run_yield_summary</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">RunConfig</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"quickstart_tde.yaml"</span><span class="p">)</span>
 
 <span class="n">catalog</span> <span class="o">=</span> <span class="n">run_generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="n">screened</span> <span class="o">=</span> <span class="n">run_cuts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">catalog</span><span class="p">)</span>          <span class="c1"># every declared cut, in order</span>
+<span class="n">exposure</span> <span class="o">=</span> <span class="n">run_exposure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">screened</span> <span class="o">=</span> <span class="n">run_cuts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">catalog</span><span class="p">)</span>                          <span class="c1"># every declared cut, in order</span>
+<span class="n">yields</span> <span class="o">=</span> <span class="n">run_yield_summary</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">screened</span><span class="p">,</span> <span class="n">exposure</span><span class="p">)</span>
 <span class="n">phot</span> <span class="o">=</span> <span class="n">run_photometry</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">screened</span><span class="p">)</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="n">run_detection_counts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">screened</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">phot</span><span class="p">)</span>   <span class="c1"># only if config has 'detection_counts:'</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">config.simulator</span></code>, <code class="docutils literal notranslate"><span class="pre">config.schedule</span></code>, <code class="docutils literal notranslate"><span class="pre">config.mission</span></code>, and <code class="docutils literal notranslate"><span class="pre">config.transients</span></code> are each
-resolved once and cached, so building a <code class="docutils literal notranslate"><span class="pre">RunConfig</span></code> and calling all three functions above costs
-one schedule fetch and one round of transient construction, not three.</p>
+resolved once and cached, so building a <code class="docutils literal notranslate"><span class="pre">RunConfig</span></code> and calling every function above costs one
+schedule fetch and one round of transient construction, no matter how many stages you run.</p>
 <hr class="docutils" />
 <p>See <a class="reference internal" href="../../_as_gen/uvex_transients.cli.html#module-uvex_transients.cli" title="uvex_transients.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.cli</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a> reference for exhaustive, method-by-method
 detail, and <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for the pipeline these commands are driving.</p>
@@ -963,12 +1116,12 @@ detail, and <a class="reference internal" href="../simulation/overview.html#user
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../simulation/overview.html"
+       href="../simulation/yield_statistics.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Simulation</p>
+        <p class="prev-next-title">Yield Statistics</p>
       </div>
     </a>
     <a class="right-next"
@@ -1009,6 +1162,8 @@ detail, and <a class="reference internal" href="../simulation/overview.html#user
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-events">Generating Events</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#screening-with-cuts">Screening With Cuts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthetic-photometry">Synthetic Photometry</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#yield-and-exposure">Yield and Exposure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estimating-detection-counts">Estimating Detection Counts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-whole-pipeline">Running the Whole Pipeline</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-it-from-python">Using It From Python</a></li>
 </ul>

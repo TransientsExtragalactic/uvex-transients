@@ -417,6 +417,10 @@
 <span class="c1"># to produce a detectable kilonova).</span>
 <span class="n">_KNE_RATE</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="mi">53</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Gpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
 
+<span class="c1"># The 90% CI endpoints implied by the quoted +176/-49 Gpc^-3 yr^-1, expressed as</span>
+<span class="c1"># multiplicative factors on `_KNE_RATE` (see `ExtragalacticTransient.RATE_CI`).</span>
+<span class="n">_KNE_RATE_CI</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="mi">53</span> <span class="o">-</span> <span class="mi">49</span><span class="p">)</span> <span class="o">/</span> <span class="mi">53</span><span class="p">,</span> <span class="p">(</span><span class="mi">53</span> <span class="o">+</span> <span class="mi">176</span><span class="p">)</span> <span class="o">/</span> <span class="mi">53</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="Kilonova">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova">[docs]</a>
@@ -440,28 +444,32 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">30</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.2</span>
 
-<div class="viewcode-block" id="Kilonova.event_rate">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.event_rate.html#uvex_transients.transients.kilonovae.Kilonova.event_rate">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+    <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_KNE_RATE_CI</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.units.Quantity: The volumetric kilonova rate, constant in `z` (Fishbach et al. 2026)."""</span>
+        <span class="k">return</span> <span class="n">_KNE_RATE</span>
+
+<div class="viewcode-block" id="Kilonova.rate_shape">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.rate_shape.html#uvex_transients.transients.kilonovae.Kilonova.rate_shape">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return the volumetric event rate of kilonovae at a given redshift.</span>
+<span class="sd">        Return the (trivial, constant) rate shape of kilonovae at a given redshift.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        z : float or array-like</span>
-<span class="sd">            Redshift(s) at which to evaluate the event rate.</span>
+<span class="sd">            Redshift(s) at which to evaluate the rate shape.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        float or array-like</span>
-<span class="sd">            The volumetric event rate of kilonovae at the specified redshift(s), in units of</span>
-<span class="sd">            events per cubic megaparsec per year. Constant in `z` (Fishbach et al. 2026).</span>
+<span class="sd">            Ones, since the kilonova rate is constant in `z` (Fishbach et al. 2026).</span>
 <span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">_KNE_RATE</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span></div>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># Return scalar if input was scalar.</span></div>
 </div>
 
 </pre></div>

@@ -379,6 +379,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
@@ -480,7 +481,7 @@ once <code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL<
 <a class="reference internal" href="#user-guide-transients-no-rate"><span class="std std-ref">A Transient Without a Volumetric Rate</span></a> below) – but it has no sampling machinery either.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a></p></td>
-<td><p>everything above, plus <code class="docutils literal notranslate"><span class="pre">event_rate</span></code>-driven redshift/count/sky sampling</p></td>
+<td><p>everything above, plus <code class="docutils literal notranslate"><span class="pre">rate</span></code>/<code class="docutils literal notranslate"><span class="pre">rate_shape</span></code>-driven redshift/count/sky sampling</p></td>
 <td><p>Your source is an extragalactic population with its own comoving volumetric rate as a
 function of redshift, and you want the same
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid" title="uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid()</span></code></a>
@@ -524,9 +525,9 @@ just as short:</p>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
 
-<span class="c1"># A made-up, redshift-independent volumetric rate, expressed in the units it's</span>
-<span class="c1"># most naturally quoted in -- events / Gpc^3 / yr, the same convention every</span>
-<span class="c1"># built-in population's rate constant uses (see e.g. uvex_transients.transients.kilonovae).</span>
+<span class="c1"># A made-up, redshift-independent volumetric rate normalization, expressed in the</span>
+<span class="c1"># units it's most naturally quoted in -- events / Gpc^3 / yr, the same convention</span>
+<span class="c1"># every built-in population's rate constant uses (see e.g. uvex_transients.transients.kilonovae).</span>
 <span class="n">_TOY_NOVA_RATE</span> <span class="o">=</span> <span class="mf">1e4</span> <span class="o">/</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Gpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
 
 
@@ -537,10 +538,14 @@ just as short:</p>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.05</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_TOY_NOVA_RATE</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">_TOY_NOVA_RATE</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">DEFAULT_MODEL</span></code>/<code class="docutils literal notranslate"><span class="pre">DEFAULT_DURATION</span></code> are exactly the two class variables described in
@@ -553,40 +558,70 @@ actual observable luminosity and your survey’s limiting magnitude.</p>
 </section>
 <section id="declaring-a-volumetric-rate">
 <h2>Declaring a Volumetric Rate<a class="headerlink" href="#declaring-a-volumetric-rate" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a> is the one abstract
-method every subclass must implement: the comoving event rate density <span class="math notranslate nohighlight">\(R(z)\)</span>, in
-events / Mpc<sup>3</sup> / yr, as a function of redshift. Two things about it are easy to get wrong
-and worth calling out explicitly:</p>
+<p>Rather than implementing <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a>
+(the comoving event rate density <span class="math notranslate nohighlight">\(R(z)=A f(z)\)</span>, in events / Mpc<sup>3</sup> / yr) directly, a
+subclass implements the two pieces it’s built from – the normalization <span class="math notranslate nohighlight">\(A\)</span> and the shape
+<span class="math notranslate nohighlight">\(f(z)\)</span> – so that a rate uncertainty (see <a class="reference internal" href="overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a> on
+the previous page) attaches to the single normalization rather than needing to be threaded through
+a combined function:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Abstract member</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate.html#uvex_transients.transients.base.ExtragalacticTransient.rate" title="uvex_transients.transients.base.ExtragalacticTransient.rate"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate</span></code></a></p></td>
+<td><p>A property returning the fiducial normalization <span class="math notranslate nohighlight">\(A\)</span> (<code class="docutils literal notranslate"><span class="pre">_TOY_NOVA_RATE</span></code> above) as a
+single <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a>. It’s a property, not a plain class attribute,
+specifically so it can depend on <code class="docutils literal notranslate"><span class="pre">self.cosmology</span></code> if needed (a core-collapse SNe
+subtype’s rate, for instance, scales with <span class="math notranslate nohighlight">\(h^2\)</span>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.rate_shape.html#uvex_transients.transients.base.ExtragalacticTransient.rate_shape" title="uvex_transients.transients.base.ExtragalacticTransient.rate_shape"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rate_shape()</span></code></a></p></td>
+<td><p>The dimensionless redshift dependence <span class="math notranslate nohighlight">\(f(z)\)</span>, evaluated at <code class="docutils literal notranslate"><span class="pre">self.rate</span></code>’s own
+normalization (i.e. by convention, though not enforced, <span class="math notranslate nohighlight">\(f(0)=1\)</span>). <code class="docutils literal notranslate"><span class="pre">ToyNova</span></code> above
+is redshift-independent, so <code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> is just <code class="docutils literal notranslate"><span class="pre">1</span></code> everywhere.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Two things about <code class="docutils literal notranslate"><span class="pre">rate</span></code>/<code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> are easy to get wrong and worth calling out explicitly:</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><strong>Always convert to Mpc:sup:`-3` yr:sup:`-1` yourself, with</strong> <code class="docutils literal notranslate"><span class="pre">.to_value(...)</span></code>.
-Internally, <code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code>’s lazy rate-table build does
-<code class="docutils literal notranslate"><span class="pre">np.asarray(self.event_rate(z_grid),</span> <span class="pre">dtype=float)</span></code> – and casting a
-<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a> through <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="(in NumPy v2.5)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.asarray()</span></code></a> silently discards its unit and
-keeps only the raw stored number, <em>without converting it first</em>. Return
-<code class="docutils literal notranslate"><span class="pre">_TOY_NOVA_RATE</span></code> (in Gpc<sup>-3</sup> yr<sup>-1</sup>) directly, instead of
-<code class="docutils literal notranslate"><span class="pre">_TOY_NOVA_RATE.to_value(u.Mpc**-3</span> <span class="pre">*</span> <span class="pre">u.yr**-1)</span></code> as above, and every sampled count comes out
-<span class="math notranslate nohighlight">\(10^9\)</span> too high – with no error or warning anywhere, since <code class="docutils literal notranslate"><span class="pre">np.asarray</span></code> never
-complains. Every built-in population’s rate function ends in exactly this <code class="docutils literal notranslate"><span class="pre">.to_value(...)</span></code>
-call for exactly this reason.</p>
+Internally, <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> (built from <code class="docutils literal notranslate"><span class="pre">rate</span></code>/<code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> – see
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.event_rate.html#uvex_transients.transients.base.ExtragalacticTransient.event_rate" title="uvex_transients.transients.base.ExtragalacticTransient.event_rate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_rate()</span></code></a>) does
+<code class="docutils literal notranslate"><span class="pre">self.rate.to_value(u.Mpc**-3</span> <span class="pre">*</span> <span class="pre">u.yr**-1)</span></code> itself, so returning <code class="docutils literal notranslate"><span class="pre">rate</span></code> in the wrong units
+(say, per Gpc<sup>3</sup> instead of per Mpc<sup>3</sup>) is caught by that conversion, not silently
+accepted – but <code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> gets no such protection: it must already return a plain,
+dimensionless array or scalar, not a <cite>~astropy.units.Quantity</cite>. Every built-in population’s
+<code class="docutils literal notranslate"><span class="pre">rate</span></code> property ends in <cite>.to()</cite>/an explicit unit-carrying <cite>Quantity</cite> for exactly this reason.</p>
 </div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p><strong>It must be NumPy-vectorized.</strong> <code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> calls it once, over the whole
-<code class="docutils literal notranslate"><span class="pre">redshift_grid</span></code>, not in a per-point loop – <code class="docutils literal notranslate"><span class="pre">np.full_like(z,</span> <span class="pre">...,</span> <span class="pre">dtype=np.float64)</span></code> above
-is what makes that work whether <code class="docutils literal notranslate"><span class="pre">z</span></code> is a scalar or an array. Return a plain array or scalar
-to match, as <code class="docutils literal notranslate"><span class="pre">rate</span> <span class="pre">if</span> <span class="pre">z.ndim</span> <span class="pre">&gt;</span> <span class="pre">0</span> <span class="pre">else</span> <span class="pre">rate.item()</span></code> does – the same convention every built-in
-<code class="docutils literal notranslate"><span class="pre">event_rate</span></code> follows, so a caller can write <code class="docutils literal notranslate"><span class="pre">nova.event_rate(0.01)</span></code> and get a plain float
+<p><strong>``rate_shape`` must be NumPy-vectorized.</strong> <code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> calls it once, over the
+whole <code class="docutils literal notranslate"><span class="pre">redshift_grid</span></code>, not in a per-point loop – <code class="docutils literal notranslate"><span class="pre">np.ones_like(z,</span> <span class="pre">dtype=np.float64)</span></code> above
+is what makes that work whether <code class="docutils literal notranslate"><span class="pre">z</span></code> is a scalar or an array. Return a plain array or scalar to
+match, as <code class="docutils literal notranslate"><span class="pre">shape</span> <span class="pre">if</span> <span class="pre">z.ndim</span> <span class="pre">&gt;</span> <span class="pre">0</span> <span class="pre">else</span> <span class="pre">shape.item()</span></code> does – the same convention every built-in
+<code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> follows, so a caller can write <code class="docutils literal notranslate"><span class="pre">nova.event_rate(0.01)</span></code> and get a plain float
 back, not a length-1 array.</p>
 </div>
 <p>Everything downstream of <code class="docutils literal notranslate"><span class="pre">event_rate</span></code> – the rate-weighted redshift distribution, the caching and
-invalidation behavior, <code class="docutils literal notranslate"><span class="pre">integrated_event_rate</span></code> – is exactly what
-<a class="reference internal" href="overview.html#user-guide-transients-rate-caching"><span class="std std-ref">From Rate to a Redshift Distribution</span></a> already describes; nothing about it changes because the
-rate function is user-defined.</p>
+invalidation behavior, <code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code> – is exactly what
+<a class="reference internal" href="overview.html#user-guide-transients-rate-caching"><span class="std std-ref">From Rate to a Redshift Distribution</span></a> already describes; nothing about it changes because
+<code class="docutils literal notranslate"><span class="pre">rate</span></code>/<code class="docutils literal notranslate"><span class="pre">rate_shape</span></code> are user-defined. A rate uncertainty is entirely optional: set
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.RATE_CI.html#uvex_transients.transients.base.ExtragalacticTransient.RATE_CI" title="uvex_transients.transients.base.ExtragalacticTransient.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> on the class (a pair of
+multiplicative <code class="docutils literal notranslate"><span class="pre">(lower,</span> <span class="pre">upper)</span></code> factors on <code class="docutils literal notranslate"><span class="pre">rate</span></code>, at whatever confidence level your source
+reports) if one is available; leave it at its default of <cite>None</cite> otherwise, exactly like most
+built-in populations do today.</p>
 </section>
 <section id="sampling-and-simulating-like-a-built-in">
 <h2>Sampling and Simulating Like a Built-In<a class="headerlink" href="#sampling-and-simulating-like-a-built-in" title="Link to this heading">#</a></h2>
-<p>From here, <code class="docutils literal notranslate"><span class="pre">ToyNova</span></code> behaves identically to any of the five built-in populations – because, to
+<p>From here, <code class="docutils literal notranslate"><span class="pre">ToyNova</span></code> behaves identically to any of the built-in populations – because, to
 every method in the package, it <em>is</em> one:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -612,10 +647,14 @@ every method in the package, it <em>is</em> one:</p>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.05</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">event_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_TOY_NOVA_RATE</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-        <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">_TOY_NOVA_RATE</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">rate</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">rate</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
 <span class="n">nova</span> <span class="o">=</span> <span class="n">ToyNova</span><span class="p">()</span>
 

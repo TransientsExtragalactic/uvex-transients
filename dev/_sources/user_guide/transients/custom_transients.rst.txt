@@ -32,7 +32,7 @@ Choosing a Base Class
        once ``DEFAULT_MODEL``/``DEFAULT_DURATION`` are set (see
        :ref:`user_guide_transients_no_rate` below) -- but it has no sampling machinery either.
    * - :class:`~uvex_transients.transients.base.ExtragalacticTransient`
-     - everything above, plus ``event_rate``-driven redshift/count/sky sampling
+     - everything above, plus ``rate``/``rate_shape``-driven redshift/count/sky sampling
      - Your source is an extragalactic population with its own comoving volumetric rate as a
        function of redshift, and you want the same
        :meth:`~uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid`
@@ -80,9 +80,9 @@ just as short:
 
     from uvex_transients.transients.base import ExtragalacticTransient
 
-    # A made-up, redshift-independent volumetric rate, expressed in the units it's
-    # most naturally quoted in -- events / Gpc^3 / yr, the same convention every
-    # built-in population's rate constant uses (see e.g. uvex_transients.transients.kilonovae).
+    # A made-up, redshift-independent volumetric rate normalization, expressed in the
+    # units it's most naturally quoted in -- events / Gpc^3 / yr, the same convention
+    # every built-in population's rate constant uses (see e.g. uvex_transients.transients.kilonovae).
     _TOY_NOVA_RATE = 1e4 / (u.Gpc**3 * u.yr)
 
 
@@ -93,10 +93,14 @@ just as short:
         DEFAULT_DURATION = 20 * u.day
         DEFAULT_Z_LIM = 0.05
 
-        def event_rate(self, z):
+        @property
+        def rate(self):
+            return _TOY_NOVA_RATE
+
+        def rate_shape(self, z):
             z = np.asarray(z)
-            rate = np.full_like(z, _TOY_NOVA_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
-            return rate if z.ndim > 0 else rate.item()
+            shape = np.ones_like(z, dtype=np.float64)
+            return shape if z.ndim > 0 else shape.item()
 
 ``DEFAULT_MODEL``/``DEFAULT_DURATION`` are exactly the two class variables described in
 :ref:`user_guide_transients` -- checked at class-definition time, so a subclass that forgets one
@@ -109,42 +113,64 @@ actual observable luminosity and your survey's limiting magnitude.
 Declaring a Volumetric Rate
 -------------------------------
 
-:meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate` is the one abstract
-method every subclass must implement: the comoving event rate density :math:`R(z)`, in
-events / Mpc\ :sup:`3` / yr, as a function of redshift. Two things about it are easy to get wrong
-and worth calling out explicitly:
+Rather than implementing :meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate`
+(the comoving event rate density :math:`R(z)=A f(z)`, in events / Mpc\ :sup:`3` / yr) directly, a
+subclass implements the two pieces it's built from -- the normalization :math:`A` and the shape
+:math:`f(z)` -- so that a rate uncertainty (see :ref:`user_guide_transients_rate_uncertainty` on
+the previous page) attaches to the single normalization rather than needing to be threaded through
+a combined function:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Abstract member
+     - Meaning
+   * - :attr:`~uvex_transients.transients.base.ExtragalacticTransient.rate`
+     - A property returning the fiducial normalization :math:`A` (``_TOY_NOVA_RATE`` above) as a
+       single :class:`~astropy.units.Quantity`. It's a property, not a plain class attribute,
+       specifically so it can depend on ``self.cosmology`` if needed (a core-collapse SNe
+       subtype's rate, for instance, scales with :math:`h^2`).
+   * - :meth:`~uvex_transients.transients.base.ExtragalacticTransient.rate_shape`
+     - The dimensionless redshift dependence :math:`f(z)`, evaluated at ``self.rate``'s own
+       normalization (i.e. by convention, though not enforced, :math:`f(0)=1`). ``ToyNova`` above
+       is redshift-independent, so ``rate_shape`` is just ``1`` everywhere.
+
+Two things about ``rate``/``rate_shape`` are easy to get wrong and worth calling out explicitly:
 
 .. warning::
 
    **Always convert to Mpc\ :sup:`-3` yr\ :sup:`-1` yourself, with** ``.to_value(...)``.
-   Internally, ``ExtragalacticTransient``'s lazy rate-table build does
-   ``np.asarray(self.event_rate(z_grid), dtype=float)`` -- and casting a
-   :class:`~astropy.units.Quantity` through :func:`numpy.asarray` silently discards its unit and
-   keeps only the raw stored number, *without converting it first*. Return
-   ``_TOY_NOVA_RATE`` (in Gpc\ :sup:`-3` yr\ :sup:`-1`) directly, instead of
-   ``_TOY_NOVA_RATE.to_value(u.Mpc**-3 * u.yr**-1)`` as above, and every sampled count comes out
-   :math:`10^9` too high -- with no error or warning anywhere, since ``np.asarray`` never
-   complains. Every built-in population's rate function ends in exactly this ``.to_value(...)``
-   call for exactly this reason.
+   Internally, ``event_rate`` (built from ``rate``/``rate_shape`` -- see
+   :meth:`~uvex_transients.transients.base.ExtragalacticTransient.event_rate`) does
+   ``self.rate.to_value(u.Mpc**-3 * u.yr**-1)`` itself, so returning ``rate`` in the wrong units
+   (say, per Gpc\ :sup:`3` instead of per Mpc\ :sup:`3`) is caught by that conversion, not silently
+   accepted -- but ``rate_shape`` gets no such protection: it must already return a plain,
+   dimensionless array or scalar, not a `~astropy.units.Quantity`. Every built-in population's
+   ``rate`` property ends in `.to()`/an explicit unit-carrying `Quantity` for exactly this reason.
 
 .. important::
 
-   **It must be NumPy-vectorized.** ``ExtragalacticTransient`` calls it once, over the whole
-   ``redshift_grid``, not in a per-point loop -- ``np.full_like(z, ..., dtype=np.float64)`` above
-   is what makes that work whether ``z`` is a scalar or an array. Return a plain array or scalar
-   to match, as ``rate if z.ndim > 0 else rate.item()`` does -- the same convention every built-in
-   ``event_rate`` follows, so a caller can write ``nova.event_rate(0.01)`` and get a plain float
+   **``rate_shape`` must be NumPy-vectorized.** ``ExtragalacticTransient`` calls it once, over the
+   whole ``redshift_grid``, not in a per-point loop -- ``np.ones_like(z, dtype=np.float64)`` above
+   is what makes that work whether ``z`` is a scalar or an array. Return a plain array or scalar to
+   match, as ``shape if z.ndim > 0 else shape.item()`` does -- the same convention every built-in
+   ``rate_shape`` follows, so a caller can write ``nova.event_rate(0.01)`` and get a plain float
    back, not a length-1 array.
 
 Everything downstream of ``event_rate`` -- the rate-weighted redshift distribution, the caching and
-invalidation behavior, ``integrated_event_rate`` -- is exactly what
-:ref:`user_guide_transients_rate_caching` already describes; nothing about it changes because the
-rate function is user-defined.
+invalidation behavior, ``integrated_rate`` -- is exactly what
+:ref:`user_guide_transients_rate_caching` already describes; nothing about it changes because
+``rate``/``rate_shape`` are user-defined. A rate uncertainty is entirely optional: set
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI` on the class (a pair of
+multiplicative ``(lower, upper)`` factors on ``rate``, at whatever confidence level your source
+reports) if one is available; leave it at its default of `None` otherwise, exactly like most
+built-in populations do today.
 
 Sampling and Simulating Like a Built-In
 -------------------------------------------
 
-From here, ``ToyNova`` behaves identically to any of the five built-in populations -- because, to
+From here, ``ToyNova`` behaves identically to any of the built-in populations -- because, to
 every method in the package, it *is* one:
 
 .. plot::
@@ -174,10 +200,14 @@ every method in the package, it *is* one:
        DEFAULT_DURATION = 20 * u.day
        DEFAULT_Z_LIM = 0.05
 
-       def event_rate(self, z):
+       @property
+       def rate(self):
+           return _TOY_NOVA_RATE
+
+       def rate_shape(self, z):
            z = np.asarray(z)
-           rate = np.full_like(z, _TOY_NOVA_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
-           return rate if z.ndim > 0 else rate.item()
+           shape = np.ones_like(z, dtype=np.float64)
+           return shape if z.ndim > 0 else shape.item()
 
    nova = ToyNova()
 

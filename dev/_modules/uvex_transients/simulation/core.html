@@ -416,12 +416,13 @@
 <span class="sd">`Event.simulate_photometry` batches across one event's own observations.</span>
 <span class="sd">"""</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">astropy_healpix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ah</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">vstack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">vstack</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">observing</span>
@@ -434,6 +435,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.exposure_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExposureCatalog</span>
 
 <span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
@@ -690,7 +692,7 @@
         <span class="n">time_bins</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sample a Monte Carlo realization of every registered transient type over a time grid.</span>
@@ -722,20 +724,34 @@
 <span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``). If `None` (the</span>
 <span class="sd">            default), uses ``config["healpix.default_order"]``.</span>
-<span class="sd">        downsample : int, optional</span>
-<span class="sd">            Downsample the number of events generated by this factor, by drawing a</span>
-<span class="sd">            random subset (without replacement) of each per-bin, per-type table rather</span>
-<span class="sd">            than a fixed stride -- seeded reproducibly off `simulation_seed`. The</span>
-<span class="sd">            default is ``None``.</span>
+<span class="sd">        downsample : int or Mapping of str to int, optional</span>
+<span class="sd">            Downsample the number of events generated, by drawing a random subset</span>
+<span class="sd">            (without replacement) of each per-bin, per-type table rather than a fixed</span>
+<span class="sd">            stride -- seeded reproducibly off `simulation_seed`. Either a single factor</span>
+<span class="sd">            applied to every registered transient type, or a ``{type key: factor}``</span>
+<span class="sd">            mapping giving a different factor per type (a type left out of the mapping</span>
+<span class="sd">            is not downsampled at all). The default is ``None`` (no downsampling).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        EventCatalog</span>
 <span class="sd">            One row per sampled event, across every registered transient type and time bin.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `downsample` is a mapping naming a key not in `self._transients`.</span>
 <span class="sd">        """</span>
         <span class="c1"># Validate the inputs and ensure that there are actually registered transients to model.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No transient types registered in `transient_collection`; nothing to sample."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"`downsample` names unknown transient key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
 
         <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
 
@@ -754,7 +770,10 @@
         <span class="c1"># of the transient types to construct the sample of events. This is ALL events within the redshift limit</span>
         <span class="c1"># which occur within the footprint of the survey. At this stage, the only event reduction is based in the</span>
         <span class="c1"># redshift limit and the survey footprint.</span>
-        <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">downsample</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling the number of events per-type by </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling the number of events by a factor of </span><span class="si">{</span><span class="n">downsample</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -765,6 +784,7 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">type_seed</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">,</span> <span class="n">type_seeds</span><span class="p">):</span>
                 <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">bin_seeds</span> <span class="o">=</span> <span class="n">type_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+                <span class="n">type_downsample</span> <span class="o">=</span> <span class="n">downsample</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">downsample</span>
 
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
                     <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">bin</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bins</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -823,13 +843,13 @@
 
                     <span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
                     <span class="n">table</span><span class="p">[</span><span class="s2">"time_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
-                    <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">type_downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="c1"># Spawned *after* `sample_events_on_healpix_grid` has already</span>
                         <span class="c1"># drawn its own 6 children from `bin_seeds[k]` above, so this</span>
                         <span class="c1"># doesn't perturb that draw -- see its own docstring on why</span>
                         <span class="c1"># spawn order off a shared `SeedSequence` matters.</span>
                         <span class="n">downsample_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">bin_seeds</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-                        <span class="n">n_keep</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">//</span> <span class="n">downsample</span><span class="p">)</span>  <span class="c1"># ceiling division</span>
+                        <span class="n">n_keep</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">//</span> <span class="n">type_downsample</span><span class="p">)</span>  <span class="c1"># ceiling division</span>
                         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">downsample_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
                         <span class="n">table</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
                     <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
@@ -853,7 +873,138 @@
             <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
             <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">,</span>
+            <span class="n">downsample</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">downsample</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySimulator.compute_effective_exposure">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure.html#uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_effective_exposure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">time_bins</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureCatalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Tabulate each registered transient type's effective exposure per time bin.</span>
+
+<span class="sd">        For each transient type and each bin ``[t_k, t_{k+1})`` of `time_bins`, this</span>
+<span class="sd">        reruns exactly the footprint query `generate_events` uses to decide where it's</span>
+<span class="sd">        even worth sampling events -- the HEALPix pixels the survey observes at some</span>
+<span class="sd">        point between ``t_k`` and ``t_k+1 + transient.duration_limit`` -- but instead of</span>
+<span class="sd">        drawing a population from it, reduces it straight to a solid angle</span>
+<span class="sd">        :math:`F(t_k, t_{k+1}+\tau)`. The **effective exposure** for that bin is then</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mathcal E_k = F(t_k, t_{k+1}+\tau)\,(t_{k+1}-t_k),</span>
+
+<span class="sd">        i.e. the *visited* solid angle (not the full :math:`4\pi` sky) times the *bin*</span>
+<span class="sd">        width (not the padded window used only to decide which pixels are visitable).</span>
+<span class="sd">        This matches the ``solid_angle * duration`` product</span>
+<span class="sd">        `~uvex_transients.transients.base.ExtragalacticTransient.sample_event_count`</span>
+<span class="sd">        itself feeds to `numpy.random.Generator.poisson` inside</span>
+<span class="sd">        `~uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid`,</span>
+<span class="sd">        so ``effective_exposure * transient.integrated_rate`` reproduces the same</span>
+<span class="sd">        per-bin expected event count `generate_events` actually samples from -- summing</span>
+<span class="sd">        `expected_events` over every bin for one transient type gives the same</span>
+<span class="sd">        expectation as ``transient.compute_all_sky_yield`` only when the survey footprint</span>
+<span class="sd">        never misses any of the sky at any point (:math:`F\equiv4\pi\,\mathrm{sr}`);</span>
+<span class="sd">        otherwise this is the tighter, footprint-aware quantity that estimator ignores.</span>
+
+<span class="sd">        This is deliberately *not* extracted from a `generate_events` call after the</span>
+<span class="sd">        fact -- `generate_events` never persists per-bin pixel IDs or solid angles once</span>
+<span class="sd">        it's done sampling from them, and re-deriving those from a resulting</span>
+<span class="sd">        `~uvex_transients.simulation.event_catalog.EventCatalog` would have to guess at</span>
+<span class="sd">        the very footprint query that produced it. Calling this separately recomputes</span>
+<span class="sd">        that query, but the expensive part -- `SurveySchedule.get_healpix_coverage_index`'s</span>
+<span class="sd">        whole-schedule rasterization -- is cached per ``(nside, order)`` and so is paid</span>
+<span class="sd">        for at most once, however many times either method (or both) queries it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_bins : ~astropy.time.Time or int</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+<span class="sd">        nside : int, optional</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+<span class="sd">        order : str, optional</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ExposureCatalog</span>
+<span class="sd">            One row per ``(transient type, time bin)``, sorted by transient type then</span>
+<span class="sd">            bin index, with columns ``transient_type``, ``time_bin``, ``t_start``,</span>
+<span class="sd">            ``t_end``, ``n_pixels_visited``, ``solid_angle``, ``duration``,</span>
+<span class="sd">            ``effective_exposure``, and ``expected_events``. See</span>
+<span class="sd">            `ExposureCatalog.total_effective_exposure`/`ExposureCatalog.total_expected_events`</span>
+<span class="sd">            for the per-type sums over every bin.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no transient types are registered in `transient_collection`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No transient types registered in `transient_collection`; nothing to tabulate."</span><span class="p">)</span>
+
+        <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_time_bins</span><span class="p">(</span><span class="n">time_bins</span><span class="p">)</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">sorted_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span>
+
+        <span class="n">transient_type</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">time_bin</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">t_start_col</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">t_end_col</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">n_pixels_visited</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">solid_angle</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Tabulating effective exposure"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+            <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">:</span>
+                <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">bin</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bins</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+                    <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+                    <span class="n">pixel_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_schedule</span><span class="o">.</span><span class="n">get_observed_healpix_ids</span><span class="p">(</span>
+                        <span class="n">t_start</span><span class="p">,</span>
+                        <span class="n">t_end</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
+                        <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+                        <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="n">transient_type</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">time_bin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">t_start_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_start</span><span class="p">)</span>
+                    <span class="n">t_end_col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_end</span><span class="p">)</span>
+                    <span class="n">n_pixels_visited</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pixel_ids</span><span class="p">))</span>
+                    <span class="n">solid_angle</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ah</span><span class="o">.</span><span class="n">nside_to_pixel_area</span><span class="p">(</span><span class="n">nside</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pixel_ids</span><span class="p">))</span>
+                    <span class="n">duration</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t_end</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">transient_type</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"time_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_bin</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"t_start"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="n">t_start_col</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"t_end"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="n">t_end_col</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"n_pixels_visited"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_pixels_visited</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"solid_angle"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">solid_angle</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"effective_exposure"</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"solid_angle"</span><span class="p">]</span> <span class="o">*</span> <span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"expected_events"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">integrated_rate</span> <span class="o">*</span> <span class="n">exposure</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">exposure</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">],</span> <span class="n">table</span><span class="p">[</span><span class="s2">"effective_exposure"</span><span class="p">])</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">ExposureCatalog</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">)</span></div>
 
 
     <span class="c1"># -------------------------------------------------- #</span>
@@ -1014,6 +1165,7 @@
                 <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
                 <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># Bandpass wavelength/throughput/frequency grids are the same for every transient</span>
@@ -1111,6 +1263,7 @@
             <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
             <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -1242,6 +1395,7 @@
                 <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
                 <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="n">schedule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_schedule</span>
@@ -1378,6 +1532,7 @@
             <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
             <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
