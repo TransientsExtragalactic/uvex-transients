@@ -305,6 +305,14 @@ class YieldConfig:
     confidence: float = 0.9
 
 
+@dataclass
+class DetectionCountsConfig:
+    """Parsed ``detection_counts:`` section -- see `PhotometryCatalog.compute_detection_count_table`."""
+
+    snr_threshold: float
+    confidence: float = 0.9
+
+
 class RunConfig:
     """
     A parsed CLI run-config, resolving each section lazily on first access.
@@ -345,6 +353,7 @@ class RunConfig:
         self._cuts: dict[str, CutSpec] | None = None
         self._photometry: PhotometryConfig | None = None
         self._yield: YieldConfig | None = None
+        self._detection_counts: DetectionCountsConfig | None = None
         self._keep_intermediate: bool | None = None
 
     @classmethod
@@ -532,6 +541,26 @@ class RunConfig:
             section = self._raw.get("yield") or {}
             self._yield = YieldConfig(confidence=section.get("confidence", 0.9))
         return self._yield
+
+    @property
+    def detection_counts(self) -> DetectionCountsConfig:
+        """
+        The parsed ``detection_counts:`` section (required by the ``detection-counts`` command).
+
+        Returns
+        -------
+        DetectionCountsConfig
+            The parsed section.
+        """
+        if self._detection_counts is None:
+            section = self._require_section("detection_counts", "detection-counts")
+            if "snr_threshold" not in section:
+                raise ValueError("'detection_counts:' is missing required key 'snr_threshold'.")
+            self._detection_counts = DetectionCountsConfig(
+                snr_threshold=section["snr_threshold"],
+                confidence=section.get("confidence", 0.9),
+            )
+        return self._detection_counts
 
     @property
     def keep_intermediate(self) -> bool:

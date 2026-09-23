@@ -19,15 +19,16 @@ from astropy.table import QTable, vstack
 from astropy.time import Time
 from astropy.units import Quantity
 from m4opt.missions import Mission
-from scipy.stats import beta as _beta_dist
 from tqdm.auto import tqdm
 
 from uvex_transients.utils import logger
 
 from ..surveys.base import SurveySchedule
 from ..transients.base import ExtragalacticTransient, TransientBase
+from ._stats import clopper_pearson_interval
 from .event import Event
 from .exposure_catalog import ExposureCatalog
+from .photometry_catalog import PhotometryCatalog
 from .yield_table import YieldTable
 
 _SeedType = Union[np.random.SeedSequence, int, None]
@@ -43,56 +44,6 @@ def _seed_to_meta(seed: _SeedType) -> int | None:
         return int(entropy) if isinstance(entropy, int) else None
 
     return None
-
-
-def _clopper_pearson_interval(k: int, n: int, confidence: float) -> tuple[float, float]:
-    r"""
-    Central Clopper-Pearson binomial confidence interval on :math:`k/n`.
-
-    Implements :ref:`yield-statistics`'s "Confidence bounds from the simulated
-    catalog" section exactly, including its boundary conventions -- ``k=0``, ``k=n``,
-    and ``n=0`` are each handled as an explicit special case rather than left to the
-    general Beta-quantile formula, which is singular at those points:
-
-    .. math::
-
-        \epsilon_{\mathrm L}=
-        \begin{cases}
-          0, & k=0,\\
-          Q_{\rm B}(\alpha/2;k,n-k+1), & k>0,
-        \end{cases}
-        \qquad
-        \epsilon_{\mathrm U}=
-        \begin{cases}
-          1, & k=n,\\
-          Q_{\rm B}(1-\alpha/2;k+1,n-k), & k<n,
-        \end{cases}
-
-    where :math:`Q_{\rm B}` is the Beta-distribution quantile function. For an empty
-    catalog (:math:`n=0`), the efficiency is unidentified; per the doc, this returns
-    ``(0.0, 1.0)`` -- the widest possible interval, not a degenerate point.
-
-    Parameters
-    ----------
-    k : int
-        Number of "successes" (detections), ``0 <= k <= n``.
-    n : int
-        Number of trials (feasible Monte Carlo draws).
-    confidence : float
-        Confidence level :math:`C=1-\alpha`, in ``(0, 1)``.
-
-    Returns
-    -------
-    tuple of float
-        ``(lower, upper)`` bounds on the true binomial proportion.
-    """
-    if n == 0:
-        return (0.0, 1.0)
-
-    alpha = 1.0 - confidence
-    lower = 0.0 if k == 0 else _beta_dist.ppf(alpha / 2, k, n - k + 1)
-    upper = 1.0 if k == n else _beta_dist.ppf(1 - alpha / 2, k + 1, n - k)
-    return (float(lower), float(upper))
 
 
 @dataclass
@@ -347,6 +298,42 @@ class EventCatalog:
         ]
         return vstack(tables, metadata_conflicts="silent")
 
+    def compute_photometry_catalog(
+        self,
+        mission: Mission,
+        transients: dict[str, TransientBase],
+        schedule: SurveySchedule,
+        bands: list[str] | None = None,
+        n_sigma: float | None = None,
+    ) -> PhotometryCatalog:
+        """
+        `simulate_photometry`, wrapped as a `PhotometryCatalog` rather than a bare `QTable`.
+
+        Parameters
+        ----------
+        mission : m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` (bandpasses, background, ...) evaluated
+            against.
+        transients : dict[str, TransientBase]
+            Transient-type instances, keyed by the same names used in this catalog's
+            ``transient_type`` column -- forwarded to `get_events`.
+        schedule : ~uvex_transients.surveys.base.SurveySchedule
+            The survey schedule to check each event's visibility against -- forwarded to
+            `get_events`.
+        bands : list of str, optional
+            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every
+            bandpass the detector has.
+        n_sigma : float, optional
+            Forwarded to `Event.simulate_photometry`; see its own docstring.
+
+        Returns
+        -------
+        PhotometryCatalog
+            This catalog's full synthetic photometry.
+        """
+        table = self.simulate_photometry(mission, transients, schedule, bands=bands, n_sigma=n_sigma)
+        return PhotometryCatalog(table=table)
+
     def compute_detection_efficiency(
         self,
         detected: "EventCatalog",
@@ -362,7 +349,7 @@ class EventCatalog:
         (see `~uvex_transients.simulation.core.SurveySimulator.run_cut`). This is
         exactly :ref:`yield-statistics`'s "Estimating the expected yield" and
         "Confidence bounds from the simulated catalog" sections; see
-        `_clopper_pearson_interval` for the binomial bounds themselves.
+        `clopper_pearson_interval` for the binomial bounds themselves.
 
         Parameters
         ----------
@@ -387,7 +374,7 @@ class EventCatalog:
         for name in np.unique(types):
             n = int(np.sum(types == name))
             k = int(np.sum(detected_types == name))
-            lower, upper = _clopper_pearson_interval(k, n, confidence)
+            lower, upper = clopper_pearson_interval(k, n, confidence)
             result[name] = {
                 "n": n,
                 "k": k,

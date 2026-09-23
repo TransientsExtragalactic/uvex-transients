@@ -88,6 +88,25 @@ def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
     assert phot_path.exists()
     phot = QTable.read(phot_path)
     assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}
+    # No 'detection_counts:' section in CONFIG_TEMPLATE -- that stage is skipped entirely.
+    assert not (out_dir / "detection_counts.ecsv").exists()
+
+
+def test_run_writes_detection_counts_when_configured(tmp_path, make_schedule):
+    """A config with a `detection_counts:` section makes `run` also write `detection_counts.ecsv`."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(
+        Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n  confidence: 0.8\n"
+    )
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+
+    assert result.exit_code == 0, result.output
+    dc_path = out_dir / "detection_counts.ecsv"
+    assert dc_path.exists()
+    table = QTable.read(dc_path)
+    assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
 
 
 def test_run_no_keep_intermediate_writes_only_the_final_catalog_and_photometry(tmp_path, make_schedule):
@@ -214,6 +233,74 @@ def test_dry_run_reports_a_bad_config_as_a_clean_error(tmp_path, make_schedule):
     assert result.exit_code != 0
     assert "dry run failed" in result.output
     assert "NotARealTransient" in result.output
+
+
+def test_detection_counts_writes_a_table(tmp_path, make_schedule):
+    """`detection-counts` combines an already-computed catalog/photometry/exposure into a detection-count table."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n")
+    out_dir = tmp_path / "results"
+
+    run_result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+    assert run_result.exit_code == 0, run_result.output
+
+    out_path = tmp_path / "detection_counts.ecsv"
+    result = CliRunner().invoke(
+        cli,
+        [
+            "detection-counts",
+            config_path,
+            "--catalog",
+            str(out_dir / "02_cut_2.ecsv"),
+            "--photometry",
+            str(out_dir / "photometry.ecsv"),
+            "--exposure",
+            str(out_dir / "exposure.ecsv"),
+            "--out",
+            str(out_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert out_path.exists()
+    table = QTable.read(out_path)
+    assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
+
+
+def test_detection_counts_dry_run_reports_the_plan_and_writes_nothing(tmp_path, make_schedule):
+    """`detection-counts --dry-run` validates the config and writes nothing, without reading its inputs."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n")
+    out_path = tmp_path / "detection_counts.ecsv"
+
+    # Only has to exist (click's `exists=True` path check) -- a dry run never reads its contents.
+    catalog_path = tmp_path / "in_catalog.ecsv"
+    photometry_path = tmp_path / "in_photometry.ecsv"
+    exposure_path = tmp_path / "in_exposure.ecsv"
+    for path in (catalog_path, photometry_path, exposure_path):
+        path.write_text("placeholder")
+
+    result = CliRunner().invoke(
+        cli,
+        [
+            "detection-counts",
+            config_path,
+            "--catalog",
+            str(catalog_path),
+            "--photometry",
+            str(photometry_path),
+            "--exposure",
+            str(exposure_path),
+            "--out",
+            str(out_path),
+            "--dry-run",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "dry run: detection-counts" in result.output
+    assert "snr_threshold=5.0" in result.output
+    assert not out_path.exists()
 
 
 def test_cut_dry_run_rejects_an_unknown_cut_name(tmp_path, make_schedule):

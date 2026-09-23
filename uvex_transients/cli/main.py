@@ -5,6 +5,8 @@ from pathlib import Path
 import click
 
 from ..simulation.event_catalog import EventCatalog
+from ..simulation.exposure_catalog import ExposureCatalog
+from ..simulation.photometry_catalog import PhotometryCatalog
 from . import pipeline
 from .config import RunConfig
 
@@ -207,6 +209,82 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
     click.echo(f"photometry: {len(phot)} rows -> {out_path}")
 
 
+@cli.command("detection-counts")
+@CONFIG_ARGUMENT
+@click.option(
+    "--catalog",
+    "catalog_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The event catalog --photometry was computed over.",
+)
+@click.option(
+    "--photometry",
+    "photometry_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Photometry table, as written by the 'photometry' command.",
+)
+@click.option(
+    "--exposure",
+    "exposure_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Exposure catalog, as written by 'run' (or SurveySimulator.compute_effective_exposure).",
+)
+@click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
+@OVERWRITE_OPTION
+@DRY_RUN_OPTION
+def detection_counts_command(
+    config_path: Path,
+    catalog_path: Path,
+    photometry_path: Path,
+    exposure_path: Path,
+    out_path: Path,
+    overwrite: bool,
+    dry_run: bool,
+) -> None:
+    """
+    Estimate, per transient type, how many events show N_det >= k detected epochs.
+
+    Combines CATALOG, PHOTOMETRY, and EXPOSURE per the config's 'detection_counts:' section
+    (see `PhotometryCatalog.compute_detection_count_table`); the output table carries both
+    Clopper-Pearson confidence bounds and exposure-scaled expected event counts, not just raw
+    Monte Carlo catalog counts.
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the run-config YAML file (``CONFIG``).
+    catalog_path : Path
+        Path to the event catalog `photometry_path` was computed over.
+    photometry_path : Path
+        Path to the photometry table.
+    exposure_path : Path
+        Path to the exposure catalog.
+    out_path : Path
+        Destination path for the detection-count table.
+    overwrite : bool
+        Whether to overwrite an existing file at `out_path`.
+    dry_run : bool
+        If True, validate and report without computing or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
+    """
+    config = RunConfig.from_yaml(config_path)
+    if dry_run:
+        return _dry_run(config, "detection-counts", [out_path], overwrite)
+    catalog = EventCatalog.from_disk(catalog_path)
+    photometry = PhotometryCatalog.from_disk(photometry_path)
+    exposure = ExposureCatalog.from_disk(exposure_path)
+    table = pipeline.run_detection_counts(config, catalog, exposure, photometry)
+    table.write(out_path, overwrite=overwrite)
+    click.echo(f"detection-counts: {len(table)} (type, k) row(s) -> {out_path}")
+
+
 KEEP_INTERMEDIATE_OPTION = click.option(
     "--keep-intermediate/--no-keep-intermediate",
     default=None,
@@ -265,6 +343,8 @@ def run_command(
             stage_files.append("final_catalog.ecsv")
         stage_files.append("photometry.ecsv")
         stage_files += ["exposure.ecsv", "yield_summary.ecsv", "yield_summary.txt"]
+        if config.has_section("detection_counts"):
+            stage_files.append("detection_counts.ecsv")
         return _dry_run(config, "run", [out_dir / name for name in stage_files], overwrite)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -307,3 +387,9 @@ def run_command(
     phot_path = out_dir / "photometry.ecsv"
     phot.write(phot_path, overwrite=overwrite)
     click.echo(f"photometry: {len(phot)} rows -> {phot_path.name}")
+
+    if config.has_section("detection_counts"):
+        detection_counts = pipeline.run_detection_counts(config, catalog, exposure, phot)
+        detection_counts_path = out_dir / "detection_counts.ecsv"
+        detection_counts.write(detection_counts_path, overwrite=overwrite)
+        click.echo(f"detection-counts: {len(detection_counts)} (type, k) row(s) -> {detection_counts_path.name}")
