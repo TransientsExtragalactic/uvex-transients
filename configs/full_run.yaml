@@ -23,7 +23,7 @@
 # population beyond what its own event rate needs to stay tractable.
 
 schedule:
-  name: uvex_initial_main
+  name: uvex_dev
 
 mission: uvex
 
@@ -53,10 +53,13 @@ transients:
 # `nside`/`order` are left unset (package default: `healpix.default_nside`/
 # `healpix.default_order` in `uvex_transients/config.yaml`). `time_bins` is
 # generous enough to resolve the full mission window at that resolution.
-# `downsample` applies as a single factor across every registered type in
-# this call (there's no per-class knob) -- 20 keeps the highest-rate
-# populations (TDEs, Type IIP SNe) tractable; counts for every type are
-# rescaled back up by this factor automatically once sampled.
+# `downsample` here is a single factor applied uniformly across every
+# registered type -- 20 keeps the highest-rate populations (TDEs, Type IIP
+# SNe) tractable; counts for every type are rescaled back up by this factor
+# automatically once sampled. It can instead be a `{transient key: factor}`
+# mapping (see `docs/source/user_guide/cli/overview.rst`) to downsample types
+# individually, e.g. leaving the rarer kilonova/LFBOT populations untouched
+# while still downsampling TDEs/SNe.
 generate:
   time_bins: 200
   downsample: 20
@@ -72,3 +75,9 @@ cuts:
 
 photometry:
   bands: [FUV, NUV]
+
+# Full-scale event counts make the intermediate stage catalogs (the raw
+# generated sample, then each cut's survivors) large and rarely worth
+# keeping around -- only the catalog photometry actually ran against
+# (`final_catalog.ecsv`) and `photometry.ecsv` itself are written.
+keep_intermediate: false

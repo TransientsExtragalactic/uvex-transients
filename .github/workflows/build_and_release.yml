@@ -3,7 +3,9 @@
 # GitHub Actions Workflow for PyPI Release
 # ------------------------------------------ #
 # Builds the sdist and a universal (pure-Python) wheel and publishes them to
-# PyPI when a version tag (v*) is pushed.
+# PyPI when a version tag (v*) is pushed. Independently (so it can't hold up
+# the PyPI publish), also runs the full-population pipeline and attaches its
+# output data products to the corresponding GitHub Release.
 name: Build and Release to PyPI
 
 on:
@@ -59,3 +61,34 @@ jobs:
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
+
+  # ------------------------------------------ #
+  # Run the full-population pipeline and        #
+  # release its data products                   #
+  # ------------------------------------------ #
+  release_data_products:
+    name: Run full_run.yaml and release outputs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Run full-population pipeline
+        run: uvex-transients run configs/full_run.yaml --out-dir results/release --overwrite
+
+      - name: Attach data products to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: results/release/*
+          fail_on_unmatched_files: true

@@ -279,7 +279,7 @@ class GenerateConfig:
     time_bins: int
     nside: int | None = None
     order: str | None = None
-    downsample: int | None = None
+    downsample: int | dict[str, int] | None = None
 
 
 @dataclass
@@ -296,6 +296,21 @@ class PhotometryConfig:
 
     bands: list[str] | None = None
     n_sigma: float | None = None
+
+
+@dataclass
+class YieldConfig:
+    """Parsed ``yield:`` section -- see `EventCatalog.compute_yield_summary`."""
+
+    confidence: float = 0.9
+
+
+@dataclass
+class DetectionCountsConfig:
+    """Parsed ``detection_counts:`` section -- see `PhotometryCatalog.compute_detection_count_table`."""
+
+    snr_threshold: float
+    confidence: float = 0.9
 
 
 class RunConfig:
@@ -337,6 +352,9 @@ class RunConfig:
         self._generate: GenerateConfig | None = None
         self._cuts: dict[str, CutSpec] | None = None
         self._photometry: PhotometryConfig | None = None
+        self._yield: YieldConfig | None = None
+        self._detection_counts: DetectionCountsConfig | None = None
+        self._keep_intermediate: bool | None = None
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "RunConfig":
@@ -508,3 +526,55 @@ class RunConfig:
             section = self._raw.get("photometry") or {}
             self._photometry = PhotometryConfig(bands=section.get("bands"), n_sigma=section.get("n_sigma"))
         return self._photometry
+
+    @property
+    def yield_config(self) -> YieldConfig:
+        """
+        The parsed ``yield:`` section (optional; defaults to a ``0.9`` Clopper-Pearson confidence level).
+
+        Returns
+        -------
+        YieldConfig
+            The parsed section.
+        """
+        if self._yield is None:
+            section = self._raw.get("yield") or {}
+            self._yield = YieldConfig(confidence=section.get("confidence", 0.9))
+        return self._yield
+
+    @property
+    def detection_counts(self) -> DetectionCountsConfig:
+        """
+        The parsed ``detection_counts:`` section (required by the ``detection-counts`` command).
+
+        Returns
+        -------
+        DetectionCountsConfig
+            The parsed section.
+        """
+        if self._detection_counts is None:
+            section = self._require_section("detection_counts", "detection-counts")
+            if "snr_threshold" not in section:
+                raise ValueError("'detection_counts:' is missing required key 'snr_threshold'.")
+            self._detection_counts = DetectionCountsConfig(
+                snr_threshold=section["snr_threshold"],
+                confidence=section.get("confidence", 0.9),
+            )
+        return self._detection_counts
+
+    @property
+    def keep_intermediate(self) -> bool:
+        """
+        Whether the ``run`` command should keep each stage's catalog on disk (top-level ``keep_intermediate:``).
+
+        Defaults to `True`; set to `False` to have ``run`` write only the final photometry
+        table, discarding the generated/cut catalogs once the next stage no longer needs them.
+
+        Returns
+        -------
+        bool
+            Whether to keep intermediate stage files.
+        """
+        if self._keep_intermediate is None:
+            self._keep_intermediate = bool(self._raw.get("keep_intermediate", True))
+        return self._keep_intermediate

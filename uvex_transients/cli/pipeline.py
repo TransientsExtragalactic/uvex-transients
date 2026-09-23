@@ -11,6 +11,9 @@ from pathlib import Path
 from astropy.table import QTable
 
 from ..simulation.event_catalog import EventCatalog
+from ..simulation.exposure_catalog import ExposureCatalog
+from ..simulation.photometry_catalog import PhotometryCatalog
+from ..simulation.yield_table import YieldTable
 from .config import RunConfig
 
 
@@ -35,6 +38,60 @@ def run_generate(config: RunConfig) -> EventCatalog:
         order=settings.order,
         downsample=settings.downsample,
     )
+
+
+def run_exposure(config: RunConfig) -> ExposureCatalog:
+    """
+    Tabulate an `ExposureCatalog` per the config's ``generate:`` section.
+
+    Uses the same ``time_bins``/``nside``/``order`` as `run_generate`, so both describe
+    the same footprint query -- see `SurveySimulator.compute_effective_exposure`.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+
+    Returns
+    -------
+    ExposureCatalog
+        The tabulated per-(transient type, time bin) exposure.
+    """
+    settings = config.generate
+    return config.simulator.compute_effective_exposure(
+        time_bins=settings.time_bins,
+        nside=settings.nside,
+        order=settings.order,
+    )
+
+
+def run_yield_summary(
+    config: RunConfig,
+    raw: EventCatalog,
+    detected: EventCatalog,
+    exposure: ExposureCatalog,
+) -> YieldTable:
+    """
+    Build a `YieldTable` per the config's ``yield:`` section (Clopper-Pearson confidence level).
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+    raw : EventCatalog
+        The feasible (pre-cut) catalog -- typically `run_generate`'s own output.
+    detected : EventCatalog
+        The detected (post-cut) catalog -- typically `run_cuts`'s own output.
+    exposure : ExposureCatalog
+        Typically `run_exposure`'s own output.
+
+    Returns
+    -------
+    YieldTable
+        One row per transient type in `config.transients`.
+    """
+    settings = config.yield_config
+    return raw.compute_yield_summary(detected, exposure, config.transients, confidence=settings.confidence)
 
 
 def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None = None) -> EventCatalog:
@@ -99,6 +156,46 @@ def run_photometry(config: RunConfig, catalog: EventCatalog) -> QTable:
     )
 
 
+def run_detection_counts(
+    config: RunConfig,
+    catalog: EventCatalog,
+    exposure: ExposureCatalog,
+    photometry: PhotometryCatalog | QTable,
+) -> QTable:
+    """
+    Build the detection-count estimator table per the config's ``detection_counts:`` section.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+    catalog : EventCatalog
+        The full per-type event list `photometry` was computed over -- forwarded to
+        `PhotometryCatalog.compute_detection_count_table`.
+    exposure : ExposureCatalog
+        Typically `run_exposure`'s own output.
+    photometry : PhotometryCatalog or ~astropy.table.QTable
+        Typically `run_photometry`'s own output, or a `PhotometryCatalog` wrapping it; a
+        bare `QTable` (the shape `run_photometry` itself returns) is wrapped automatically.
+
+    Returns
+    -------
+    astropy.table.QTable
+        One row per ``(transient_type, n_detections)`` pair; see
+        `PhotometryCatalog.compute_detection_count_table`'s own docstring for the column list.
+    """
+    settings = config.detection_counts
+    if not isinstance(photometry, PhotometryCatalog):
+        photometry = PhotometryCatalog(table=photometry)
+    return photometry.compute_detection_count_table(
+        catalog,
+        exposure,
+        config.transients,
+        snr_threshold=settings.snr_threshold,
+        confidence=settings.confidence,
+    )
+
+
 def dry_run_report(
     config: RunConfig,
     command: str,
@@ -118,9 +215,10 @@ def dry_run_report(
     ----------
     config : RunConfig
         The parsed run-config.
-    command : {"generate", "cut", "photometry", "run"}
+    command : {"generate", "cut", "photometry", "detection-counts", "run"}
         Which command is being dry-run; decides which config sections are validated. ``"run"``
-        validates ``generate:``, ``cuts:`` (if declared) and ``photometry:``.
+        validates ``generate:``, ``cuts:`` (if declared), ``photometry:``, and
+        ``detection_counts:`` (if declared).
     outputs : iterable of pathlib.Path, optional
         The files the real command would write, checked for collisions.
     overwrite : bool, optional
@@ -168,6 +266,13 @@ def dry_run_report(
     if command in ("photometry", "run"):
         settings = config.photometry
         lines.append(f"photometry: bands={settings.bands or 'every band'}, n_sigma={settings.n_sigma or 'default'}")
+
+    if command == "run":
+        lines.append(f"yield:     confidence={config.yield_config.confidence}")
+
+    if command == "detection-counts" or (command == "run" and config.has_section("detection_counts")):
+        settings = config.detection_counts
+        lines.append(f"detection_counts: snr_threshold={settings.snr_threshold}, confidence={settings.confidence}")
 
     ok = True
     outputs = list(outputs)

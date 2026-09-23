@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Union
 
 import numpy as np
+from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.table import QTable, vstack
 from astropy.time import Time
@@ -23,8 +24,12 @@ from tqdm.auto import tqdm
 from uvex_transients.utils import logger
 
 from ..surveys.base import SurveySchedule
-from ..transients.base import TransientBase
+from ..transients.base import ExtragalacticTransient, TransientBase
+from ._stats import clopper_pearson_interval
 from .event import Event
+from .exposure_catalog import ExposureCatalog
+from .photometry_catalog import PhotometryCatalog
+from .yield_table import YieldTable
 
 _SeedType = Union[np.random.SeedSequence, int, None]
 
@@ -77,6 +82,15 @@ class EventCatalog:
 
     seed: _SeedType = None
     """numpy.random.SeedSequence, int, or None: The root seed this catalog was generated from."""
+
+    downsample: int | dict[str, int] | None = None
+    """int, dict of str to int, or None: The downsample factor(s) generation was run with.
+
+    Either a single factor applied to every transient type, a ``{transient key: factor}``
+    mapping giving a per-type factor (a type missing from the mapping wasn't downsampled), or
+    `None` if generation wasn't downsampled at all -- see
+    `~uvex_transients.simulation.core.SurveySimulator.generate_events`.
+    """
 
     # ----------------------------------------- #
     # Dunder Methods                            #
@@ -284,6 +298,281 @@ class EventCatalog:
         ]
         return vstack(tables, metadata_conflicts="silent")
 
+    def compute_photometry_catalog(
+        self,
+        mission: Mission,
+        transients: dict[str, TransientBase],
+        schedule: SurveySchedule,
+        bands: list[str] | None = None,
+        n_sigma: float | None = None,
+    ) -> PhotometryCatalog:
+        """
+        `simulate_photometry`, wrapped as a `PhotometryCatalog` rather than a bare `QTable`.
+
+        Parameters
+        ----------
+        mission : m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` (bandpasses, background, ...) evaluated
+            against.
+        transients : dict[str, TransientBase]
+            Transient-type instances, keyed by the same names used in this catalog's
+            ``transient_type`` column -- forwarded to `get_events`.
+        schedule : ~uvex_transients.surveys.base.SurveySchedule
+            The survey schedule to check each event's visibility against -- forwarded to
+            `get_events`.
+        bands : list of str, optional
+            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every
+            bandpass the detector has.
+        n_sigma : float, optional
+            Forwarded to `Event.simulate_photometry`; see its own docstring.
+
+        Returns
+        -------
+        PhotometryCatalog
+            This catalog's full synthetic photometry.
+        """
+        table = self.simulate_photometry(mission, transients, schedule, bands=bands, n_sigma=n_sigma)
+        return PhotometryCatalog(table=table)
+
+    def compute_detection_efficiency(
+        self,
+        detected: "EventCatalog",
+        confidence: float = 0.9,
+    ) -> dict[str, dict[str, float]]:
+        r"""
+        Estimate each transient type's detection efficiency :math:`\hat\epsilon = k/n`.
+
+        ``n`` is this catalog's own row count for a type -- the number of *feasible*
+        Monte Carlo events actually drawn for it (within the survey's footprint and
+        the transient's redshift limit, before any detection cut) -- and ``k`` is
+        `detected`'s row count for that same type, after whatever cut(s) produced it
+        (see `~uvex_transients.simulation.core.SurveySimulator.run_cut`). This is
+        exactly :ref:`yield-statistics`'s "Estimating the expected yield" and
+        "Confidence bounds from the simulated catalog" sections; see
+        `clopper_pearson_interval` for the binomial bounds themselves.
+
+        Parameters
+        ----------
+        detected : EventCatalog
+            The subset of `self` that satisfied the detection criterion -- typically
+            one or more `SurveySimulator.run_cut` calls applied to `self`.
+        confidence : float, optional
+            Confidence level for the Clopper-Pearson interval. The default is ``0.9``.
+
+        Returns
+        -------
+        dict[str, dict[str, float]]
+            ``{transient type: {"n", "k", "efficiency", "efficiency_lower",
+            "efficiency_upper"}}``, one entry per distinct `transient_type` present in
+            `self`. ``efficiency`` is `numpy.nan` when ``n == 0`` (unidentified; see
+            :ref:`yield-statistics` -- this is deliberately not read as zero).
+        """
+        types = self.transient_type
+        detected_types = detected.transient_type
+
+        result = {}
+        for name in np.unique(types):
+            n = int(np.sum(types == name))
+            k = int(np.sum(detected_types == name))
+            lower, upper = clopper_pearson_interval(k, n, confidence)
+            result[name] = {
+                "n": n,
+                "k": k,
+                "efficiency": (k / n) if n > 0 else np.nan,
+                "efficiency_lower": lower,
+                "efficiency_upper": upper,
+            }
+        return result
+
+    def compute_yield_summary(
+        self,
+        detected: "EventCatalog",
+        exposure: ExposureCatalog,
+        transients: dict[str, ExtragalacticTransient],
+        confidence: float = 0.9,
+    ) -> YieldTable:
+        r"""
+        Build a per-transient-type yield summary, combining this catalog, `detected`, and `exposure`.
+
+        One row per transient type in `transients`, with:
+
+        - ``total_exposure``/``total_exposure_fraction``:
+          `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_effective_exposure`/
+          `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.coverage_fraction`.
+        - ``integrated_rate``: `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate`
+          (the per-steradian, per-year rate integrated over redshift).
+        - ``all_sky_rate``: that same rate restored to the full :math:`4\pi` sky
+          (`~uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate`), with no survey
+          footprint applied.
+        - ``uvex_intrinsic_rate``/``uvex_intrinsic_events``: the footprint-aware analogues of the
+          previous two, derived from `exposure` rather than the full sky -- ``uvex_intrinsic_events``
+          is exactly `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_expected_events`
+          (:math:`\mu_0` in :ref:`yield-statistics`), and ``uvex_intrinsic_rate`` is that same count
+          divided by `~uvex_transients.simulation.exposure_catalog.ExposureCatalog.total_duration`.
+        - ``detected_events``: :math:`k`, from `compute_detection_efficiency`.
+        - ``detection_probability``: :math:`\hat\epsilon=k/n` (`compute_detection_efficiency`).
+        - ``expected_detections``: :math:`\hat\lambda=\mu_0\hat\epsilon`, :ref:`yield-statistics`'s
+          boxed yield estimator.
+
+        Every rate-derived quantity (``integrated_rate``, ``all_sky_rate``,
+        ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by
+        each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to
+        the point estimate when ``RATE_CI`` is unset, exactly like
+        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.
+
+        ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided
+        intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.
+        "rate-only" bounds, kept apart so either source of uncertainty stays inspectable on its
+        own): ``..._binom_lower``/``..._binom_upper`` (Clopper-Pearson, propagated through
+        :math:`\hat\lambda=\mu_0\hat\epsilon` for `expected_detections`) and ``..._rate_lower``/
+        ``..._rate_upper`` (``RATE_CI``, holding :math:`\hat\epsilon` fixed). `detection_probability`
+        itself doesn't depend on the rate normalization at all -- it's a ratio of Monte Carlo counts
+        -- so its ``..._rate_lower``/``..._rate_upper`` columns always equal its own point estimate;
+        they're included only so every row shares one column schema.
+
+        Parameters
+        ----------
+        detected : EventCatalog
+            Forwarded to `compute_detection_efficiency`.
+        exposure : ExposureCatalog
+            Supplies every footprint-aware quantity above; see the column list.
+        transients : dict[str, ExtragalacticTransient]
+            Transient-type instances, keyed the same way as `self.transient_type` and
+            `exposure.transient_type`. One output row per key, sorted by name.
+        confidence : float, optional
+            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.
+
+        Returns
+        -------
+        YieldTable
+            One row per transient type, sorted by name; see the column list above.
+
+        Raises
+        ------
+        KeyError
+            If `exposure` has no tabulated exposure for a type named in `transients`.
+        """
+        efficiencies = self.compute_detection_efficiency(detected, confidence=confidence)
+        total_exposure = exposure.total_effective_exposure
+        total_events = exposure.total_expected_events
+        coverage = exposure.coverage_fraction
+        total_duration = exposure.total_duration
+
+        names = sorted(transients)
+        missing = [name for name in names if name not in total_exposure]
+        if missing:
+            raise KeyError(
+                f"No exposure tabulated for transient type(s) {missing}; available: {sorted(total_exposure)}."
+            )
+
+        columns = (
+            "transient_type",
+            "total_exposure",
+            "total_exposure_fraction",
+            "integrated_rate",
+            "integrated_rate_lower",
+            "integrated_rate_upper",
+            "all_sky_rate",
+            "all_sky_rate_lower",
+            "all_sky_rate_upper",
+            "uvex_intrinsic_rate",
+            "uvex_intrinsic_rate_lower",
+            "uvex_intrinsic_rate_upper",
+            "uvex_intrinsic_events",
+            "uvex_intrinsic_events_lower",
+            "uvex_intrinsic_events_upper",
+            "detected_events",
+            "detection_probability",
+            "detection_probability_binom_lower",
+            "detection_probability_binom_upper",
+            "detection_probability_rate_lower",
+            "detection_probability_rate_upper",
+            "expected_detections",
+            "expected_detections_binom_lower",
+            "expected_detections_binom_upper",
+            "expected_detections_rate_lower",
+            "expected_detections_rate_upper",
+        )
+        rows = {column: [] for column in columns}
+
+        default_efficiency = {"n": 0, "k": 0, "efficiency": np.nan, "efficiency_lower": 0.0, "efficiency_upper": 1.0}
+
+        for name in names:
+            transient = transients[name]
+            lower_factor, upper_factor = transient.RATE_CI if transient.RATE_CI is not None else (1.0, 1.0)
+
+            mu0 = total_events[name]
+            intrinsic_rate = (mu0 / total_duration).to(u.yr**-1)
+
+            eff = efficiencies.get(name, default_efficiency)
+            eps = eff["efficiency"]
+            eps_lower, eps_upper = eff["efficiency_lower"], eff["efficiency_upper"]
+
+            lambda_hat = mu0 * eps
+
+            rows["transient_type"].append(name)
+            rows["total_exposure"].append(total_exposure[name])
+            rows["total_exposure_fraction"].append(coverage[name])
+            rows["integrated_rate"].append(transient.integrated_rate)
+            rows["integrated_rate_lower"].append(transient.integrated_rate_ci[0])
+            rows["integrated_rate_upper"].append(transient.integrated_rate_ci[1])
+            rows["all_sky_rate"].append(transient.all_sky_rate)
+            rows["all_sky_rate_lower"].append(transient.all_sky_rate_ci[0])
+            rows["all_sky_rate_upper"].append(transient.all_sky_rate_ci[1])
+            rows["uvex_intrinsic_rate"].append(intrinsic_rate)
+            rows["uvex_intrinsic_rate_lower"].append(intrinsic_rate * lower_factor)
+            rows["uvex_intrinsic_rate_upper"].append(intrinsic_rate * upper_factor)
+            rows["uvex_intrinsic_events"].append(mu0)
+            rows["uvex_intrinsic_events_lower"].append(mu0 * lower_factor)
+            rows["uvex_intrinsic_events_upper"].append(mu0 * upper_factor)
+            rows["detected_events"].append(eff["k"])
+            rows["detection_probability"].append(eps)
+            rows["detection_probability_binom_lower"].append(eps_lower)
+            rows["detection_probability_binom_upper"].append(eps_upper)
+            rows["detection_probability_rate_lower"].append(eps)
+            rows["detection_probability_rate_upper"].append(eps)
+            rows["expected_detections"].append(lambda_hat)
+            rows["expected_detections_binom_lower"].append(mu0 * eps_lower)
+            rows["expected_detections_binom_upper"].append(mu0 * eps_upper)
+            rows["expected_detections_rate_lower"].append(lambda_hat * lower_factor)
+            rows["expected_detections_rate_upper"].append(lambda_hat * upper_factor)
+
+        table = QTable()
+        table["transient_type"] = np.asarray(rows["transient_type"])
+        table["total_exposure"] = u.Quantity(rows["total_exposure"])
+        table["total_exposure_fraction"] = np.asarray(rows["total_exposure_fraction"], dtype=np.float64)
+        for column in (
+            "integrated_rate",
+            "integrated_rate_lower",
+            "integrated_rate_upper",
+            "all_sky_rate",
+            "all_sky_rate_lower",
+            "all_sky_rate_upper",
+            "uvex_intrinsic_rate",
+            "uvex_intrinsic_rate_lower",
+            "uvex_intrinsic_rate_upper",
+        ):
+            table[column] = u.Quantity(rows[column])
+        table["uvex_intrinsic_events"] = np.asarray(rows["uvex_intrinsic_events"], dtype=np.float64)
+        table["uvex_intrinsic_events_lower"] = np.asarray(rows["uvex_intrinsic_events_lower"], dtype=np.float64)
+        table["uvex_intrinsic_events_upper"] = np.asarray(rows["uvex_intrinsic_events_upper"], dtype=np.float64)
+        table["detected_events"] = np.asarray(rows["detected_events"], dtype=np.int64)
+        for column in (
+            "detection_probability",
+            "detection_probability_binom_lower",
+            "detection_probability_binom_upper",
+            "detection_probability_rate_lower",
+            "detection_probability_rate_upper",
+            "expected_detections",
+            "expected_detections_binom_lower",
+            "expected_detections_binom_upper",
+            "expected_detections_rate_lower",
+            "expected_detections_rate_upper",
+        ):
+            table[column] = np.asarray(rows[column], dtype=np.float64)
+
+        return YieldTable(table=table, confidence=confidence)
+
     # ----------------------------------------- #
     # IO Methods                                #
     # ----------------------------------------- #
@@ -308,6 +597,7 @@ class EventCatalog:
                 "order": self.order,
                 "time_bins": self.time_bins,
                 "seed": _seed_to_meta(self.seed),
+                "downsample": self.downsample,
             }
         )
         table.write(Path(path), format=table_format, overwrite=overwrite)
@@ -346,4 +636,5 @@ class EventCatalog:
             order=meta.pop("order"),
             time_bins=meta.pop("time_bins"),
             seed=meta.pop("seed", None),
+            downsample=meta.pop("downsample", None),
         )

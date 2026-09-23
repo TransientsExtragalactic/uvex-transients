@@ -2,7 +2,7 @@
 .PHONY: help install lint format test coverage docs docs-clean clean run notebooks
 
 RUN_CONFIG ?= configs/full_run.yaml
-RUN_OUT_DIR ?= results/full_run/
+RUN_OUT_DIR ?= results/dev/
 NOTEBOOKS := $(wildcard notebooks/*.ipynb)
 
 help: ## Show this help.

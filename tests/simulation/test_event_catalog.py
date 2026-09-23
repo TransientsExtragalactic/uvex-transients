@@ -1,9 +1,11 @@
-"""Tests for `EventCatalog.simulate_photometry`."""
+"""Tests for `EventCatalog.simulate_photometry` and `EventCatalog.to_disk`/`from_disk`."""
 
+import pytest
 from astropy.table import QTable
 from m4opt.missions._uvex import uvex
 
 from uvex_transients.simulation.event import Event
+from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
 from .test_core import _make_catalog
@@ -48,3 +50,36 @@ def test_simulate_photometry_respects_bands(make_schedule, hot_spot):
     phot = catalog.simulate_photometry(uvex, {"tde": transient}, schedule, bands=[band])
 
     assert set(phot["band"]).issubset({band})
+
+
+# --------------------------------------------------------------------------- #
+# to_disk / from_disk: downsample round-trip                                 #
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("downsample", [None, 20, {"tde": 5, "kilonova": 2}])
+def test_to_disk_from_disk_round_trips_downsample(tmp_path, hot_spot, downsample):
+    """`downsample` (int, mapping, or `None`) survives an ECSV `to_disk`/`from_disk` round trip."""
+    transient = TidalDisruptionEvent()
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=1)
+    catalog.downsample = downsample
+
+    path = tmp_path / "catalog.ecsv"
+    catalog.to_disk(path)
+    reloaded = EventCatalog.from_disk(path)
+
+    assert reloaded.downsample == downsample
+
+
+def test_from_disk_defaults_downsample_to_none_when_absent_from_older_files(tmp_path, hot_spot):
+    """A catalog file written before `downsample` existed still reads back fine, defaulting to `None`."""
+    transient = TidalDisruptionEvent()
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=2, seed=1)
+
+    path = tmp_path / "catalog.ecsv"
+    table = catalog.table.copy()
+    table.meta.update(
+        {"nside": catalog.nside, "order": catalog.order, "time_bins": catalog.time_bins, "seed": catalog.seed}
+    )
+    table.write(path)
+
+    reloaded = EventCatalog.from_disk(path)
+    assert reloaded.downsample is None

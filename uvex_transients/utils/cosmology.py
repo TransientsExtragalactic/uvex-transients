@@ -384,6 +384,63 @@ def physical_to_angular(size, redshift=None, cosmology=None):
     return (size / DA).to(u.arcsec, equivalencies=u.dimensionless_angles())
 
 
+def core_collapse_rate_coefficient(cosmology: Union[Cosmology, None] = None) -> Quantity:
+    """
+    Return the (redshift-independent) normalization of the total volumetric core-collapse SNe rate.
+
+    This is the amplitude `A` in ``core_collapse_rate(z) = core_collapse_rate_coefficient()
+    * core_collapse_rate_shape(z)``, i.e. the class-level ``rate`` each core-collapse subtype
+    in `uvex_transients.transients.supernovae` reports (scaled by its own subtype fraction) --
+    see that module.
+
+    Parameters
+    ----------
+    cosmology : `~astropy.cosmology.FLRW`, optional
+        Cosmology whose little Hubble parameter `h` rescales the rate (see Notes).
+        If ``None``, the configured default cosmology is used; see `get_cosmology`.
+
+    Returns
+    -------
+    ~astropy.units.Quantity
+        The rate normalization, in events per cubic megaparsec per year.
+
+    Notes
+    -----
+    The Madau & Dickinson (2014) coefficient this is built from is quoted for
+    :math:`h = 0.7`; its :math:`h^2` scaling is applied here using the actual
+    little Hubble parameter of ``cosmology`` rather than a hardcoded value, so the
+    rate stays consistent with whatever cosmology the caller is using elsewhere.
+    """
+    cosmo = get_cosmology(cosmology)
+
+    # Madau & Dickinson (2014) coefficient * CC rate from LGS 2015, rescaled by h^2
+    # from the cosmology's actual little Hubble parameter rather than the h=0.7
+    # value the coefficient was originally quoted at.
+    return 0.0001365 * cosmo.h**2 / (u.Mpc**3 * u.yr)
+
+
+def core_collapse_rate_shape(z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+    """
+    Return the dimensionless Madau & Dickinson (2014) redshift shape of the core-collapse SNe rate.
+
+    This is the shape `f(z)` in ``core_collapse_rate(z) = core_collapse_rate_coefficient()
+    * core_collapse_rate_shape(z)``; see `core_collapse_rate_coefficient`.
+
+    Parameters
+    ----------
+    z : float or array-like
+        Redshift(s) at which to evaluate the shape.
+
+    Returns
+    -------
+    float or array-like
+        The dimensionless rate shape at the specified redshift(s).
+    """
+    z = np.asarray(z)
+    shape = (1 + z) ** 2.7 / (1 + ((1 + z) / 2.9) ** 5.6)
+    return shape if z.ndim > 0 else shape.item()
+
+
 def core_collapse_rate(
     z: Union[float, NDArray[np.float64]],
     cosmology: Union[Cosmology, None] = None,
@@ -391,37 +448,28 @@ def core_collapse_rate(
     """
     Return the total (all-subtype) volumetric core-collapse SNe rate at redshift(s) `z`.
 
-    Shared by each core-collapse subtype class's own ``event_rate`` (see
+    Shared by each core-collapse subtype class's own ``rate``/``rate_shape`` (see
     `uvex_transients.transients.supernovae`), so the per-subtype rates always stay a
     fixed fraction of the same underlying total rather than risking independent drift.
+    A thin convenience wrapper around `core_collapse_rate_coefficient` *
+    `core_collapse_rate_shape`.
 
     Parameters
     ----------
     z : float or array-like
         Redshift(s) at which to evaluate the event rate.
     cosmology : `~astropy.cosmology.FLRW`, optional
-        Cosmology whose little Hubble parameter `h` rescales the rate (see Notes).
-        If ``None``, the configured default cosmology is used; see `get_cosmology`.
+        Cosmology whose little Hubble parameter `h` rescales the rate (see
+        `core_collapse_rate_coefficient`). If ``None``, the configured default
+        cosmology is used; see `get_cosmology`.
 
     Returns
     -------
     float or array-like
         The volumetric event rate at the specified redshift(s), in events per cubic megaparsec per year.
-
-    Notes
-    -----
-    The Madau & Dickinson (2014) coefficient this rate is built from is quoted for
-    :math:`h = 0.7`; its :math:`h^2` scaling is applied here using the actual
-    little Hubble parameter of ``cosmology`` rather than a hardcoded value, so the
-    rate stays consistent with whatever cosmology the caller is using elsewhere.
     """
     z = np.asarray(z)
-    cosmo = get_cosmology(cosmology)
-
-    # Madau & Dickinson (2014) coefficient * CC rate from LGS 2015, rescaled by h^2
-    # from the cosmology's actual little Hubble parameter rather than the h=0.7
-    # value the coefficient was originally quoted at.
-    _coefficient = 0.0001365 * cosmo.h**2
-    rate = _coefficient * (1 + z) ** 2.7 / (1 + ((1 + z) / 2.9) ** 5.6)
+    coefficient = core_collapse_rate_coefficient(cosmology).to_value(u.Mpc**-3 * u.yr**-1)
+    rate = coefficient * core_collapse_rate_shape(z)
 
     return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.

@@ -140,6 +140,12 @@ def test_generate_parses_optional_fields():
     assert config.generate.downsample is None
 
 
+def test_generate_downsample_accepts_a_per_type_mapping():
+    """`generate: downsample:` may be a `{transient key: factor}` mapping instead of a single int."""
+    config = _config_from("generate:\n  time_bins: 10\n  downsample:\n    tde: 5\n    kilonova: 2\n")
+    assert config.generate.downsample == {"tde": 5, "kilonova": 2}
+
+
 def test_cuts_unknown_type_raises():
     """An unrecognized cut `type:` raises, listing `SurveySimulator.available_cuts()`."""
     config = _config_from("cuts:\n  cut_1:\n    type: not_a_real_cut\n")
@@ -176,6 +182,18 @@ def test_photometry_defaults_when_omitted():
     config = _config_from("x: 1\n")
     assert config.photometry.bands is None
     assert config.photometry.n_sigma is None
+
+
+def test_keep_intermediate_defaults_to_true_when_omitted():
+    """An entirely absent `keep_intermediate:` key defaults to `True`."""
+    config = _config_from("x: 1\n")
+    assert config.keep_intermediate is True
+
+
+def test_keep_intermediate_reads_the_config_value():
+    """`keep_intermediate: false` resolves to `False`."""
+    config = _config_from("keep_intermediate: false\n")
+    assert config.keep_intermediate is False
 
 
 def test_config_missing_unrelated_section_still_works():
