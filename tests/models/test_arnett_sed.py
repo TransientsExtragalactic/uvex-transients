@@ -1,4 +1,4 @@
-"""Model-specific tests for :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`.
+"""Model-specific tests for :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED`.
 
 The generic ``SpectralModelContract`` checks live in ``test_seds.py``.
 """
@@ -7,15 +7,15 @@ import numpy as np
 import pytest
 from astropy import units as u
 
+from uvex_transients.models import arnett as magnetar_module
 from uvex_transients.models._constants import SIGMA_SB_CGS
 from uvex_transients.models.arnett import (
     GAUSS_CGS,
+    ArnettMagnetarSpindownSED,
     _arnett_luminosity_cgs,
     compute_arnett_luminosity,
     get_magnetar_engine,
 )
-from uvex_transients.models.supernovae import ArnettMagnetarSpindownSED
-from uvex_transients.models.supernovae import magnetar as magnetar_module
 
 SED = ArnettMagnetarSpindownSED
 

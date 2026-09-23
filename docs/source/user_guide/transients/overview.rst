@@ -148,7 +148,7 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - 100 d
      - 0.5
    * - :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`
-     - :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`
+     - :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED`
      - 600 d
      - 4
 

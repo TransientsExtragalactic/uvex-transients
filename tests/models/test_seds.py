@@ -14,6 +14,7 @@ actually being checked.
 import numpy as np
 from astropy import units as u
 
+from uvex_transients.models.arnett import ArnettDecaySED
 from uvex_transients.models.core.base import ComposedSpectralModel, SpectralModel
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
@@ -21,6 +22,7 @@ from uvex_transients.models.supernovae import (
     ArnettMagnetarSpindownSED,
     MoragShockCoolingBlackbodySED,
     MoragShockCoolingSED,
+    TypeIaSED,
     TypeIbSED,
     TypeIcSED,
     TypeIIbSED,
@@ -35,6 +37,14 @@ from ._contracts import SpectralModelContract, assert_full_coverage
 
 class TestArnettMagnetarSpindownSED(SpectralModelContract):
     model_class = ArnettMagnetarSpindownSED
+
+
+class TestArnettDecaySED(SpectralModelContract):
+    model_class = ArnettDecaySED
+
+
+class TestTypeIaSED(SpectralModelContract):
+    model_class = TypeIaSED
 
 
 class TestVillarCoolingBlackbodySED(SpectralModelContract):

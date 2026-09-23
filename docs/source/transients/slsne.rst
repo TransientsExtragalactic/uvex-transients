@@ -12,7 +12,7 @@ rapidly-rotating, strongly-magnetized neutron star (a magnetar) embedded in the 
 :footcite:p:`2010ApJ...717..245K, 2010ApJ...719L.204W`.
 
 This population is implemented by :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`,
-pairing :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED` with the
+pairing :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED` with the
 rate/duration metadata described below. Unlike the purely phenomenological SED shapes used
 elsewhere in this package, this SED is a semi-analytic solution of the underlying diffusion
 physics (:footcite:t:`1982ApJ...253..785A`, extended by :footcite:t:`2017ApJ...850...55N` and
@@ -52,7 +52,7 @@ Quick Facts
 SED Model
 ----------
 
-*Model Class*: :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`
+*Model Class*: :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED`
 
 The SED model for the SLSNe-I population utilizes the standard Arnett-style
 diffusion\ :footcite:p:`2017ApJ...850...55N` model driven by a magnetar spin-down power source.
