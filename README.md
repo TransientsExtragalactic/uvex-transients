@@ -8,8 +8,8 @@
 <p align="center"><em>End-to-end simulations of transients from UVEX all-sky surveys.</em></p>
 
 <p align="center">
-  <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/v/uvex-transients" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/pyversions/uvex-transients" alt="Supported Python versions"></a>
+  <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/v/uvex-transients?cacheSeconds=3600" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/uvex-transients/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/pypi/pyversions/uvex-transients?cacheSeconds=3600" alt="Supported Python versions"></a>
   <a href="https://numpydoc.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/docstyle-numpydoc-459db9" alt="Docstring style: numpydoc"></a>
   <a href="https://github.com/astral-sh/ruff" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
   <a href="https://github.com/pre-commit/pre-commit" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit" alt="pre-commit"></a>
