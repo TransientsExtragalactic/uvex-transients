@@ -124,9 +124,8 @@ UVEX FUV/NUV bandpasses:
 
 2. An all-sky "peak-visible rate" bar chart per band, assuming any event above :math:`m<24.5` is
    detectable and the population is isotropic/homogeneous in comoving volume out to its redshift
-   limit: ``4 * pi * transient.integrated_event_rate * u.sr`` gives the all-sky rate, and the
-   fraction of simulated events with peak magnitude below the limit scales it down to a
-   peak-visible rate.
+   limit: ``transient.all_sky_rate`` gives the all-sky rate directly, and the fraction of
+   simulated events with peak magnitude below the limit scales it down to a peak-visible rate.
 
 If a transient class covers more than one population (e.g. several subtypes), repeat each plot
 once per population and combine the rate plot into one grouped bar chart (see supernovae.rst)

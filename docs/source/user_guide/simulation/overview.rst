@@ -336,6 +336,79 @@ original ``event_id`` values preserved rather than renumbered:
    ax.set_ylabel("Number of TDEs")
    ax.set_title("TDE detection funnel")
 
+----
+
+.. _user_guide_simulation_yield:
+
+Exposure and Yield
+----------------------
+
+A raw or filtered ``EventCatalog`` count is a *realization*, not an estimate -- to turn one into a
+formal expected-detection number with confidence bounds (:ref:`yield-statistics` derives every
+estimator below), you also need to know how much of the sky the survey actually covered.
+:meth:`~uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure` answers that,
+independent of any Monte Carlo draw: it reruns exactly the same per-bin, per-type footprint query
+``generate_events`` restricts its own sampling to, but reduces it to a solid angle instead of a
+drawn population:
+
+.. code-block:: python
+
+    exposure = simulator.compute_effective_exposure(time_bins=6, nside=32)
+
+    exposure.total_effective_exposure   # {transient type: total solid-angle*time exposure}
+    exposure.total_expected_events      # {transient type: mu_0, the footprint-aware expected count}
+    exposure.coverage_fraction          # {transient type: fraction of the full 4*pi sky-time swept}
+
+The returned :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` has one row per
+``(transient type, time bin)`` -- the same ``time_bins``/``nside``/``order`` as ``generate_events``
+should always be passed here too, so both describe the same footprint query. Each row's
+``expected_events`` is ``effective_exposure * transient.integrated_rate`` -- :ref:`yield-statistics`'s
+:math:`\mu_0` for that bin -- so summing it over every bin (``total_expected_events``) gives the
+intrinsic expected count actually reachable by *this* schedule's footprint, not
+:meth:`~uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield`'s idealized
+full-sky number. :meth:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog.get_exposure_between`/
+:meth:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog.get_expected_events_between` and
+:meth:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin` let you query or
+re-tile that same tabulated exposure over an arbitrary sub-window or a different time binning
+without re-querying the schedule.
+
+Combine a raw (feasible) catalog, a detected (post-cut) catalog, and its exposure into one
+per-transient-type summary with
+:meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`:
+
+.. code-block:: python
+
+    yields = catalog.compute_yield_summary(detected, exposure, {"tde": tde}, confidence=0.9)
+    yields.table["transient_type", "uvex_intrinsic_events", "detection_probability", "expected_detections"]
+
+The returned :class:`~uvex_transients.simulation.yield_table.YieldTable` carries, per transient
+type, the rate (``integrated_rate``/``all_sky_rate``), the footprint-aware intrinsic rate/count
+(``uvex_intrinsic_rate``/``uvex_intrinsic_events``, i.e. :math:`\mu_0`), the Monte Carlo detection
+efficiency (``detection_probability``, :math:`\hat\epsilon=k/n`), and the final yield estimate
+(``expected_detections``, :math:`\hat\lambda=\mu_0\hat\epsilon`) -- each rate-derived column with
+its own ``RATE_CI``-propagated bounds, and ``detection_probability``/``expected_detections`` with
+*two* separate uncertainty sources (Clopper-Pearson binomial and rate-normalization), kept apart
+as ``..._binom_lower``/``_upper`` and ``..._rate_lower``/``_upper`` columns rather than combined
+into one. :meth:`~uvex_transients.simulation.yield_table.YieldTable.to_ascii` writes a
+human-readable summary table; :meth:`~uvex_transients.simulation.yield_table.YieldTable.to_latex`
+renders both uncertainty sources as stacked LaTeX superscripts for a paper table.
+
+.. hint::
+
+   For a finer-grained question than "was this event detected at all" -- "how many separate
+   epochs was it detected in" -- run synthetic photometry over a whole catalog with
+   :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog`
+   (wrapping :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`,
+   below, as a :class:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog`), then
+   call its own
+   :meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`.
+   It generalizes ``compute_yield_summary``'s "detected at all" (:math:`N_{\rm det}\geq 1`) to
+   "detected in at least :math:`k` epochs" for every :math:`k` at once, with the same two-source
+   uncertainty treatment -- exactly what the ``detection-counts`` CLI command
+   (:ref:`user_guide_cli`) automates.
+
+----
+
 .. _user_guide_simulation_events:
 
 Reconstructing and Simulating Events

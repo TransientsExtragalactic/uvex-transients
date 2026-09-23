@@ -344,8 +344,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
           params = sn.sed.sample_parameters(size=n_samples, rng=rng)
           params_grid = {pname: value[:, None] for pname, value in params.items()}
 
-          # Convert the integrated rate per steradian to an all-sky rate.
-          all_sky_rate = 4 * np.pi * sn.integrated_event_rate * u.sr
+          # The all-sky rate, with no survey footprint applied.
+          all_sky_rate = sn.all_sky_rate
 
           # Numerically search each event's own light curve for its brightest (peak)
           # apparent magnitude -- see the discussion above for why the peak
@@ -665,8 +665,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
           params = sn.sed.sample_parameters(size=n_samples, rng=rng)
           params_grid = {pname: value[:, None] for pname, value in params.items()}
 
-          # Convert the integrated rate per steradian to an all-sky rate.
-          all_sky_rate = 4 * np.pi * sn.integrated_event_rate * u.sr
+          # The all-sky rate, with no survey footprint applied.
+          all_sky_rate = sn.all_sky_rate
 
           # Numerically search each event's own light curve for its brightest (peak)
           # apparent magnitude -- see the discussion above for why the peak
@@ -1039,8 +1039,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
          params = sn.sed.sample_parameters(size=n_samples, rng=rng)
          params_grid = {pname: value[:, None] for pname, value in params.items()}
 
-         # Convert the integrated rate per steradian to an all-sky rate.
-         all_sky_rate = 4 * np.pi * sn.integrated_event_rate * u.sr
+         # The all-sky rate, with no survey footprint applied.
+         all_sky_rate = sn.all_sky_rate
 
          t_grid_rest = np.geomspace(0.1, 200, 300) * u.day
          t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]

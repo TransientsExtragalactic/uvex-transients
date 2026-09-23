@@ -28,11 +28,13 @@ checkout registers the ``uvex-transients`` command), running the whole pipeline 
 
     uvex-transients run quickstart_tde.yaml --out-dir quickstart_results/
 
-That samples tidal disruption events against the default UVEX schedule, screens them by magnitude
-and then by SNR, runs synthetic photometry on whatever survives, and leaves every intermediate
-catalog in ``quickstart_results/``: ``00_generated.ecsv``, one numbered file per cut, and a final
-``photometry.ecsv``. The rest of this page explains the config file that made that happen and the
-commands it works with, so you can build your own.
+That samples tidal disruption events against the default UVEX schedule, tabulates the survey's
+effective exposure to them, screens them by magnitude and then by SNR, summarizes the resulting
+yield, and runs synthetic photometry on whatever survives -- leaving every intermediate catalog in
+``quickstart_results/``: ``00_generated.ecsv``, ``exposure.ecsv``, one numbered file per cut,
+``yield_summary.ecsv``/``yield_summary.txt``, and a final ``photometry.ecsv``. The rest of this
+page explains the config file that made that happen and the commands it works with, so you can
+build your own.
 
 ----
 
@@ -75,6 +77,16 @@ with no ``photometry:`` block is perfectly valid as long as you never run
      - :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`'s
        optional ``bands``/``n_sigma`` arguments. Optional; omit entirely to use every band at the
        package's default detection significance.
+   * - ``yield:``
+     - ``run``
+     - :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`'s
+       optional ``confidence`` argument. Optional; defaults to a ``0.9`` Clopper-Pearson
+       confidence level.
+   * - ``detection_counts:``
+     - ``detection-counts``, ``run`` (if declared)
+     - :meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`'s
+       ``snr_threshold``/``confidence`` arguments. Optional; ``run`` skips this stage entirely if
+       the section is omitted.
    * - ``keep_intermediate:``
      - ``run``
      - Whether ``run`` writes each *intermediate* stage's catalog to ``--out-dir``, in addition to
@@ -405,6 +417,87 @@ own column schema, stacked across every event in the input catalog via
 
 ----
 
+Yield and Exposure
+----------------------
+
+.. code-block:: yaml
+
+    yield:
+      confidence: 0.9
+
+Optional; the one field defaults to a ``0.9`` Clopper-Pearson confidence level if the whole
+section is omitted. Unlike the other sections, there's no standalone ``yield`` subcommand -- a
+yield summary needs a raw (pre-cut) catalog, a detected (post-cut) catalog, *and* an exposure
+tabulation all at once (see :ref:`user_guide_simulation_yield`), so it's only ever produced as
+part of ``run``, which already has all three in hand.
+
+.. list-table:: ``yield:`` parameters
+   :header-rows: 1
+   :widths: 18 15 67
+
+   * - Key
+     - Type
+     - Description
+   * - ``confidence``
+     - float
+     - Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to ``0.9``.
+
+``run`` (see below) always computes an
+:class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` and a
+:class:`~uvex_transients.simulation.yield_table.YieldTable` alongside the event catalog and
+photometry, writing ``exposure.ecsv``, ``yield_summary.ecsv``, and a human-readable
+``yield_summary.txt`` into ``--out-dir``.
+
+----
+
+Estimating Detection Counts
+--------------------------------
+
+.. code-block:: yaml
+
+    detection_counts:
+      snr_threshold: 5.0
+      confidence: 0.9
+
+Estimates, per transient type, how many events would show :math:`N_{\rm det}\geq k` detected
+epochs, for every :math:`k` at once -- see
+:meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`
+and :ref:`user_guide_simulation_yield`. Unlike ``yield:``, this section is entirely optional even
+for ``run``: leaving it out of the config skips this stage everywhere, including ``run``.
+
+.. code-block:: bash
+
+    uvex-transients detection-counts quickstart_tde.yaml \
+        --catalog catalog.ecsv --photometry photometry.ecsv --exposure exposure.ecsv \
+        --out detection_counts.ecsv
+
+.. list-table:: ``detection_counts:`` parameters
+   :header-rows: 1
+   :widths: 18 15 67
+
+   * - Key
+     - Type
+     - Description
+   * - ``snr_threshold``
+     - float
+     - An observation epoch counts as detected if at least one band's SNR exceeds this value.
+       Required.
+   * - ``confidence``
+     - float
+     - Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to ``0.9``.
+
+``--catalog`` is the event catalog ``--photometry`` was computed over (typically the same catalog
+``photometry`` ran against, i.e. whatever survived every declared cut) -- it's needed alongside
+the photometry table itself so that events with zero qualifying epochs (including ones the
+schedule never observed at all) are still counted at :math:`N_{\rm det}=0`. ``--exposure`` is an
+exposure catalog as written by ``run`` (or
+:meth:`~uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure` directly).
+
+If ``detection_counts:`` is declared, ``run`` runs this stage automatically too, writing
+``detection_counts.ecsv`` into ``--out-dir``.
+
+----
+
 Running the Whole Pipeline
 ------------------------------
 
@@ -412,17 +505,23 @@ Running the Whole Pipeline
 
     uvex-transients run quickstart_tde.yaml --out-dir results/
 
-Chains ``generate`` then every declared cut, in order, then ``photometry`` in one process,
-writing each stage's catalog to ``results/`` as it goes: ``00_generated.ecsv``, then one
-``NN_<cut key>.ecsv`` per cut, then ``photometry.ecsv``. A config with no ``cuts:`` section at all
-is fine here too; ``run`` goes straight from ``generate`` to ``photometry``.
+Chains ``generate``, an :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog`
+tabulation, every declared cut (in order), a
+:class:`~uvex_transients.simulation.yield_table.YieldTable` summary, ``photometry``, and (if
+``detection_counts:`` is declared) a detection-count table, all in one process, writing each
+stage's output to ``results/`` as it goes: ``00_generated.ecsv``, ``exposure.ecsv``, then one
+``NN_<cut key>.ecsv`` per cut, then ``yield_summary.ecsv``/``yield_summary.txt``,
+``photometry.ecsv``, and (if declared) ``detection_counts.ecsv``. A config with no ``cuts:``
+section at all is fine here too; ``run`` goes straight from ``generate`` to the yield summary and
+``photometry``.
 
 Every stage's catalog stays in memory and feeds the next stage regardless, so writing the
-*intermediate* ones (everything up to, but not including, the catalog that photometry actually
-runs against) is purely for inspection/debugging -- set the config's top-level
-``keep_intermediate: false`` (or pass ``--no-keep-intermediate``, which overrides the config
-either way) to have ``run`` skip those and write only ``final_catalog.ecsv`` (the catalog
-photometry ran against) and ``photometry.ecsv``:
+*intermediate* event catalogs (everything up to, but not including, the catalog that photometry
+actually runs against -- ``exposure.ecsv``/``yield_summary.*``/``photometry.ecsv``/
+``detection_counts.ecsv`` are always written regardless) is purely for inspection/debugging -- set
+the config's top-level ``keep_intermediate: false`` (or pass ``--no-keep-intermediate``, which
+overrides the config either way) to have ``run`` skip those and write only ``final_catalog.ecsv``
+(the catalog photometry ran against) instead of ``00_generated.ecsv``/``NN_<cut key>.ecsv``:
 
 .. code-block:: bash
 
@@ -442,11 +541,13 @@ It resolves every section the command needs, so an unknown transient ``class:``,
 ``parameters:`` override, an unknown cut type or cut name, an unknown mission, or an unreadable
 schedule fails here exactly as it would in the real run (as a short ``dry run failed: ...``
 message). On success it reports the mission, the size of the schedule, each transient population
-(class, SED, redshift limit, duration window), the ``generate:``, ``cuts:`` and ``photometry:``
-settings, and each output file it would write. If a real run would refuse to overwrite one that
-already exists, the dry run flags it as ``WOULD FAIL`` and exits non-zero unless ``--overwrite`` is
-also given. The schedule is loaded (and downloaded on first use), but the command never reads the
-``--in`` catalog of ``cut``/``photometry``, only checks that it exists.
+(class, SED, redshift limit, duration window), the ``generate:``, ``cuts:``, ``photometry:``,
+``yield:`` (for ``run``), and ``detection_counts:`` (if declared) settings, and each output file it
+would write. If a real run would refuse to overwrite one that already exists, the dry run flags it
+as ``WOULD FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded
+(and downloaded on first use), but the command never reads the ``--in``/``--catalog``/
+``--photometry``/``--exposure`` inputs of ``cut``/``photometry``/``detection-counts``, only checks
+that they exist.
 
 ----
 
@@ -455,8 +556,11 @@ Using It From Python
 
 Every command is a thin wrapper: :mod:`uvex_transients.cli.pipeline`'s
 :func:`~uvex_transients.cli.pipeline.run_generate`,
-:func:`~uvex_transients.cli.pipeline.run_cuts`, and
-:func:`~uvex_transients.cli.pipeline.run_photometry` take a parsed
+:func:`~uvex_transients.cli.pipeline.run_exposure`,
+:func:`~uvex_transients.cli.pipeline.run_cuts`,
+:func:`~uvex_transients.cli.pipeline.run_yield_summary`,
+:func:`~uvex_transients.cli.pipeline.run_photometry`, and
+:func:`~uvex_transients.cli.pipeline.run_detection_counts` take a parsed
 :class:`~uvex_transients.cli.config.RunConfig` and do the real work, with no ``click``
 dependency, useful if you want the same config-driven setup inside a notebook or a larger script
 instead of a fresh subprocess per stage:
@@ -464,17 +568,22 @@ instead of a fresh subprocess per stage:
 .. code-block:: python
 
     from uvex_transients.cli.config import RunConfig
-    from uvex_transients.cli.pipeline import run_cuts, run_generate, run_photometry
+    from uvex_transients.cli.pipeline import (
+        run_cuts, run_detection_counts, run_exposure, run_generate, run_photometry, run_yield_summary,
+    )
 
     config = RunConfig.from_yaml("quickstart_tde.yaml")
 
     catalog = run_generate(config)
-    screened = run_cuts(config, catalog)          # every declared cut, in order
+    exposure = run_exposure(config)
+    screened = run_cuts(config, catalog)                          # every declared cut, in order
+    yields = run_yield_summary(config, catalog, screened, exposure)
     phot = run_photometry(config, screened)
+    counts = run_detection_counts(config, screened, exposure, phot)   # only if config has 'detection_counts:'
 
 ``config.simulator``, ``config.schedule``, ``config.mission``, and ``config.transients`` are each
-resolved once and cached, so building a ``RunConfig`` and calling all three functions above costs
-one schedule fetch and one round of transient construction, not three.
+resolved once and cached, so building a ``RunConfig`` and calling every function above costs one
+schedule fetch and one round of transient construction, no matter how many stages you run.
 
 ----
 
