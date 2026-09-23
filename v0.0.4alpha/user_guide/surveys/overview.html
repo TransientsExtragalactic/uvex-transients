@@ -1,0 +1,1331 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Surveys &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/surveys/overview';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.4alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulation" href="../simulation/overview.html" />
+    <link rel="prev" title="Writing a Custom Transient" href="../transients/custom_transients.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../models/overview.html">Models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../transients/overview.html">Transients</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Surveys</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Surveys</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="surveys">
+<span id="user-guide-surveys"></span><h1>Surveys<a class="headerlink" href="#surveys" title="Link to this heading">#</a></h1>
+<p>At the core of <strong>UVEX transient simulations</strong> is the <strong>survey schedule</strong>: a chronological table of every spacecraft action: science
+observations, slews, and communications downlinks represented by
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a>. This page walks through building one,
+validating it, and then using it: looking up what happened at a given time or position, and
+computing cadence statistics like control time and pair counts across the sky.</p>
+<p>Real schedules for UVEX itself are produced by the separate
+<a class="reference external" href="https://github.com/m4opt/uvex-scheduler">UVEX scheduler</a> project; see
+<a class="reference internal" href="#user-guide-surveys-loading-scheduler"><span class="std std-ref">From the UVEX Scheduler</span></a> below for loading one of its published schedules
+directly.</p>
+<section id="quick-look">
+<h2>Quick Look<a class="headerlink" href="#quick-look" title="Link to this heading">#</a></h2>
+<p>The fastest way to get a feel for a schedule is to load one of the pre-configured, published
+schedules and look at how it samples the sky:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span>
+
+<span class="c1"># Downloads (and locally caches) the configured default schedule from the UVEX scheduler.</span>
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">schedule</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.get_schedule.html#uvex_transients.surveys.utils.get_schedule" title="uvex_transients.surveys.utils.get_schedule"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_schedule()</span></code></a> requires network access the first time it’s
+called for a given schedule, so the runnable example below builds a small synthetic schedule
+instead and plots its <strong>visit count distribution</strong>, the simplest of the cadence diagnostics covered in
+full under <a class="reference internal" href="#user-guide-surveys-cadence"><span class="std std-ref">Survey Cadence</span></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RectangleSkyRegion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s2">"2025-01-01T00:00:00"</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">900.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">]</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="o">.</span><span class="n">from_geodetic</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"action"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">"observe"</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"block_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="n">fov</span> <span class="o">=</span> <span class="n">RectangleSkyRegion</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">SkyCoord</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span>
+
+<span class="n">visit_counts</span><span class="p">,</span> <span class="n">pixel_counts</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">compute_visit_count_histogram</span><span class="p">(</span><span class="n">nside</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">visit_counts</span><span class="p">,</span> <span class="n">pixel_counts</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Visits to a HEALPix pixel"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Number of pixels"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Cadence distribution: visits per sky pixel"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/e29c6b3f1f4189b105afa3f678351564/overview-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+</section>
+<hr class="docutils" />
+<section id="loading-surveys">
+<h2>Loading Surveys<a class="headerlink" href="#loading-surveys" title="Link to this heading">#</a></h2>
+<p id="user-guide-surveys-loading-table">Building a <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> requires two components: a
+chronological table of scheduled actions, and the instrument’s field of view. Both are described
+in full in <a class="reference internal" href="#user-guide-surveys-anatomy"><span class="std std-ref">Working with Surveys</span></a> below; the rest of this section covers the four ways
+to get them into a <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a>.</p>
+<section id="from-a-table">
+<h3>From a Table<a class="headerlink" href="#from-a-table" title="Link to this heading">#</a></h3>
+<p>Building a schedule from scratch means building the required table – typically column by column
+– and handing it to the constructor along with the field of view:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RectangleSkyRegion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s2">"2025-01-01T00:00:00"</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">900.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">]</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="o">.</span><span class="n">from_geodetic</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"action"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">"observe"</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"block_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="n">fov</span> <span class="o">=</span> <span class="n">RectangleSkyRegion</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">SkyCoord</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
+
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">schedule</span><span class="p">)</span>
+<span class="o">...</span> <span class="o">&lt;</span><span class="n">SurveySchedule</span> <span class="n">n_actions</span><span class="o">=</span><span class="mi">400</span> <span class="n">start_time</span><span class="o">=</span><span class="s1">'2025-01-01 ...'</span> <span class="n">end_time</span><span class="o">=</span><span class="s1">'2025-06-29 ...'</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The constructor copies <code class="docutils literal notranslate"><span class="pre">schedule_table</span></code> and re-sorts it by <code class="docutils literal notranslate"><span class="pre">start_time</span></code> if it isn’t
+already chronological, so the input table’s own row order doesn’t matter and mutating it
+afterwards never affects the schedule.</p>
+</div>
+<p>Every column is checked against <code class="docutils literal notranslate"><span class="pre">SurveySchedule._SCHEMA</span></code>. Its Astropy/Python type, unit,
+dtype, and dimensionality are validated, and, on top of that, each <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;slew&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;downlink&quot;</span></code> row
+is checked against a per-action <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.ActionSpec.html#uvex_transients.surveys.utils.ActionSpec" title="uvex_transients.surveys.utils.ActionSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionSpec</span></code></a> (see
+<a class="reference internal" href="#user-guide-surveys-anatomy"><span class="std std-ref">Working with Surveys</span></a> for the full column and action tables). Both kinds of check
+(column-level and action-level) are collected across the <em>entire</em> table before anything is
+raised: a schedule with five unrelated problems reports all five in one
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ScheduleValidationError</span></code>, rather than making you fix one,
+re-run, hit the next, and repeat. For example, dropping the required <code class="docutils literal notranslate"><span class="pre">roll</span></code> column entirely
+surfaces both the missing-column error and the resulting per-action error together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">broken_table</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">broken_table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SurveySchedule</span><span class="p">(</span><span class="n">broken_table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="w">    </span><span class="o">...</span>
+<span class="gr">uvex_transients.surveys.base.ScheduleValidationError</span>: <span class="n">Survey schedule failed validation with the following errors:</span>
+<span class="x">  - Missing required column 'roll'.</span>
+<span class="x">  - Action 'observe' requires missing column 'roll'.</span>
+</pre></div>
+</div>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">ScheduleValidationError</span></code> exposes the same messages,
+unformatted, as a plain list via its <code class="docutils literal notranslate"><span class="pre">.errors</span></code> attribute, for programmatic handling.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Both <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.QTableColumnSpec.html#uvex_transients.surveys.utils.QTableColumnSpec" title="uvex_transients.surveys.utils.QTableColumnSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTableColumnSpec</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.ActionSpec.html#uvex_transients.surveys.utils.ActionSpec" title="uvex_transients.surveys.utils.ActionSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionSpec</span></code></a> accept an optional <code class="docutils literal notranslate"><span class="pre">validator</span></code> callable
+for rules the declarative fields (type/unit/dtype/required-columns) can’t express – e.g. the
+<code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> action’s “<code class="docutils literal notranslate"><span class="pre">duration</span></code> must be positive” rule. A column validator receives the
+whole column; an action validator receives the subset of rows for that action. Either may
+return <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>, an error string, or (for action validators) a list of error
+strings.</p>
+</div>
+</section>
+<section id="from-the-uvex-scheduler">
+<span id="user-guide-surveys-loading-scheduler"></span><h3>From the UVEX Scheduler<a class="headerlink" href="#from-the-uvex-scheduler" title="Link to this heading">#</a></h3>
+<p>Rather than building a table by hand, <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.get_schedule.html#uvex_transients.surveys.utils.get_schedule" title="uvex_transients.surveys.utils.get_schedule"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_schedule()</span></code></a> fetches
+one of a small set of pre-configured, published UVEX schedules and returns it as a ready,
+validated <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> (paired with
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.uvex.fov</span></code> as its field of view):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span><span class="p">,</span> <span class="n">list_schedules</span>
+
+<span class="n">list_schedules</span><span class="p">()</span>
+<span class="o">...</span> <span class="p">[</span><span class="s1">'uvex_initial_082726'</span><span class="p">,</span> <span class="s1">'uvex_initial_091126'</span><span class="p">]</span>
+
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">(</span><span class="s2">"uvex_initial_091126"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Calling <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.get_schedule.html#uvex_transients.surveys.utils.get_schedule" title="uvex_transients.surveys.utils.get_schedule"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_schedule()</span></code></a> with no arguments fetches whichever
+schedule is registered as <code class="docutils literal notranslate"><span class="pre">config[&quot;schedules.default_schedule&quot;]</span></code> (see
+<code class="docutils literal notranslate"><span class="pre">uvex_transients/config.yaml</span></code>); <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.list_schedules.html#uvex_transients.surveys.utils.list_schedules" title="uvex_transients.surveys.utils.list_schedules"><code class="xref py py-func docutils literal notranslate"><span class="pre">list_schedules()</span></code></a> lists every
+name known to that registry. Each fetch downloads directly via
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code>, which locally caches the remote file by default (<code class="docutils literal notranslate"><span class="pre">cache=True</span></code>)
+so repeated calls don’t re-download it.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you want to use a different FOV, you can provide it with <code class="docutils literal notranslate"><span class="pre">instrument_fov</span> <span class="pre">=</span> <span class="pre">...</span></code>.</p>
+</div>
+</section>
+<section id="from-a-url">
+<h3>From a URL<a class="headerlink" href="#from-a-url" title="Link to this heading">#</a></h3>
+<p>An arbitrary schedule URL works the same way, by passing
+<code class="docutils literal notranslate"><span class="pre">url</span></code> instead of <code class="docutils literal notranslate"><span class="pre">name</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span>
+
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">"https://example.org/my-schedule.ecsv"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want a durable local copy of the file itself, rather than relying on Astropy’s own
+(evictable) download cache, use
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.download_schedule_from_url.html#uvex_transients.surveys.utils.download_schedule_from_url" title="uvex_transients.surveys.utils.download_schedule_from_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_schedule_from_url()</span></code></a> instead, and load it (together
+with the field of view) via <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.from_disk.html#uvex_transients.surveys.base.SurveySchedule.from_disk" title="uvex_transients.surveys.base.SurveySchedule.from_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_disk()</span></code></a>.</p>
+</section>
+<section id="from-disk">
+<h3>From Disk<a class="headerlink" href="#from-disk" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.to_disk.html#uvex_transients.surveys.base.SurveySchedule.to_disk" title="uvex_transients.surveys.base.SurveySchedule.to_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_disk()</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.from_disk.html#uvex_transients.surveys.base.SurveySchedule.from_disk" title="uvex_transients.surveys.base.SurveySchedule.from_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_disk()</span></code></a> round-trip a schedule to an
+Astropy-table format (ECSV by default) plus a companion region file for the field of view:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">schedule</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="s2">"schedule.ecsv"</span><span class="p">,</span> <span class="n">fov_path</span><span class="o">=</span><span class="s2">"schedule_fov.reg"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">reloaded</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="s2">"schedule.ecsv"</span><span class="p">,</span> <span class="s2">"schedule_fov.reg"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">fov_path</span></code> to <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.to_disk.html#uvex_transients.surveys.base.SurveySchedule.to_disk" title="uvex_transients.surveys.base.SurveySchedule.to_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_disk()</span></code></a> whenever you
+intend to reload the file with <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.from_disk.html#uvex_transients.surveys.base.SurveySchedule.from_disk" title="uvex_transients.surveys.base.SurveySchedule.from_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_disk()</span></code></a>,
+since the field of view is otherwise not persisted at all and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.from_disk.html#uvex_transients.surveys.base.SurveySchedule.from_disk" title="uvex_transients.surveys.base.SurveySchedule.from_disk"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_disk()</span></code></a> always requires both paths.</p>
+<hr class="docutils" />
+</section>
+</section>
+<section id="working-with-surveys">
+<span id="user-guide-surveys-anatomy"></span><h2>Working with Surveys<a class="headerlink" href="#working-with-surveys" title="Link to this heading">#</a></h2>
+<p>A schedule behaves like a lightweight, read-only sequence over its rows: <code class="docutils literal notranslate"><span class="pre">len(schedule)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">row</span> <span class="pre">in</span> <span class="pre">schedule</span></code>, <code class="docutils literal notranslate"><span class="pre">schedule[i]</span></code>, and <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span> <span class="pre">in</span> <span class="pre">schedule</span></code> (checking against
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.actions.html#uvex_transients.surveys.base.SurveySchedule.actions" title="uvex_transients.surveys.base.SurveySchedule.actions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">actions</span></code></a>) all work as expected, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.table.html#uvex_transients.surveys.base.SurveySchedule.table" title="uvex_transients.surveys.base.SurveySchedule.table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">table</span></code></a> gives direct access to the underlying
+<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> (a view, not a copy) whenever you need the raw data rather than one
+of the higher-level methods below.</p>
+<p>A <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> wraps two things:</p>
+<ol class="arabic simple">
+<li><p>An <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a>, one row per scheduled action, whose columns are checked
+against a declarative schema (<code class="docutils literal notranslate"><span class="pre">SurveySchedule._SCHEMA</span></code>, built from
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.QTableColumnSpec.html#uvex_transients.surveys.utils.QTableColumnSpec" title="uvex_transients.surveys.utils.QTableColumnSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTableColumnSpec</span></code></a>).</p></li>
+<li><p>An <strong>instrument field of view</strong>, <code class="docutils literal notranslate"><span class="pre">instrument_fov</span></code> – either a single
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code> (of any shape <code class="xref py py-func docutils literal notranslate"><span class="pre">m4opt.fov.footprint()</span></code> supports, e.g.
+<code class="xref py py-class docutils literal notranslate"><span class="pre">RectangleSkyRegion</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">CircleSkyRegion</span></code>) or a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code> collection of several, such as a real instrument’s chip-gapped
+footprint made of multiple detector tiles (e.g. <code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.uvex.fov</span></code>) – defined at
+RA=0deg/Dec=0deg/PA=0deg (the same convention <code class="docutils literal notranslate"><span class="pre">m4opt</span></code> uses, e.g.
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.Mission.fov</span></code>), that every observation’s footprint is derived from by
+translating and rolling it to that row’s <code class="docutils literal notranslate"><span class="pre">target_coord</span></code>/<code class="docutils literal notranslate"><span class="pre">roll</span></code>.</p></li>
+</ol>
+<p>The table’s required columns are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.2%" />
+<col style="width: 22.2%" />
+<col style="width: 55.6%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Type / units</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">start_time</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Time</span></code></a></p></td>
+<td><p>Start of the scheduled action.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">duration</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a> [time]</p></td>
+<td><p>Duration of the action; must be non-negative.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">observer_location</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.coordinates.EarthLocation.html#astropy.coordinates.EarthLocation" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">EarthLocation</span></code></a></p></td>
+<td><p>Spacecraft position at <code class="docutils literal notranslate"><span class="pre">start_time</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">action</span></code></p></td>
+<td><p>string</p></td>
+<td><p>One of the action names declared in <code class="docutils literal notranslate"><span class="pre">SurveySchedule._ACTION_SCHEMA</span></code> – <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;slew&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;downlink&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">target_coord</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyCoord</span></code></a></p></td>
+<td><p>Pointing center; only required (unmasked) for <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> rows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">roll</span></code></p></td>
+<td><p><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a> [angle]</p></td>
+<td><p>Spacecraft roll angle; only required for <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> rows.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">field_id</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>Survey field identifier; only required for <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> rows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">block_id</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>Scheduling block identifier; only required for <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> rows.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phase</span></code></p></td>
+<td><p>string, optional</p></td>
+<td><p>Label identifying which combined survey phase a row came from – see
+<a class="reference internal" href="#user-guide-surveys-cutting"><span class="std std-ref">Cutting the Survey</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>and, per action type:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 35.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Action</p></th>
+<th class="head"><p>Required columns</p></th>
+<th class="head"><p>Custom rule</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">target_coord</span></code>, <code class="docutils literal notranslate"><span class="pre">roll</span></code>, <code class="docutils literal notranslate"><span class="pre">field_id</span></code>, <code class="docutils literal notranslate"><span class="pre">block_id</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">duration</span></code> must be strictly positive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;slew&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">observer_location</span></code></p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;downlink&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">observer_location</span></code></p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="survey-attributes">
+<h3>Survey Attributes<a class="headerlink" href="#survey-attributes" title="Link to this heading">#</a></h3>
+<p>A few properties summarize the schedule as a whole without you having to compute them by hand:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">schedule</span><span class="o">.</span><span class="n">n_actions</span>          <span class="c1"># len(schedule)</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span>         <span class="c1"># earliest action's start</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">end_time</span>           <span class="c1"># latest action's end (start_time + duration)</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">duration</span>           <span class="c1"># end_time - start_time</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">observing_time</span>     <span class="c1"># total time spent on "observe" actions</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">time_spent</span><span class="p">(</span><span class="s2">"slew"</span><span class="p">)</span> <span class="c1"># total time spent on any one action type</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">fov</span>                <span class="c1"># the instrument field of view passed to the constructor</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">bounding_radius</span>    <span class="c1"># angular radius of the smallest cone centered on the FOV</span>
+                             <span class="c1"># that fully contains it -- a cheap containment pre-filter</span>
+
+<span class="n">schedule</span><span class="o">.</span><span class="n">summary</span>            <span class="c1"># one-row QTable: start/end time, duration, n_actions, observing_time</span>
+<span class="n">schedule</span><span class="o">.</span><span class="n">action_summary</span>     <span class="c1"># one row per action type: count and total_duration</span>
+</pre></div>
+</div>
+</section>
+<section id="cutting-the-survey">
+<span id="user-guide-surveys-cutting"></span><h3>Cutting the Survey<a class="headerlink" href="#cutting-the-survey" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.observing_mask.html#uvex_transients.surveys.base.SurveySchedule.observing_mask" title="uvex_transients.surveys.base.SurveySchedule.observing_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observing_mask</span></code></a> is a boolean array, one entry
+per row of <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.table.html#uvex_transients.surveys.base.SurveySchedule.table" title="uvex_transients.surveys.base.SurveySchedule.table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">table</span></code></a>, flagging which rows are
+<code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> actions – the quickest way to pull just the science observations out of
+<code class="docutils literal notranslate"><span class="pre">schedule.table</span></code> (equivalently, <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.observe_rows.html#uvex_transients.surveys.base.SurveySchedule.observe_rows" title="uvex_transients.surveys.base.SurveySchedule.observe_rows"><code class="xref py py-attr docutils literal notranslate"><span class="pre">observe_rows</span></code></a>
+does this for you).</p>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_row_at_time.html#uvex_transients.surveys.base.SurveySchedule.get_row_at_time" title="uvex_transients.surveys.base.SurveySchedule.get_row_at_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_row_at_time()</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_rows_between_times.html#uvex_transients.surveys.base.SurveySchedule.get_rows_between_times" title="uvex_transients.surveys.base.SurveySchedule.get_rows_between_times"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_rows_between_times()</span></code></a> cut the schedule down
+by time instead of by action type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">row</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_row_at_time</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
+
+<span class="n">rows</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_rows_between_times</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.with_phase.html#uvex_transients.surveys.base.SurveySchedule.with_phase" title="uvex_transients.surveys.base.SurveySchedule.with_phase"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with_phase()</span></code></a> labels every row of a <em>copy</em> of the
+schedule with a string, purely so that once schedules are combined you can tell which input
+schedule any given row came from – it plays no role in validation or any query method. Two
+chronologically non-overlapping schedules – e.g. separate phases of a survey, or a real schedule
+appended to a planned extension of it – combine with <code class="docutils literal notranslate"><span class="pre">+</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">early_phase</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">early_table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span><span class="o">.</span><span class="n">with_phase</span><span class="p">(</span><span class="s2">"primary"</span><span class="p">)</span>
+<span class="n">late_phase</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">late_table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span><span class="o">.</span><span class="n">with_phase</span><span class="p">(</span><span class="s2">"extended"</span><span class="p">)</span>
+
+<span class="n">combined</span> <span class="o">=</span> <span class="n">early_phase</span> <span class="o">+</span> <span class="n">late_phase</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">other</span></code> in <code class="docutils literal notranslate"><span class="pre">self</span> <span class="pre">+</span> <span class="pre">other</span></code> must share <code class="docutils literal notranslate"><span class="pre">self</span></code>’s
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.fov.html#uvex_transients.surveys.base.SurveySchedule.fov" title="uvex_transients.surveys.base.SurveySchedule.fov"><code class="xref py py-attr docutils literal notranslate"><span class="pre">fov</span></code></a> and must not start before
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.end_time.html#uvex_transients.surveys.base.SurveySchedule.end_time" title="uvex_transients.surveys.base.SurveySchedule.end_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.end_time</span></code></a>; combine more than two
+by chaining, e.g. <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">b</span> <span class="pre">+</span> <span class="pre">c</span></code>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="observational-methods">
+<h2>Observational Methods<a class="headerlink" href="#observational-methods" title="Link to this heading">#</a></h2>
+<p>In many cases, it’s important to work out which parts of the sky the instrument actually covered
+during a given window – e.g. checking whether a survey ever observed a particular transient’s
+position at all. Done naively, that means testing every query position against every individual
+observation’s exact footprint, one geometric containment check at a time. That’s fine for a
+one-off lookup, but it doesn’t scale: checking many thousands of simulated transient positions
+against a schedule of thousands of observations this way means millions of expensive containment
+tests, the overwhelming majority of which are quick “no”s for observations nowhere near the query
+position.</p>
+<p>To avoid paying that cost on every query, <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a>
+precomputes a HEALPix coverage index once and reuses it. Every <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> row’s rolled footprint
+is rasterized onto a HEALPix grid in a single vectorized pass, then the resulting
+<code class="docutils literal notranslate"><span class="pre">(row,</span> <span class="pre">pixel)</span></code> hits are grouped by pixel into two flat arrays – <code class="docutils literal notranslate"><span class="pre">pixel_offsets</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sorted_rows</span></code> – laid out like a CSR (compressed-sparse-row) matrix. Looking up which
+observations covered a given pixel is then a cheap memory-offset lookup into <code class="docutils literal notranslate"><span class="pre">sorted_rows</span></code>,
+rather than a hash-table probe or a scan over every observation.
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_healpix_coverage_index.html#uvex_transients.surveys.base.SurveySchedule.get_healpix_coverage_index" title="uvex_transients.surveys.base.SurveySchedule.get_healpix_coverage_index"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_healpix_coverage_index()</span></code></a> builds this index
+lazily and caches it on the schedule instance, keyed by <code class="docutils literal notranslate"><span class="pre">(nside,</span> <span class="pre">order)</span></code>
+(<code class="xref py py-attr docutils literal notranslate"><span class="pre">_HPX_MAP_CACHE</span></code>), so repeated queries at the
+same resolution reuse the cached index rather than re-rasterizing the whole schedule from scratch.</p>
+<p>The one thing to keep in mind is that HEALPix pixel membership here follows pixel-<em>center</em>
+containment, not full-pixel overlap, so the index can occasionally <em>miss</em> a query point whose own
+pixel center happens to fall just outside a footprint – it never wrongly <em>includes</em> one. Every
+method below that touches the sky in bulk, rather than as a single scalar query, is ultimately
+built on this index, and treats it purely as a fast first-pass filter: each candidate it returns is
+always confirmed with an exact geometric containment test afterward, so results stay exact even
+though the index itself is approximate.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Returns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observed_regions.html#uvex_transients.surveys.base.SurveySchedule.get_observed_regions" title="uvex_transients.surveys.base.SurveySchedule.get_observed_regions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observed_regions()</span></code></a> / <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observed_region.html#uvex_transients.surveys.base.SurveySchedule.get_observed_region" title="uvex_transients.surveys.base.SurveySchedule.get_observed_region"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observed_region()</span></code></a></p></td>
+<td><p>The individual, or unioned, sky footprints observed during a time window.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids.html#uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids" title="uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observed_healpix_ids()</span></code></a></p></td>
+<td><p>The (sorted, deduplicated) HEALPix pixel indices covered by any observation during a time
+window.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observations_of.html#uvex_transients.surveys.base.SurveySchedule.get_observations_of" title="uvex_transients.surveys.base.SurveySchedule.get_observations_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observations_of()</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> rows whose footprint covers one scalar sky position.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a></p></td>
+<td><p>The batched, index-returning equivalent, for many query positions at once.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">footprint</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_observed_region</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">schedule</span><span class="o">.</span><span class="n">end_time</span><span class="p">)</span>
+
+<span class="n">matches</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_observations_of</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">pixel_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_observed_healpix_ids</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">schedule</span><span class="o">.</span><span class="n">end_time</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a> is the one to reach
+for when you have many query positions – e.g. one per simulated transient – rather than calling
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observations_of.html#uvex_transients.surveys.base.SurveySchedule.get_observations_of" title="uvex_transients.surveys.base.SurveySchedule.get_observations_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observations_of()</span></code></a> in a Python loop: it looks
+every position up at once against the cached HEALPix coverage index, falling back to an exact
+geometric containment test only for the small candidate set that index returns. It also accepts a
+<em>per-position</em> time window (arrays the same length as <code class="docutils literal notranslate"><span class="pre">coord</span></code>, rather than one shared window),
+for exactly the case of checking each transient against its own explosion-time-derived window in
+one batched call rather than one call per event.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RectangleSkyRegion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s2">"2025-01-01T00:00:00"</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">900.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">]</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="o">.</span><span class="n">from_geodetic</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"action"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">"observe"</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"block_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="n">fov</span> <span class="o">=</span> <span class="n">RectangleSkyRegion</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">SkyCoord</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span>
+
+<span class="n">coord</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span>
+<span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">-</span> <span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">"aitoff"</span><span class="p">)</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">wrap_at</span><span class="p">(</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">radian</span><span class="p">,</span> <span class="n">coord</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">radian</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">elapsed</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"viridis"</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Days since survey start"</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Pointing history of the example schedule"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/36237ba0f26588c4eed93a18c35b3b1e/overview-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+</section>
+<section id="survey-cadence">
+<span id="user-guide-surveys-cadence"></span><h2>Survey Cadence<a class="headerlink" href="#survey-cadence" title="Link to this heading">#</a></h2>
+<p>One of the most useful diagnostics for survey design is the <strong>survey cadence</strong>, which answers the
+question “How well does this survey sample transients on a particular timescale?”
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> provides six such diagnostics, each built as
+a full-sky HEALPix map so it can be inspected as a function of sky position. Throughout, fix one
+HEALPix pixel <span class="math notranslate nohighlight">\(p\)</span> and let it be visited <span class="math notranslate nohighlight">\(N\)</span> times, at elapsed times (measured from the
+start of the query window) sorted chronologically as <span class="math notranslate nohighlight">\(t_1 &lt; t_2 &lt; \cdots &lt; t_N\)</span>; every
+diagnostic below is some function of that one per-pixel sequence, evaluated independently at every
+pixel on the sky.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Visit Count Distribution</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count_histogram()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count_cdf()</span></code></a>.</p>
+<p><strong>Description:</strong> The visit count is simply <span class="math notranslate nohighlight">\(N(p)\)</span>, the length of pixel <span class="math notranslate nohighlight">\(p\)</span>’s
+visit-time sequence – the number of <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code> actions whose rolled footprint covers
+<span class="math notranslate nohighlight">\(p\)</span>. Collected over every pixel this gives a full-sky map <span class="math notranslate nohighlight">\(\{N(p)\}\)</span>. The
+histogram bins pixels by that count,</p>
+<div class="math notranslate nohighlight">
+\[h(k) = \bigl|\{\, p : N(p) = k \,\}\bigr|, \qquad k = 0, 1, 2, \ldots,\]</div>
+<p>with <span class="math notranslate nohighlight">\(h(0)\)</span> counting every never-observed pixel, and the complementary CDF restricts to
+<em>observed</em> pixels (<span class="math notranslate nohighlight">\(N(p) \geq 1\)</span>) and asks what fraction were hit at least <span class="math notranslate nohighlight">\(k\)</span>
+times:</p>
+<div class="math notranslate nohighlight">
+\[F(k) = \frac{\bigl|\{\, p : N(p) \geq k,\ N(p) \geq 1 \,\}\bigr|}
+             {\bigl|\{\, p : N(p) \geq 1 \,\}\bigr|}, \qquad k = 1, 2, \ldots\]</div>
+<p><strong>Uses:</strong> The coarsest possible cadence summary – it says nothing about <em>when</em> a pixel’s
+visits happened, only how many there were. It’s still the right first question to ask,
+though: <span class="math notranslate nohighlight">\(N(p) = 0\)</span> identifies coverage gaps outright, and every other diagnostic on this
+page is only defined where <span class="math notranslate nohighlight">\(N(p) \geq 2\)</span>, so this map also tells you where the rest are
+even applicable.</p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Pair-wise Cadence</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a>.</p>
+<p><strong>Description:</strong> Consider every pair of pixel <span class="math notranslate nohighlight">\(p\)</span>’s own visits and how far apart in
+time they are. The <code class="docutils literal notranslate"><span class="pre">pairs</span></code> argument selects which pairs count:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\Delta_{\mathrm{all}}(p) &amp;= \{\, t_j - t_i \;:\; 1 \leq i &lt; j \leq N(p) \,\},
+    \qquad |\Delta_{\mathrm{all}}(p)| = \binom{N(p)}{2}, \\
+\Delta_{\mathrm{consec}}(p) &amp;= \{\, t_{i+1} - t_i \;:\; i = 1, \ldots, N(p) - 1 \,\},
+    \qquad |\Delta_{\mathrm{consec}}(p)| = N(p) - 1,\end{split}\]</div>
+<p>with <code class="docutils literal notranslate"><span class="pre">pairs='all'</span></code> (the default) giving <span class="math notranslate nohighlight">\(\Delta_{\mathrm{all}}(p)\)</span> – every unique
+pairwise separation, including ones spanning several revisits of the pixel – and
+<code class="docutils literal notranslate"><span class="pre">pairs='consecutive'</span></code> giving <span class="math notranslate nohighlight">\(\Delta_{\mathrm{consec}}(p)\)</span>, only the gaps between
+temporally-adjacent visits (see <em>Successive Gaps</em>).
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a> returns
+the raw set as a full-sky, ragged array;
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a> instead
+reduces it to per-pixel <code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">median</span></code>, <code class="docutils literal notranslate"><span class="pre">min</span></code>, <code class="docutils literal notranslate"><span class="pre">max</span></code>, and <code class="docutils literal notranslate"><span class="pre">std</span></code>. Pixels with
+<span class="math notranslate nohighlight">\(N(p) &lt; 2\)</span> have an empty set and are assigned <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+<p><strong>Uses:</strong> The general-purpose “how far apart in time were the observations of this point”
+distribution underlying every timescale-specific diagnostic below – e.g. comparing its
+median or minimum against a transient’s characteristic fade time tells you whether typical
+sampling is fine enough to resolve it at all.</p>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Successive Gaps</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a>
+/ <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a> with
+<code class="docutils literal notranslate"><span class="pre">pairs='consecutive'</span></code>.</p>
+<p><strong>Description:</strong> The consecutive-pairs case of <em>Pair-wise Cadence</em> above, isolated because
+it’s usually the one you actually want: the sequence of gaps between one visit and the very
+next one,</p>
+<div class="math notranslate nohighlight">
+\[g_i(p) = t_{i+1} - t_i, \qquad i = 1, \ldots, N(p) - 1,\]</div>
+<p>i.e. <span class="math notranslate nohighlight">\(\Delta_{\mathrm{consec}}(p)\)</span> from the pair-wise cadence distribution, without the
+<span class="math notranslate nohighlight">\(\binom{N(p)}{2} - (N(p)-1)\)</span> additional non-adjacent pairs that <code class="docutils literal notranslate"><span class="pre">pairs='all'</span></code> would
+mix in.</p>
+<p><strong>Uses:</strong> Unlike the <code class="docutils literal notranslate"><span class="pre">pairs='all'</span></code> distribution, this can’t be inflated by long baselines
+between widely separated survey passes revisiting the same pixel – every value is a gap the
+pixel actually sat unobserved through, back to back. That makes it the more literal answer to
+“how long between one look and the next,” and the natural input to <em>Max Gap</em> below.</p>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Max Gap</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_max_gap.html#uvex_transients.surveys.base.SurveySchedule.compute_max_gap" title="uvex_transients.surveys.base.SurveySchedule.compute_max_gap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_max_gap()</span></code></a>.</p>
+<p><strong>Description:</strong> The single worst successive gap at pixel <span class="math notranslate nohighlight">\(p\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[G(p) = \max_{i = 1, \ldots, N(p)-1} g_i(p) = \max_i \bigl(t_{i+1} - t_i\bigr),\]</div>
+<p>i.e. the maximum of the <em>Successive Gaps</em> set <span class="math notranslate nohighlight">\(\Delta_{\mathrm{consec}}(p)\)</span> rather than
+its mean or median. As with the other pairwise diagnostics, pixels with <span class="math notranslate nohighlight">\(N(p) &lt; 2\)</span> have
+no defined gap and are assigned <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+<p><strong>Uses:</strong> A single worst-case number per pixel: “for how long could this point have gone
+completely unsampled?” A pixel can have a short <em>median</em> successive gap (from <em>Pair-wise
+Cadence</em>) and still have one long lapse hiding in <span class="math notranslate nohighlight">\(G(p)\)</span> – e.g. across a seasonal
+visibility gap – during which a fast transient could rise and fade without a single
+supporting observation.</p>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-4">
+Pair Counts</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_counts.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_counts" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_counts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_counts()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_count_curve()</span></code></a>.</p>
+<p><strong>Description:</strong> Fix a characteristic transient timescale <span class="math notranslate nohighlight">\(T\)</span> and a qualifying
+separation window <span class="math notranslate nohighlight">\([\,f_{\min} T,\ f_{\max} T\,]\)</span> (<code class="docutils literal notranslate"><span class="pre">minimum_factor</span></code>/<code class="docutils literal notranslate"><span class="pre">maximum_factor</span></code>,
+defaults <span class="math notranslate nohighlight">\(f_{\min}=0.5\)</span>, <span class="math notranslate nohighlight">\(f_{\max}=2\)</span>) – wide enough to bracket a
+timescale-<span class="math notranslate nohighlight">\(T\)</span> transient’s rise or fade. The pair count is how many of pixel
+<span class="math notranslate nohighlight">\(p\)</span>’s own pairs fall in that window:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}C(p; T) = \begin{cases}
+   \bigl|\{\, (i, j) : i &lt; j,\ f_{\min} T \leq t_j - t_i \leq f_{\max} T \,\}\bigr|,
+      &amp; \texttt{pairs='all'} \\[4pt]
+   \bigl|\{\, i : f_{\min} T \leq t_{i+1} - t_i \leq f_{\max} T \,\}\bigr|,
+      &amp; \texttt{pairs='consecutive'}
+\end{cases}\end{split}\]</div>
+<p>i.e. the same <code class="docutils literal notranslate"><span class="pre">pairs</span></code> choice as <em>Pair-wise Cadence</em>, now restricted to a timescale-specific
+window rather than reported in full. The <strong>sensitive area</strong> is the total solid angle of
+pixels with at least one such pair,
+<span class="math notranslate nohighlight">\(A(T) = \bigl|\{\, p : C(p; T) &gt; 0 \,\}\bigr| \times (4\pi / n_{\mathrm{pix}})\)</span>.
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_count_curve()</span></code></a> evaluates
+<span class="math notranslate nohighlight">\(A(T)\)</span> over an array of timescales, reusing every pixel’s visit times across the whole
+sweep rather than recomputing them per <span class="math notranslate nohighlight">\(T\)</span>.</p>
+<p><strong>Uses:</strong> A cheap <em>existence</em> question – “can this cadence, in principle, catch a
+timescale-<span class="math notranslate nohighlight">\(T\)</span> transient rising or fading here at all?” – the same idea behind
+LSST/Rubin’s <code class="docutils literal notranslate"><span class="pre">PairMetric</span></code>. It’s the right first pass across many timescales or a whole sky
+before paying for the exact interval-bookkeeping of <em>Control-Time Curve</em> below, but it only
+answers yes/no per pixel: one lucky qualifying pair counts exactly the same as continuous
+cadence support.</p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-5">
+Control-Time Curve</label><div class="sd-tab-content docutils">
+<p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time_curve()</span></code></a>.</p>
+<p><strong>Description:</strong> Refines <em>Pair Counts</em> from “does a qualifying pair exist” to “for how much
+of the survey would a transient starting here actually be caught.” A transient with onset
+time <span class="math notranslate nohighlight">\(\tau\)</span> is assumed useful for temporal sampling only during
+<span class="math notranslate nohighlight">\([\tau,\ \tau + w]\)</span>, where <span class="math notranslate nohighlight">\(w = f_{\mathrm{vis}} T\)</span> is the <strong>visibility window</strong>
+(<code class="docutils literal notranslate"><span class="pre">visibility_factor</span></code>, default <span class="math notranslate nohighlight">\(f_{\mathrm{vis}}=3\)</span>). A pair <span class="math notranslate nohighlight">\((t_i, t_j)\)</span>,
+<span class="math notranslate nohighlight">\(i&lt;j\)</span>, with <span class="math notranslate nohighlight">\(f_{\min}T \leq t_j - t_i \leq f_{\max}T\)</span> (as in <em>Pair Counts</em>) can
+catch such a transient exactly when both visits fall inside its useful window, i.e.
+<span class="math notranslate nohighlight">\(\tau \leq t_i\)</span> and <span class="math notranslate nohighlight">\(t_j \leq \tau + w\)</span>, equivalently</p>
+<div class="math notranslate nohighlight">
+\[\tau \in \bigl[\, t_j - w,\ \ t_i \,\bigr].\]</div>
+<p>For each later visit <span class="math notranslate nohighlight">\(t_j\)</span>, only the <em>latest</em> qualifying earlier visit
+<span class="math notranslate nohighlight">\(t_{i^*(j)}\)</span> is used, since it maximizes <span class="math notranslate nohighlight">\(t_i\)</span> and therefore gives the widest
+possible interval for that <span class="math notranslate nohighlight">\(j\)</span> – one that contains the interval any other qualifying
+earlier visit would have produced. The control time is the total duration covered by the
+union of these per-visit intervals (merged so no candidate onset time is counted twice),
+clipped to the survey window <span class="math notranslate nohighlight">\([0, T_{\mathrm{survey}}]\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[CT(p; T) = \operatorname{measure}\!\left(
+   \bigcup_j \bigl[\, \max(t_j - w,\ 0),\ \ \min(t_{i^*(j)},\ T_{\mathrm{survey}}) \,\bigr]
+\right).\]</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time()</span></code></a> returns
+<span class="math notranslate nohighlight">\(\{CT(p; T)\}\)</span> as a full-sky map together with the survey-integrated exposure
+<span class="math notranslate nohighlight">\(\sum_p CT(p; T) \times (4\pi / n_{\mathrm{pix}})\)</span> (solid angle <span class="math notranslate nohighlight">\(\times\)</span> time);
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time_curve()</span></code></a> sweeps
+<span class="math notranslate nohighlight">\(CT(p; T)\)</span> (via its integrated exposure) over an array of timescales.</p>
+<p><strong>Uses:</strong> Distinguishes a pixel that got exactly one lucky qualifying pair
+(<span class="math notranslate nohighlight">\(CT(p;T) \ll T_{\mathrm{survey}}\)</span>) from one with continuous, repeated cadence support
+(<span class="math notranslate nohighlight">\(CT(p;T)\)</span> comparable to <span class="math notranslate nohighlight">\(T_{\mathrm{survey}}\)</span>) – something <em>Pair Counts</em> cannot
+do, since it only asks whether <span class="math notranslate nohighlight">\(C(p;T) &gt; 0\)</span>. This is the statistic to reach for once you
+need “how much of the survey remains sensitive,” not merely “was it ever sensitive at all.”</p>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">_curve</span></code> variants of <em>Pair Counts</em> and <em>Control-Time Curve</em> sweep a whole array of
+timescales while reusing the same (comparatively expensive) per-pixel visit-time computation across
+every timescale, rather than recomputing it in a loop – as in this control-time example, run over
+a field revisited roughly nightly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RectangleSkyRegion</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+
+<span class="c1"># A single field revisited roughly nightly over ~90 days -- the repeated-cadence</span>
+<span class="c1"># case `compute_control_time_curve` is designed to characterize.</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">elapsed_days</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="mi">90</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s2">"2025-01-01T00:00:00"</span><span class="p">)</span> <span class="o">+</span> <span class="n">elapsed_days</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">900.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">]</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="o">.</span><span class="n">from_geodetic</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"action"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">"observe"</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">150.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"block_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+<span class="n">fov</span> <span class="o">=</span> <span class="n">RectangleSkyRegion</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">SkyCoord</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
+<span class="n">schedule</span> <span class="o">=</span> <span class="n">SurveySchedule</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">fov</span><span class="p">)</span>
+
+<span class="n">timescales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+<span class="n">exposure</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">compute_control_time_curve</span><span class="p">(</span><span class="n">timescales</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">timescales</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">exposure</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Transient timescale [days]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Area-time exposure [day sr]"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Cadence sensitivity vs. transient timescale"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/07f57afb26c5fd80523888e351f3ff22/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Every method in this section accepts <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code> to control HEALPix resolution and an
+optional <code class="docutils literal notranslate"><span class="pre">start_time</span></code>/<code class="docutils literal notranslate"><span class="pre">end_time</span></code> window to restrict the calculation to part of the survey.
+Higher <code class="docutils literal notranslate"><span class="pre">nside</span></code> gives finer spatial resolution at the cost of more pixels to loop over in the
+pair-count/control-time calculations – 128 (the default for most of these methods) is a
+reasonable starting point; drop to 32-64 while iterating on a large or fine timescale grid.</p>
+</div>
+<p>See the <a class="reference internal" href="../../auto_examples/schedules/index.html#schedules-gallery"><span class="std std-ref">Working with Simulation Schedules</span></a> for a full worked example of building, validating, and
+inspecting a schedule end to end, and <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.html#module-uvex_transients.surveys" title="uvex_transients.surveys"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.surveys</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a> reference
+for exhaustive method-by-method detail.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../transients/custom_transients.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Writing a Custom Transient</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../simulation/overview.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Simulation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-look">Quick Look</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-surveys">Loading Surveys</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-a-table">From a Table</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-the-uvex-scheduler">From the UVEX Scheduler</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-a-url">From a URL</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-disk">From Disk</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-surveys">Working with Surveys</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-attributes">Survey Attributes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cutting-the-survey">Cutting the Survey</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observational-methods">Observational Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-cadence">Survey Cadence</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user_guide/surveys/overview.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,804 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Luminous Fast Blue Optical Transients &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'transients/lfbots';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.4alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Type II Supernovae" href="type_ii.html" />
+    <link rel="prev" title="Tidal Disruption Events" href="tdes.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="kilonovae.html">Kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdes.html">Tidal Disruption Events</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Luminous Fast Blue Optical Transients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_ii.html">Type II Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_i.html">Type I (Stripped-Envelope) Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shock_cooling_iib.html">Shock-Cooling Emission from Type IIb SNe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsne.html">Superluminous Supernovae (SLSNe-I)</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Transients</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Luminous Fast Blue Optical Transients</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="luminous-fast-blue-optical-transients">
+<span id="transients-lfbots"></span><h1>Luminous Fast Blue Optical Transients<a class="headerlink" href="#luminous-fast-blue-optical-transients" title="Link to this heading">#</a></h1>
+<p>Luminous fast blue optical transients (LFBOTs), typified by the prototype AT2018cow, are modeled
+here as a rapidly-evolving, cooling blackbody photosphere – a phenomenological description of
+their fast rise/decline (<span class="math notranslate nohighlight">\(\lesssim10\)</span> day timescales), persistently blue colors, and, in
+several cases, non-thermal emission pointing to a central engine rather than radioactive decay
+<a class="footnote-reference brackets" href="#footcite-holu2026" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>This population is implemented by
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.html#uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient" title="uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code></a>, pairing
+<a class="reference internal" href="../_as_gen/uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED.html#uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED" title="uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LFBOTCoolingBlackbodySED</span></code></a> with the rate/duration
+metadata described below.</p>
+<section id="quick-facts">
+<h2>Quick Facts<a class="headerlink" href="#quick-facts" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p><span class="math notranslate nohighlight">\(10\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span> (constant in <span class="math notranslate nohighlight">\(z\)</span>)</p></td>
+<td><p>Perley <em>et al.</em><a class="footnote-reference brackets" href="#footcite-perley2026" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, Ho and Lu<a class="footnote-reference brackets" href="#footcite-holu2026" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+<td><p>Reported LFBOT rates span more than two orders of magnitude across differing selection
+criteria: Coppejans <em>et al.</em><a class="footnote-reference brackets" href="#footcite-coppejans2020" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> find <span class="math notranslate nohighlight">\(&lt;300\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span> (PTF) and
+<span class="math notranslate nohighlight">\(700\)</span>-<span class="math notranslate nohighlight">\(1400\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span> (PS1-MDS); the delayed-dynamical-instability
+model of Klencki and Metzger<a class="footnote-reference brackets" href="#footcite-klencki2025" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> predicts <span class="math notranslate nohighlight">\(15\)</span>-<span class="math notranslate nohighlight">\(300\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span>;
+Perley <em>et al.</em><a class="footnote-reference brackets" href="#footcite-perley2026" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> and Ho and Lu<a class="footnote-reference brackets" href="#footcite-holu2026" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> report the lowest rates,
+<span class="math notranslate nohighlight">\(0.9\)</span>-<span class="math notranslate nohighlight">\(12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span>, which is adopted here. Taken as
+constant in <span class="math notranslate nohighlight">\(z\)</span>, since LFBOTs are too rare for their redshift evolution to yet be
+meaningfully constrained.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 3\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Chosen to safely bound the population relative to the SED’s own (much shorter) intrinsic
+rise/decline timescales.</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>100 days</p></td>
+<td><p>–</p></td>
+<td><p>Generous relative to the SED’s own rise/decline timescales, to safely bound the slowly
+fading power-law tail.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="sed-model">
+<h2>SED Model<a class="headerlink" href="#sed-model" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../_as_gen/uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED.html#uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED" title="uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LFBOTCoolingBlackbodySED</span></code></a> pairs a Gaussian-rise/power-law
+decline bolometric light curve
+(<a class="reference internal" href="../_as_gen/uvex_transients.models.lightcurves.generic.GaussianRisePowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.GaussianRisePowerLawLightcurve" title="uvex_transients.models.lightcurves.generic.GaussianRisePowerLawLightcurve"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianRisePowerLawLightcurve</span></code></a>) with a
+cooling blackbody photosphere,</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}L_\mathrm{bol}(t) = A \times
+\begin{cases}
+    \exp\left[-\dfrac{(t-t_\mathrm{peak})^2}{2(t_\mathrm{peak}/5)^2}\right], &amp; t \le t_\mathrm{peak} \\[6pt]
+    (t/t_\mathrm{peak})^{-\alpha_\mathrm{decline}}, &amp; t &gt; t_\mathrm{peak}
+\end{cases}, \qquad
+T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{t_\mathrm{peak}}\right)^{-\alpha_T}.\end{split}\]</div>
+<p>The cooling law has the same functional form used for the other cooling-blackbody SEDs in this
+codebase (see <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.villar.VillarCoolingBlackbodySED.html#uvex_transients.models.supernovae.villar.VillarCoolingBlackbodySED" title="uvex_transients.models.supernovae.villar.VillarCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">VillarCoolingBlackbodySED</span></code></a>), but with the
+cooling timescale fixed to the light curve’s own peak time <span class="math notranslate nohighlight">\(t_\mathrm{peak}\)</span> rather than left
+as a separate free parameter, since LFBOT light curves are too fast and too sparsely sampled to
+usefully distinguish the two. This choice, together with the default priors below, follows the
+bolometric light curves Ho and Lu<a class="footnote-reference brackets" href="#footcite-holu2026" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> compile for six known LFBOTs: a late-time
+<span class="math notranslate nohighlight">\(L_\mathrm{bol}\propto t^{-3}\)</span> decline with peaks shorter than about 10 days (CSS161010 and
+“puz”), a peak bolometric luminosity ranging from <span class="math notranslate nohighlight">\(10^{44}\ \mathrm{erg\,s^{-1}}\)</span>
+(CSS161010) to around <span class="math notranslate nohighlight">\(2\times10^{45}\ \mathrm{erg\,s^{-1}}\)</span> (“wpp”), and a blackbody
+temperature evolving post-peak roughly as <span class="math notranslate nohighlight">\(T\sim t^{-1/3}\)</span> (CSS161010 was closer to constant
+temperature; AT2018cow and “qfm” were both <span class="math notranslate nohighlight">\(\sim t^{-1/3}\)</span>) <a class="footnote-reference brackets" href="#footcite-holu2026" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 12.0%" />
+<col style="width: 40.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">amplitude</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(A\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_0/\mathrm{erg\,s^{-1}})\)</span>; mean=44.5, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.5)</p></td>
+<td><p>Peak bolometric luminosity, spanning the <span class="math notranslate nohighlight">\(\sim10^{44}\)</span>-few <span class="math notranslate nohighlight">\(\times10^{45}\)</span>
+erg/s range <a class="footnote-reference brackets" href="#footcite-holu2026" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">t_peak</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_\mathrm{peak}\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(\log_{10}(t_\mathrm{peak}/\mathrm{d})\)</span>; mean=:math:<cite>log_{10}3</cite>, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p>Time of peak bolometric luminosity, log-normal around a few days with small scatter.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">decline_index</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha_\mathrm{decline}\)</span></p></td>
+<td><p>Uniform(2, 4)</p></td>
+<td><p>Post-peak decline index; late-time light curves broadly consistent with <span class="math notranslate nohighlight">\(t^{-3}\)</span>
+<a class="footnote-reference brackets" href="#footcite-holu2026" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(T_0/2\times10^4\,\mathrm{K}\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.15)</p></td>
+<td><p>Photospheric temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (the <span class="math notranslate nohighlight">\(T(t)\to T_0\)</span> limit).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(T_\mathrm{floor}/10^4\,\mathrm{K}\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.01)</p></td>
+<td><p>Asymptotic late-time temperature, tightly centered on <span class="math notranslate nohighlight">\(10^4\)</span> K.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alpha_T</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha_T\)</span></p></td>
+<td><p>Uniform(0, 1/3)</p></td>
+<td><p>Late-time cooling index; <span class="math notranslate nohighlight">\(\sim1/3\)</span> is a reasonable fit for most events (e.g.
+AT2018cow) <a class="footnote-reference brackets" href="#footcite-holu2026" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="simulated-light-curves">
+<h3>Simulated Light Curves<a class="headerlink" href="#simulated-light-curves" title="Link to this heading">#</a></h3>
+<p>The plot below draws 1000 random parameter realizations from the priors above and shows the
+resulting bolometric light curves and photospheric temperatures, against the observed
+bolometric light curves and photospheric temperatures of four known LFBOTs – AT2018cow,
+CSS161010, AT2024wpp, and AT2024puz – compiled by Ho and Lu<a class="footnote-reference brackets" href="#footcite-holu2026" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/825d4041ae6fbd9e0c04c0947e653a1b/lfbots-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/590f783daeac8fc1f5871ee157989604/lfbots-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/98671bb01763a6309b296e0b616c4ebf/lfbots-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7ab0d037cde04a742f1eb2a7b9763cdc/lfbots-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/lfbots-1.png" class="plot-directive" src="../_images/lfbots-1.png" />
+</figure>
+</section>
+</section>
+<hr class="docutils" />
+<section id="observability-summary">
+<h2>Observability Summary<a class="headerlink" href="#observability-summary" title="Link to this heading">#</a></h2>
+<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass calculated peak apparent AB magnitudes
+<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 3000 simulated LFBOTs drawn from the priors above, with
+the UVEX 1 Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted. Findings here justify our confidence in a
+<span class="math notranslate nohighlight">\(z=3\)</span> redshift limit for this population.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/883a7f628ff1b24cd991922189e8696d/lfbots-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/c12f0f0b84984bd31e593dba8bdacac5/lfbots-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/943b7dc9e63c5e7eee51c44e0c4c66f7/lfbots-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/c934cff7285772a68326af5e9c5012b2/lfbots-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/lfbots-2.png" class="plot-directive" src="../_images/lfbots-2.png" />
+</figure>
+<p>The anticipated rate of LFBOTs detectable by UVEX at these limits is as follows assuming that
+any event above the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is isotropic and homogeneous
+in comoving volume out to <span class="math notranslate nohighlight">\(z=3\)</span>:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/7ebd1f08bc6c6fb43e6b7f50dcf75be5/lfbots-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/73c1203981332a35647749da1be52a9d/lfbots-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0d85f2fde177a5abcbda238697c858db/lfbots-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/d0b81d2793396ea51d5b7cef3301be1d/lfbots-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/lfbots-3.png" class="plot-directive" src="../_images/lfbots-3.png" />
+</figure>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id14">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-holu2026" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id3">2</a>,<a role="doc-backlink" href="#id7">3</a>,<a role="doc-backlink" href="#id8">4</a>,<a role="doc-backlink" href="#id9">5</a>,<a role="doc-backlink" href="#id10">6</a>,<a role="doc-backlink" href="#id11">7</a>,<a role="doc-backlink" href="#id12">8</a>,<a role="doc-backlink" href="#id13">9</a>)</span>
+<p>Anna Y. Q. Ho and Wenbin Lu. Cows, tasmanian devils, and other mysteries: diversity and origins of luminous fast blue optical transients. <em>Reports on Progress in Physics</em>, 2026. Invited review, submitted. <a class="reference external" href="https://arxiv.org/abs/2608.23715">arXiv:2608.23715</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-perley2026" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id6">2</a>)</span>
+<p>Daniel A. Perley, Anna Y. Q. Ho, Zoe McGrath, Michael Camilo, Cassie Sevilla, Ping Chen, Genevieve Schroeder, Taya Govreen-Segal, Aleksandra Bochenek, and Yu-Jing Qin. AT2024wpp: an extremely luminous fast ultraviolet transient powered by accretion onto a black hole. <em>Monthly Notices of the Royal Astronomical Society</em>, 2026. <a class="reference external" href="https://arxiv.org/abs/2601.03337">arXiv:2601.03337</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stag678">doi:10.1093/mnras/stag678</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-coppejans2020" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p>D. L. Coppejans, R. Margutti, G. Terreran, A. J. Nayana, E. R. Coughlin, T. Laskar, K. D. Alexander, M. Bietenholz, D. Caprioli, and P. Chandra. A mildly relativistic outflow from the energetic, fast-rising blue optical transient CSS161010 in a dwarf galaxy. <em>The Astrophysical Journal Letters</em>, 2020. <a class="reference external" href="https://arxiv.org/abs/2003.10503">arXiv:2003.10503</a>, <a class="reference external" href="https://doi.org/10.3847/2041-8213/ab8cc7">doi:10.3847/2041-8213/ab8cc7</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-klencki2025" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">4</a><span class="fn-bracket">]</span></span>
+<p>Jakub Klencki and Brian D. Metzger. Luminous fast blue optical transients as “failed” gravitational-wave sources: helium core–black hole mergers following delayed dynamical instability. <em>The Astrophysical Journal</em>, 1005(1):2, 2026. <a class="reference external" href="https://arxiv.org/abs/2510.09745">arXiv:2510.09745</a>, <a class="reference external" href="https://doi.org/10.3847/1538-4357/ae6ce8">doi:10.3847/1538-4357/ae6ce8</a>.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tdes.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tidal Disruption Events</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="type_ii.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Type II Supernovae</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-facts">Quick Facts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sed-model">SED Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simulated-light-curves">Simulated Light Curves</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observability-summary">Observability Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/transients/lfbots.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
