@@ -1,0 +1,50 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy import units as u
+
+from m4opt.missions import uvex
+from uvex_transients.transients.supernovae import TypeIIbSNe
+
+rng = np.random.default_rng(20260918)
+n_samples = 1000
+
+sn = TypeIIbSNe()
+redshift = sn.sample_event_redshift(n_samples, rng=rng)
+params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+params_grid = {pname: value[:, None] for pname, value in params.items()}
+
+# The all-sky rate, with no survey footprint applied.
+all_sky_rate = sn.all_sky_rate
+
+t_grid_rest = np.geomspace(0.1, 200, 300) * u.day
+t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
+
+visible_rates = {}
+for band_name, bandpass in uvex.detector.bandpasses.items():
+    mag_curve = sn.sed.mag_bandpass(
+        bandpass,
+        t_obs_grid,
+        redshift=z_grid_bcast,
+        **params_grid,
+    ).to_value(u.ABmag)
+    magnitudes = np.nanmin(mag_curve, axis=1)
+
+    visible = magnitudes < 24.5
+    visible_fraction = np.mean(visible)
+    visible_rate = visible_fraction * all_sky_rate
+
+    visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+
+    print(
+        f"{band_name}: {visible_rate:.2f} "
+        f"({visible_fraction:.1%} of events visible)"
+    )
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+ax.set_yscale("log")
+ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+ax.set_title("Peak-visible Type IIb rate")
+
+fig.tight_layout()
