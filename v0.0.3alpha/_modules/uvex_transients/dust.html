@@ -1,0 +1,863 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.dust &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/dust';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.3alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.dust</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.dust</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Milky Way foreground dust extinction.</span>
+
+<span class="sd">This module provides access to the PlanckGNILC E(B-V) map (`dust_map`) and a</span>
+<span class="sd">reddening law (`get_dust_law`, Gordon+2023's `G23` by default -- see</span>
+<span class="sd">``config["physics.default_dust_law"]``), combined by a single vectorized entry point</span>
+<span class="sd">(`log_attenuation`) into a natural-log attenuation array ready to add directly into a</span>
+<span class="sd">`~uvex_transients.models.core.base.SpectralModel` flux calculation (its</span>
+<span class="sd">``log_attenuation`` keyword argument). `attenuation_callable` gives the same thing as</span>
+<span class="sd">a callable; `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`/</span>
+<span class="sd">`~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call it</span>
+<span class="sd">internally whenever their own ``ebv`` keyword is given, so ordinary callers of this</span>
+<span class="sd">package never touch this module, a callable, or `functools.partial` at all.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">runtime_checkable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dust_extinction.parameter_averages</span><span class="w"> </span><span class="kn">import</span> <span class="n">G23</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dustmaps.planck</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlanckGNILCQuery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">logger</span>
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># TYPING MANAGEMENT                                                           #</span>
+<span class="c1"># =========================================================================== #</span>
+<div class="viewcode-block" id="DustMapLike">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.DustMapLike.html#uvex_transients.dust.DustMapLike">[docs]</a>
+<span class="nd">@runtime_checkable</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DustMapLike</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Structural type for anything queryable for E(B-V) at a sky position, like `PlanckGNILCQuery`."""</span>
+
+<div class="viewcode-block" id="DustMapLike.query">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.DustMapLike.query.html#uvex_transients.dust.DustMapLike.query">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="n">SkyCoord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Query the dust map at a sky coordinate.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coord : astropy.coordinates.SkyCoord</span>
+<span class="sd">            Sky coordinate at which to evaluate the dust map.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Dust-map value at the specified coordinate.</span>
+<span class="sd">        """</span>
+        <span class="o">...</span></div>
+</div>
+
+
+
+<span class="n">Reddening</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">DustMapLike</span><span class="p">]</span>
+<span class="sd">"""An explicit E(B-V) value/array (`float`/dimensionless `Quantity`/`numpy.ndarray`), or a</span>
+<span class="sd">`DustMapLike` to query at a given `~astropy.coordinates.SkyCoord` -- see `resolve_ebv`."""</span>
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># DUST MAPS                                                                    #</span>
+<span class="c1"># =========================================================================== #</span>
+
+<span class="c1"># Same two mirrors (IRSA, then ESA as fallback) and the same `astropy` download</span>
+<span class="c1"># cache that m4opt's own `m4opt.synphot.extinction._dust.dust_map` uses. Reusing</span>
+<span class="c1"># the exact URLs means that if `m4opt prime` (or any other m4opt code path) has</span>
+<span class="c1"># already warmed the astropy download cache for this file, we get a cache hit</span>
+<span class="c1"># instead of a second multi-hundred-megabyte download -- even though this</span>
+<span class="c1"># loader is otherwise fully independent of m4opt. Configurable via</span>
+<span class="c1"># ``config["physics.dust_map_sources"]`` (see `uvex_transients.utils.config`),</span>
+<span class="c1"># in case a mirror goes stale.</span>
+
+
+<div class="viewcode-block" id="dust_map">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.dust_map.html#uvex_transients.dust.dust_map">[docs]</a>
+<span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dust_map</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PlanckGNILCQuery</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the Planck GNILC E(B-V) sky map, downloading and caching it on first use.</span>
+
+<span class="sd">    The map is fetched via :func:`astropy.utils.data.download_file` (cached to disk,</span>
+<span class="sd">    with the ESA mirror as a fallback source), and the resulting :class:`PlanckGNILCQuery`</span>
+<span class="sd">    is itself process-cached via :func:`functools.cache`, so repeated calls -- even across</span>
+<span class="sd">    millions of per-event reddening lookups -- pay the download/load cost only once.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dustmaps.planck.PlanckGNILCQuery</span>
+<span class="sd">        Queryable dust map: ``dust_map().query(coord)`` returns E(B-V) at ``coord``,</span>
+<span class="sd">        vectorized over an array-valued ``coord``.</span>
+<span class="sd">    """</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"physics.dust_map_sources"</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">"Fetching Planck GNILC dust map (first call only; cached to disk on success) from </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span>
+        <span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">download_file</span><span class="p">(</span><span class="n">sources</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Planck GNILC dust map ready at </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PlanckGNILCQuery</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># REDDENING LAW                                                               #</span>
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># To model the extinction for UVEX, we adopt the Gordon+2023 dust model, which covers</span>
+<span class="c1"># IR through FUV and is suitable for our needs -- kept as a name in this registry,</span>
+<span class="c1"># resolved through `config["physics.default_dust_law"]`, rather than hardcoded, purely</span>
+<span class="c1"># so it's a config knob and not a code change. In practice nobody is expected to reach</span>
+<span class="c1"># for anything but the default.</span>
+<span class="n">_DUST_LAWS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"g23"</span><span class="p">:</span> <span class="n">G23</span><span class="p">}</span>
+
+
+<span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_instantiate_dust_law</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build (and cache) the named law.</span>
+
+<span class="sd">    See `get_dust_law`; split out so the cache key is always the resolved name, never `None`.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_DUST_LAWS</span><span class="p">[</span><span class="n">name</span><span class="p">]()</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown dust law </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; known laws are </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_DUST_LAWS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_dust_law">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.get_dust_law.html#uvex_transients.dust.get_dust_law">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dust_law</span><span class="p">(</span><span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the (cached, instantiated) reddening law to use.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Name of a registered law (case-insensitive), currently just ``"g23"``</span>
+<span class="sd">        (`dust_extinction.parameter_averages.G23`). If ``None`` (the default), the</span>
+<span class="sd">        configured default (``config["physics.default_dust_law"]``, ``"g23"`` out of</span>
+<span class="sd">        the box) is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dust_extinction.baseclasses.BaseExtModel</span>
+<span class="sd">        Instantiated reddening law, exposing ``.Rv``, ``.x_range``, and</span>
+<span class="sd">        ``law(x) -&gt; A(x)/A(V)`` -- see `log_attenuation`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If ``dust_law`` (or the configured default) doesn't name a registered law.</span>
+<span class="sd">    """</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">dust_law</span> <span class="ow">or</span> <span class="n">config</span><span class="p">[</span><span class="s2">"physics.default_dust_law"</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_instantiate_dust_law</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># REDDENING RESOLUTION                                                       #</span>
+<span class="c1"># =========================================================================== #</span>
+<div class="viewcode-block" id="resolve_ebv">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.resolve_ebv.html#uvex_transients.dust.resolve_ebv">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_ebv</span><span class="p">(</span><span class="n">reddening</span><span class="p">:</span> <span class="n">Reddening</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="n">SkyCoord</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a `Reddening` value into a plain E(B-V) array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reddening : float, ~astropy.units.Quantity, numpy.ndarray, or DustMapLike</span>
+<span class="sd">        Either an explicit :math:`E(B-V)` value/array, or an object exposing</span>
+<span class="sd">        ``.query(coord) -&gt; E(B-V)`` (e.g. `dust_map`'s return value).</span>
+<span class="sd">    coord : ~astropy.coordinates.SkyCoord, optional</span>
+<span class="sd">        Sky position(s) to query, any shape -- required if ``reddening`` is a</span>
+<span class="sd">        `DustMapLike`; ignored (and may be omitted) otherwise.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Dimensionless E(B-V), shape matching ``reddening`` (if already a value) or</span>
+<span class="sd">        ``coord`` (if queried from a map).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``reddening`` is a `DustMapLike` and ``coord`` isn't given.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reddening</span><span class="p">,</span> <span class="n">DustMapLike</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">coord</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"`coord` is required to resolve a `DustMapLike` `reddening`."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">reddening</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">coord</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reddening</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">reddening</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">reddening</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="log_attenuation">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.log_attenuation.html#uvex_transients.dust.log_attenuation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_attenuation</span><span class="p">(</span>
+    <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
+    <span class="n">Ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Natural log of the Milky Way foreground attenuation, :math:`\ln(10^{-0.4\,A(\nu)})`, at ``nu``.</span>
+
+<span class="sd">    Takes an already-resolved E(B-V) -- resolving one from a dust map and a sky</span>
+<span class="sd">    position is a separate, prior step (`resolve_ebv`), deliberately kept out of</span>
+<span class="sd">    this function: fixing ``Ebv``'s shape once, up front, is what lets this stay a</span>
+<span class="sd">    single, fully vectorized computation (no per-position or per-frequency Python</span>
+<span class="sd">    loop, and, unlike building a `~synphot.SpectralElement` per position, no</span>
+<span class="sd">    repeated `~astropy.modeling.Model` construction either) -- the reddening law's</span>
+<span class="sd">    dimensionless shape :math:`A(\nu)/A(V)` is evaluated once at every ``nu``</span>
+<span class="sd">    sample (shape ``(K,)``), and combined with ``Ebv`` (shape ``S``) by plain numpy</span>
+<span class="sd">    broadcasting into a result of shape ``S + (K,)``.</span>
+
+<span class="sd">    Add this directly to a `~uvex_transients.models.core.base.SpectralModel` flux</span>
+<span class="sd">    calculation's log flux (its ``log_attenuation`` keyword) -- e.g., having already</span>
+<span class="sd">    called ``ebv = resolve_ebv(dust_map(), coord)`` once,</span>
+<span class="sd">    ``model.flux_log(nu, t, ..., log_attenuation=log_attenuation(nu, ebv))`` --</span>
+<span class="sd">    rather than multiplying a linear transmission fraction in, since everything on</span>
+<span class="sd">    that side is already computed in log space.</span>
+
+<span class="sd">    `SpectralModel.as_source_spectrum`/`as_astropy_model` take the same shape one</span>
+<span class="sd">    level removed, as a callable (their wavelength grid isn't known until the</span>
+<span class="sd">    resulting `~synphot.SourceSpectrum` is actually called): use `attenuation_callable`</span>
+<span class="sd">    rather than binding this function yourself, e.g.</span>
+<span class="sd">    ``model.as_source_spectrum(t, ..., log_attenuation=attenuation_callable(ebv))``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : ~astropy.units.Quantity</span>
+<span class="sd">        Frequency(ies) (or frequency-equivalent, e.g. wavelength) to evaluate the</span>
+<span class="sd">        reddening law at, any shape ``(K,)`` (or scalar, in which case the trailing</span>
+<span class="sd">        frequency axis below is squeezed away).</span>
+<span class="sd">    Ebv : float, ~astropy.units.Quantity, or numpy.ndarray</span>
+<span class="sd">        Already-resolved, dimensionless :math:`E(B-V)`, any shape ``S`` -- see</span>
+<span class="sd">        `resolve_ebv` for turning a dust map + sky position into this.</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Passed through to `get_dust_law`; ``None`` (the default) uses the configured</span>
+<span class="sd">        default reddening law.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Natural log of the dimensionless attenuation, ``NaN`` wherever ``nu`` falls</span>
+<span class="sd">        outside the reddening law's native range (roughly 900 Angstrom to 32 microns</span>
+<span class="sd">        for the default, `dust_extinction.parameter_averages.G23`). Shape</span>
+<span class="sd">        ``S + (K,)``, or plain ``S`` if ``nu`` was scalar.</span>
+<span class="sd">    """</span>
+    <span class="n">law</span> <span class="o">=</span> <span class="n">get_dust_law</span><span class="p">(</span><span class="n">dust_law</span><span class="p">)</span>
+
+    <span class="n">Ebv</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Ebv</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Ebv</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Ebv</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nu</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+    <span class="c1"># `G23.__call__` (inherited from `dust_extinction.baseclasses.BaseExtModel`) raises</span>
+    <span class="c1"># `ValueError` if *any* input falls outside its native range, rather than returning</span>
+    <span class="c1"># `NaN` for just the offending samples -- so out-of-range `x` is masked out *before*</span>
+    <span class="c1"># the call. It's tempting to pass `NaN` through for those samples and let the range</span>
+    <span class="c1"># check's own `&lt;=`/`&gt;=` comparisons (always `False` against `NaN`) silently wave them</span>
+    <span class="c1"># through -- the previous version of this module did exactly that -- but verify before</span>
+    <span class="c1"># relying on it: empirically, G23's spline evaluates `NaN` in as ``0`` (zero</span>
+    <span class="c1"># extinction) out, not `NaN` out, so that trick only avoids the exception, it doesn't</span>
+    <span class="c1"># produce the documented `NaN`. This masks the *output* explicitly instead, using</span>
+    <span class="c1"># `valid` computed from `x` directly, which is correct regardless of what G23 happens</span>
+    <span class="c1"># to do internally with a `NaN` input.</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">law</span><span class="o">.</span><span class="n">x_range</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="mf">1e-6</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">lo</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">hi</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">x_safe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lo</span><span class="p">)</span>
+
+    <span class="n">axav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">law</span><span class="p">(</span><span class="n">x_safe</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">Av</span> <span class="o">=</span> <span class="n">law</span><span class="o">.</span><span class="n">Rv</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">Ebv</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">Av</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">axav</span>
+
+    <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">nu</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="n">result</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="attenuation_callable">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.attenuation_callable.html#uvex_transients.dust.attenuation_callable">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">attenuation_callable</span><span class="p">(</span>
+    <span class="n">Ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Quantity</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Bind `log_attenuation` to a fixed E(B-V)/dust law, as a plain ``nu -&gt; ln(transmission)`` callable.</span>
+
+<span class="sd">    This is what `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`</span>
+<span class="sd">    and `~uvex_transients.models.core.base.SpectralModel.simulate_photometry` call</span>
+<span class="sd">    internally, themselves, whenever their own ``ebv`` keyword is given -- callers of</span>
+<span class="sd">    *those* methods just pass ``ebv=...`` directly and never see this function, a</span>
+<span class="sd">    callable, or `functools.partial` at all. It's exposed here only for the rare case</span>
+<span class="sd">    of building a bespoke :class:`~astropy.modeling.Model`/:class:`~synphot.SourceSpectrum`</span>
+<span class="sd">    by hand, outside of `as_source_spectrum`, that still wants this module's</span>
+<span class="sd">    already-resolved-:math:`E(B-V)`-to-callable contract (`log_attenuation(wave) -&gt;</span>
+<span class="sd">    ln(transmission)`, evaluated against a wavelength grid unknown until</span>
+<span class="sd">    :mod:`synphot` samples it).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Ebv : float, ~astropy.units.Quantity, or numpy.ndarray</span>
+<span class="sd">        Already-resolved E(B-V) -- see `resolve_ebv`.</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Passed through to `log_attenuation`/`get_dust_law`. The configured default is</span>
+<span class="sd">        almost always the right choice; this is here mainly so the resulting callable</span>
+<span class="sd">        stays a pure function of its inputs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Callable[[~astropy.units.Quantity], numpy.ndarray]</span>
+<span class="sd">        ``nu -&gt; log_attenuation(nu, Ebv, dust_law)``.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">log_attenuation</span><span class="p">,</span> <span class="n">Ebv</span><span class="o">=</span><span class="n">Ebv</span><span class="p">,</span> <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
