@@ -172,21 +172,6 @@ The expected all-sky yield and its rate-only bounds are then
    [\mu_{\mathrm L},\mu_{\mathrm U}]
    =[R_{\mathrm L}T\mathcal V,R_{\mathrm U}T\mathcal V].
 
-The normalized event-redshift density is
-
-.. math::
-
-   p_z(z)=
-   \frac{
-     \displaystyle\frac{f(z)}{1+z}\frac{dV_c}{dz\,d\Omega}
-   }{
-     \displaystyle\int_0^{z_{\max}}
-     \frac{f(z')}{1+z'}\frac{dV_c}{dz'\,d\Omega}\,dz'
-   }.
-
-Both the normalization :math:`A` and the full-sky solid angle cancel.
-Changing only :math:`A` therefore changes the number of events but not
-the distribution of their redshifts or other sampled properties.
 
 Detection efficiency and catalog generation
 -------------------------------------------
