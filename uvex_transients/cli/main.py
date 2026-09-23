@@ -264,15 +264,22 @@ def run_command(
         else:
             stage_files.append("final_catalog.ecsv")
         stage_files.append("photometry.ecsv")
+        stage_files += ["exposure.ecsv", "yield_summary.ecsv", "yield_summary.txt"]
         return _dry_run(config, "run", [out_dir / name for name in stage_files], overwrite)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     catalog = pipeline.run_generate(config)
+    raw_catalog = catalog
     if keep:
         catalog.to_disk(out_dir / "00_generated.ecsv", overwrite=overwrite)
         click.echo(f"generate: {len(catalog)} events -> 00_generated.ecsv")
     else:
         click.echo(f"generate: {len(catalog)} events")
+
+    exposure = pipeline.run_exposure(config)
+    exposure_path = out_dir / "exposure.ecsv"
+    exposure.to_disk(exposure_path, overwrite=overwrite)
+    click.echo(f"exposure: {len(exposure)} (type, bin) rows -> {exposure_path.name}")
 
     if config.has_section("cuts"):
         for i, key in enumerate(config.cuts, start=1):
@@ -288,6 +295,13 @@ def run_command(
         final_path = out_dir / "final_catalog.ecsv"
         catalog.to_disk(final_path, overwrite=overwrite)
         click.echo(f"catalog: {len(catalog)} events -> {final_path.name}")
+
+    yield_table = pipeline.run_yield_summary(config, raw_catalog, catalog, exposure)
+    yield_ecsv_path = out_dir / "yield_summary.ecsv"
+    yield_table.to_disk(yield_ecsv_path, overwrite=overwrite)
+    yield_ascii_path = out_dir / "yield_summary.txt"
+    yield_table.to_ascii(yield_ascii_path, overwrite=overwrite)
+    click.echo(f"yield: {len(yield_table)} transient type(s) -> {yield_ecsv_path.name}, {yield_ascii_path.name}")
 
     phot = pipeline.run_photometry(config, catalog)
     phot_path = out_dir / "photometry.ecsv"

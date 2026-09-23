@@ -11,6 +11,8 @@ from pathlib import Path
 from astropy.table import QTable
 
 from ..simulation.event_catalog import EventCatalog
+from ..simulation.exposure_catalog import ExposureCatalog
+from ..simulation.yield_table import YieldTable
 from .config import RunConfig
 
 
@@ -35,6 +37,60 @@ def run_generate(config: RunConfig) -> EventCatalog:
         order=settings.order,
         downsample=settings.downsample,
     )
+
+
+def run_exposure(config: RunConfig) -> ExposureCatalog:
+    """
+    Tabulate an `ExposureCatalog` per the config's ``generate:`` section.
+
+    Uses the same ``time_bins``/``nside``/``order`` as `run_generate`, so both describe
+    the same footprint query -- see `SurveySimulator.compute_effective_exposure`.
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+
+    Returns
+    -------
+    ExposureCatalog
+        The tabulated per-(transient type, time bin) exposure.
+    """
+    settings = config.generate
+    return config.simulator.compute_effective_exposure(
+        time_bins=settings.time_bins,
+        nside=settings.nside,
+        order=settings.order,
+    )
+
+
+def run_yield_summary(
+    config: RunConfig,
+    raw: EventCatalog,
+    detected: EventCatalog,
+    exposure: ExposureCatalog,
+) -> YieldTable:
+    """
+    Build a `YieldTable` per the config's ``yield:`` section (Clopper-Pearson confidence level).
+
+    Parameters
+    ----------
+    config : RunConfig
+        The parsed run-config.
+    raw : EventCatalog
+        The feasible (pre-cut) catalog -- typically `run_generate`'s own output.
+    detected : EventCatalog
+        The detected (post-cut) catalog -- typically `run_cuts`'s own output.
+    exposure : ExposureCatalog
+        Typically `run_exposure`'s own output.
+
+    Returns
+    -------
+    YieldTable
+        One row per transient type in `config.transients`.
+    """
+    settings = config.yield_config
+    return raw.compute_yield_summary(detected, exposure, config.transients, confidence=settings.confidence)
 
 
 def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None = None) -> EventCatalog:
@@ -168,6 +224,9 @@ def dry_run_report(
     if command in ("photometry", "run"):
         settings = config.photometry
         lines.append(f"photometry: bands={settings.bands or 'every band'}, n_sigma={settings.n_sigma or 'default'}")
+
+    if command == "run":
+        lines.append(f"yield:     confidence={config.yield_config.confidence}")
 
     ok = True
     outputs = list(outputs)

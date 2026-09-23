@@ -298,6 +298,13 @@ class PhotometryConfig:
     n_sigma: float | None = None
 
 
+@dataclass
+class YieldConfig:
+    """Parsed ``yield:`` section -- see `EventCatalog.compute_yield_summary`."""
+
+    confidence: float = 0.9
+
+
 class RunConfig:
     """
     A parsed CLI run-config, resolving each section lazily on first access.
@@ -337,6 +344,7 @@ class RunConfig:
         self._generate: GenerateConfig | None = None
         self._cuts: dict[str, CutSpec] | None = None
         self._photometry: PhotometryConfig | None = None
+        self._yield: YieldConfig | None = None
         self._keep_intermediate: bool | None = None
 
     @classmethod
@@ -509,6 +517,21 @@ class RunConfig:
             section = self._raw.get("photometry") or {}
             self._photometry = PhotometryConfig(bands=section.get("bands"), n_sigma=section.get("n_sigma"))
         return self._photometry
+
+    @property
+    def yield_config(self) -> YieldConfig:
+        """
+        The parsed ``yield:`` section (optional; defaults to a ``0.9`` Clopper-Pearson confidence level).
+
+        Returns
+        -------
+        YieldConfig
+            The parsed section.
+        """
+        if self._yield is None:
+            section = self._raw.get("yield") or {}
+            self._yield = YieldConfig(confidence=section.get("confidence", 0.9))
+        return self._yield
 
     @property
     def keep_intermediate(self) -> bool:
