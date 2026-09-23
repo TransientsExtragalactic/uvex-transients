@@ -85,6 +85,7 @@ and :mod:`~uvex_transients.utils`, and a command-line interface that ties all fo
          :maxdepth: 1
 
          user_guide/simulation/overview
+         user_guide/simulation/yield_statistics
 
    .. grid-item-card:: Command-Line Interface
       :class-card: sd-shadow-sm sd-border-1 guide-card
