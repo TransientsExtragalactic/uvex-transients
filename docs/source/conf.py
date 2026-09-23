@@ -14,6 +14,8 @@ import os
 import sys
 
 import matplotlib  # noqa: F401
+
+sys.path.insert(0, os.path.abspath("."))
 # -- Project information -----------------------------------------------------
 
 project = "UVEX Transients"
@@ -128,3 +130,10 @@ sphinx_gallery_conf = {
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
 }
+
+
+def setup(app):
+    """Regenerate the "Report" page (`_report_gen.py`) before Sphinx reads any source files."""
+    from _report_gen import generate_report
+
+    app.connect("builder-inited", generate_report)

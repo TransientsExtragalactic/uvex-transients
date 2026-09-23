@@ -65,6 +65,7 @@ jobs:
       - name: Build documentation with Sphinx
         env:
           SPHINX_VERSION_MATCH: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p docs/_build/html
           sphinx-build -b html -j auto docs/source docs/_build/html
