@@ -279,7 +279,7 @@ class GenerateConfig:
     time_bins: int
     nside: int | None = None
     order: str | None = None
-    downsample: int | None = None
+    downsample: int | dict[str, int] | None = None
 
 
 @dataclass

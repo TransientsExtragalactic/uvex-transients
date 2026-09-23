@@ -140,6 +140,12 @@ def test_generate_parses_optional_fields():
     assert config.generate.downsample is None
 
 
+def test_generate_downsample_accepts_a_per_type_mapping():
+    """`generate: downsample:` may be a `{transient key: factor}` mapping instead of a single int."""
+    config = _config_from("generate:\n  time_bins: 10\n  downsample:\n    tde: 5\n    kilonova: 2\n")
+    assert config.generate.downsample == {"tde": 5, "kilonova": 2}
+
+
 def test_cuts_unknown_type_raises():
     """An unrecognized cut `type:` raises, listing `SurveySimulator.available_cuts()`."""
     config = _config_from("cuts:\n  cut_1:\n    type: not_a_real_cut\n")

@@ -53,10 +53,13 @@ transients:
 # `nside`/`order` are left unset (package default: `healpix.default_nside`/
 # `healpix.default_order` in `uvex_transients/config.yaml`). `time_bins` is
 # generous enough to resolve the full mission window at that resolution.
-# `downsample` applies as a single factor across every registered type in
-# this call (there's no per-class knob) -- 20 keeps the highest-rate
-# populations (TDEs, Type IIP SNe) tractable; counts for every type are
-# rescaled back up by this factor automatically once sampled.
+# `downsample` here is a single factor applied uniformly across every
+# registered type -- 20 keeps the highest-rate populations (TDEs, Type IIP
+# SNe) tractable; counts for every type are rescaled back up by this factor
+# automatically once sampled. It can instead be a `{transient key: factor}`
+# mapping (see `docs/source/user_guide/cli/overview.rst`) to downsample types
+# individually, e.g. leaving the rarer kilonova/LFBOT populations untouched
+# while still downsampling TDEs/SNe.
 generate:
   time_bins: 200
   downsample: 20

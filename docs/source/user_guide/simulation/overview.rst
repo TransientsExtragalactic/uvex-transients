@@ -165,7 +165,13 @@ schedule's real footprint more closely, at the cost of more pixels to sample per
    ``1/k`` subset of each per-bin, per-type table (without replacement, seeded off
    ``simulation_seed``) instead of sampling the full population. Multiply any downstream count
    by ``k`` to get back an estimate of the true yield; see the
-   :ref:`simulating_gallery` example for this in practice.
+   :ref:`simulating_gallery` example for this in practice. ``downsample`` can instead be a
+   ``{transient key: k}`` mapping to downsample types individually -- a type left out of the
+   mapping isn't downsampled at all. Either form is stashed on the returned
+   :class:`~uvex_transients.simulation.event_catalog.EventCatalog` as
+   :attr:`~uvex_transients.simulation.event_catalog.EventCatalog.downsample`, purely as
+   provenance (nothing rescales counts back up automatically), and every cut carries it through
+   to its own output catalog unchanged.
 
 Two columns are computed once here, rather than being left for every later step to re-derive: each
 event's ``luminosity_distance`` (interpolated off that transient type's own cached
@@ -193,9 +199,11 @@ makes it trivially picklable and safe to round-trip to disk:
     reloaded = EventCatalog.from_disk("tde_catalog.ecsv")
 
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.to_disk` writes the table as ECSV
-with ``nside``/``order``/``time_bins``/``seed`` stashed in the file's header, so
+with ``nside``/``order``/``time_bins``/``seed``/``downsample`` stashed in the file's header, so
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.from_disk` can reconstruct a
-complete ``EventCatalog`` from the one file alone.
+complete ``EventCatalog`` from the one file alone. (A file written by an older version of the
+package, with no ``downsample`` in its header, still reads back fine -- it just defaults to
+`None`.)
 
 Every column of ``catalog.table`` is also available as a convenience property, returning a plain
 array (or :class:`~astropy.units.Quantity`/:class:`~astropy.time.Time`/
@@ -259,8 +267,8 @@ transient's redshift-limited volume is, by construction, near the limit where it
 undetectable. Two progressively more expensive passes narrow it down to the events actually worth
 keeping, both taking an ``EventCatalog`` and an :class:`~m4opt.missions.Mission` (for its
 :class:`~m4opt.synphot.Detector`'s bandpasses) and returning a new ``EventCatalog`` over the
-surviving rows -- ``nside``/``order``/``time_bins``/``seed`` unchanged, and original ``event_id``
-values preserved rather than renumbered:
+surviving rows -- ``nside``/``order``/``time_bins``/``seed``/``downsample`` unchanged, and
+original ``event_id`` values preserved rather than renumbered:
 
 .. tab-set::
 

@@ -78,6 +78,17 @@ class EventCatalog:
     seed: _SeedType = None
     """numpy.random.SeedSequence, int, or None: The root seed this catalog was generated from."""
 
+    downsample: int | dict[str, int] | None = None
+    """int, dict of str to int, or None: The downsample factor(s) generation was run with.
+
+    Either a single factor applied to every transient type, a ``{transient key: factor}``
+    mapping giving a per-type factor (a type missing from the mapping wasn't downsampled), or
+    `None` if generation wasn't downsampled at all -- see
+    `~uvex_transients.simulation.core.SurveySimulator.generate_events`. Kept as provenance
+    only; nothing here rescales counts back up by it. Every cut carries it through unchanged
+    from the catalog it filtered.
+    """
+
     # ----------------------------------------- #
     # Dunder Methods                            #
     # ----------------------------------------- #
@@ -308,6 +319,7 @@ class EventCatalog:
                 "order": self.order,
                 "time_bins": self.time_bins,
                 "seed": _seed_to_meta(self.seed),
+                "downsample": self.downsample,
             }
         )
         table.write(Path(path), format=table_format, overwrite=overwrite)
@@ -346,4 +358,5 @@ class EventCatalog:
             order=meta.pop("order"),
             time_bins=meta.pop("time_bins"),
             seed=meta.pop("seed", None),
+            downsample=meta.pop("downsample", None),
         )

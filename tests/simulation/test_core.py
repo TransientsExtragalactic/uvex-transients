@@ -185,6 +185,23 @@ def test_filter_by_snr_empty_catalog(make_schedule, hot_spot):
     assert len(filtered) == 0
 
 
+def test_filter_by_snr_and_filter_by_limiting_magnitude_carry_downsample_through(make_schedule, hot_spot):
+    """A cut's output catalog keeps the input catalog's `downsample` unchanged, empty or not."""
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=5)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=1)
+
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=0)
+    catalog.downsample = {"tde": 5}
+    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).downsample == {"tde": 5}
+    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).downsample == {"tde": 5}
+
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=2)
+    catalog.downsample = 20
+    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).downsample == 20
+    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).downsample == 20
+
+
 def test_filter_by_snr_unknown_transient_type_raises(make_schedule, hot_spot):
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=5)
@@ -206,3 +223,81 @@ def test_filter_by_snr_unknown_band_raises(make_schedule, hot_spot):
     sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=1)
     with pytest.raises(ValueError, match="Unknown bandpass"):
         sim.filter_by_snr(catalog, uvex, snr_threshold=5.0, bands=["not-a-real-band"])
+
+
+# --------------------------------------------------------------------------- #
+# generate_events: per-type downsample                                       #
+# --------------------------------------------------------------------------- #
+def _stub_sample_events_on_healpix_grid(n_events):
+    """Build a monkeypatch replacement for `sample_events_on_healpix_grid` returning exactly `n_events` rows.
+
+    Sidesteps the real volumetric-rate sampling (whose event counts, for a tiny test
+    schedule, are too small/random to assert precise downsample ratios against) while
+    keeping every column `SurveySimulator.generate_events` actually reads.
+    """
+
+    def _stub(
+        self,
+        nside,
+        *,
+        t_start,
+        t_end=None,
+        duration=None,
+        pixel_mask=None,
+        pixel_ids=None,
+        order="nested",
+        jitter=True,
+        seed=None,
+    ):
+        rng = np.random.default_rng(seed)
+        table = QTable()
+        table["healpix_id"] = np.zeros(n_events, dtype=np.int64)
+        table["healpix_dx"] = np.full(n_events, 0.5)
+        table["healpix_dy"] = np.full(n_events, 0.5)
+        table["coord"] = SkyCoord(np.full(n_events, 150.0) * u.deg, np.full(n_events, 20.0) * u.deg)
+        table["redshift"] = np.full(n_events, 0.01)
+        table["t_explosion"] = t_start + rng.uniform(0, 1, n_events) * u.day
+        table["parameter_seed"] = np.arange(n_events, dtype=np.uint64)
+        return table
+
+    return _stub
+
+
+def test_generate_events_downsample_int_applies_to_every_type(monkeypatch, make_schedule):
+    """A single `downsample` int applies uniformly across every registered transient type."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, downsample=5)
+
+    counts = np.unique(catalog.table["transient_type"], return_counts=True)
+    assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 8}  # ceil(40 / 5)
+    assert catalog.downsample == 5
+
+
+def test_generate_events_downsample_mapping_applies_per_type(monkeypatch, make_schedule):
+    """A `{type key: factor}` `downsample` mapping downsamples only the named type(s)."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, downsample={"tde_a": 5})
+
+    counts = np.unique(catalog.table["transient_type"], return_counts=True)
+    # `tde_a` is downsampled (ceil(40 / 5) == 8); `tde_b`, left out of the mapping, keeps every event.
+    assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 40}
+    assert catalog.downsample == {"tde_a": 5}
+
+
+def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
+    """A `downsample` mapping naming a key not in `transients:` raises."""
+    schedule = make_schedule(n_sched=5)
+    sim = SurveySimulator(schedule, transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
+
+    with pytest.raises(ValueError, match="unknown transient key"):
+        sim.generate_events(time_bins=1, nside=16, downsample={"not-a-real-key": 5})

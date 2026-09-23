@@ -268,6 +268,19 @@ A direct pass-through to
 :meth:`~uvex_transients.simulation.core.SurveySimulator.generate_events`; see
 :ref:`user_guide_simulation` for what each field means.
 
+``downsample:`` can also give a different factor per transient type instead of one number for
+every type -- keys are the ``transients:`` section's own keys, and a type left out isn't
+downsampled at all:
+
+.. code-block:: yaml
+
+    generate:
+      time_bins: 20
+      downsample:
+        tde: 20
+        kilonova: 5
+      seed: 42
+
 .. code-block:: bash
 
     uvex-transients generate quickstart_tde.yaml --out catalog.ecsv
@@ -290,9 +303,11 @@ A direct pass-through to
      - HEALPix pixel ordering (``"nested"`` or ``"ring"``). Optional; falls back to the package's
        ``healpix.default_order``.
    * - ``downsample``
-     - int
-     - Draw a random ``1/downsample`` subset instead of the full population. Optional; no
-       downsampling by default.
+     - int or mapping of str to int
+     - Draw a random ``1/downsample`` subset instead of the full population. Either a single
+       factor applied to every registered transient type, or a ``{transient key: factor}``
+       mapping to downsample types individually (a type left out of the mapping is not
+       downsampled). Optional; no downsampling by default.
    * - ``seed``
      - int
      - Root seed for :class:`~uvex_transients.simulation.core.SurveySimulator`. Optional.
