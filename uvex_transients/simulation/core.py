@@ -23,7 +23,7 @@ from typing import Union
 import astropy_healpix as ah
 import numpy as np
 from astropy import units as u
-from astropy.table import vstack
+from astropy.table import QTable, vstack
 from astropy.time import Time
 from m4opt.missions import Mission
 from m4opt.synphot import observing
@@ -468,6 +468,131 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
             seed=self._simulation_seed,
             downsample=dict(downsample) if isinstance(downsample, Mapping) else downsample,
         )
+
+    def compute_effective_exposure(
+        self,
+        time_bins: Time | int,
+        nside: int | None = None,
+        order: str | None = None,
+    ) -> QTable:
+        r"""
+        Tabulate each registered transient type's effective exposure per time bin.
+
+        For each transient type and each bin ``[t_k, t_{k+1})`` of `time_bins`, this
+        reruns exactly the footprint query `generate_events` uses to decide where it's
+        even worth sampling events -- the HEALPix pixels the survey observes at some
+        point between ``t_k`` and ``t_k+1 + transient.duration_limit`` -- but instead of
+        drawing a population from it, reduces it straight to a solid angle
+        :math:`F(t_k, t_{k+1}+\tau)`. The **effective exposure** for that bin is then
+
+        .. math::
+
+            \mathcal E_k = F(t_k, t_{k+1}+\tau)\,(t_{k+1}-t_k),
+
+        i.e. the *visited* solid angle (not the full :math:`4\pi` sky) times the *bin*
+        width (not the padded window used only to decide which pixels are visitable).
+        This matches the ``solid_angle * duration`` product
+        `~uvex_transients.transients.base.ExtragalacticTransient.sample_event_count`
+        itself feeds to `numpy.random.Generator.poisson` inside
+        `~uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid`,
+        so ``effective_exposure * transient.integrated_rate`` reproduces the same
+        per-bin expected event count `generate_events` actually samples from -- summing
+        `expected_events` over every bin for one transient type gives the same
+        expectation as ``transient.compute_all_sky_yield`` only when the survey footprint
+        never misses any of the sky at any point (:math:`F\equiv4\pi\,\mathrm{sr}`);
+        otherwise this is the tighter, footprint-aware quantity that estimator ignores.
+
+        This is deliberately *not* extracted from a `generate_events` call after the
+        fact -- `generate_events` never persists per-bin pixel IDs or solid angles once
+        it's done sampling from them, and re-deriving those from a resulting
+        `~uvex_transients.simulation.event_catalog.EventCatalog` would have to guess at
+        the very footprint query that produced it. Calling this separately recomputes
+        that query, but the expensive part -- `SurveySchedule.get_healpix_coverage_index`'s
+        whole-schedule rasterization -- is cached per ``(nside, order)`` and so is paid
+        for at most once, however many times either method (or both) queries it.
+
+        Parameters
+        ----------
+        time_bins : ~astropy.time.Time or int
+            Same semantics as `generate_events`.
+        nside : int, optional
+            Same semantics as `generate_events`.
+        order : str, optional
+            Same semantics as `generate_events`.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per ``(transient type, time bin)``, sorted by transient type then
+            bin index, with columns ``transient_type``, ``time_bin``, ``t_start``,
+            ``t_end``, ``n_pixels_visited``, ``solid_angle``, ``duration``,
+            ``effective_exposure``, and ``expected_events``.
+
+        Raises
+        ------
+        ValueError
+            If no transient types are registered in `transient_collection`.
+        """
+        if not self._transients:
+            raise ValueError("No transient types registered in `transient_collection`; nothing to tabulate.")
+
+        nside, order = resolve_healpix_resolution(nside, order)
+        edges = self._resolve_time_bins(time_bins)
+        n_bins = len(edges) - 1
+        sorted_names = sorted(self._transients)
+
+        transient_type = []
+        time_bin = []
+        t_start_col = []
+        t_end_col = []
+        n_pixels_visited = []
+        solid_angle = []
+        duration = []
+
+        with (
+            tqdm(total=len(sorted_names) * n_bins, desc="Tabulating effective exposure", unit="bin") as pbar,
+            logging_redirect_tqdm(loggers=[logger]),
+        ):
+            for name in sorted_names:
+                transient = self._transients[name]
+
+                for k in range(n_bins):
+                    pbar.set_postfix(type=name, bin=f"{k + 1}/{n_bins}")
+
+                    t_start, t_end = edges[k], edges[k + 1]
+
+                    pixel_ids = self._survey_schedule.get_observed_healpix_ids(
+                        t_start,
+                        t_end + transient.duration_limit,
+                        nside=nside,
+                        order=order,
+                    )
+
+                    transient_type.append(name)
+                    time_bin.append(k)
+                    t_start_col.append(t_start)
+                    t_end_col.append(t_end)
+                    n_pixels_visited.append(len(pixel_ids))
+                    solid_angle.append(ah.nside_to_pixel_area(nside) * len(pixel_ids))
+                    duration.append((t_end - t_start).to_value(u.day) * u.day)
+
+                    pbar.update(1)
+
+        table = QTable()
+        table["transient_type"] = np.asarray(transient_type)
+        table["time_bin"] = np.asarray(time_bin, dtype=np.int64)
+        table["t_start"] = Time(t_start_col)
+        table["t_end"] = Time(t_end_col)
+        table["n_pixels_visited"] = np.asarray(n_pixels_visited, dtype=np.int64)
+        table["solid_angle"] = u.Quantity(solid_angle)
+        table["duration"] = u.Quantity(duration)
+        table["effective_exposure"] = table["solid_angle"] * table["duration"]
+        table["expected_events"] = [
+            (self._transients[name].integrated_rate * exposure).to_value(u.dimensionless_unscaled)
+            for name, exposure in zip(table["transient_type"], table["effective_exposure"])
+        ]
+
+        return table
 
     # -------------------------------------------------- #
     # Filtering                                          #
