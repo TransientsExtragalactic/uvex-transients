@@ -18,6 +18,10 @@ from .base import ExtragalacticTransient
 # to produce a detectable kilonova).
 _KNE_RATE: Quantity = 53 / (u.Gpc**3 * u.yr)
 
+# The 90% CI endpoints implied by the quoted +176/-49 Gpc^-3 yr^-1, expressed as
+# multiplicative factors on `_KNE_RATE` (see `ExtragalacticTransient.RATE_CI`).
+_KNE_RATE_CI: tuple[float, float] = ((53 - 49) / 53, (53 + 176) / 53)
+
 
 class Kilonova(ExtragalacticTransient):
     """
@@ -39,23 +43,27 @@ class Kilonova(ExtragalacticTransient):
     DEFAULT_DURATION = 30 * u.day
     DEFAULT_Z_LIM = 0.2
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+    RATE_CI = _KNE_RATE_CI
+
+    @property
+    def rate(self) -> Quantity:
+        """~astropy.units.Quantity: The volumetric kilonova rate, constant in `z` (Fishbach et al. 2026)."""
+        return _KNE_RATE
+
+    def rate_shape(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """
-        Return the volumetric event rate of kilonovae at a given redshift.
+        Return the (trivial, constant) rate shape of kilonovae at a given redshift.
 
         Parameters
         ----------
         z : float or array-like
-            Redshift(s) at which to evaluate the event rate.
+            Redshift(s) at which to evaluate the rate shape.
 
         Returns
         -------
         float or array-like
-            The volumetric event rate of kilonovae at the specified redshift(s), in units of
-            events per cubic megaparsec per year. Constant in `z` (Fishbach et al. 2026).
+            Ones, since the kilonova rate is constant in `z` (Fishbach et al. 2026).
         """
         z = np.asarray(z)
-
-        rate = np.full_like(z, _KNE_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
-
-        return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.
+        shape = np.ones_like(z, dtype=np.float64)
+        return shape if z.ndim > 0 else shape.item()  # Return scalar if input was scalar.

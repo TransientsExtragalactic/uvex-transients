@@ -174,7 +174,7 @@ class TransientBase(ABC):
 
         Reassigning this only replaces the `Cosmology` instance itself; it does not
         by itself invalidate any cached, cosmology-dependent quantities on subclasses
-        (see `ExtragalacticTransient.integrated_event_rate`/`ExtragalacticTransient.luminosity_distance_grid`,
+        (see `ExtragalacticTransient.integrated_rate`/`ExtragalacticTransient.luminosity_distance_grid`,
         which cache by cosmology and rebuild automatically when this changes).
         """
         return self._cosmology
@@ -288,6 +288,18 @@ class ExtragalacticTransient(TransientBase, ABC):
     DEFAULT_Z_LIM = 10
     DEFAULT_Z_GRID_SIZE = 100
 
+    RATE_CI: ClassVar[tuple[float, float] | None] = None
+    """tuple[float, float] | None: Multiplicative (lower, upper) 90% confidence factors on `rate`.
+
+    If a publication reports a rate :math:`R_0 {}^{+\\Delta R_+}_{-\\Delta R_-}`, this is
+    ``((R_0 - dR_minus) / R_0, (R_0 + dR_plus) / R_0)`` -- see :ref:`yield-statistics`.
+    Expressed as multiplicative factors (rather than absolute `Quantity` bounds) so that it
+    applies unchanged to a `rate` that is itself cosmology-dependent (e.g. a core-collapse
+    SNe subtype, whose `rate` scales with the instance's `cosmology`). `None` (the default)
+    means no rate uncertainty has been sourced for this class yet; `rate_ci` then degenerates
+    to the point value `rate` twice over.
+    """
+
     def __init__(self, cosmology: Union[Cosmology, None] = None):
         """
         Instantiate the transient, and set up (but do not yet build) its lazy rate cache.
@@ -325,7 +337,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         ~astropy.cosmology.Cosmology: The cosmology used for luminosity-distance/volume calculations.
 
         Reassigning this invalidates the cached rate table -- see
-        `TransientBase.cosmology` and `integrated_event_rate`/`luminosity_distance_grid`.
+        `TransientBase.cosmology` and `integrated_rate`/`luminosity_distance_grid`.
         """
         return self._cosmology
 
@@ -389,7 +401,7 @@ class ExtragalacticTransient(TransientBase, ABC):
 
     @property
     def redshift_grid(self) -> NDArray[np.float64]:
-        """numpy.ndarray: The cached redshift grid backing `integrated_event_rate`/sampling."""
+        """numpy.ndarray: The cached redshift grid backing `integrated_rate`/sampling."""
         self._ensure_rate_table()
         return self._redshift_grid
 
@@ -407,19 +419,190 @@ class ExtragalacticTransient(TransientBase, ABC):
         self._ensure_rate_table()
         return self._luminosity_distance_grid
 
-    @property
-    def integrated_event_rate(self) -> Quantity:
-        r"""
-        ~astropy.units.Quantity: The cached :math:`dN/(d\Omega\,dt_\mathrm{obs})`.
+    # ======================================= #
+    # Rates and Statistics                    #
+    # ======================================= #
 
-        A sampling call's expected count is ``integrated_event_rate * solid_angle * duration``
-        -- `solid_angle` rescales this (it doesn't change the shape of the redshift
-        distribution, since the rate model is isotropic), so this table is built once
-        per `(cosmology, z_max, n_grid)` and reused across every subsequent call,
-        whole-sky or per-cell alike.
+    @property
+    def integrated_rate(self) -> Quantity:
+        r"""
+        ~astropy.units.Quantity: Expected event rate per observer time and solid angle.
+
+        Integrate the intrinsic volumetric rate :math:`R(z)` over the population's
+        redshift domain:
+
+        .. math::
+
+            \mathcal R_\Omega
+            = \int_0^{z_{\max}}
+              \frac{R(z)}{1+z}
+              \frac{dV_c}{dz\,d\Omega}\,dz.
+
+        Here, :math:`R(z)` is defined per comoving volume and source-frame time.
+        The factor :math:`(1+z)^{-1}` converts the rate to observer-frame time.
+
+        This rate includes no survey footprint or detection selection. Its units
+        are equivalent to :math:`\mathrm{yr}^{-1}\,\mathrm{sr}^{-1}`.
         """
         self._ensure_rate_table()
         return self._integrated_rate
+
+    @property
+    def integrated_rate_ci(self) -> tuple[Quantity, Quantity]:
+        r"""
+        Tuple of ~astropy.units.Quantity: Rate-only bounds on :attr:`integrated_rate`.
+
+        Assume the volumetric rate has a fixed redshift dependence,
+        :math:`R(z;A)=A f(z)`, with uncertainty only in its normalization.
+        For a fiducial normalization :math:`R_0`, ``RATE_CI`` contains the
+        dimensionless endpoint multipliers
+
+        .. math::
+
+            b_{\mathrm L} = \frac{R_{\mathrm L}}{R_0},
+            \qquad
+            b_{\mathrm U} = \frac{R_{\mathrm U}}{R_0}.
+
+        The returned lower and upper bounds are
+
+        .. math::
+
+            [\mathcal R_{\Omega,\mathrm L},\mathcal R_{\Omega,\mathrm U}]
+            = [b_{\mathrm L}\mathcal R_\Omega,
+               b_{\mathrm U}\mathcal R_\Omega].
+
+        The multipliers specify absolute endpoints relative to the fiducial
+        rate, not fractional error magnitudes. The bounds retain the confidence
+        level assigned to ``RATE_CI``.
+
+        If ``RATE_CI`` is ``None``, both bounds equal :attr:`integrated_rate`.
+        This convention indicates that rate uncertainty is not represented;
+        it does not establish that the physical rate is known exactly.
+        """
+        if self.RATE_CI is None:
+            integrated = self.integrated_rate
+            return (integrated, integrated)
+        lower, upper = self.RATE_CI
+        integrated = self.integrated_rate
+        return (integrated * lower, integrated * upper)
+
+    @property
+    def all_sky_rate(self) -> Quantity:
+        r"""
+        ~astropy.units.Quantity: Expected all-sky event rate per observer year.
+
+        For an isotropic population, integrate :attr:`integrated_rate` over
+        the full sky:
+
+        .. math::
+
+            \mathcal R = (4\pi\,\mathrm{sr})\,\mathcal R_\Omega.
+
+        The result includes events throughout the population's redshift domain,
+        before applying any survey footprint or detection selection, and is
+        returned in inverse years. See :ref:`yield-statistics`.
+        """
+        return (self.integrated_rate * 4 * np.pi * u.sr).to(u.yr**-1)
+
+    @property
+    def all_sky_rate_ci(self) -> tuple[Quantity, Quantity]:
+        r"""
+        Tuple of ~astropy.units.Quantity: Rate-only bounds on :attr:`all_sky_rate`.
+
+        Multiply each endpoint of :attr:`integrated_rate_ci` by the full-sky
+        solid angle:
+
+        .. math::
+
+            [\mathcal R_{\mathrm L},\mathcal R_{\mathrm U}]
+            = (4\pi\,\mathrm{sr})
+              [\mathcal R_{\Omega,\mathrm L},\mathcal R_{\Omega,\mathrm U}].
+
+        Return the lower and upper bounds in inverse years, preserving the
+        confidence level and uncertainty convention of :attr:`integrated_rate_ci`.
+        These bounds describe uncertainty in the expected rate, not fluctuations
+        in a realized event count.
+        """
+        lower, upper = self.integrated_rate_ci
+        factor = 4 * np.pi * u.sr
+        return ((lower * factor).to(u.yr**-1), (upper * factor).to(u.yr**-1))
+
+    def compute_all_sky_yield(self, duration: Quantity) -> float:
+        r"""
+        Compute the expected intrinsic event count over the full sky.
+
+        Multiply :attr:`all_sky_rate` by the observer-frame sampling duration:
+
+        .. math::
+
+            \mu_0 = \mathcal R T.
+
+        No survey footprint or detection selection is applied.
+
+        Parameters
+        ----------
+        duration : ~astropy.units.Quantity
+            Nonnegative observer-frame sampling-window duration, convertible
+            to time units. Include any temporal padding used to generate the
+            event catalog.
+
+        Returns
+        -------
+        float
+            Expected number of intrinsic events within the population's
+            redshift domain and the specified time window. This expectation
+            need not be an integer.
+
+        Notes
+        -----
+        Cosmological time dilation is already included in :attr:`all_sky_rate`;
+        no additional redshift factor is applied to ``duration``.
+
+        When using this count to normalize a simulated catalog, the duration
+        must match the catalog's sampling window. See :ref:`yield-statistics`.
+        """
+        return (self.all_sky_rate * duration).to_value(u.dimensionless_unscaled)
+
+    def compute_all_sky_yield_ci(self, duration: Quantity) -> tuple[float, float]:
+        r"""
+        Compute rate-only bounds on the expected all-sky intrinsic event count.
+
+        For a fixed observer-frame duration, transform the bounds on
+        :attr:`all_sky_rate` as
+
+        .. math::
+
+            [\mu_{\mathrm L},\mu_{\mathrm U}]
+            = [T\mathcal R_{\mathrm L},T\mathcal R_{\mathrm U}].
+
+        Parameters
+        ----------
+        duration : ~astropy.units.Quantity
+            Nonnegative observer-frame sampling-window duration, convertible
+            to time units. Use the same window as for
+            :meth:`compute_all_sky_yield`.
+
+        Returns
+        -------
+        tuple of float
+            Lower and upper bounds on the expected intrinsic event count.
+            The endpoints need not be integers and retain the confidence
+            level assigned to the rate bounds.
+
+        Notes
+        -----
+        These bounds propagate only the uncertainty represented by ``RATE_CI``.
+        They include neither survey selection nor Poisson fluctuations in a
+        realized count, and are not a prediction interval for a future catalog.
+
+        If ``RATE_CI`` is ``None``, both endpoints equal the expected count.
+        See :ref:`yield-statistics`.
+        """
+        lower, upper = self.all_sky_rate_ci
+        return (
+            (lower * duration).to_value(u.dimensionless_unscaled),
+            (upper * duration).to_value(u.dimensionless_unscaled),
+        )
 
     @staticmethod
     def _validate_redshift_limit(z_max: float) -> float:
@@ -472,14 +655,47 @@ class ExtragalacticTransient(TransientBase, ABC):
     # ------------------------------ #
     # Event Rate Computations        #
     # ------------------------------ #
+    @property
     @abstractmethod
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+    def rate(self) -> Quantity:
+        r"""
+        ~astropy.units.Quantity: The fiducial rate normalization :math:`R_0` (this class's :math:`A`).
+
+        Concrete subclasses implement this -- and `rate_shape` below -- instead of `event_rate`
+        directly: ``event_rate(z) = rate * rate_shape(z)``, i.e. :math:`R(z;A)=A f(z)`; see
+        :ref:`yield-statistics`. May depend on `cosmology` (e.g. a core-collapse SNe subtype's
+        rate, whose overall coefficient scales with :math:`h^2`) -- it is a property, not a
+        `ClassVar`, precisely to allow that.
         """
-        Compute the comoving event rate density at redshift(s) `z`.
+
+    @abstractmethod
+    def rate_shape(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        r"""
+        Compute the dimensionless redshift shape :math:`f(z)` of the comoving event rate.
 
         Must be NumPy-vectorized (accept and return an array elementwise when `z` is
-        an array) -- `integrated_event_rate` evaluates this once, across the whole
-        `redshift_grid`, not in a per-point loop.
+        an array) -- `event_rate` (and, through it, `integrated_rate`) evaluates this once,
+        across the whole `redshift_grid`, not in a per-point loop. By convention (not
+        enforced) :math:`f(0)=1`, making `rate` the local volumetric rate; see
+        :ref:`yield-statistics`.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift(s) at which to evaluate the rate shape.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The dimensionless rate shape, :math:`f(z)`.
+        """
+
+    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        r"""
+        Compute the comoving event rate density at redshift(s) `z`, :math:`R(z;A)=A f(z)`.
+
+        A thin product of `rate` (:math:`A`) and `rate_shape` (:math:`f(z)`); see those
+        properties/methods, which concrete subclasses implement instead of this one.
 
         Parameters
         ----------
@@ -491,6 +707,37 @@ class ExtragalacticTransient(TransientBase, ABC):
         float or numpy.ndarray
             The event rate, in events / Mpc^3 / yr.
         """
+        z = np.asarray(z, dtype=float)
+        shape = np.asarray(self.rate_shape(z), dtype=float)
+        rate_value = self.rate.to_value(u.Mpc**-3 * u.yr**-1)
+        result = rate_value * shape
+        return result if z.ndim > 0 else result.item()
+
+    @property
+    def rate_ci(self) -> tuple[Quantity, Quantity]:
+        """
+        tuple[~astropy.units.Quantity, ~astropy.units.Quantity]: ``(R_L, R_U)``, the confidence bounds on `rate`.
+
+        Derived from `rate` and `RATE_CI`; see `RATE_CI` for the confidence level and for what
+        it means for this to be `(rate, rate)` when `RATE_CI` is unset.
+        """
+        rate = self.rate
+        if self.RATE_CI is None:
+            return (rate, rate)
+        lower, upper = self.RATE_CI
+        return (rate * lower, rate * upper)
+
+    @property
+    def effective_volume(self) -> Quantity:
+        r"""
+        ~astropy.units.Quantity: :math:`\mathcal V`, the all-sky rate-weighted comoving volume.
+
+        Depends only on `rate_shape`, `cosmology`, and `redshift_limit` -- not on `rate` -- so,
+        unlike `rate`, it carries no rate-normalization uncertainty; see :ref:`yield-statistics`.
+        Derived from `integrated_rate` (the per-steradian, :math:`R_0`-normalized quantity) by
+        dividing out `rate` and restoring the :math:`4\pi` sky factor, rather than retabulating.
+        """
+        return (self.integrated_rate / self.rate * 4 * np.pi * u.sr).to(u.Mpc**3)
 
     def _ensure_rate_table(self) -> None:
         r"""
@@ -499,7 +746,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         Tabulates :math:`w(z) = R(z) \cdot (dV_c/dz) / (1+z)` once on `redshift_grid` (`R`
         being `event_rate`; the :math:`1/(1+z)` is the cosmological rate-dilation
         correction between rest-frame event rate and observer-frame duration), then
-        derives `integrated_event_rate` (the total, un-normalized integral, scaled to
+        derives `integrated_rate` (the total, un-normalized integral, scaled to
         events per steradian per unit observer time), the CDF used for inversion
         sampling from that single tabulated array, and `luminosity_distance_grid`
         (:math:`D_L(z)` at the same grid points, for reuse by callers) -- `event_rate`
@@ -544,7 +791,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         # `differential_comoving_volume`) integrated over dz -> events / sr / yr.
         self._integrated_rate = total / (u.sr * u.yr)
 
-        logger.debug("%s: rate table built; integrated_event_rate=%s.", type(self).__name__, self._integrated_rate)
+        logger.debug("%s: rate table built; integrated_rate=%s.", type(self).__name__, self._integrated_rate)
 
     @staticmethod
     def _resolve_duration(duration: Quantity = None, t_start: Time = None, t_end: Time = None) -> Quantity:
@@ -795,7 +1042,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         self._ensure_rate_table()
 
         # Determine the rate in this time period and solid angle.
-        n_expected = (self.integrated_event_rate * solid_angle * duration).to_value(u.dimensionless_unscaled)
+        n_expected = (self.integrated_rate * solid_angle * duration).to_value(u.dimensionless_unscaled)
 
         # Generate the random realization.
         rng, _ = split_root_seed(seed)

@@ -12,7 +12,8 @@ from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from .base import ExtragalacticTransient
 
 # Constant (redshift-independent) volumetric rate, Perley et al. 2026 / Ho & Lu
-# et al. 2026: 10 Gpc^-3 yr^-1.
+# et al. 2026: 10 Gpc^-3 yr^-1. No published uncertainty is adopted here yet, so
+# `RATE_CI` is left at its default (unset).
 _LFBOT_RATE: Quantity = 10 / (u.Gpc**3 * u.yr)
 
 
@@ -32,24 +33,25 @@ class LuminousFastBlueOpticalTransient(ExtragalacticTransient):
     DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 3
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+    @property
+    def rate(self) -> Quantity:
+        """~astropy.units.Quantity: The volumetric LFBOT rate, constant in `z` (Perley/Ho & Lu et al. 2026)."""
+        return _LFBOT_RATE
+
+    def rate_shape(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
         """
-        Return the volumetric event rate of LFBOTs at a given redshift.
+        Return the (trivial, constant) rate shape of LFBOTs at a given redshift.
 
         Parameters
         ----------
         z : float or array-like
-            Redshift(s) at which to evaluate the event rate.
+            Redshift(s) at which to evaluate the rate shape.
 
         Returns
         -------
         float or array-like
-            The volumetric event rate of LFBOTs at the specified redshift(s), in units of
-            events per cubic megaparsec per year. Constant in `z` (Perley et al. 2026;
-            Ho & Lu et al. 2026).
+            Ones, since the LFBOT rate is constant in `z` (Perley et al. 2026; Ho & Lu et al. 2026).
         """
         z = np.asarray(z)
-
-        rate = np.full_like(z, _LFBOT_RATE.to_value(u.Mpc**-3 * u.yr**-1), dtype=np.float64)
-
-        return rate if z.ndim > 0 else rate.item()  # Return scalar if input was scalar.
+        shape = np.ones_like(z, dtype=np.float64)
+        return shape if z.ndim > 0 else shape.item()  # Return scalar if input was scalar.

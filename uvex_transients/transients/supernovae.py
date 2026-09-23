@@ -1,9 +1,11 @@
 """Core-collapse supernova population."""
 
-from typing import Union
+from abc import ABC
+from typing import ClassVar, Union
 
 import numpy as np
 from astropy import units as u
+from astropy.units import Quantity
 from numpy.typing import NDArray
 
 from uvex_transients.models.supernovae import (
@@ -15,7 +17,7 @@ from uvex_transients.models.supernovae import (
     TypeIIPExcessSED,
     TypeIIPSED,
 )
-from uvex_transients.utils.cosmology import core_collapse_rate
+from uvex_transients.utils.cosmology import core_collapse_rate_coefficient, core_collapse_rate_shape
 
 from .base import ExtragalacticTransient
 
@@ -41,59 +43,67 @@ _TYPE_IB_FRACTION = _SESNE_FRACTION * 0.161
 # (+2800/-720), from the PTF rates of Frohmaier et al. 2021 (arXiv:2010.15270).
 _SLSN_FRACTION = 1 / 3500
 
+# None of the fractions above yet carry a published uncertainty of their own, so every subtype
+# below leaves `RATE_CI` at its default (unset) for now.
 
-class TypeIIPSNe(ExtragalacticTransient):
+
+class _CoreCollapseSNe(ExtragalacticTransient, ABC):
+    """
+    Shared machinery for every core-collapse SNe subtype below.
+
+    Every subtype shares the same redshift shape (the Madau & Dickinson 2014 star-formation-history
+    shape underlying `core_collapse_rate_shape`) and differs only in what fraction of the total
+    core-collapse rate it represents (`RATE_FRACTION`) -- so `rate`/`rate_shape` are implemented
+    here, once, in terms of that one class variable, rather than duplicated per subtype as they
+    were before `ExtragalacticTransient.rate`/`rate_shape` existed.
+    """
+
+    RATE_FRACTION: ClassVar[float | None] = None
+    """float: This subtype's fraction of the total core-collapse SNe rate. Must be set by subclasses."""
+
+    @property
+    def rate(self) -> Quantity:
+        """~astropy.units.Quantity: `RATE_FRACTION` of the total core-collapse rate, at this instance's `cosmology`."""
+        return self.RATE_FRACTION * core_collapse_rate_coefficient(self.cosmology)
+
+    def rate_shape(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """
+        Return the shared core-collapse SNe redshift shape (Madau & Dickinson 2014) at redshift(s) `z`.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift(s) at which to evaluate the rate shape.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The dimensionless rate shape, common to every core-collapse SNe subtype.
+        """
+        return core_collapse_rate_shape(z)
+
+
+class TypeIIPSNe(_CoreCollapseSNe):
     """Type IIP core-collapse SNe: `TypeIIPSED` (two-exponential + radioactive-tail lightcurve x cooling blackbody)."""
 
     DEFAULT_MODEL = TypeIIPSED
     DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 0.8
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type IIP supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type IIP volumetric event rate, given by the core-collapse
-            supernova rate multiplied by the adopted Type IIP fraction.
-        """
-        return _TYPE_IIP_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IIP_FRACTION
 
 
-class TypeIIPExcessSNe(ExtragalacticTransient):
+class TypeIIPExcessSNe(_CoreCollapseSNe):
     """Early-interacting (IXF/GGI-like) Type IIP core-collapse SNe: `TypeIIPExcessSED`."""
 
     DEFAULT_MODEL = TypeIIPExcessSED
     DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 1.2
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric early-interacting Type IIP supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Early-interacting Type IIP volumetric event rate, given by the
-            core-collapse supernova rate multiplied by the adopted Type IIP
-            excess fraction.
-        """
-        return _TYPE_IIP_EXCESS_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IIP_EXCESS_FRACTION
 
 
-class ShockCoolingIIb(ExtragalacticTransient):
+class ShockCoolingIIb(_CoreCollapseSNe):
     """
     Early-time shock-cooling emission from Type IIb core-collapse SNe.
 
@@ -109,25 +119,10 @@ class ShockCoolingIIb(ExtragalacticTransient):
     DEFAULT_DURATION = 20 * u.day
     DEFAULT_Z_LIM = 1
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type IIb supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type IIb volumetric event rate, given by the core-collapse
-            supernova rate multiplied by the adopted Type IIb fraction.
-        """
-        return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IIB_FRACTION
 
 
-class TypeIIbSNe(ExtragalacticTransient):
+class TypeIIbSNe(_CoreCollapseSNe):
     """
     Full Type IIb core-collapse SN light curve.
 
@@ -146,75 +141,30 @@ class TypeIIbSNe(ExtragalacticTransient):
     DEFAULT_DURATION = 200 * u.day
     DEFAULT_Z_LIM = 0.5
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type Ib supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type Ib volumetric event rate, given by the core-collapse
-            supernova rate multiplied by the adopted Type Ib fraction.
-        """
-        return _TYPE_IIB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IIB_FRACTION
 
 
-class TypeIbSNe(ExtragalacticTransient):
+class TypeIbSNe(_CoreCollapseSNe):
     """Type Ib core-collapse SNe: `TypeIbSED` (single Bazin pulse x cooling blackbody)."""
 
     DEFAULT_MODEL = TypeIbSED
     DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 0.5
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type Ib supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type Ib volumetric event rate, given by the core-collapse
-            supernova rate multiplied by the adopted Type Ib fraction.
-        """
-        return _TYPE_IB_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IB_FRACTION
 
 
-class TypeIcSNe(ExtragalacticTransient):
+class TypeIcSNe(_CoreCollapseSNe):
     """Type Ic core-collapse SNe: `TypeIcSED` (single Bazin pulse x cooling blackbody)."""
 
     DEFAULT_MODEL = TypeIcSED
     DEFAULT_DURATION = 100 * u.day
     DEFAULT_Z_LIM = 0.5
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type Ic supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type Ic volumetric event rate, given by the core-collapse
-            supernova rate multiplied by the adopted Type Ic fraction.
-        """
-        return _TYPE_IC_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _TYPE_IC_FRACTION
 
 
-class MagnetarSLSNe(ExtragalacticTransient):
+class MagnetarSLSNe(_CoreCollapseSNe):
     """
     Type I superluminous SNe powered by a magnetar spin-down engine: `ArnettMagnetarSpindownSED`.
 
@@ -239,20 +189,4 @@ class MagnetarSLSNe(ExtragalacticTransient):
     DEFAULT_DURATION = 600 * u.day
     DEFAULT_Z_LIM = 4
 
-    def event_rate(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
-        """
-        Return the volumetric Type I superluminous supernova rate.
-
-        Parameters
-        ----------
-        z : float or numpy.ndarray
-            Redshift at which to evaluate the event rate.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Type I superluminous supernova volumetric event rate, given by
-            the core-collapse supernova rate multiplied by the adopted
-            SLSN-I fraction.
-        """
-        return _SLSN_FRACTION * core_collapse_rate(z, cosmology=self.cosmology)
+    RATE_FRACTION = _SLSN_FRACTION
