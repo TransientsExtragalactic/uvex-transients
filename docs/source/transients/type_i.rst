@@ -7,22 +7,24 @@ Type Ib and Type Ic supernovae are core-collapse explosions of massive stars tha
 hydrogen envelope (Ib: helium remains; Ic: helium is also stripped) before exploding. Their light
 curves are powered by the radioactive decay of :math:`^{56}\mathrm{Ni}` and are typically a single
 peak, roughly two to three weeks after explosion, followed by a decline; unlike Type IIb SNe
-(:ref:`transients_type_ii`) they lack a distinct early shock-cooling peak. Both are modeled here by
-the same phenomenological form -- a single Bazin pulse times a cooling blackbody photosphere -- and
-differ only in their event rates, implemented as two sibling transient populations below. Type
-Ic-BL (broad-lined) is a higher-kinetic-energy variant of Type Ic; its calibration sample gives
-physical explosion parameters directly, so it is instead modeled with the same first-principles
-Arnett-style approach as Type Ia.
+(:ref:`transients_type_ii`) they lack a distinct early shock-cooling peak. All three subtypes on
+this page -- Ib, Ic and Ic-BL (broad-lined) -- are modeled with the same first-principles
+Arnett-style radioactive-decay diffusion physics as Type Ia
+(:class:`~uvex_transients.models.arnett.ArnettDecaySED`), differing only in their priors (and, for
+Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
+are implemented as sibling transient classes below.
 
 .. note::
 
-   The Type Ib/Ic priors are phenomenological and calibrated against two samples: the full
-   bolometric light curves of :footcite:t:`lyman2016` (13 Ib and 8 Ic events, aligned on the epoch
-   of maximum rather than on explosion), and the photospheric temperature curves of the Type Ib and
-   Ic SNe of :footcite:t:`prentice2019` (four Ib and six Ic events, placed on a time-since-explosion
-   axis using their tabulated times of peak). The samples are small, so the ranges are deliberately
-   broad. Ib and Ic currently share the same priors and differ only in their event rates. Type Ic-BL
-   instead uses sample statistics of its own explosion-property table -- see its tab below.
+   The Type Ib and Type Ic priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are the per-subtype sample
+   statistics (mean, sample standard deviation) of the analytical Arnett-model fits in Table 6 of
+   :footcite:t:`lyman2016` (13 Ib and 8 Ic events). ``kappa`` is fixed at the single value
+   (:math:`0.06\,\mathrm{cm^2\,g^{-1}}`) Lyman et al. 2016 themselves assume for every fit in their
+   sample rather than fitting per event. ``kappa_gamma`` has no analogue in Lyman et al. 2016's
+   leakage-free formalism (the original Arnett 1982 diffusion model), so it is instead fixed at
+   :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s Scalzo+14-derived value. Ib and Ic
+   share this same construction and differ only in the subsample statistics and event rates. Type
+   Ic-BL instead uses sample statistics of its own explosion-property table -- see its tab below.
 
 .. tab-set::
 
@@ -353,84 +355,75 @@ Arnett-style approach as Type Ia.
            - --
            - Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
              in the UV: in the observability check below, no simulated event beyond
-             :math:`z \approx 0.4` clears the UVEX limit.
+             :math:`z \approx 0.3` clears the UVEX limit.
          * - Duration
            - 100 days
            - --
-           - Covers the rise, peak (:math:`t_p \approx 20` d after explosion) and the decline.
+           - Covers the rise, peak (:math:`t_p \approx 16` d after explosion, prior median) and the decline.
 
       .. rubric:: SED Model
 
-      :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` is a single Bazin pulse times the
-      same single-power-law cooling blackbody photosphere used elsewhere in this package (e.g.
-      :class:`~uvex_transients.models.supernovae.VillarCoolingBlackbodySED`):
+      *Model Class*: :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`
+
+      :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` reuses
+      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
+      diffusion light curve and floored-photosphere blackbody entirely -- the same
+      :math:`L(t)`/:math:`T(t)` machinery documented for `Type Ia` above -- with a single Ni-56 mass
+      decaying through :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}`:
 
       .. math::
 
-          L_\mathrm{bol}(t) =
-          A\,
-          \frac{\exp[-(t-t_0)/\tau_\mathrm{fall}]}{1 + \exp[-(t-t_0)/\tau_\mathrm{rise}]},
+          F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
+          + \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
           \qquad
-          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
+          T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+          T_\mathrm{floor}\right\}.
 
-      The light curve is delegated to
-      :class:`~uvex_transients.models.lightcurves.generic.BazinLightcurve`, with the logistic rise
-      timescale tied to the transition time, :math:`\tau_\mathrm{rise} = t_0/2.5`. This removes one free
-      parameter and, since the rise shape then scales with :math:`t_0`, lets :math:`t_0` alone set the
-      time to peak,
-
-      .. math::
-
-          t_p = t_0\left[1 + 0.4\ln\!\left(\frac{2.5\,\tau_\mathrm{fall}}{t_0} - 1\right)\right]
-          \approx 1.9\,t_0,
-
-      and leaves the luminosity at :math:`t = 0` at about 14% of the peak. The amplitude :math:`A` is
-      a normalization, not the peak luminosity. The priors on :math:`t_0` and :math:`\tau_\mathrm{fall}`
-      give a time to peak of about 20 days (5th to 95th percentile 17.8--21.9 d).
+      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are the SN Ib subsample statistics (mean, sample
+      standard deviation) of the analytical-model fits in Table 6 of :footcite:t:`lyman2016` (13
+      events). ``kappa`` is fixed at :math:`0.06\,\mathrm{cm^2\,g^{-1}}`, the single grey optical
+      opacity value that paper assumes (rather than fits) for every event in its sample.
+      ``kappa_gamma`` is fixed at :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s
+      Scalzo+14-derived value, since Lyman et al. 2016's own analytical model has no gamma-ray
+      leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
+      direct constraint on it. ``T_floor`` is left close to `Type Ia`'s value.
 
       .. dropdown:: Parameter priors
 
-         ``alpha_T`` is held fixed. Fits of the cooling law to the observed temperatures prefer a
-         fast, close-to-exponential relaxation to a floor, i.e. a large :math:`\alpha_T` with a long
-         :math:`\tau_T`, which are strongly degenerate with the temperature data starting 5--15 days
-         after explosion, so one of the two is fixed and the other carries the scatter.
-
          .. list-table::
             :header-rows: 1
-            :widths: 16 12 26 46
+            :widths: 16 14 38 32
 
             * - Parameter
               - Symbol
               - Prior
-              - Notes
-            * - ``amplitude``
-              - :math:`A`
-              - Normal(:math:`\log_{10}(A/\mathrm{erg\,s^{-1}})`; mean=42.6, :math:`\sigma`\=0.3)
-              - Bazin normalization; induces a peak :math:`\log_{10} L_p \approx 42.45`.
-            * - ``t0``
-              - :math:`t_0`
-              - Uniform(9.5 d, 12 d)
-              - Transition time of the pulse; also sets the rise timescale, :math:`\tau_\mathrm{rise} = t_0/2.5`.
-            * - ``fall``
-              - :math:`\tau_\mathrm{fall}`
-              - Uniform(30 d, 50 d)
-              - Exponential decline timescale.
-            * - ``T0``
-              - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.2, :math:`\sigma`\=0.1)
-              - Photospheric temperature as :math:`t \to 0`.
+              - Notes / Source
+            * - ``M_Ni``
+              - :math:`M_\mathrm{Ni}`
+              - TruncatedNormal(0.17, :math:`\sigma`\=0.16; bounds :math:`[0.01, 3.0]\,M_\odot`)
+              - :footcite:t:`lyman2016`, SN Ib subsample (13 events).
+            * - ``M_ej``
+              - :math:`M_\mathrm{ej}`
+              - TruncatedNormal(2.6, :math:`\sigma`\=1.1; bounds :math:`[0.1, 8.0]\,M_\odot`)
+              - :footcite:t:`lyman2016`, SN Ib subsample.
+            * - ``v_ej``
+              - :math:`v_\mathrm{ej}`
+              - TruncatedNormal(9.9, :math:`\sigma`\=1.4; bounds :math:`[4, 16]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - :footcite:t:`lyman2016`, SN Ib subsample photospheric velocities.
+            * - ``kappa``
+              - :math:`\kappa`
+              - Fixed, 0.06 :math:`\mathrm{cm^2\,g^{-1}}`
+              - :footcite:t:`lyman2016`'s assumed (not fit) value.
+            * - ``kappa_gamma``
+              - :math:`\kappa_\gamma`
+              - Fixed, 0.04 :math:`\mathrm{cm^2\,g^{-1}}`
+              - Not constrained by :footcite:t:`lyman2016` (no leakage term in their model);
+                comparable to `Type Ia`'s :footcite:t:`scalzo2014` value.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
-              - Uniform(4000 K, 5200 K)
-              - Asymptotic late-time photospheric temperature.
-            * - ``tau_T``
-              - :math:`\tau_T`
-              - Uniform(15 d, 45 d)
-              - Photospheric cooling timescale.
-            * - ``alpha_T``
-              - :math:`\alpha_T`
-              - Fixed (4)
-              - Photospheric cooling power-law index.
+              - TruncatedNormal(5000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
+              - Same floor family as the other Arnett-based models on this site; not calibrated
+                against Ib data specifically.
 
       .. rubric:: Simulated Light Curves
 
@@ -438,9 +431,10 @@ Arnett-style approach as Type Ia.
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
       individual bolometric light curves of the Type Ib SNe in :footcite:t:`lyman2016`, which are measured
       relative to maximum light; this checks the *shape* of the light curve (rise, peak width and
-      decline). The bottom panel shows the photospheric temperature against time since explosion,
-      overlaid with the temperatures of the Type Ib SNe in :footcite:t:`prentice2019`, shifted to time
-      since explosion using the tabulated :math:`t_p`.
+      decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
+      from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+      explosion, overlaid with the temperatures of the Type Ib SNe in :footcite:t:`prentice2019`,
+      shifted to time since explosion using the tabulated :math:`t_p`.
 
       .. plot::
          :include-source: false
@@ -668,84 +662,59 @@ Arnett-style approach as Type Ia.
            - --
            - Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
              in the UV: in the observability check below, no simulated event beyond
-             :math:`z \approx 0.4` clears the UVEX limit.
+             :math:`z \approx 0.5` clears the UVEX limit.
          * - Duration
            - 100 days
            - --
-           - Covers the rise, peak (:math:`t_p \approx 20` d after explosion) and the decline.
+           - Covers the rise, peak (:math:`t_p \approx 17` d after explosion, prior median) and the decline.
 
       .. rubric:: SED Model
 
-      :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` is a single Bazin pulse times the
-      same single-power-law cooling blackbody photosphere used elsewhere in this package (e.g.
-      :class:`~uvex_transients.models.supernovae.VillarCoolingBlackbodySED`):
+      *Model Class*: :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED`
 
-      .. math::
-
-          L_\mathrm{bol}(t) =
-          A\,
-          \frac{\exp[-(t-t_0)/\tau_\mathrm{fall}]}{1 + \exp[-(t-t_0)/\tau_\mathrm{rise}]},
-          \qquad
-          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
-
-      The light curve is delegated to
-      :class:`~uvex_transients.models.lightcurves.generic.BazinLightcurve`, with the logistic rise
-      timescale tied to the transition time, :math:`\tau_\mathrm{rise} = t_0/2.5`. This removes one free
-      parameter and, since the rise shape then scales with :math:`t_0`, lets :math:`t_0` alone set the
-      time to peak,
-
-      .. math::
-
-          t_p = t_0\left[1 + 0.4\ln\!\left(\frac{2.5\,\tau_\mathrm{fall}}{t_0} - 1\right)\right]
-          \approx 1.9\,t_0,
-
-      and leaves the luminosity at :math:`t = 0` at about 14% of the peak. The amplitude :math:`A` is
-      a normalization, not the peak luminosity. The priors on :math:`t_0` and :math:`\tau_\mathrm{fall}`
-      give a time to peak of about 20 days (5th to 95th percentile 17.8--21.9 d).
+      :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` shares its construction entirely
+      with `Type Ib`'s :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (see its SED Model
+      section above for the :math:`F_\mathrm{decay}(t)`/:math:`T(t)` math and the reasoning behind
+      ``kappa``, ``kappa_gamma`` and ``T_floor``), differing only in that ``M_Ni``, ``M_ej`` and
+      ``v_ej`` are drawn from the SN Ic subsample statistics of Table 6 of :footcite:t:`lyman2016`
+      (8 events) instead of the Type Ib ones.
 
       .. dropdown:: Parameter priors
 
-         ``alpha_T`` is held fixed. Fits of the cooling law to the observed temperatures prefer a
-         fast, close-to-exponential relaxation to a floor, i.e. a large :math:`\alpha_T` with a long
-         :math:`\tau_T`, which are strongly degenerate with the temperature data starting 5--15 days
-         after explosion, so one of the two is fixed and the other carries the scatter.
-
          .. list-table::
             :header-rows: 1
-            :widths: 16 12 26 46
+            :widths: 16 14 38 32
 
             * - Parameter
               - Symbol
               - Prior
-              - Notes
-            * - ``amplitude``
-              - :math:`A`
-              - Normal(:math:`\log_{10}(A/\mathrm{erg\,s^{-1}})`; mean=42.6, :math:`\sigma`\=0.3)
-              - Bazin normalization; induces a peak :math:`\log_{10} L_p \approx 42.45`.
-            * - ``t0``
-              - :math:`t_0`
-              - Uniform(9.5 d, 12 d)
-              - Transition time of the pulse; also sets the rise timescale, :math:`\tau_\mathrm{rise} = t_0/2.5`.
-            * - ``fall``
-              - :math:`\tau_\mathrm{fall}`
-              - Uniform(30 d, 50 d)
-              - Exponential decline timescale.
-            * - ``T0``
-              - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.2, :math:`\sigma`\=0.1)
-              - Photospheric temperature as :math:`t \to 0`.
+              - Notes / Source
+            * - ``M_Ni``
+              - :math:`M_\mathrm{Ni}`
+              - TruncatedNormal(0.22, :math:`\sigma`\=0.16; bounds :math:`[0.01, 3.0]\,M_\odot`)
+              - :footcite:t:`lyman2016`, SN Ic subsample (8 events).
+            * - ``M_ej``
+              - :math:`M_\mathrm{ej}`
+              - TruncatedNormal(3.0, :math:`\sigma`\=2.8; bounds :math:`[0.1, 6.0]\,M_\odot`)
+              - :footcite:t:`lyman2016`, SN Ic subsample.
+            * - ``v_ej``
+              - :math:`v_\mathrm{ej}`
+              - TruncatedNormal(10.4, :math:`\sigma`\=1.2; bounds :math:`[4, 16]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - :footcite:t:`lyman2016`, SN Ic subsample photospheric velocities.
+            * - ``kappa``
+              - :math:`\kappa`
+              - Fixed, 0.06 :math:`\mathrm{cm^2\,g^{-1}}`
+              - :footcite:t:`lyman2016`'s assumed (not fit) value.
+            * - ``kappa_gamma``
+              - :math:`\kappa_\gamma`
+              - Fixed, 0.04 :math:`\mathrm{cm^2\,g^{-1}}`
+              - Not constrained by :footcite:t:`lyman2016` (no leakage term in their model);
+                comparable to `Type Ia`'s :footcite:t:`scalzo2014` value.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
-              - Uniform(4000 K, 5200 K)
-              - Asymptotic late-time photospheric temperature.
-            * - ``tau_T``
-              - :math:`\tau_T`
-              - Uniform(15 d, 45 d)
-              - Photospheric cooling timescale.
-            * - ``alpha_T``
-              - :math:`\alpha_T`
-              - Fixed (4)
-              - Photospheric cooling power-law index.
+              - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
+              - Same floor family as the other Arnett-based models on this site; not calibrated
+                against Ic data specifically.
 
       .. rubric:: Simulated Light Curves
 
@@ -753,9 +722,10 @@ Arnett-style approach as Type Ia.
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
       individual bolometric light curves of the Type Ic SNe in :footcite:t:`lyman2016`, which are measured
       relative to maximum light; this checks the *shape* of the light curve (rise, peak width and
-      decline). The bottom panel shows the photospheric temperature against time since explosion,
-      overlaid with the temperatures of the Type Ic SNe in :footcite:t:`prentice2019`, shifted to time
-      since explosion using the tabulated :math:`t_p`.
+      decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
+      from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+      explosion, overlaid with the temperatures of the Type Ic SNe in :footcite:t:`prentice2019`,
+      shifted to time since explosion using the tabulated :math:`t_p`.
 
       .. plot::
          :include-source: false
@@ -957,10 +927,11 @@ Arnett-style approach as Type Ia.
 
       Type Ic-BL (broad-lined) supernovae are Type Ic explosions with unusually high kinetic
       energies and ejecta velocities, identified spectroscopically by their broad, blended
-      absorption features. Unlike `Type Ib`/`Type Ic` above, this population's SED is not
-      phenomenological: its calibration sample reports physical explosion parameters (nickel
-      mass, ejecta mass, photospheric velocity) directly, so it instead follows `Type Ia`'s
-      convention of a first-principles Arnett-style radioactive-decay model.
+      absorption features. Like `Type Ib`/`Type Ic` above and `Type Ia`, this population's SED
+      follows the same first-principles Arnett-style radioactive-decay model, but with its own
+      priors, calibrated from an explosion-property table (nickel mass, ejecta mass, photospheric
+      velocity) specific to its own ZTF sample rather than the Lyman et al. 2016 sample used for
+      `Type Ib`/`Type Ic`.
 
       Implemented by :class:`~uvex_transients.transients.supernovae.TypeIcBLSNe`, pairing
       :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` with the rate/duration

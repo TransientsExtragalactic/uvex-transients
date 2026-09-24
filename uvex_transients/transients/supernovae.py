@@ -271,7 +271,12 @@ class TypeIIbSNe(_CoreCollapseSNe):
 
 
 class TypeIbSNe(_CoreCollapseSNe):
-    """Type Ib core-collapse SNe: `TypeIbSED` (single Bazin pulse x cooling blackbody)."""
+    """Type Ib core-collapse SNe: `TypeIbSED`.
+
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the
+    13-event SN Ib subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter
+    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
+    """
 
     DEFAULT_MODEL = TypeIbSED
     DEFAULT_DURATION = 100 * u.day
@@ -282,7 +287,12 @@ class TypeIbSNe(_CoreCollapseSNe):
 
 
 class TypeIcSNe(_CoreCollapseSNe):
-    """Type Ic core-collapse SNe: `TypeIcSED` (single Bazin pulse x cooling blackbody)."""
+    """Type Ic core-collapse SNe: `TypeIcSED`.
+
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the
+    8-event SN Ic subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter
+    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
+    """
 
     DEFAULT_MODEL = TypeIcSED
     DEFAULT_DURATION = 100 * u.day
@@ -296,12 +306,8 @@ class TypeIcBLSNe(_CoreCollapseSNe):
     """Type Ic-BL (broad-lined) core-collapse SNe: `TypeIcBLSED`.
 
     Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to a
-    36-event ZTF SNe Ic-BL sample.
-
-    Unlike `TypeIbSNe`/`TypeIcSNe`, which use a phenomenological Bazin-pulse light curve, this
-    subtype follows `TypeIaSNe`'s convention of a first-principles Arnett-style model, since the
-    calibration sample gives physical explosion parameters (nickel mass, ejecta mass, photospheric
-    velocity) directly rather than a fitted light-curve shape.
+    36-event ZTF SNe Ic-BL sample, following the same first-principles Arnett-model convention as
+    `TypeIaSNe`/`TypeIbSNe`/`TypeIcSNe`.
     """
 
     DEFAULT_MODEL = TypeIcBLSED
