@@ -228,14 +228,36 @@ def hz_per_unit(unit: UnitLike, *, is_wavelength: bool) -> float:
     return resolved.to(u.Hz, equivalencies=u.spectral())
 
 
+def convert_CI_to_fractional(
+    value: FloatArray, upper: FloatArray, lower: FloatArray
+) -> tuple[FloatResult, FloatResult]:
+    """
+    Convert an asymmetric confidence interval into fractional errors.
+
+    Parameters
+    ----------
+    value : array_like
+        The central (best-fit) value.
+    upper : array_like
+        The upper bound of the confidence interval.
+    lower : array_like
+        The lower bound of the confidence interval.
+
+    Returns
+    -------
+    tuple of array_like
+        The ``(lower, upper)`` fractional errors, i.e. ``(value - lower) /
+        value`` and ``(upper - value) / value``.
+    """
+    return (value - lower) / value, (upper - value) / value
+
+
 # ------------------------------------------ #
 # Astropy Model Construction                 #
 # ------------------------------------------ #
 # At the m4opt.synphot level, operations are performed on Synphot / Astropy Model objects,
 # which are not immediately compatible with the machinery of the SpectralModel class. This
 # helper lets a caller wrap a plain broadcasting kernel as such a Model on demand.
-
-
 def model_class_from_kernel(
     name: str,
     inputs: dict[str, u.UnitBase],
