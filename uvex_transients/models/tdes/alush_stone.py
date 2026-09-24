@@ -53,9 +53,9 @@ class AlushStoneTDESED(SpectralModel):
     plateau is the late-time, UV-bright emission from a magnetized accretion disk that
     :footcite:t:`2025arXiv250303811A` predict settles onto an asymptotic
     :math:`L \propto t^{-5/6}` decline persisting for decades to centuries --
-    ``plateau_decline``'s default prior is centered on that theoretical value, though it
-    is left free since :footcite:t:`2025arXiv251024696A` find real plateaus vary in how
-    flat/evolving they are.
+    ``plateau_decline``'s default prior is a wide, uninformative :math:`\mathrm{Uniform}(0, 2)`
+    that brackets that theoretical value rather than pinning it, since
+    :footcite:t:`2025arXiv251024696A` find real plateaus vary in how flat/evolving they are.
 
     ``temperature``/``sigma_rise``/``tau_decline`` reuse the same ZTF-sample-informed
     defaults as :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` (see that
@@ -79,35 +79,39 @@ class AlushStoneTDESED(SpectralModel):
          - :math:`L_0`
          - Peak bolometric luminosity of the early-time component,
            :math:`L_0 = L_\mathrm{bol}^\mathrm{early}(t_\mathrm{peak})`.
-           log10(L_0/[erg/s]) ~ N(43.8, 0.2^2).
+           :math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)`.
        * - ``temperature``
          - :math:`T`
-         - Early-time photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.1^2).
+         - Early-time photospheric blackbody temperature.
+           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)`.
        * - ``sigma_rise``
          - :math:`\sigma`
-         - Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(1.3, 0.3^2).
+         - Gaussian width of the pre-peak rise.
+           :math:`\log_{10}(\sigma/\mathrm{d}) \sim \mathcal{N}(0.91, 0.25^2)`.
        * - ``tau_decline``
          - :math:`\tau`
          - Exponential decline timescale of the early-time component, after peak.
-           log10(tau/day) ~ N(2, 0.1^2).
+           :math:`\log_{10}(\tau/\mathrm{d}) \sim \mathcal{N}(1.8, 0.2^2)`.
        * - ``plateau_temperature``
          - :math:`T_\mathrm{p}`
-         - Blackbody temperature of the late-time disk plateau. log10(T_p/K) ~ N(4.0, 0.3^2).
+         - Blackbody temperature of the late-time disk plateau.
+           :math:`\log_{10}(T_\mathrm{p}/\mathrm{K}) \sim \mathcal{N}(4.0, 0.3^2)`.
        * - ``plateau_amplitude``
          - :math:`L_\mathrm{p}`
          - Plateau bolometric luminosity at :math:`t_\mathrm{peak}`,
            :math:`L_\mathrm{p} = L_\mathrm{bol}^\mathrm{plat}(t_\mathrm{peak})`.
-           log10(L_p/[erg/s]) ~ N(41.5, 0.3^2).
+           :math:`\log_{10}(L_\mathrm{p}/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(41.5, 0.2^2)`.
        * - ``plateau_timescale``
          - :math:`\tau_\mathrm{p}`
          - Timescale over which the plateau softens into its power-law decline.
-           log10(tau_p/day) ~ N(2.3, 0.3^2).
+           :math:`\log_{10}(\tau_\mathrm{p}/\mathrm{d}) \sim \mathcal{N}(2.3, 0.3^2)`.
        * - ``plateau_decline``
          - :math:`\alpha_\mathrm{p}`
          - Late-time power-law decline index, :math:`L \propto t^{-\alpha_\mathrm{p}}`
            for :math:`t - t_\mathrm{peak} \gg \tau_\mathrm{p}`.
-           :math:`\alpha_\mathrm{p} \sim \mathcal{N}(5/6,\, 0.2^2)`, centered on the
-           magnetized-disk prediction of :footcite:t:`2025arXiv250303811A`.
+           :math:`\alpha_\mathrm{p} \sim \mathrm{Uniform}(0, 2)`, a wide prior bracketing the
+           magnetized-disk prediction :math:`\alpha_\mathrm{p}=5/6` of
+           :footcite:t:`2025arXiv250303811A`.
 
     References
     ----------
@@ -119,7 +123,7 @@ class AlushStoneTDESED(SpectralModel):
             prior=NormalPrior(mean=43.8, sigma=0.3),
             scale=1.0 * u.erg / u.s,
             transform="log10",
-            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.2^2).",
+            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.3^2).",
             latex=r"L_0",
         ),
         "temperature": Parameter(
@@ -133,14 +137,14 @@ class AlushStoneTDESED(SpectralModel):
             prior=NormalPrior(mean=0.91, sigma=0.25),
             scale=1.0 * u.day,
             transform="log10",
-            description="Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(1.3, 0.3^2).",
+            description="Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(0.91, 0.25^2).",
             latex=r"\sigma",
         ),
         "tau_decline": Parameter(
             prior=NormalPrior(mean=1.8, sigma=0.2),
             scale=1.0 * u.day,
             transform="log10",
-            description="Exponential decline timescale after peak. log10(tau/day) ~ N(2, 0.1^2).",
+            description="Exponential decline timescale after peak. log10(tau/day) ~ N(1.8, 0.2^2).",
             latex=r"\tau",
         ),
         "plateau_temperature": Parameter(
@@ -154,7 +158,7 @@ class AlushStoneTDESED(SpectralModel):
             prior=NormalPrior(mean=41.5, sigma=0.2),
             scale=1.0 * u.erg / u.s,
             transform="log10",
-            description="Plateau bolometric luminosity, L_p = L_bol_plat(t_peak). log10(L_p/[erg/s]) ~ N(41.5, 0.3^2).",
+            description="Plateau bolometric luminosity, L_p = L_bol_plat(t_peak). log10(L_p/[erg/s]) ~ N(41.5, 0.2^2).",
             latex=r"L_\mathrm{p}",
         ),
         "plateau_timescale": Parameter(
@@ -170,8 +174,8 @@ class AlushStoneTDESED(SpectralModel):
             prior=UniformPrior(lower=0, upper=2),
             scale=1.0 * u.dimensionless_unscaled,
             description=(
-                "Late-time power-law decline index, L ~ t^-alpha_p. Centered on the "
-                "magnetized-disk prediction alpha_p = 5/6."
+                "Late-time power-law decline index, L ~ t^-alpha_p. Uniform(0, 2), bracketing "
+                "the magnetized-disk prediction alpha_p = 5/6."
             ),
             latex=r"\alpha_\mathrm{p}",
         ),

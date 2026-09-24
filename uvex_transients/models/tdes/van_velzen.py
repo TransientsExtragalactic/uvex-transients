@@ -65,19 +65,20 @@ class VanVelzenTDESED(ComposedSpectralModel):
          - Description
        * - ``amplitude``
          - :math:`L_0`
-         - Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s])
-           ~ N(43.8, 0.2^2).
+         - Peak bolometric luminosity, :math:`L_0 = L_\mathrm{bol}(t_\mathrm{peak})`.
+           :math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)`.
        * - ``sigma_rise``
          - :math:`\sigma`
-         - Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(1.3,
-           0.3^2).
+         - Gaussian width of the pre-peak rise.
+           :math:`\log_{10}(\sigma/\mathrm{d}) \sim \mathcal{N}(0.91, 0.25^2)`.
        * - ``tau_decline``
          - :math:`\tau`
-         - Exponential decline timescale after peak. log10(tau/day) ~
-           N(2, 0.1^2).
+         - Exponential decline timescale after peak.
+           :math:`\log_{10}(\tau/\mathrm{d}) \sim \mathcal{N}(1.7, 0.2^2)`.
        * - ``temperature``
          - :math:`T`
-         - Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.1^2).
+         - Photospheric blackbody temperature.
+           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)`.
 
     References
     ----------
@@ -91,7 +92,7 @@ class VanVelzenTDESED(ComposedSpectralModel):
             prior=NormalPrior(mean=43.8, sigma=0.3),
             scale=1.0 * u.erg / u.s,
             transform="log10",
-            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.2^2).",
+            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.3^2).",
             latex=r"L_0",
         ),
         "temperature": Parameter(
@@ -105,14 +106,14 @@ class VanVelzenTDESED(ComposedSpectralModel):
             prior=NormalPrior(mean=0.91, sigma=0.25),
             scale=1.0 * u.day,
             transform="log10",
-            description="Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(1.3, 0.3^2).",
+            description="Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(0.91, 0.25^2).",
             latex=r"\sigma",
         ),
         "tau_decline": Parameter(
             prior=NormalPrior(mean=1.7, sigma=0.2),
             scale=1.0 * u.day,
             transform="log10",
-            description="Exponential decline timescale after peak. log10(tau/day) ~ N(2, 0.1^2).",
+            description="Exponential decline timescale after peak. log10(tau/day) ~ N(1.7, 0.2^2).",
             latex=r"\tau",
         ),
     }
