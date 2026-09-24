@@ -113,8 +113,8 @@ class Prior(ABC):
 
     Subclasses should be implemented as frozen dataclasses and are responsible
     for validating their own parameters (:meth:`_validate`) and providing the
-    distribution's log-density (:meth:`_logpdf`). Everything else — sampling,
-    :meth:`pdf`, :meth:`cdf`, :meth:`logpdf`, :meth:`logcdf` — is derived from
+    distribution's log-density (:meth:`_logpdf`). Everything else -- sampling,
+    :meth:`pdf`, :meth:`cdf`, :meth:`logpdf`, :meth:`logcdf` -- is derived from
     ``_logpdf`` automatically.
 
     See Also
@@ -265,7 +265,7 @@ class Prior(ABC):
         """
         # `replace` re-runs `__init__`/`_validate`, so `_sampler` (init=False)
         # is rebuilt from its `default_factory` rather than shared with the
-        # original — the cached sampler closes over `_LogPDFDistribution(self)`,
+        # original -- the cached sampler closes over `_LogPDFDistribution(self)`,
         # and we don't want the copy silently pinning the original alive.
         return replace(self)
 
