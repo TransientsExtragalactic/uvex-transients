@@ -33,6 +33,7 @@ sources of uncertainty that are otherwise easy to conflate into a single, mislea
 themselves, as two visually distinct error layers on the same `matplotlib.axes.Axes`.
 """
 
+import zlib
 from collections.abc import Sequence
 
 import astropy.units as u
@@ -218,14 +219,19 @@ def get_band_color(band: str) -> str:
     str
         A hex color string. Bands not present in ``config["plotting.band_colors"]`` fall back to a
         color sampled from `get_default_cmap`, keyed by a hash of `band` so the same unknown band name
-        always maps to the same color within a run.
+        always maps to the same color, both within and across runs.
     """
     band_colors = config["plotting.band_colors"]
     if band in band_colors:
         return band_colors[band]
 
     cmap = get_default_cmap()
-    return to_rgba(cmap(hash(band) % 997 / 997))
+    # `hash(str)` is salted per-process (PYTHONHASHSEED) unless explicitly disabled, so it would give
+    # a *different* fallback color for the same unknown band name on every run -- use a stable,
+    # unsalted hash instead so the "same band always reads as the same color" guarantee above holds
+    # across runs (docs builds, notebooks, ...), not just within one.
+    digest = zlib.crc32(band.encode("utf-8"))
+    return to_rgba(cmap(digest % 997 / 997))
 
 
 # ============================================================================== #
