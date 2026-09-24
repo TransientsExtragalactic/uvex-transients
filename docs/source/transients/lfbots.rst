@@ -117,8 +117,8 @@ Simulated Light Curves
 
 The plot below draws 1000 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, against the observed
-bolometric light curves and photospheric temperatures of four known LFBOTs -- AT2018cow,
-CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
+bolometric light curves and photospheric temperatures of three known LFBOTs -- AT2018cow,
+AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
 
 .. plot::
    :include-source: false
@@ -149,7 +149,6 @@ CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
    archive = LightcurveArchive()
    observed_lfbots = [
        ("2018cow_holu2026", "AT2018cow (Ho & Lu+2026)", "o", "k"),
-       ("css161010_holu2026", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
        ("2024wpp_holu2026", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
        ("2024puz_holu2026", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
    ]
