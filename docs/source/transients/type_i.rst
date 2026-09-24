@@ -22,6 +22,285 @@ differ only in their event rates, implemented as two sibling transient populatio
 
 .. tab-set::
 
+   .. tab-item:: Type Ia
+
+      Type Ia supernovae are thermonuclear explosions of carbon-oxygen white dwarfs, not
+      core-collapse events -- there is no compact remnant and no massive-star progenitor, so
+      neither this population's SED nor its rate shares any machinery with the Type Ib/Ic/II
+      populations elsewhere on this page. Their light curves are powered by the radioactive decay
+      of :math:`^{56}\mathrm{Ni}` synthesized in the explosion, following the same Arnett-style
+      diffusion physics as the SLSNe-I model (:ref:`transients_slsne`), but without a magnetar
+      central engine.
+
+      Implemented by :class:`~uvex_transients.transients.supernovae.TypeIaSNe`, pairing
+      :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` with a delay-time-distribution
+      rate (below) rather than a fixed fraction of the core-collapse rate.
+
+      .. rubric:: Quick Facts
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 15 25 15 45
+
+         * - Quantity
+           - Value
+           - Source
+           - Notes
+         * - Rate
+           - Cosmic star formation history convolved with a power-law delay-time distribution
+             (DTD); local rate :math:`\approx2.3\times10^{-5}\ \mathrm{Mpc^{-3}\,yr^{-1}}`
+             (:math:`\approx2.3\times10^{4}\ \mathrm{Gpc^{-3}\,yr^{-1}}`)
+           - :footcite:t:`2017ApJ...848...25M`, :footcite:t:`madau2014`
+           - :func:`~uvex_transients.utils.cosmology.supernovae_Ia_rate`: DTD
+             :math:`\Psi(\tau)\propto\tau^{-1.1}` for :math:`\tau>40` Myr, normalized to
+             :math:`N_\mathrm{Ia}/M_\star=1.3\times10^{-3}\,M_\odot^{-1}` (Maoz & Graur 2017),
+             convolved with the Madau & Dickinson (2014) star formation history. Unlike the
+             core-collapse subtypes' instantaneous tracer, the broadly distributed delay times
+             give SNe Ia a flatter, slower-declining rate shape at high redshift.
+         * - Redshift limit
+           - :math:`z = 1`
+           - --
+           - Set from an actual ``sample_event_redshift``/peak-apparent-magnitude check against
+             the UVEX bandpasses (25 AB mag limiting-magnitude screen): no simulated event peaks
+             above the limit beyond :math:`z\approx0.8` in either band, and the NUV-detected
+             fraction per redshift bin has already fallen to zero by :math:`z=1`.
+         * - Duration
+           - 365 days
+           - --
+           - Covers the rise to peak (median :math:`\approx14` d after explosion) through the
+             decline to :math:`10^{-3}` of peak for nearly the whole prior (16th-84th percentile
+             :math:`\approx270`-:math:`325` d, rest frame).
+
+      .. rubric:: SED Model
+
+      *Model Class*: :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED`
+
+      :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` reuses
+      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
+      diffusion light curve and floored-photosphere blackbody entirely (the same
+      :math:`L(t)`/:math:`T(t)` machinery documented for the SLSNe-I model in
+      :ref:`transients_slsne`, but driven by :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}`
+      decay heating rather than magnetar spin-down):
+
+      .. math::
+
+          F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
+          + \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
+          \qquad
+          T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+          T_\mathrm{floor}\right\}.
+
+      The priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and
+      ``M_ej`` are the population-level Gaussians from that paper's hierarchical Arnett-model fit
+      (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;
+      :math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`),
+      ``kappa_gamma`` is fixed at the value adopted by :footcite:t:`scalzo2014`, and ``kappa`` is
+      uniform over that paper's marginalization range.
+
+      .. dropdown:: Parameter priors
+
+         .. list-table::
+            :header-rows: 1
+            :widths: 16 14 38 32
+
+            * - Parameter
+              - Symbol
+              - Prior
+              - Notes / Source
+            * - ``M_Ni``
+              - :math:`M_\mathrm{Ni}`
+              - TruncatedNormal(0.64, :math:`\sigma`\=0.42; bounds :math:`[0.05, 3.0]\,M_\odot`)
+              - :footcite:t:`sarin2026`.
+            * - ``M_ej``
+              - :math:`M_\mathrm{ej}`
+              - TruncatedNormal(1.26, :math:`\sigma`\=0.33; bounds :math:`[0.05, 3.0]\,M_\odot`)
+              - :footcite:t:`sarin2026`.
+            * - ``v_ej``
+              - :math:`v_\mathrm{ej}`
+              - Normal(11, :math:`\sigma`\=1) :math:`\times10^3\ \mathrm{km\,s^{-1}}`
+              - :footcite:t:`sarin2026`.
+            * - ``kappa``
+              - :math:`\kappa`
+              - Uniform(0.05, 0.15) :math:`\mathrm{cm^2\,g^{-1}}`
+              - Marginalization-prior range, :footcite:t:`sarin2026`.
+            * - ``kappa_gamma``
+              - :math:`\kappa_\gamma`
+              - Fixed, 0.03 :math:`\mathrm{cm^2\,g^{-1}}`
+              - :footcite:t:`scalzo2014`.
+            * - ``T_floor``
+              - :math:`T_\mathrm{floor}`
+              - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
+              - Same floor as the other Arnett-based models on this site (see
+                :ref:`transients_slsne`); not calibrated against SNe Ia data specifically.
+
+      .. rubric:: Simulated Light Curves
+
+      The plot below draws 300 random parameter realizations from the priors above and shows the
+      resulting bolometric light curves and photospheric temperatures. The top panel is overlaid
+      with the individual bolometric light curves (time since explosion) of the five Type Ia SNe
+      of :footcite:t:`sharon2025`. No photospheric temperature data is bundled for Type Ia, so the
+      bottom panel is unadorned.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from uvex_transients.models.supernovae import TypeIaSED as SEDClass
+         from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+
+         rng = np.random.default_rng(20260923)
+         n_samples = 300
+
+         params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+         archive = LightcurveArchive()
+
+         t = np.geomspace(0.5, 365, 400) * u.day
+         L_bol = SEDClass.eval_bolometric(t, **params_grid)
+         T = SEDClass.temperature(t, **params_grid)
+
+         fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
+
+         for row in range(n_samples):
+             ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.15)
+             ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
+
+         sharon_events = archive.events("supernovae/Ia")
+         for i, name in enumerate(sharon_events):
+             lbol_obs = archive.table("supernovae/Ia", name, "L_bol")
+             ax_L.plot(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 color="k", lw=0.8, marker="o", ms=2.5, alpha=0.7,
+                 label="Sharon+25 (n=%d)" % len(sharon_events) if i == 0 else None,
+             )
+
+         ax_L.set_xscale("log")
+         ax_L.set_yscale("log")
+         ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
+         ax_L.set_title(f"Type Ia: simulated bolometric light curves (n={n_samples})")
+         ax_L.legend(loc="lower left", fontsize=8, frameon=False)
+
+         ax_T.set_xscale("log")
+         ax_T.set_yscale("log")
+         ax_T.set_xlabel("Time since explosion [days]")
+         ax_T.set_ylabel("Photospheric temperature [K]")
+         ax_T.set_title(f"Type Ia: simulated photospheric temperatures (n={n_samples})")
+
+         fig.tight_layout()
+
+      .. rubric:: Observability Summary
+
+      Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
+      :math:`m_\mathrm{AB}` of 2000 simulated events drawn from the priors above (with
+      `redshift_limit` temporarily raised to 4 to show the falloff), with the UVEX 1 Dwell limit
+      of :math:`m<24.5` overplotted. This justifies the :math:`z=1` redshift limit adopted above.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIaSNe
+
+         rng = np.random.default_rng(20260923)
+         n_samples = 2000
+
+         sn = TypeIaSNe()
+         sn.redshift_limit = 4.0
+         z = sn.sample_event_redshift(n_samples, rng=rng)
+         params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+
+         t_grid_rest = np.geomspace(0.1, 365, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
+         z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
+
+         bandpasses = uvex.detector.bandpasses
+         band_names = list(bandpasses)
+
+         fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
+
+         for ax, band_name in zip(axes, band_names):
+             mag_curve = sn.sed.mag_bandpass(
+                 bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
+             ).to_value(u.ABmag)
+             mag = np.nanmin(mag_curve, axis=1)
+             finite = np.isfinite(mag)
+
+             ax.scatter(z[finite], mag[finite], s=5, ec="k", fc="k", alpha=0.5, label="Simulated events")
+             ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
+
+             ax.invert_yaxis()
+             ax.set_xlabel("Redshift")
+             ax.set_title(f"UVEX {band_name}")
+             ax.legend(loc="upper right", fontsize=8, frameon=False)
+             ax.set_ylim([32, 16])
+
+         axes[0].set_ylabel("Peak apparent AB magnitude")
+         fig.suptitle(f"Type Ia: peak apparent magnitude vs. redshift (n={n_samples})")
+         fig.tight_layout()
+
+      The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
+      that any event above the :math:`m<24.5` limit is detectable, and that the population is
+      isotropic and homogeneous in comoving volume out to :math:`z=1`:
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIaSNe
+
+         rng = np.random.default_rng(20260923)
+         n_samples = 2000
+
+         sn = TypeIaSNe()
+         redshift = sn.sample_event_redshift(n_samples, rng=rng)
+         params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+         params_grid = {pname: value[:, None] for pname, value in params.items()}
+
+         # The all-sky rate, with no survey footprint applied.
+         all_sky_rate = sn.all_sky_rate
+
+         t_grid_rest = np.geomspace(0.1, 365, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+         z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
+
+         visible_rates = {}
+         for band_name, bandpass in uvex.detector.bandpasses.items():
+             mag_curve = sn.sed.mag_bandpass(
+                 bandpass, t_obs_grid, redshift=z_grid_bcast, **params_grid
+             ).to_value(u.ABmag)
+             magnitudes = np.nanmin(mag_curve, axis=1)
+
+             visible = magnitudes < 24.5
+             visible_fraction = np.mean(visible)
+             visible_rate = visible_fraction * all_sky_rate
+
+             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+
+             print(
+                 f"{band_name}: {visible_rate:.2f} "
+                 f"({visible_fraction:.1%} of events visible)"
+             )
+
+         fig, ax = plt.subplots(figsize=(5, 4))
+         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         ax.set_yscale("log")
+         ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+         ax.set_title("Peak-visible Type Ia rate")
+
+         fig.tight_layout()
+
    .. tab-item:: Type Ib
 
       Implemented by :class:`~uvex_transients.transients.supernovae.TypeIbSNe`, pairing

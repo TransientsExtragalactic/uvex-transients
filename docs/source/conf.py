@@ -13,7 +13,12 @@
 import os
 import sys
 
-import matplotlib  # noqa: F401
+import matplotlib
+
+# The default macOS "macosx" backend uses Cocoa/AppKit, which is not fork-safe;
+# Sphinx's parallel reading (-j auto) forks worker processes to run .. plot::
+# directives, and a Cocoa-initialized process crashes silently on fork.
+matplotlib.use("Agg")
 
 sys.path.insert(0, os.path.abspath("."))
 # -- Project information -----------------------------------------------------
