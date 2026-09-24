@@ -30,12 +30,15 @@ Quick Facts
      - Source
      - Notes
    * - Rate
-     - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
-     - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
-       :footcite:t:`shivvers2017`
-     - Tracks the cosmic star-formation history; 10.3% is the stripped-envelope-corrected local
-       Type IIb fraction of core-collapse SNe from the LOSS volume-limited sample
-       :footcite:p:`shivvers2017`.
+     - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
+     - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`shivvers2017`
+     - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find IIb is
+       :math:`34.0\pm11.1\%` of the stripped-envelope (SESNe) rate, which is itself
+       :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type IIb fraction of
+       the CC rate is :math:`0.340\times0.304=0.103`. Combined in quadrature with
+       :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+       :attr:`~uvex_transients.transients.supernovae.ShockCoolingIIb.RATE_CI` (see
+       :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
      - :math:`z = 1`
      - --
