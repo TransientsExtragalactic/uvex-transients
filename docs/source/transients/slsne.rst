@@ -12,7 +12,7 @@ rapidly-rotating, strongly-magnetized neutron star (a magnetar) embedded in the 
 :footcite:p:`2010ApJ...717..245K, 2010ApJ...719L.204W`.
 
 This population is implemented by :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`,
-pairing :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED` with the
+pairing :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED` with the
 rate/duration metadata described below. Unlike the purely phenomenological SED shapes used
 elsewhere in this package, this SED is a semi-analytic solution of the underlying diffusion
 physics (:footcite:t:`1982ApJ...253..785A`, extended by :footcite:t:`2017ApJ...850...55N` and
@@ -30,12 +30,16 @@ Quick Facts
      - Source
      - Notes
    * - Rate
-     - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; SLSN-I :math:`1/3500` of :math:`R_\mathrm{CC}(z)`
+     - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; SLSN-I :math:`1/3500` of :math:`R_\mathrm{CC}(z)`
        (:math:`\approx18\ \mathrm{Gpc^{-3}\,yr^{-1}}` locally)
      - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`2021MNRAS.500.5142F`
      - :footcite:t:`2021MNRAS.500.5142F` measure a local ratio of SLSN-I to all core-collapse SNe of
-       :math:`1/3500^{+2800}_{-720}`. Adopted as a constant
-       fraction of the core-collapse rate, so it tracks the same star-formation history.
+       :math:`1/3500^{+2800}_{-720}` (uncertainty on the denominator, i.e. the rate itself spans
+       :math:`1/6300` to :math:`1/2780`). Adopted as a constant fraction of the core-collapse rate,
+       so it tracks the same star-formation history. Combined in quadrature with
+       :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+       :attr:`~uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI` (see
+       :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
      - :math:`z = 4`
      - --
@@ -52,7 +56,7 @@ Quick Facts
 SED Model
 ----------
 
-*Model Class*: :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`
+*Model Class*: :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED`
 
 The SED model for the SLSNe-I population utilizes the standard Arnett-style
 diffusion\ :footcite:p:`2017ApJ...850...55N` model driven by a magnetar spin-down power source.
@@ -316,6 +320,7 @@ homogeneous in comoving volume out to :math:`z=4`:
 
    from m4opt.missions import uvex
    from uvex_transients.transients.supernovae import MagnetarSLSNe
+   from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
    rng = np.random.default_rng(20260921)
    n_samples = 2000
@@ -332,7 +337,7 @@ homogeneous in comoving volume out to :math:`z=4`:
    t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
    z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-   visible_rates = {}
+   visible_counts = {}
    for band_name, bandpass in uvex.detector.bandpasses.items():
        mag_curve = slsne.sed.mag_bandpass(
            bandpass, t_obs_grid, redshift=z_grid_bcast, **params_grid
@@ -340,21 +345,31 @@ homogeneous in comoving volume out to :math:`z=4`:
        magnitudes = np.nanmin(mag_curve, axis=1)
 
        visible = magnitudes < 24.5
-       visible_fraction = np.mean(visible)
-       visible_rate = visible_fraction * all_sky_rate
-
-       visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+       visible_counts[band_name] = int(np.count_nonzero(visible))
 
        print(
-           f"{band_name}: {visible_rate:.2f} "
-           f"({visible_fraction:.1%} of events visible)"
+           f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+           f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
        )
 
+   # Plot all-sky visible rates, with MC (statistical) and rate (systematic) uncertainty --
+   # see uvex_transients.utils.plotting.plot_rate_bars.
+   band_names = list(visible_counts)
+
    fig, ax = plt.subplots(figsize=(5, 4))
-   ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+   plot_rate_bars(
+       ax,
+       band_names,
+       [visible_counts[band] for band in band_names],
+       n_samples,
+       all_sky_rate,
+       rate_ci=slsne.RATE_CI,
+       color=[get_band_color(band) for band in band_names],
+   )
    ax.set_yscale("log")
    ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
    ax.set_title("Peak-visible SLSN-I rate")
+   add_funnel_legend(ax, loc="lower right")
 
    fig.tight_layout()
 

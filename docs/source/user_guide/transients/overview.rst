@@ -100,7 +100,7 @@ through a Monte Carlo run):
        used for windowing, so an overly generous value costs some wasted sampling but an overly
        tight one silently drops real detections.
 
-Ten populations ship with the package today, each pairing one of these SEDs with a rate and
+Twelve populations ship with the package today, each pairing one of these SEDs with a rate and
 duration -- see the linked :ref:`transients` page for each one's astrophysics and priors:
 
 .. list-table::
@@ -147,10 +147,18 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED`
      - 100 d
      - 0.5
+   * - :class:`~uvex_transients.transients.supernovae.TypeIcBLSNe`
+     - :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`
+     - 100 d
+     - 0.5
    * - :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`
-     - :class:`~uvex_transients.models.supernovae.magnetar.ArnettMagnetarSpindownSED`
+     - :class:`~uvex_transients.models.arnett.ArnettMagnetarSpindownSED`
      - 600 d
      - 4
+   * - :class:`~uvex_transients.transients.supernovae.TypeIaSNe`
+     - :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED`
+     - 365 d
+     - 1
 
 .. seealso::
 
@@ -247,18 +255,22 @@ transient class itself, that uncertainty is a single class variable:
 
 .. code-block:: python
 
-    TidalDisruptionEvent.RATE_CI    # None -- no rate uncertainty sourced for this class yet
-    Kilonova.RATE_CI                # (0.0755..., 4.3208...) -- multiplicative (lower, upper) factors
+    TidalDisruptionEvent.RATE_CI              # (0.6774..., 1.1935...) -- multiplicative (lower, upper) factors
+    Kilonova.RATE_CI                          # (0.2545..., 2.7454...) -- multiplicative (lower, upper) factors
+    LuminousFastBlueOpticalTransient.RATE_CI  # (0.09, 1.25) -- multiplicative (lower, upper) factors
+    TypeIaSNe.RATE_CI                         # (0.9231, 1.0769) -- multiplicative (lower, upper) factors
 
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI` is a pair of
 *multiplicative* factors on ``rate`` (not absolute bounds), at a 90% confidence level by
 convention -- if a publication reports :math:`R_0{}^{+\Delta R_+}_{-\Delta R_-}`, that's
 ``((R_0 - dR_minus) / R_0, (R_0 + dR_plus) / R_0)``. Multiplicative factors, rather than a fixed
 ``Quantity`` pair, mean the same ``RATE_CI`` applies unchanged to a `rate` that is itself
-``cosmology``-dependent. Leaving it at its default of `None` (as every built-in population does
-today, except :class:`~uvex_transients.transients.kilonovae.Kilonova`) means no rate uncertainty
-has been sourced yet -- every bound below then collapses to the point estimate, twice over, rather
-than silently reading as "the rate is known exactly."
+``cosmology``-dependent. Every built-in population currently has a `RATE_CI` sourced from the
+literature (see the :ref:`transients` gallery for each one's derivation), but ``None`` remains its
+default on `ExtragalacticTransient` itself -- the starting point for any new custom subclass, and
+what a class falls back to if it's ever ahead of the literature. Leaving it at that default means
+no rate uncertainty has been sourced yet -- every bound below then collapses to the point estimate,
+twice over, rather than silently reading as "the rate is known exactly."
 
 Every rate-derived quantity has a plain point-estimate property and a ``..._ci``-suffixed bounds
 counterpart built from ``RATE_CI``:

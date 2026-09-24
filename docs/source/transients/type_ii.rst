@@ -34,10 +34,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIP 40% of :math:`R_\mathrm{CC}(z)`
-           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`
-           - Tracks the cosmic star-formation history; 40% is the local Type IIP fraction of
-             core-collapse SNe :footcite:p:`li2011`.
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type IIP 48.7% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
+             :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history. :footcite:t:`li2011` find II-P is
+             :math:`69.9^{+5.1}_{-5.8}\%` of the *Type II* rate, which is itself
+             :math:`69.6\pm6.7\%` of the total core-collapse rate :footcite:p:`shivvers2017`, so
+             the Type IIP fraction of the CC rate is :math:`0.699\times0.696=0.487`. This chain,
+             combined in quadrature with the :math:`+27\%/-31\%` uncertainty on
+             :footcite:t:`strolger2015`'s :math:`k`, gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
+             :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
            - :math:`z = 0.8`
            - --
@@ -335,6 +342,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
           from m4opt.missions import uvex
           from uvex_transients.transients.supernovae import TypeIIPSNe
+          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
           rng = np.random.default_rng(20260911)
           n_samples = 3000
@@ -354,7 +362,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
           z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-          visible_rates = {}
+          visible_counts = {}
           for band_name, bandpass in uvex.detector.bandpasses.items():
               mag_curve = sn.sed.mag_bandpass(
                   bandpass,
@@ -365,22 +373,31 @@ a different, double-pulse form. Each is implemented as its own transient populat
               magnitudes = np.nanmin(mag_curve, axis=1)
 
               visible = magnitudes < 24.5
-              visible_fraction = np.mean(visible)
-              visible_rate = visible_fraction * all_sky_rate
-
-              visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+              visible_counts[band_name] = int(np.count_nonzero(visible))
 
               print(
-                  f"{band_name}: {visible_rate:.2f} "
-                  f"({visible_fraction:.1%} of events visible)"
+                  f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                  f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
               )
 
-          # Plot all-sky visible rates, by band.
+          # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+          # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+          band_names = list(visible_counts)
+
           fig, ax = plt.subplots(figsize=(5, 4))
-          ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+          plot_rate_bars(
+              ax,
+              band_names,
+              [visible_counts[band] for band in band_names],
+              n_samples,
+              all_sky_rate,
+              rate_ci=sn.RATE_CI,
+              color=[get_band_color(band) for band in band_names],
+          )
           ax.set_yscale("log")
           ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
           ax.set_title("Peak-visible Type IIP SNe rate")
+          add_funnel_legend(ax, loc="lower right")
 
           fig.tight_layout()
           plt.show()
@@ -404,10 +421,12 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - 30% of the Type IIP rate
+           - 30% of the Type IIP rate (14.6% of :math:`R_\mathrm{CC}(z)`)
            - :footcite:t:`bruch2023`
            - Reflects the high incidence of early CSM-interaction signatures found among Type II
-             SNe (ZTF).
+             SNe (ZTF). The 30% multiplier has no published uncertainty of its own, so
+             :attr:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe.RATE_CI` carries
+             exactly the same relative uncertainty as ordinary Type IIP's.
          * - Redshift limit
            - :math:`z = 2`
            - --
@@ -656,6 +675,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
           from m4opt.missions import uvex
           from uvex_transients.transients.supernovae import TypeIIPExcessSNe
+          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
           rng = np.random.default_rng(20260911)
           n_samples = 3000
@@ -675,7 +695,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
           z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-          visible_rates = {}
+          visible_counts = {}
           for band_name, bandpass in uvex.detector.bandpasses.items():
               mag_curve = sn.sed.mag_bandpass(
                   bandpass,
@@ -686,22 +706,31 @@ a different, double-pulse form. Each is implemented as its own transient populat
               magnitudes = np.nanmin(mag_curve, axis=1)
 
               visible = magnitudes < 24.5
-              visible_fraction = np.mean(visible)
-              visible_rate = visible_fraction * all_sky_rate
-
-              visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+              visible_counts[band_name] = int(np.count_nonzero(visible))
 
               print(
-                  f"{band_name}: {visible_rate:.2f} "
-                  f"({visible_fraction:.1%} of events visible)"
+                  f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                  f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
               )
 
-          # Plot all-sky visible rates, by band.
+          # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+          # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+          band_names = list(visible_counts)
+
           fig, ax = plt.subplots(figsize=(5, 4))
-          ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+          plot_rate_bars(
+              ax,
+              band_names,
+              [visible_counts[band] for band in band_names],
+              n_samples,
+              all_sky_rate,
+              rate_ci=sn.RATE_CI,
+              color=[get_band_color(band) for band in band_names],
+          )
           ax.set_yscale("log")
           ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
           ax.set_title("Peak-visible Type IIP + Excess SNe rate")
+          add_funnel_legend(ax, loc="lower right")
 
           fig.tight_layout()
           plt.show()
@@ -741,14 +770,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
-           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
-             :footcite:t:`shivvers2017`
-           - Tracks the cosmic star-formation history; 10.3% is the stripped-envelope-corrected local
-             Type IIb fraction of core-collapse SNe from the LOSS volume-limited sample
-             :footcite:p:`shivvers2017`. Identical to the rate used by
-             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the same
-             underlying Type IIb population, just with different SED models.
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find IIb is
+             :math:`34.0\pm11.1\%` of the stripped-envelope (SESNe) rate, which is itself
+             :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type IIb fraction
+             of the CC rate is :math:`0.340\times0.304=0.103`. Combined in quadrature with
+             :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIIbSNe.RATE_CI` (see
+             :ref:`user_guide_transients_rate_uncertainty`). Identical rate to
+             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
+             same underlying Type IIb population, just with different SED models.
          * - Redshift limit
            - :math:`z = 0.5`
            - --
@@ -1030,6 +1062,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
          from m4opt.missions import uvex
          from uvex_transients.transients.supernovae import TypeIIbSNe
+         from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
          rng = np.random.default_rng(20260918)
          n_samples = 1000
@@ -1046,7 +1079,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
          z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-         visible_rates = {}
+         visible_counts = {}
          for band_name, bandpass in uvex.detector.bandpasses.items():
              mag_curve = sn.sed.mag_bandpass(
                  bandpass,
@@ -1057,21 +1090,31 @@ a different, double-pulse form. Each is implemented as its own transient populat
              magnitudes = np.nanmin(mag_curve, axis=1)
 
              visible = magnitudes < 24.5
-             visible_fraction = np.mean(visible)
-             visible_rate = visible_fraction * all_sky_rate
-
-             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+             visible_counts[band_name] = int(np.count_nonzero(visible))
 
              print(
-                 f"{band_name}: {visible_rate:.2f} "
-                 f"({visible_fraction:.1%} of events visible)"
+                 f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                 f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
              )
 
+         # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+         # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+         band_names = list(visible_counts)
+
          fig, ax = plt.subplots(figsize=(5, 4))
-         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         plot_rate_bars(
+             ax,
+             band_names,
+             [visible_counts[band] for band in band_names],
+             n_samples,
+             all_sky_rate,
+             rate_ci=sn.RATE_CI,
+             color=[get_band_color(band) for band in band_names],
+         )
          ax.set_yscale("log")
          ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
          ax.set_title("Peak-visible Type IIb rate")
+         add_funnel_legend(ax, loc="lower right")
 
          fig.tight_layout()
 

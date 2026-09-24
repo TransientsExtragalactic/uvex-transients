@@ -34,13 +34,14 @@ exactly that purpose.
 # first time this runs for a given schedule, after which the cached copy is
 # reused.
 
-import astropy_healpix as ah
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
-from matplotlib.colors import LogNorm
 
 from uvex_transients.surveys import get_schedule
+from uvex_transients.utils.plotting import get_default_cmap, plot_healpix_map, plot_histogram, set_plot_style
+
+set_plot_style()
 
 schedule = get_schedule()
 print(schedule)
@@ -51,18 +52,21 @@ print(f"{n_observations} observations over {(schedule.end_time - schedule.start_
 # %%
 # Every diagnostic below gets the same two views: a full-sky map and a
 # histogram over its per-pixel (or, for *Successive Gaps*, per-pair) values.
-# Two helpers do the plotting for all of them.
+# :func:`~uvex_transients.utils.plotting.plot_healpix_map` and
+# :func:`~uvex_transients.utils.plotting.plot_histogram` do the plotting for
+# all of them.
 #
 # Every quantity on this page (a count, a separation, a duration) is
 # strictly positive and spans several orders of magnitude between its
 # quietest and busiest sky pixels, so both helpers plot on a **log** scale
 # throughout: :class:`~matplotlib.colors.LogNorm` for the map color, and
 # log-spaced bins for the histogram. Both settle on a single perceptually
-# uniform colormap, ``viridis``, kept consistent across every plot on the
-# page (and echoed in the histogram bars) rather than switching palettes
-# diagnostic to diagnostic; it avoids the very dark, near-black low end
-# other sequential colormaps (e.g. ``magma``) use, which reads poorly next
-# to the black axis labels and titles surrounding each plot.
+# uniform colormap, ``config["plotting.default_cmap"]`` (``viridis``), kept
+# consistent across every plot on the page (and echoed in the histogram
+# bars) rather than switching palettes diagnostic to diagnostic; it avoids
+# the very dark, near-black low end other sequential colormaps (e.g.
+# ``magma``) use, which reads poorly next to the black axis labels and
+# titles surrounding each plot.
 #
 # ``nside=64`` is used throughout, coarser than the ``nside=128`` default
 # used elsewhere in the docs, purely to keep this page's dozen full-sky
@@ -70,52 +74,10 @@ print(f"{n_observations} observations over {(schedule.end_time - schedule.start_
 # sensitive to that choice.
 
 NSIDE = 64
-HPX = ah.HEALPix(nside=NSIDE, order="nested", frame="icrs")
-LON, LAT = HPX.healpix_to_lonlat(np.arange(HPX.npix))
 
-CMAP = "viridis"
-HIST_COLOR = "#21918c"  # a mid-viridis teal, so the histograms read as part of the same palette.
-MAP_FIGSIZE = (10, 5.5)
-HIST_FIGSIZE = (9, 5.5)
-
-
-def plot_healpix_map(values, title, cbar_label):
-    """Aitoff-projected scatter of a full-sky HEALPix map, log-color-scaled."""
-    values = np.asarray(values, dtype=float)
-    values = np.where(values > 0, values, np.nan)
-    valid = np.isfinite(values)
-
-    fig = plt.figure(figsize=MAP_FIGSIZE)
-    ax = fig.add_subplot(111, projection="aitoff")
-    sc = ax.scatter(
-        LON[valid].wrap_at(180 * u.deg).radian,
-        LAT[valid].radian,
-        c=values[valid],
-        cmap=CMAP,
-        norm=LogNorm(vmin=np.min(values[valid]), vmax=np.max(values[valid])),
-        s=4,
-        rasterized=True,
-    )
-    ax.grid(True)
-    fig.colorbar(sc, label=cbar_label, pad=0.05, shrink=0.7)
-    ax.set_title(title)
-    return fig, ax
-
-
-def plot_histogram(values, title, xlabel, ylabel="Pixels", n_bins=50):
-    """Log-binned histogram of a strictly positive per-pixel (or per-pair) quantity."""
-    values = np.asarray(values, dtype=float)
-    values = values[np.isfinite(values) & (values > 0)]
-
-    fig = plt.figure(figsize=HIST_FIGSIZE)
-    plt.hist(values, bins=np.geomspace(values.min(), values.max(), n_bins), color=HIST_COLOR)
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
-    return fig
-
+# A mid-tone point on the shared default colormap, so the histograms read as part of the same
+# palette as the maps' colorbars.
+HIST_COLOR = get_default_cmap()(0.55)
 
 # %%
 # Visit Count Distribution
@@ -131,7 +93,7 @@ visit_count = schedule.compute_visit_count(nside=NSIDE)
 covered = np.count_nonzero(visit_count > 0)
 print(f"{covered}/{visit_count.size} pixels observed ({covered / visit_count.size:.1%} of the sky)")
 
-plot_healpix_map(visit_count, title="Visit count", cbar_label="Visits")
+plot_healpix_map(visit_count, nside=NSIDE, title="Visit count", cbar_label="Visits")
 
 # %%
 # :meth:`~uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram`
@@ -142,13 +104,13 @@ plot_healpix_map(visit_count, title="Visit count", cbar_label="Visits")
 visit_counts, pixel_counts = schedule.compute_visit_count_histogram(nside=NSIDE)
 observed = visit_counts > 0
 
-fig = plt.figure(figsize=HIST_FIGSIZE)
-plt.bar(visit_counts[observed], pixel_counts[observed], color=HIST_COLOR)
-plt.xscale("log")
-plt.yscale("log")
-plt.xlabel("Visits to a pixel")
-plt.ylabel("Pixels")
-plt.title("Visit count histogram")
+fig, ax = plt.subplots(figsize=(9, 5.5))
+ax.bar(visit_counts[observed], pixel_counts[observed], color=HIST_COLOR)
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.set_xlabel("Visits to a pixel")
+ax.set_ylabel("Pixels")
+ax.set_title("Visit count histogram")
 
 # %%
 # Pair-wise Cadence
@@ -169,6 +131,7 @@ median_separation = cadence_stats["median"].to_value(u.day)
 
 plot_healpix_map(
     median_separation,
+    nside=NSIDE,
     title="Median pairwise separation",
     cbar_label="Median separation [days]",
 )
@@ -197,6 +160,7 @@ median_gap = consecutive_stats["median"].to_value(u.day)
 
 plot_healpix_map(
     median_gap,
+    nside=NSIDE,
     title="Median successive-visit gap",
     cbar_label="Median gap [days]",
 )
@@ -230,7 +194,7 @@ plot_histogram(
 
 max_gap = schedule.compute_max_gap(nside=NSIDE).to_value(u.day)
 
-plot_healpix_map(max_gap, title="Worst-case successive gap", cbar_label="Max gap [days]")
+plot_healpix_map(max_gap, nside=NSIDE, title="Worst-case successive gap", cbar_label="Max gap [days]")
 
 # %%
 # The same values, pooled into a histogram rather than mapped by position:
@@ -259,6 +223,7 @@ print(f"Sensitive area at {kilonova_timescale}: {sensitive_area.to(u.deg**2):.1f
 
 plot_healpix_map(
     pair_counts,
+    nside=NSIDE,
     title=f"Qualifying pairs for a {kilonova_timescale} timescale",
     cbar_label="Qualifying pairs",
 )
@@ -295,6 +260,7 @@ control_time_days = control_time.to_value(u.day)
 
 plot_healpix_map(
     control_time_days,
+    nside=NSIDE,
     title=f"Control time for a {kilonova_timescale} timescale",
     cbar_label="Control time [days]",
 )

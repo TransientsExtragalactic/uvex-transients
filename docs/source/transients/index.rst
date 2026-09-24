@@ -83,11 +83,13 @@ underlying physics in any detail.
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1
 
-      Hydrogen-free (stripped-envelope) Type Ib and Type Ic core-collapse supernovae: a single
-      radioactively powered peak, modeled as a Bazin pulse times a cooling blackbody.
+      Hydrogen-free (stripped-envelope) Type Ib and Type Ic core-collapse supernovae, modeled as a
+      Bazin pulse times a cooling blackbody; the higher-energy Type Ic-BL variant and thermonuclear
+      Type Ia supernovae, both modeled with the same Arnett-style radioactive-decay diffusion
+      physics as the SLSNe-I model below.
 
       +++
-      :math:`z \le 0.5` · 100 day window
+      :math:`z \le 0.5`-:math:`1` · 100-365 day window
 
 Detailed Physical Models
 --------------------------

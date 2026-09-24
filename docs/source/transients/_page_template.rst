@@ -125,11 +125,20 @@ UVEX FUV/NUV bandpasses:
 2. An all-sky "peak-visible rate" bar chart per band, assuming any event above :math:`m<24.5` is
    detectable and the population is isotropic/homogeneous in comoving volume out to its redshift
    limit: ``transient.all_sky_rate`` gives the all-sky rate directly, and the fraction of
-   simulated events with peak magnitude below the limit scales it down to a peak-visible rate.
+   simulated events with peak magnitude below the limit scales it down to a peak-visible rate. Draw
+   this with `~uvex_transients.utils.plotting.plot_rate_bars` rather than a bare ``ax.bar`` call, so
+   the bars carry the same two uncertainty layers as a detection funnel: count
+   ``visible_counts[band_name] = int(np.count_nonzero(visible))`` (not ``np.mean``) per band, and
+   pass ``n_samples``, ``all_sky_rate``, and ``rate_ci=transient.RATE_CI`` through so
+   `plot_rate_bars` can draw MC (statistical, Clopper-Pearson on ``visible_counts``) and rate
+   (systematic, from `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`) bands; color
+   each bar with `~uvex_transients.utils.plotting.get_band_color` and finish with
+   `~uvex_transients.utils.plotting.add_funnel_legend` so the two layers are labeled. See
+   kilonovae.rst/tdes.rst/lfbots.rst/slsne.rst for the single-population form.
 
 If a transient class covers more than one population (e.g. several subtypes), repeat each plot
-once per population and combine the rate plot into one grouped bar chart (see supernovae.rst)
-rather than duplicating the whole section per subtype.>
+once per population, including its own `plot_rate_bars` call with that subtype's own ``RATE_CI``
+(see type_i.rst/type_ii.rst) rather than duplicating the whole section per subtype.>
 
 References
 -----------

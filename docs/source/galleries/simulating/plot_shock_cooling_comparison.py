@@ -29,6 +29,9 @@ from matplotlib import pyplot as plt
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
 from uvex_transients.models.supernovae import MoragShockCoolingBlackbodySED
 from uvex_transients.transients.supernovae import ShockCoolingIIb
+from uvex_transients.utils.plotting import get_band_color, set_plot_style
+
+set_plot_style()
 
 # %%
 # Sample the events
@@ -176,16 +179,7 @@ SNR_THRESHOLD = 5.0
 t_theory = np.linspace(T_START.value, DURATION.value, 300) * u.day
 
 band_detectors = dict.fromkeys(RUBIN_CADENCES, rubin.detector) | {"FUV": uvex.detector, "NUV": uvex.detector}
-band_colors = {
-    "u": "#56B4E9",
-    "g": "#008060",
-    "r": "#FF4000",
-    "i": "#850000",
-    "z": "#6600CC",
-    "y": "#000000",
-    "FUV": "#4C72B0",
-    "NUV": "#DD8452",
-}
+band_colors = {band: get_band_color(band) for band in band_detectors}
 band_nu = {
     band: detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
     for band, detector in band_detectors.items()

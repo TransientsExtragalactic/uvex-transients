@@ -28,6 +28,7 @@ from typing import ClassVar
 import numpy as np
 from numpy.typing import NDArray
 from scipy import integrate, stats
+from scipy.special import logsumexp
 from scipy.stats.sampling import NumericalInversePolynomial
 
 from uvex_transients.utils import get_rng
@@ -37,6 +38,7 @@ __all__ = [
     "DiscretePrior",
     "ExponentialPrior",
     "LogNormalPrior",
+    "MixturePrior",
     "NormalPrior",
     "PowerLawPrior",
     "Prior",
@@ -111,8 +113,8 @@ class Prior(ABC):
 
     Subclasses should be implemented as frozen dataclasses and are responsible
     for validating their own parameters (:meth:`_validate`) and providing the
-    distribution's log-density (:meth:`_logpdf`). Everything else — sampling,
-    :meth:`pdf`, :meth:`cdf`, :meth:`logpdf`, :meth:`logcdf` — is derived from
+    distribution's log-density (:meth:`_logpdf`). Everything else -- sampling,
+    :meth:`pdf`, :meth:`cdf`, :meth:`logpdf`, :meth:`logcdf` -- is derived from
     ``_logpdf`` automatically.
 
     See Also
@@ -263,7 +265,7 @@ class Prior(ABC):
         """
         # `replace` re-runs `__init__`/`_validate`, so `_sampler` (init=False)
         # is rebuilt from its `default_factory` rather than shared with the
-        # original — the cached sampler closes over `_LogPDFDistribution(self)`,
+        # original -- the cached sampler closes over `_LogPDFDistribution(self)`,
         # and we don't want the copy silently pinning the original alive.
         return replace(self)
 
@@ -1362,3 +1364,107 @@ class DiscretePrior(Prior):
             size=size,
             p=p,
         )
+
+
+@dataclass(frozen=True)
+class MixturePrior(Prior):
+    r"""
+    Weighted mixture of component priors.
+
+    The density is the weighted sum of the components' densities,
+
+    .. math::
+
+        p(x) = \sum_i w_i\,p_i(x),
+
+    with :attr:`weights` normalized to sum to 1.
+
+    Attributes
+    ----------
+    components : tuple of Prior
+        The mixture's component distributions.
+    weights : ndarray
+        Relative weight of each component, in the same order as :attr:`components`. Need not sum to
+        1; normalized internally.
+    """
+
+    DISTRIBUTION_NAME = "mixture"
+
+    components: tuple["Prior", ...]
+    weights: np.ndarray
+
+    def _validate(self) -> None:
+        """Check that :attr:`components`/:attr:`weights` match in length and form a valid mixture."""
+        if len(self.components) == 0:
+            raise ValueError("`components` must contain at least one prior.")
+
+        if len(self.components) != len(self.weights):
+            raise ValueError("`components` and `weights` must have the same length.")
+
+        if np.any(np.asarray(self.weights) < 0):
+            raise ValueError("Weights must be non-negative.")
+
+        if np.sum(self.weights) <= 0:
+            raise ValueError("At least one weight must be positive.")
+
+    @property
+    def support(self) -> tuple[float, float]:
+        """Tuple of float: the union of every component's support, ``(min(lowers), max(uppers))``."""
+        lowers, uppers = zip(*(component.support for component in self.components))
+        return (min(lowers), max(uppers))
+
+    def _logpdf(self, x: NDArray[np.float64]) -> NDArray[np.float64]:
+        """
+        Evaluate the mixture log-density as the log-sum-exp of the weighted component log-densities.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the log-density.
+
+        Returns
+        -------
+        numpy.ndarray
+            The log-density at each point in `x`.
+        """
+        weights = np.asarray(self.weights, dtype=np.float64)
+        log_weights = np.log(weights / weights.sum())
+
+        component_logpdfs = np.stack(
+            [component._logpdf(x) + log_weight for component, log_weight in zip(self.components, log_weights)],
+            axis=0,
+        )
+        return logsumexp(component_logpdfs, axis=0)
+
+    def _sample(
+        self,
+        rng: np.random.Generator,
+        size: int,
+    ) -> NDArray[np.float64]:
+        """
+        Draw samples by first choosing a component per draw, then sampling from it.
+
+        The number of draws assigned to each component is fixed by a single multinomial draw
+        (rather than choosing a component independently per sample), so the total is always exactly
+        `size`.
+
+        Parameters
+        ----------
+        rng : numpy.random.Generator
+            Random-number generator.
+        size : int
+            Number of samples to draw.
+
+        Returns
+        -------
+        numpy.ndarray
+            `size` samples drawn from the mixture.
+        """
+        weights = np.asarray(self.weights, dtype=np.float64)
+        counts = rng.multinomial(size, weights / weights.sum())
+
+        samples = np.concatenate(
+            [component.sample(size=count, rng=rng) for component, count in zip(self.components, counts) if count > 0]
+        )
+        rng.shuffle(samples)
+        return samples

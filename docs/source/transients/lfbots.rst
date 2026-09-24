@@ -33,9 +33,11 @@ Quick Facts
        :math:`700`-:math:`1400\ \mathrm{Gpc^{-3}\,yr^{-1}}` (PS1-MDS); the delayed-dynamical-instability
        model of :footcite:t:`klencki2025` predicts :math:`15`-:math:`300\ \mathrm{Gpc^{-3}\,yr^{-1}}`;
        :footcite:t:`perley2026` and :footcite:t:`holu2026` report the lowest rates,
-       :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, which is adopted here. Taken as
-       constant in :math:`z`, since LFBOTs are too rare for their redshift evolution to yet be
-       meaningfully constrained.
+       :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, which is adopted here as
+       :attr:`~uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.RATE_CI` (see the
+       dropdown below for why, and :ref:`user_guide_transients_rate_uncertainty` for the general
+       mechanism). Taken as constant in :math:`z`, since LFBOTs are too rare for their redshift
+       evolution to yet be meaningfully constrained.
    * - Redshift limit
      - :math:`z = 3`
      - --
@@ -46,6 +48,33 @@ Quick Facts
      - --
      - Generous relative to the SED's own rise/decline timescales, to safely bound the slowly
        fading power-law tail.
+
+.. dropdown:: Rate uncertainty: CLU vs. BTS
+
+   Volumetric LFBOT rates in the literature come from two different ZTF-era surveys, with
+   different selection functions, that nonetheless both count AT2018cow itself among their
+   events:
+
+   - The **Census of the Local Universe (CLU)** experiment is *volume-limited*: it targets
+     galaxies out to a fixed distance regardless of apparent brightness, so it is more complete
+     for intrinsically fainter events but probes a smaller total volume.
+   - The **Bright Transient Survey (BTS)** is *magnitude-limited*: it is complete down to a fixed
+     apparent magnitude regardless of distance, so it reaches a much larger volume but is biased
+     against faint/fast-fading events -- exactly the population LFBOTs belong to.
+
+   :footcite:t:`ho2023` derive rates from both: :math:`2.7`-:math:`546\ \mathrm{Gpc^{-3}\,yr^{-1}}`
+   from CLU, and :math:`0.31`-:math:`85.3\ \mathrm{Gpc^{-3}\,yr^{-1}}` from BTS. Both ranges are
+   wide because each survey's LFBOT sample is small (a handful of events), so the rate is
+   dominated by Poisson/small-number uncertainty rather than by the selection function itself.
+   :footcite:t:`perley2026` later revise the BTS estimate down to a narrower
+   :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, using a substantially larger BTS-selected
+   sample than :footcite:t:`ho2023`'s original estimate.
+
+   This population adopts :footcite:t:`perley2026`'s revised BTS range, rather than
+   :footcite:t:`ho2023`'s original BTS range or either paper's CLU range, purely because it is
+   built from more events and is therefore the most statistically robust of the three -- not
+   because BTS's magnitude-limited selection is judged astrophysically preferable to CLU's
+   volume-limited one.
 
 SED Model
 ----------
@@ -117,8 +146,8 @@ Simulated Light Curves
 
 The plot below draws 1000 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, against the observed
-bolometric light curves and photospheric temperatures of four known LFBOTs -- AT2018cow,
-CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
+bolometric light curves and photospheric temperatures of three known LFBOTs -- AT2018cow,
+AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
 
 .. plot::
    :include-source: false
@@ -149,7 +178,6 @@ CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
    archive = LightcurveArchive()
    observed_lfbots = [
        ("2018cow_holu2026", "AT2018cow (Ho & Lu+2026)", "o", "k"),
-       ("css161010_holu2026", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
        ("2024wpp_holu2026", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
        ("2024puz_holu2026", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
    ]
@@ -260,6 +288,7 @@ in comoving volume out to :math:`z=3`:
 
     from m4opt.missions import uvex
     from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
+    from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
 
     rng = np.random.default_rng(20260911)
@@ -281,8 +310,8 @@ in comoving volume out to :math:`z=3`:
         "NUV": 24.5 * u.ABmag,
     }
 
-    # Compute peak-visible rates.
-    visible_rates = {}
+    # Compute the number of the n_samples draws visible in each band.
+    visible_counts = {}
 
     for band_name, bandpass in uvex.detector.bandpasses.items():
         magnitudes = lfbot.sed.mag_bandpass(
@@ -293,27 +322,33 @@ in comoving volume out to :math:`z=3`:
         ).to_value(u.ABmag)
 
         visible = magnitudes < detection_limits[band_name].to_value(u.ABmag)
-        visible_fraction = np.mean(visible)
-        visible_rate = visible_fraction * all_sky_rate
-
-        visible_rates[band_name] = visible_rate
+        visible_counts[band_name] = int(np.count_nonzero(visible))
 
         print(
-            f"{band_name}: {visible_rate:.2f} "
-            f"({visible_fraction:.1%} of events visible)"
+            f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+            f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
         )
 
-    # Plot all-sky visible rates.
-    band_names = list(visible_rates)
-    rates = [visible_rates[band].to_value(1 / u.yr) for band in band_names]
+    # Plot all-sky visible rates, with MC (statistical) and rate (systematic) uncertainty --
+    # see uvex_transients.utils.plotting.plot_rate_bars.
+    band_names = list(visible_counts)
 
     fig, ax = plt.subplots(figsize=(5, 4))
 
-    ax.bar(band_names, rates)
+    plot_rate_bars(
+        ax,
+        band_names,
+        [visible_counts[band] for band in band_names],
+        n_samples,
+        all_sky_rate,
+        rate_ci=lfbot.RATE_CI,
+        color=[get_band_color(band) for band in band_names],
+    )
 
     ax.set_yscale("log")
     ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
     ax.set_title("Peak-visible LFBOT rate")
+    add_funnel_legend(ax, loc="lower right")
 
     fig.tight_layout()
     plt.show()
