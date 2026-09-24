@@ -14,6 +14,7 @@ from uvex_transients.models.supernovae import (
     MoragShockCoolingSED,
     TypeIaSED,
     TypeIbSED,
+    TypeIcBLSED,
     TypeIcSED,
     TypeIIbSED,
     TypeIIPExcessSED,
@@ -93,9 +94,6 @@ _IB_OF_SESNE_ERR = convert_CI_to_fractional(_IB_OF_SESNE, _IB_OF_SESNE + 0.114, 
 _IC_OF_SESNE = 0.215
 _IC_OF_SESNE_ERR = convert_CI_to_fractional(_IC_OF_SESNE, _IC_OF_SESNE + 0.086, _IC_OF_SESNE - 0.086)
 
-# Ic-BL is not (yet) its own `_CoreCollapseSNe` subtype, so it has no `RATE_FRACTION`/`RATE_CI` of
-# its own below -- stored here only so Shivvers et al. 2017's full stripped-envelope demographic
-# breakdown is documented together in one place.
 _ICBL_OF_SESNE = 0.037
 _ICBL_OF_SESNE_ERR = convert_CI_to_fractional(_ICBL_OF_SESNE, _ICBL_OF_SESNE + 0.029, _ICBL_OF_SESNE - 0.037)
 
@@ -155,6 +153,9 @@ _TYPE_IB_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _IB_OF_S
 
 _TYPE_IC_FRACTION = _SESNE_FRACTION * _IC_OF_SESNE
 _TYPE_IC_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _IC_OF_SESNE_ERR)
+
+_TYPE_ICBL_FRACTION = _SESNE_FRACTION * _ICBL_OF_SESNE
+_TYPE_ICBL_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _ICBL_OF_SESNE_ERR)
 
 # Type I superluminous SNe (SLSNe-I) as a fraction of the total CC SNe rate: a local ratio of
 # 1/3500 (+2800/-720 on the *denominator*), from the PTF rates of Frohmaier et al. 2021
@@ -289,6 +290,26 @@ class TypeIcSNe(_CoreCollapseSNe):
 
     RATE_FRACTION = _TYPE_IC_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IC_FRACTION_ERR)
+
+
+class TypeIcBLSNe(_CoreCollapseSNe):
+    """Type Ic-BL (broad-lined) core-collapse SNe: `TypeIcBLSED`.
+
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to a
+    36-event ZTF SNe Ic-BL sample.
+
+    Unlike `TypeIbSNe`/`TypeIcSNe`, which use a phenomenological Bazin-pulse light curve, this
+    subtype follows `TypeIaSNe`'s convention of a first-principles Arnett-style model, since the
+    calibration sample gives physical explosion parameters (nickel mass, ejecta mass, photospheric
+    velocity) directly rather than a fitted light-curve shape.
+    """
+
+    DEFAULT_MODEL = TypeIcBLSED
+    DEFAULT_DURATION = 100 * u.day
+    DEFAULT_Z_LIM = 1.0
+
+    RATE_FRACTION = _TYPE_ICBL_FRACTION
+    RATE_CI = _with_cc_normalization_uncertainty(_TYPE_ICBL_FRACTION_ERR)
 
 
 class MagnetarSLSNe(_CoreCollapseSNe):

@@ -24,6 +24,7 @@ from uvex_transients.models.supernovae import (
     MoragShockCoolingSED,
     TypeIaSED,
     TypeIbSED,
+    TypeIcBLSED,
     TypeIcSED,
     TypeIIbSED,
     TypeIIPExcessSED,
@@ -83,6 +84,10 @@ class TestTypeIbSED(SpectralModelContract):
 
 class TestTypeIcSED(SpectralModelContract):
     model_class = TypeIcSED
+
+
+class TestTypeIcBLSED(SpectralModelContract):
+    model_class = TypeIcBLSED
 
 
 class TestVanVelzenTDESED(SpectralModelContract):

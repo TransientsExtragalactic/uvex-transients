@@ -100,7 +100,7 @@ through a Monte Carlo run):
        used for windowing, so an overly generous value costs some wasted sampling but an overly
        tight one silently drops real detections.
 
-Eleven populations ship with the package today, each pairing one of these SEDs with a rate and
+Twelve populations ship with the package today, each pairing one of these SEDs with a rate and
 duration -- see the linked :ref:`transients` page for each one's astrophysics and priors:
 
 .. list-table::
@@ -145,6 +145,10 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - 0.5
    * - :class:`~uvex_transients.transients.supernovae.TypeIcSNe`
      - :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED`
+     - 100 d
+     - 0.5
+   * - :class:`~uvex_transients.transients.supernovae.TypeIcBLSNe`
+     - :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`
      - 100 d
      - 0.5
    * - :class:`~uvex_transients.transients.supernovae.MagnetarSLSNe`

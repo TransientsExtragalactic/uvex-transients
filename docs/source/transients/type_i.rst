@@ -9,16 +9,20 @@ curves are powered by the radioactive decay of :math:`^{56}\mathrm{Ni}` and are 
 peak, roughly two to three weeks after explosion, followed by a decline; unlike Type IIb SNe
 (:ref:`transients_type_ii`) they lack a distinct early shock-cooling peak. Both are modeled here by
 the same phenomenological form -- a single Bazin pulse times a cooling blackbody photosphere -- and
-differ only in their event rates, implemented as two sibling transient populations below.
+differ only in their event rates, implemented as two sibling transient populations below. Type
+Ic-BL (broad-lined) is a higher-kinetic-energy variant of Type Ic; its calibration sample gives
+physical explosion parameters directly, so it is instead modeled with the same first-principles
+Arnett-style approach as Type Ia.
 
 .. note::
 
-   The priors are phenomenological and calibrated against two samples: the full bolometric light
-   curves of :footcite:t:`lyman2016` (13 Ib and 8 Ic events, aligned on the epoch of maximum rather
-   than on explosion), and the photospheric temperature curves of the Type Ib and Ic SNe of
-   :footcite:t:`prentice2019` (four Ib and six Ic events, placed on a time-since-explosion axis using
-   their tabulated times of peak). The samples are small, so the ranges are deliberately broad. Ib and
-   Ic currently share the same priors and differ only in their event rates.
+   The Type Ib/Ic priors are phenomenological and calibrated against two samples: the full
+   bolometric light curves of :footcite:t:`lyman2016` (13 Ib and 8 Ic events, aligned on the epoch
+   of maximum rather than on explosion), and the photospheric temperature curves of the Type Ib and
+   Ic SNe of :footcite:t:`prentice2019` (four Ib and six Ic events, placed on a time-since-explosion
+   axis using their tabulated times of peak). The samples are small, so the ranges are deliberately
+   broad. Ib and Ic currently share the same priors and differ only in their event rates. Type Ic-BL
+   instead uses sample statistics of its own explosion-property table -- see its tab below.
 
 .. tab-set::
 
@@ -945,6 +949,303 @@ differ only in their event rates, implemented as two sibling transient populatio
          ax.set_yscale("log")
          ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
          ax.set_title("Peak-visible Type Ic rate")
+         add_funnel_legend(ax, loc="lower right")
+
+         fig.tight_layout()
+
+   .. tab-item:: Type Ic-BL
+
+      Type Ic-BL (broad-lined) supernovae are Type Ic explosions with unusually high kinetic
+      energies and ejecta velocities, identified spectroscopically by their broad, blended
+      absorption features. Unlike `Type Ib`/`Type Ic` above, this population's SED is not
+      phenomenological: its calibration sample reports physical explosion parameters (nickel
+      mass, ejecta mass, photospheric velocity) directly, so it instead follows `Type Ia`'s
+      convention of a first-principles Arnett-style radioactive-decay model.
+
+      Implemented by :class:`~uvex_transients.transients.supernovae.TypeIcBLSNe`, pairing
+      :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` with the rate/duration
+      metadata described below.
+
+      .. rubric:: Quick Facts
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 15 25 15 45
+
+         * - Quantity
+           - Value
+           - Source
+           - Notes
+         * - Rate
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type Ic-BL 1.1% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`,
+             :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find Ic-BL is
+             :math:`3.7^{+2.9}_{-3.7}\%` of the stripped-envelope (SESNe) rate, which is itself
+             :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type Ic-BL
+             fraction is :math:`0.037\times0.304=0.0112`. Combined in quadrature with
+             :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIcBLSNe.RATE_CI` (see
+             :ref:`user_guide_transients_rate_uncertainty`). The lower bound on the Ic-BL-of-SESNe
+             fraction is itself consistent with zero, so the combined lower `RATE_CI` factor is
+             slightly negative; treat the lower bound as effectively zero rather than literally.
+         * - Redshift limit
+           - :math:`z = 1`
+           - --
+           - Wider than the Type Ib/Type Ic limit, to cover this population's higher ejecta
+             velocities and kinetic energies; in the observability check below, no simulated event
+             beyond :math:`z \approx 0.55` clears the UVEX limit.
+         * - Duration
+           - 100 days
+           - --
+           - Covers the rise, peak and decline, matching `Type Ib`/`Type Ic`.
+
+      .. rubric:: SED Model
+
+      *Model Class*: :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`
+
+      :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` reuses
+      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
+      diffusion light curve and floored-photosphere blackbody entirely (the same
+      :math:`L(t)`/:math:`T(t)` machinery documented for `Type Ia` above and for the SLSNe-I model
+      in :ref:`transients_slsne`):
+
+      .. math::
+
+          F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
+          + \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
+          \qquad
+          T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+          T_\mathrm{floor}\right\}.
+
+      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are sample statistics (mean, sample standard
+      deviation) of the 36-event explosion-property table of :footcite:t:`srinivasaragavan2024`
+      (nickel mass, kinetic energy, ejecta mass and photospheric velocity per event). One event
+      (SN 2020wgz), whose reported
+      :math:`M_\mathrm{Ni}=2.46\,M_\odot` is a >5-sigma outlier driven by an ``e_k``/``m_ej`` *lower
+      limit* rather than a measurement, is excluded from the ``M_Ni`` statistics; ``M_ej`` uses only
+      rows with a measured (non-lower-limit) value; ``v_ej`` is identified with the sample's
+      photospheric velocities (``v_ph``), regardless of the epoch quoted. ``kappa`` and
+      ``T_floor`` are not constrained by that table and are left at `Type Ia`'s values;
+      ``kappa_gamma`` is instead fixed at a large value (full gamma-ray trapping across the
+      simulated window), unlike `Type Ia`'s Scalzo+14 value.
+
+      .. dropdown:: Parameter priors
+
+         .. list-table::
+            :header-rows: 1
+            :widths: 16 14 38 32
+
+            * - Parameter
+              - Symbol
+              - Prior
+              - Notes / Source
+            * - ``M_Ni``
+              - :math:`M_\mathrm{Ni}`
+              - TruncatedNormal(0.33, :math:`\sigma`\=0.24; bounds :math:`[0.02, 2.0]\,M_\odot`)
+              - :footcite:t:`srinivasaragavan2024` (SN 2020wgz excluded, see above).
+            * - ``M_ej``
+              - :math:`M_\mathrm{ej}`
+              - TruncatedNormal(2.54, :math:`\sigma`\=1.95; bounds :math:`[0.1, 10.0]\,M_\odot`)
+              - :footcite:t:`srinivasaragavan2024`, measured (non-lower-limit) rows only.
+            * - ``v_ej``
+              - :math:`v_\mathrm{ej}`
+              - TruncatedNormal(20.1, :math:`\sigma`\=4.96; bounds :math:`[5, 45]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - Sample photospheric velocities (``v_ph``).
+            * - ``kappa``
+              - :math:`\kappa`
+              - Uniform(0.05, 0.15) :math:`\mathrm{cm^2\,g^{-1}}`
+              - Not constrained by the table; same range as `Type Ia`.
+            * - ``kappa_gamma``
+              - :math:`\kappa_\gamma`
+              - Fixed, 1000 :math:`\mathrm{cm^2\,g^{-1}}`
+              - Approximates full gamma-ray trapping across the simulated window; unlike `Type Ia`,
+                not :footcite:t:`scalzo2014`'s value.
+            * - ``T_floor``
+              - :math:`T_\mathrm{floor}`
+              - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
+              - Same floor as the other Arnett-based models on this site; not calibrated against
+                Ic-BL data specifically.
+
+      .. rubric:: Simulated Light Curves
+
+      The plot below draws 300 random parameter realizations from the priors above and shows the
+      resulting bolometric light curves and photospheric temperatures. The top panel is overlaid
+      with the individual bolometric light curves (time since explosion) of the 26 Type Ic-BL SNe
+      of :footcite:t:`srinivasaragavan2024` with a full explosion-property fit (the same sample the
+      priors above are derived from). No photospheric temperature data is bundled for Type Ic-BL,
+      so the bottom panel is unadorned.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from uvex_transients.models.supernovae import TypeIcBLSED as SEDClass
+         from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+
+         rng = np.random.default_rng(20260924)
+         n_samples = 300
+
+         params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+         archive = LightcurveArchive()
+
+         t = np.geomspace(0.1, 1000, 400) * u.day
+         L_bol = SEDClass.eval_bolometric(t, **params_grid)
+         T = SEDClass.temperature(t, **params_grid)
+
+         fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
+
+         for row in range(n_samples):
+             ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.15)
+             ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
+
+         icbl_events = [name for name in archive.events("supernovae/Ic-BL") if name.endswith("srinivasaragavan2024")]
+         for i, name in enumerate(icbl_events):
+             lbol_obs = archive.table("supernovae/Ic-BL", name, "L_bol")
+             ax_L.plot(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 color="k", lw=0.8, alpha=0.4,
+                 label="Srinivasaragavan+24 (n=%d)" % len(icbl_events) if i == 0 else None,
+             )
+
+         ax_L.set_xscale("log")
+         ax_L.set_yscale("log")
+         ax_L.set_xlim(1e-1, 1e3)
+         ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
+         ax_L.set_title(f"Type Ic-BL: simulated bolometric light curves (n={n_samples})")
+         ax_L.legend(loc="lower left", fontsize=8, frameon=False)
+
+         ax_T.set_xscale("log")
+         ax_T.set_yscale("log")
+         ax_T.set_xlim(1e-1, 1e3)
+         ax_T.set_xlabel("Time since explosion [days]")
+         ax_T.set_ylabel("Photospheric temperature [K]")
+         ax_T.set_title(f"Type Ic-BL: simulated photospheric temperatures (n={n_samples})")
+
+         fig.tight_layout()
+
+      .. rubric:: Observability Summary
+
+      Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
+      :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1
+      Dwell limit of :math:`m<24.5` overplotted.
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIcBLSNe
+
+         rng = np.random.default_rng(20260924)
+         n_samples = 1000
+
+         sn = TypeIcBLSNe()
+         z = sn.sample_event_redshift(n_samples, rng=rng)
+         params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+         params_grid = {name: value[:, None] for name, value in params.items()}
+
+         t_grid_rest = np.geomspace(0.1, 100, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
+         z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
+
+         bandpasses = uvex.detector.bandpasses
+         band_names = list(bandpasses)
+
+         fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
+
+         for ax, band_name in zip(axes, band_names):
+             mag_curve = sn.sed.mag_bandpass(
+                 bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
+             ).to_value(u.ABmag)
+             mag = np.nanmin(mag_curve, axis=1)
+             finite = np.isfinite(mag)
+
+             ax.scatter(z[finite], mag[finite], s=5, ec="k", fc="k", alpha=0.5, label="Simulated events")
+             ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
+
+             ax.invert_yaxis()
+             ax.set_xlabel("Redshift")
+             ax.set_title(f"UVEX {band_name}")
+             ax.legend(loc="upper right", fontsize=8, frameon=False)
+             ax.set_ylim([35, 15])
+
+         axes[0].set_ylabel("Peak apparent AB magnitude")
+         fig.suptitle(f"Type Ic-BL: peak apparent magnitude vs. redshift (n={n_samples})")
+         fig.tight_layout()
+
+      The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
+      the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous in
+      comoving volume out to its redshift limit:
+
+      .. plot::
+         :include-source: false
+
+         import numpy as np
+         import matplotlib.pyplot as plt
+         from astropy import units as u
+
+         from m4opt.missions import uvex
+         from uvex_transients.transients.supernovae import TypeIcBLSNe
+         from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
+
+         rng = np.random.default_rng(20260924)
+         n_samples = 1000
+
+         sn = TypeIcBLSNe()
+         redshift = sn.sample_event_redshift(n_samples, rng=rng)
+         params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+         params_grid = {pname: value[:, None] for pname, value in params.items()}
+
+         # The all-sky rate, with no survey footprint applied.
+         all_sky_rate = sn.all_sky_rate
+
+         t_grid_rest = np.geomspace(0.1, 100, 300) * u.day
+         t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+         z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
+
+         visible_counts = {}
+         for band_name, bandpass in uvex.detector.bandpasses.items():
+             mag_curve = sn.sed.mag_bandpass(
+                 bandpass,
+                 t_obs_grid,
+                 redshift=z_grid_bcast,
+                 **params_grid,
+             ).to_value(u.ABmag)
+             magnitudes = np.nanmin(mag_curve, axis=1)
+
+             visible = magnitudes < 24.5
+             visible_counts[band_name] = int(np.count_nonzero(visible))
+
+             print(
+                 f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                 f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
+             )
+
+         # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+         # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+         band_names = list(visible_counts)
+
+         fig, ax = plt.subplots(figsize=(5, 4))
+         plot_rate_bars(
+             ax,
+             band_names,
+             [visible_counts[band] for band in band_names],
+             n_samples,
+             all_sky_rate,
+             rate_ci=sn.RATE_CI,
+             color=[get_band_color(band) for band in band_names],
+         )
+         ax.set_yscale("log")
+         ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+         ax.set_title("Peak-visible Type Ic-BL rate")
          add_funnel_legend(ax, loc="lower right")
 
          fig.tight_layout()
