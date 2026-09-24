@@ -216,7 +216,10 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
     "catalog_path",
     required=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="The event catalog --photometry was computed over.",
+    help="The full, pre-cut event catalog from 'generate' (e.g. 00_generated.ecsv from 'run' with "
+    "intermediates kept), NOT the post-cut catalog --photometry was computed over: n_total must "
+    "count every sampled event, including ones later cut or never observed, or 'fraction' is "
+    "computed against the wrong denominator.",
 )
 @click.option(
     "--photometry",
@@ -257,7 +260,12 @@ def detection_counts_command(
     config_path : Path
         Path to the run-config YAML file (``CONFIG``).
     catalog_path : Path
-        Path to the event catalog `photometry_path` was computed over.
+        Path to the full, pre-cut event catalog from the 'generate' stage (e.g.
+        ``00_generated.ecsv`` from 'run' with intermediates kept) -- *not* the post-cut catalog
+        `photometry_path` was computed over. `PhotometryCatalog.compute_detection_count_table`
+        needs every sampled event, including ones later cut or never observed, to compute
+        `n_total`/`fraction` correctly; passing the post-cut catalog silently inflates
+        `expected_events` by roughly ``1/efficiency``.
     photometry_path : Path
         Path to the photometry table.
     exposure_path : Path
@@ -389,7 +397,7 @@ def run_command(
     click.echo(f"photometry: {len(phot)} rows -> {phot_path.name}")
 
     if config.has_section("detection_counts"):
-        detection_counts = pipeline.run_detection_counts(config, catalog, exposure, phot)
+        detection_counts = pipeline.run_detection_counts(config, raw_catalog, exposure, phot)
         detection_counts_path = out_dir / "detection_counts.ecsv"
         detection_counts.write(detection_counts_path, overwrite=overwrite)
         click.echo(f"detection-counts: {len(detection_counts)} (type, k) row(s) -> {detection_counts_path.name}")

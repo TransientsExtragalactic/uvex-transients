@@ -482,7 +482,7 @@ class TypeIIPExcessSED(TypeIIPSED):
             latex=r"\tau_\mathrm{Co}",
         ),
         "T_0": Parameter(
-            prior=NormalPrior(mean=4.2, sigma=0.1),
+            prior=NormalPrior(mean=4.3, sigma=0.1),
             scale=1.0 * u.K,
             transform="log10",
             description="Doubly-broken power-law temperature normalization; T(t) ~ T_0 at t = t0 (~11200 K).",
@@ -495,7 +495,7 @@ class TypeIIPExcessSED(TypeIIPSED):
             latex=r"\alpha_r",
         ),
         "alpha_c": Parameter(
-            prior=NormalPrior(mean=-0.45, sigma=0.1),
+            prior=NormalPrior(mean=-0.5, sigma=0.1),
             scale=1,
             description="Cooling-regime (t0 << t << sqrt(t0 t_P)) temperature power-law index; T declines.",
             latex=r"\alpha_c",

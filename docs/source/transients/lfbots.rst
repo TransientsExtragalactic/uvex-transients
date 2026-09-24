@@ -33,9 +33,11 @@ Quick Facts
        :math:`700`-:math:`1400\ \mathrm{Gpc^{-3}\,yr^{-1}}` (PS1-MDS); the delayed-dynamical-instability
        model of :footcite:t:`klencki2025` predicts :math:`15`-:math:`300\ \mathrm{Gpc^{-3}\,yr^{-1}}`;
        :footcite:t:`perley2026` and :footcite:t:`holu2026` report the lowest rates,
-       :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, which is adopted here. Taken as
-       constant in :math:`z`, since LFBOTs are too rare for their redshift evolution to yet be
-       meaningfully constrained.
+       :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, which is adopted here as
+       :attr:`~uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient.RATE_CI` (see the
+       dropdown below for why, and :ref:`user_guide_transients_rate_uncertainty` for the general
+       mechanism). Taken as constant in :math:`z`, since LFBOTs are too rare for their redshift
+       evolution to yet be meaningfully constrained.
    * - Redshift limit
      - :math:`z = 3`
      - --
@@ -46,6 +48,33 @@ Quick Facts
      - --
      - Generous relative to the SED's own rise/decline timescales, to safely bound the slowly
        fading power-law tail.
+
+.. dropdown:: Rate uncertainty: CLU vs. BTS
+
+   Volumetric LFBOT rates in the literature come from two different ZTF-era surveys, with
+   different selection functions, that nonetheless both count AT2018cow itself among their
+   events:
+
+   - The **Census of the Local Universe (CLU)** experiment is *volume-limited*: it targets
+     galaxies out to a fixed distance regardless of apparent brightness, so it is more complete
+     for intrinsically fainter events but probes a smaller total volume.
+   - The **Bright Transient Survey (BTS)** is *magnitude-limited*: it is complete down to a fixed
+     apparent magnitude regardless of distance, so it reaches a much larger volume but is biased
+     against faint/fast-fading events -- exactly the population LFBOTs belong to.
+
+   :footcite:t:`ho2023` derive rates from both: :math:`2.7`-:math:`546\ \mathrm{Gpc^{-3}\,yr^{-1}}`
+   from CLU, and :math:`0.31`-:math:`85.3\ \mathrm{Gpc^{-3}\,yr^{-1}}` from BTS. Both ranges are
+   wide because each survey's LFBOT sample is small (a handful of events), so the rate is
+   dominated by Poisson/small-number uncertainty rather than by the selection function itself.
+   :footcite:t:`perley2026` later revise the BTS estimate down to a narrower
+   :math:`0.9`-:math:`12.5\ \mathrm{Gpc^{-3}\,yr^{-1}}`, using a substantially larger BTS-selected
+   sample than :footcite:t:`ho2023`'s original estimate.
+
+   This population adopts :footcite:t:`perley2026`'s revised BTS range, rather than
+   :footcite:t:`ho2023`'s original BTS range or either paper's CLU range, purely because it is
+   built from more events and is therefore the most statistically robust of the three -- not
+   because BTS's magnitude-limited selection is judged astrophysically preferable to CLU's
+   volume-limited one.
 
 SED Model
 ----------
@@ -117,8 +146,8 @@ Simulated Light Curves
 
 The plot below draws 1000 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, against the observed
-bolometric light curves and photospheric temperatures of four known LFBOTs -- AT2018cow,
-CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
+bolometric light curves and photospheric temperatures of three known LFBOTs -- AT2018cow,
+AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
 
 .. plot::
    :include-source: false
@@ -149,7 +178,6 @@ CSS161010, AT2024wpp, and AT2024puz -- compiled by :footcite:t:`holu2026`.
    archive = LightcurveArchive()
    observed_lfbots = [
        ("2018cow_holu2026", "AT2018cow (Ho & Lu+2026)", "o", "k"),
-       ("css161010_holu2026", "CSS161010 (Ho & Lu+2026)", "s", "firebrick"),
        ("2024wpp_holu2026", "AT2024wpp (Ho & Lu+2026)", "^", "darkorange"),
        ("2024puz_holu2026", "AT2024puz (Ho & Lu+2026)", "D", "seagreen"),
    ]

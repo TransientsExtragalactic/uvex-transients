@@ -30,12 +30,16 @@ Quick Facts
      - Source
      - Notes
    * - Rate
-     - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; SLSN-I :math:`1/3500` of :math:`R_\mathrm{CC}(z)`
+     - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; SLSN-I :math:`1/3500` of :math:`R_\mathrm{CC}(z)`
        (:math:`\approx18\ \mathrm{Gpc^{-3}\,yr^{-1}}` locally)
      - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`2021MNRAS.500.5142F`
      - :footcite:t:`2021MNRAS.500.5142F` measure a local ratio of SLSN-I to all core-collapse SNe of
-       :math:`1/3500^{+2800}_{-720}`. Adopted as a constant
-       fraction of the core-collapse rate, so it tracks the same star-formation history.
+       :math:`1/3500^{+2800}_{-720}` (uncertainty on the denominator, i.e. the rate itself spans
+       :math:`1/6300` to :math:`1/2780`). Adopted as a constant fraction of the core-collapse rate,
+       so it tracks the same star-formation history. Combined in quadrature with
+       :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+       :attr:`~uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI` (see
+       :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
      - :math:`z = 4`
      - --

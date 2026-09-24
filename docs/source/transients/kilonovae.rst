@@ -23,12 +23,13 @@ Quick Facts
      - Source
      - Notes
    * - Rate
-     - :math:`53^{+176}_{-49}\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (constant in :math:`z`)
+     - :math:`110^{+192}_{-82}\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (constant in :math:`z`)
      - :footcite:t:`fishbach2026`
-     - GWTC-4 total BNS rate is :math:`28`-:math:`300\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}`; the
-       GW170817-like (:math:`\sim 1.3\,M_\odot + 1.3\,M_\odot`) sub-rate is adopted instead, since
-       not every BNS merger produces a kilonova this luminous and blue. No redshift evolution is
-       assumed.
+     - This is the *total* BNS merger rate reported by :footcite:t:`fishbach2026`, not their
+       narrower GW170817-like (:math:`\sim 1.3\,M_\odot + 1.3\,M_\odot`) sub-rate. Adopting the
+       total rate here means every BNS merger is assumed to produce a feasibly GW170817-like
+       kilonova -- a simplifying assumption made for this simulation, not one asserted by
+       :footcite:t:`fishbach2026` itself. No redshift evolution is assumed.
    * - Redshift limit
      - :math:`z = 0.2`
      - --

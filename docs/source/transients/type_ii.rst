@@ -34,10 +34,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIP 40% of :math:`R_\mathrm{CC}(z)`
-           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`
-           - Tracks the cosmic star-formation history; 40% is the local Type IIP fraction of
-             core-collapse SNe :footcite:p:`li2011`.
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type IIP 48.7% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
+             :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history. :footcite:t:`li2011` find II-P is
+             :math:`69.9^{+5.1}_{-5.8}\%` of the *Type II* rate, which is itself
+             :math:`69.6\pm6.7\%` of the total core-collapse rate :footcite:p:`shivvers2017`, so
+             the Type IIP fraction of the CC rate is :math:`0.699\times0.696=0.487`. This chain,
+             combined in quadrature with the :math:`+27\%/-31\%` uncertainty on
+             :footcite:t:`strolger2015`'s :math:`k`, gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
+             :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
            - :math:`z = 0.8`
            - --
@@ -404,10 +411,12 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - 30% of the Type IIP rate
+           - 30% of the Type IIP rate (14.6% of :math:`R_\mathrm{CC}(z)`)
            - :footcite:t:`bruch2023`
            - Reflects the high incidence of early CSM-interaction signatures found among Type II
-             SNe (ZTF).
+             SNe (ZTF). The 30% multiplier has no published uncertainty of its own, so
+             :attr:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe.RATE_CI` carries
+             exactly the same relative uncertainty as ordinary Type IIP's.
          * - Redshift limit
            - :math:`z = 2`
            - --
@@ -741,14 +750,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
-           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`li2011`,
-             :footcite:t:`shivvers2017`
-           - Tracks the cosmic star-formation history; 10.3% is the stripped-envelope-corrected local
-             Type IIb fraction of core-collapse SNe from the LOSS volume-limited sample
-             :footcite:p:`shivvers2017`. Identical to the rate used by
-             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the same
-             underlying Type IIb population, just with different SED models.
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type IIb 10.3% of :math:`R_\mathrm{CC}(z)`
+           - :footcite:t:`strolger2015`, :footcite:t:`madau2014`, :footcite:t:`shivvers2017`
+           - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find IIb is
+             :math:`34.0\pm11.1\%` of the stripped-envelope (SESNe) rate, which is itself
+             :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type IIb fraction
+             of the CC rate is :math:`0.340\times0.304=0.103`. Combined in quadrature with
+             :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIIbSNe.RATE_CI` (see
+             :ref:`user_guide_transients_rate_uncertainty`). Identical rate to
+             :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
+             same underlying Type IIb population, just with different SED models.
          * - Redshift limit
            - :math:`z = 0.5`
            - --

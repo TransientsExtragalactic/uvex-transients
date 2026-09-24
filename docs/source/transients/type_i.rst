@@ -53,10 +53,15 @@ differ only in their event rates, implemented as two sibling transient populatio
            - :footcite:t:`2017ApJ...848...25M`, :footcite:t:`madau2014`
            - :func:`~uvex_transients.utils.cosmology.supernovae_Ia_rate`: DTD
              :math:`\Psi(\tau)\propto\tau^{-1.1}` for :math:`\tau>40` Myr, normalized to
-             :math:`N_\mathrm{Ia}/M_\star=1.3\times10^{-3}\,M_\odot^{-1}` (Maoz & Graur 2017),
-             convolved with the Madau & Dickinson (2014) star formation history. Unlike the
+             :math:`N_\mathrm{Ia}/M_\star=(1.3\pm0.1)\times10^{-3}\,M_\odot^{-1}` (Maoz & Graur
+             2017), convolved with the Madau & Dickinson (2014) star formation history. Unlike the
              core-collapse subtypes' instantaneous tracer, the broadly distributed delay times
-             give SNe Ia a flatter, slower-declining rate shape at high redshift.
+             give SNe Ia a flatter, slower-declining rate shape at high redshift. The rate is
+             exactly linear in :math:`N_\mathrm{Ia}/M_\star`, so
+             :attr:`~uvex_transients.transients.supernovae.TypeIaSNe.RATE_CI` (:math:`\pm7.7\%`)
+             is evaluated by calling `supernovae_Ia_rate` directly at that normalization's
+             :math:`\pm1\sigma` endpoints, rather than assumed analytically -- see
+             :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
            - :math:`z = 1`
            - --
@@ -318,12 +323,16 @@ differ only in their event rates, implemented as two sibling transient populatio
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type Ib 4.9% of :math:`R_\mathrm{CC}(z)`
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type Ib 10.8% of :math:`R_\mathrm{CC}(z)`
            - :footcite:t:`strolger2015`, :footcite:t:`madau2014`,
              :footcite:t:`shivvers2017`
-           - Tracks the cosmic star-formation history. Stripped-envelope SNe are 30.4% of core-collapse
-             SNe :footcite:p:`shivvers2017`, of which 16.1% are Type Ib :footcite:p:`shivvers2017`, so the Type Ib fraction is
-             :math:`0.304 \times 0.161 = 0.049`.
+           - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find Ib is
+             :math:`35.6\pm11.4\%` of the stripped-envelope (SESNe) rate, which is itself
+             :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type Ib fraction
+             is :math:`0.356\times0.304=0.108`. Combined in quadrature with
+             :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI` (see
+             :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
            - :math:`z = 0.5`
            - --
@@ -618,12 +627,16 @@ differ only in their event rates, implemented as two sibling transient populatio
            - Source
            - Notes
          * - Rate
-           - :math:`R_\mathrm{CC}(z) = k h^2 \psi_\mathrm{UV}(z)`; Type Ic 12.5% of :math:`R_\mathrm{CC}(z)`
+           - :math:`R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)`; Type Ic 6.5% of :math:`R_\mathrm{CC}(z)`
            - :footcite:t:`strolger2015`, :footcite:t:`madau2014`,
              :footcite:t:`shivvers2017`
-           - Tracks the cosmic star-formation history. Stripped-envelope SNe are 30.4% of core-collapse
-             SNe :footcite:p:`shivvers2017`, of which 41.1% are Type Ic :footcite:p:`shivvers2017`, so the Type Ic fraction is
-             :math:`0.304 \times 0.411 = 0.125`.
+           - Tracks the cosmic star-formation history. :footcite:t:`shivvers2017` find Ic is
+             :math:`21.5\pm8.6\%` of the stripped-envelope (SESNe) rate, which is itself
+             :math:`30.4^{+5.0}_{-4.9}\%` of the total core-collapse rate, so the Type Ic fraction
+             is :math:`0.215\times0.304=0.065`. Combined in quadrature with
+             :footcite:t:`strolger2015`'s :math:`+27\%/-31\%` normalization uncertainty, this gives
+             :attr:`~uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI` (see
+             :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
            - :math:`z = 0.5`
            - --
