@@ -4,10 +4,240 @@ import matplotlib as mpl
 
 mpl.use("Agg")
 
+import astropy.units as u
 import numpy as np
+import pytest
+from astropy.table import QTable
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.colors import Colormap
+from matplotlib.figure import Figure
 
-from uvex_transients.utils.plotting import add_funnel_legend, compute_funnel_bounds, plot_detection_funnel
+from uvex_transients.utils.config import config
+from uvex_transients.utils.plotting import (
+    add_funnel_legend,
+    compute_funnel_bounds,
+    get_band_color,
+    get_cmap,
+    get_default_cmap,
+    plot_band_light_curve,
+    plot_detection_funnel,
+    plot_healpix_map,
+    plot_histogram,
+    plot_rate_bars,
+    resolve_fig_axes,
+    set_plot_style,
+)
+
+
+class TestResolveFigAxes:
+    """Tests for `resolve_fig_axes`."""
+
+    def test_creates_new_figure_and_axes(self):
+        """With nothing given, a new figure/axes pair is created."""
+        fig, ax = resolve_fig_axes()
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
+        plt.close(fig)
+
+    def test_uses_configured_default_figsize(self):
+        """A newly created figure should use `config["plotting.default_figsize"]` by default."""
+        fig, _ = resolve_fig_axes()
+        assert tuple(fig.get_size_inches()) == tuple(config["plotting.default_figsize"])
+        plt.close(fig)
+
+    def test_explicit_fig_size_overrides_default(self):
+        """An explicit `fig_size` should override the configured default."""
+        fig, _ = resolve_fig_axes(fig_size=(3, 2))
+        assert tuple(fig.get_size_inches()) == (3.0, 2.0)
+        plt.close(fig)
+
+    def test_reuses_existing_axes(self):
+        """Passing existing axes should return them (and their parent figure) unchanged."""
+        fig, ax = plt.subplots()
+        out_fig, out_ax = resolve_fig_axes(axes=ax)
+        assert out_ax is ax
+        assert out_fig is fig
+        plt.close(fig)
+
+    def test_reuses_existing_figure_without_axes(self):
+        """Passing only a figure should attach new axes to it via `Figure.gca`."""
+        fig = plt.figure()
+        out_fig, out_ax = resolve_fig_axes(fig=fig)
+        assert out_fig is fig
+        assert isinstance(out_ax, Axes)
+        plt.close(fig)
+
+    def test_subplot_kw_forwarded_for_new_axes(self):
+        """`subplot_kw` should be forwarded to `~matplotlib.pyplot.subplots` for a new figure."""
+        fig, ax = resolve_fig_axes(subplot_kw={"projection": "aitoff"})
+        assert ax.name == "aitoff"
+        plt.close(fig)
+
+
+class TestSetPlotStyle:
+    """Tests for `set_plot_style`."""
+
+    def test_applies_configured_dpi_and_tick_direction(self):
+        """`rcParams` should reflect the configured dpi and the shared inward tick convention."""
+        set_plot_style()
+        assert plt.rcParams["figure.dpi"] == config["plotting.dpi"]
+        assert plt.rcParams["xtick.direction"] == "in"
+        assert plt.rcParams["ytick.direction"] == "in"
+
+
+class TestGetDefaultCmap:
+    """Tests for `get_default_cmap`."""
+
+    def test_returns_configured_colormap(self):
+        """The returned colormap should be the one named by `config["plotting.default_cmap"]`."""
+        assert get_default_cmap().name == config["plotting.default_cmap"]
+
+
+class TestGetCmap:
+    """Tests for `get_cmap`."""
+
+    def test_resolves_string_name(self):
+        """A colormap name should resolve to a `Colormap` instance of that name."""
+        cmap = get_cmap("plasma")
+        assert isinstance(cmap, Colormap)
+        assert cmap.name == "plasma"
+
+    def test_returns_colormap_instance_unchanged(self):
+        """An already-resolved `Colormap` should be returned unchanged."""
+        original = get_default_cmap()
+        assert get_cmap(original) is original
+
+    def test_unknown_name_raises_value_error(self):
+        """An unregistered colormap name should raise `ValueError`."""
+        with pytest.raises(ValueError, match="Unknown colormap"):
+            get_cmap("not-a-real-colormap")
+
+    def test_wrong_type_raises_type_error(self):
+        """A non-str, non-Colormap argument should raise `TypeError`."""
+        with pytest.raises(TypeError):
+            get_cmap(1234)
+
+
+class TestGetBandColor:
+    """Tests for `get_band_color`."""
+
+    def test_known_band_matches_config(self):
+        """A band present in `config["plotting.band_colors"]` should return that exact color."""
+        assert get_band_color("FUV") == config["plotting.band_colors"]["FUV"]
+
+    def test_unknown_band_is_deterministic(self):
+        """An unconfigured band name should still map to the same color on repeated calls."""
+        assert get_band_color("made-up-band") == get_band_color("made-up-band")
+
+    def test_different_unknown_bands_can_differ(self):
+        """Different unconfigured band names are not guaranteed, but commonly do, map differently."""
+        assert get_band_color("band-one") != get_band_color("band-two")
+
+
+class TestPlotHealpixMap:
+    """Tests for `plot_healpix_map`."""
+
+    def test_runs_without_error(self):
+        """A small full-sky map should plot without raising, onto an aitoff-projected axes."""
+        rng = np.random.default_rng(0)
+        nside = 4
+        values = rng.lognormal(size=12 * nside**2)
+        fig, ax = plot_healpix_map(values, nside=nside, title="t", cbar_label="c")
+        assert ax.name == "aitoff"
+        assert ax.get_title() == "t"
+        plt.close(fig)
+
+    def test_non_positive_values_are_dropped(self):
+        """Zero/negative pixels should not break the log-scaled color normalization."""
+        nside = 4
+        values = np.zeros(12 * nside**2)
+        values[0] = 1.0
+        values[1] = 10.0
+        fig, ax = plot_healpix_map(values, nside=nside)
+        plt.close(fig)
+
+
+class TestPlotHistogram:
+    """Tests for `plot_histogram`."""
+
+    def test_runs_without_error(self):
+        """A strictly positive, log-spanning sample should histogram without raising."""
+        rng = np.random.default_rng(0)
+        values = rng.lognormal(size=200)
+        fig, ax = plot_histogram(values, title="t", xlabel="x")
+        assert ax.get_xscale() == "log"
+        assert ax.get_yscale() == "log"
+        plt.close(fig)
+
+    def test_drops_non_positive_and_non_finite_values(self):
+        """Zero, negative, and non-finite entries should be dropped rather than raise."""
+        values = np.array([1.0, 2.0, -1.0, 0.0, np.nan, np.inf, 3.0])
+        fig, ax = plot_histogram(values)
+        plt.close(fig)
+
+
+class TestPlotBandLightCurve:
+    """Tests for `plot_band_light_curve`."""
+
+    def _phot_table(self):
+        return QTable(
+            {
+                "band": ["FUV", "FUV", "FUV", "NUV"],
+                "ab_mag": [22.0, 23.0, 25.0, 21.0],
+                "snr": [10.0, 8.0, 2.0, 15.0],
+                "mag_err": [0.05, 0.08, 0.2, 0.03],
+                "mag_lower": [21.8, 22.7, 24.5, 20.8],
+                "mag_upper": [22.2, 23.3, 25.8, 21.2],
+            }
+        )
+
+    def test_draws_theory_curve_detections_and_upper_limits(self):
+        """Detections should be errorbar points; sub-threshold visits, upper limits; onto one Axes."""
+        phot = self._phot_table()
+        t_obs = np.array([0.0, 1.0, 2.0, 0.0]) * u.day
+        t_theory = np.linspace(0, 2, 10) * u.day
+        theory_mag = np.linspace(22, 24, 10)
+
+        fig, ax = plt.subplots()
+        plot_band_light_curve(
+            ax,
+            "FUV",
+            t_obs,
+            phot,
+            t_theory=t_theory,
+            theory_mag=theory_mag,
+            snr_threshold=5.0,
+            label="FUV",
+        )
+        lines = ax.get_lines()
+        # One theory curve; errorbar containers hold their own markers/lines separately.
+        assert len(lines) >= 1
+        assert len(ax.containers) == 2  # one for detections, one for upper limits
+        plt.close(fig)
+
+    def test_no_upper_limits_without_bounds_columns(self):
+        """Without `mag_lower`/`mag_upper` columns, upper limits should be silently skipped."""
+        phot = self._phot_table()
+        phot.remove_columns(["mag_lower", "mag_upper"])
+        t_obs = np.array([0.0, 1.0, 2.0, 0.0]) * u.day
+
+        fig, ax = plt.subplots()
+        plot_band_light_curve(ax, "FUV", t_obs, phot, snr_threshold=5.0)
+        assert len(ax.containers) == 1  # detections only
+        plt.close(fig)
+
+    def test_defaults_to_band_color(self):
+        """Without an explicit `color`, the detection points should use `get_band_color(band)`."""
+        phot = self._phot_table()
+        t_obs = np.array([0.0, 1.0, 2.0, 0.0]) * u.day
+
+        fig, ax = plt.subplots()
+        plot_band_light_curve(ax, "FUV", t_obs, phot, snr_threshold=5.0)
+        from matplotlib.colors import to_rgba
+
+        assert to_rgba(ax.containers[0][0].get_markerfacecolor()) == to_rgba(get_band_color("FUV"))
+        plt.close(fig)
 
 
 class TestComputeFunnelBounds:
@@ -136,3 +366,81 @@ class TestAddFunnelLegend:
         labels = [t.get_text() for t in ax.get_legend().get_texts()]
         assert labels == ["kne", "MC (statistical) uncertainty", "Rate (systematic) uncertainty"]
         plt.close(fig)
+
+
+class TestPlotRateBars:
+    """Tests for `plot_rate_bars`."""
+
+    def test_bar_heights_match_visible_fraction_times_rate(self):
+        """Each bar height should be ``visible_counts[i] / n_samples * all_sky_rate``."""
+        fig, ax = plt.subplots()
+        rates = plot_rate_bars(
+            ax,
+            ["FUV", "NUV"],
+            visible_counts=[300, 900],
+            n_samples=3000,
+            all_sky_rate=1000 / u.yr,
+        )
+        assert np.allclose(rates, [100.0, 300.0])
+        plt.close(fig)
+
+    def test_draws_one_bar_per_category(self):
+        """One count bar (plus, with `rate_ci`, one rate-band rectangle) per category."""
+        fig, ax = plt.subplots()
+        plot_rate_bars(
+            ax,
+            ["FUV", "NUV"],
+            visible_counts=[300, 900],
+            n_samples=3000,
+            all_sky_rate=1000 / u.yr,
+            rate_ci=(0.8, 1.3),
+        )
+        assert len(ax.patches) == 4
+        plt.close(fig)
+
+    def test_no_rate_ci_omits_rate_band(self):
+        """Without `rate_ci`, the rate band should collapse to zero height (invisible, but present)."""
+        fig, ax = plt.subplots()
+        plot_rate_bars(
+            ax,
+            ["FUV", "NUV"],
+            visible_counts=[300, 900],
+            n_samples=3000,
+            all_sky_rate=1000 / u.yr,
+        )
+        band_patches = ax.patches[2:]
+        for patch in band_patches:
+            assert patch.get_height() == 0
+        plt.close(fig)
+
+    def test_sets_category_xticks(self):
+        """X-tick labels should be the category names, in order."""
+        fig, ax = plt.subplots()
+        plot_rate_bars(
+            ax,
+            ["FUV", "NUV"],
+            visible_counts=[300, 900],
+            n_samples=3000,
+            all_sky_rate=1000 / u.yr,
+        )
+        assert [t.get_text() for t in ax.get_xticklabels()] == ["FUV", "NUV"]
+        plt.close(fig)
+
+    def test_respects_rate_unit(self):
+        """A non-default `rate_unit` should rescale the returned bar heights accordingly."""
+        fig, ax = plt.subplots()
+        rates_per_year = plot_rate_bars(ax, ["FUV"], visible_counts=[300], n_samples=3000, all_sky_rate=1000 / u.yr)
+        plt.close(fig)
+
+        fig, ax = plt.subplots()
+        rates_per_day = plot_rate_bars(
+            ax,
+            ["FUV"],
+            visible_counts=[300],
+            n_samples=3000,
+            all_sky_rate=1000 / u.yr,
+            rate_unit=1 / u.day,
+        )
+        plt.close(fig)
+
+        assert np.allclose(rates_per_day, (rates_per_year / u.yr).to_value(1 / u.day))

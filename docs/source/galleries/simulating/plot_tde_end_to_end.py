@@ -32,7 +32,17 @@ from matplotlib import pyplot as plt
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
-from uvex_transients.utils.plotting import add_funnel_legend, compute_funnel_bounds, plot_detection_funnel
+from uvex_transients.utils.plotting import (
+    add_funnel_legend,
+    compute_funnel_bounds,
+    get_band_color,
+    plot_band_light_curve,
+    plot_detection_funnel,
+    resolve_fig_axes,
+    set_plot_style,
+)
+
+set_plot_style()
 
 schedule = get_schedule()
 tde = TidalDisruptionEvent()
@@ -95,7 +105,7 @@ counts = [c * DOWNSAMPLE for c in raw_counts]
 
 mc_lower, mc_upper, rate_lower, rate_upper = compute_funnel_bounds(raw_counts, rate_ci=tde.RATE_CI)
 
-fig, ax = plt.subplots()
+fig, ax = resolve_fig_axes()
 plot_detection_funnel(
     ax,
     x=np.arange(len(stages)),
@@ -104,7 +114,6 @@ plot_detection_funnel(
     mc_upper=mc_upper * DOWNSAMPLE,
     rate_lower=rate_lower * DOWNSAMPLE,
     rate_upper=rate_upper * DOWNSAMPLE,
-    color="#4C72B0",
 )
 ax.set_xticks(np.arange(len(stages)), stages)
 ax.set_yscale("log")
@@ -130,8 +139,7 @@ fig.tight_layout()
 # whatever fraction of it UVEX actually caught above :math:`\mathrm{SNR}=5`.
 
 # sphinx_gallery_thumbnail_number = 2
-fig = plt.figure(figsize=(8, 4))
-ax = fig.add_subplot(111, projection="aitoff")
+fig, ax = resolve_fig_axes(fig_size=(8, 4), subplot_kw={"projection": "aitoff"})
 ax.grid(True)
 
 ra_sampled = catalog.coord.ra.wrap_at(180 * u.deg).radian
@@ -170,40 +178,20 @@ phot = event.simulate_photometry(uvex)
 t_since_explosion = (phot["obs_time"] - event.t_explosion).to(u.day)
 t_theory = np.linspace(0, tde.duration_limit.to_value(u.day), 300) * u.day
 
-fig, ax = plt.subplots(figsize=(7, 4))
-for band, color in {"FUV": "#4C72B0", "NUV": "#DD8452"}.items():
-    ax.plot(t_theory.value, event.mag(t_theory, uvex, band=band).value, color=color, lw=1.5, alpha=0.6)
-
-    in_band = np.isfinite(phot["ab_mag"]) & (phot["band"] == band)
-    detected_pts = in_band & (phot["snr"] > SNR_THRESHOLD)
-    upper_limits = in_band & (phot["snr"] <= SNR_THRESHOLD)
-
-    if np.any(detected_pts):
-        ax.errorbar(
-            t_since_explosion[detected_pts].value,
-            phot["ab_mag"][detected_pts],
-            yerr=5 * phot["mag_err"][detected_pts],
-            marker="s",
-            mfc=color,
-            mec="k",
-            ecolor=color,
-            linestyle="none",
-            label=band,
-        )
-    if np.any(upper_limits):
-        ax.errorbar(
-            t_since_explosion[upper_limits].value,
-            phot["ab_mag"][upper_limits],
-            yerr=[
-                phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-            ],
-            marker="v",
-            mfc="w",
-            mec=color,
-            ecolor=color,
-            linestyle="none",
-        )
+fig, ax = resolve_fig_axes(fig_size=(7, 4))
+for band in ("FUV", "NUV"):
+    plot_band_light_curve(
+        ax,
+        band,
+        t_since_explosion,
+        phot,
+        t_theory=t_theory,
+        theory_mag=event.mag(t_theory, uvex, band=band),
+        snr_threshold=SNR_THRESHOLD,
+        color=get_band_color(band),
+        err_scale=5.0,
+        label=band,
+    )
 
 ax.invert_yaxis()
 ax.set_xlabel("Days since explosion")

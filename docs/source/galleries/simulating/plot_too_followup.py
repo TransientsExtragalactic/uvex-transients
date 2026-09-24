@@ -39,10 +39,12 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from m4opt.missions import uvex
 from m4opt.synphot.background import GalacticBackground
-from matplotlib import pyplot as plt
 
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
+from uvex_transients.utils.plotting import get_band_color, plot_band_light_curve, resolve_fig_axes, set_plot_style
+
+set_plot_style()
 
 tde = TidalDisruptionEvent()
 
@@ -111,8 +113,8 @@ print(phot["t", "band", "snr", "ab_mag"][:6])
 SNR_THRESHOLD = 5.0
 t_theory = np.linspace(0, tde.duration_limit.to_value(u.day), 300) * u.day
 
-fig, ax = plt.subplots(figsize=(7, 4))
-for band, color in {"FUV": "#4C72B0", "NUV": "#DD8452"}.items():
+fig, ax = resolve_fig_axes(fig_size=(7, 4))
+for band in ("FUV", "NUV"):
     nu = uvex.detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
     theory_mag = tde.sed.mag(
         nu,
@@ -122,38 +124,18 @@ for band, color in {"FUV": "#4C72B0", "NUV": "#DD8452"}.items():
         log_attenuation=log_attenuation(nu, ebv),
         **params,
     )
-    ax.plot(t_theory.value, theory_mag.value, color=color, lw=1.5, alpha=0.6)
-
-    in_band = np.isfinite(phot["ab_mag"]) & (phot["band"] == band)
-    detected = in_band & (phot["snr"] > SNR_THRESHOLD)
-    upper_limits = in_band & (phot["snr"] <= SNR_THRESHOLD)
-
-    if np.any(detected):
-        ax.errorbar(
-            phot["t"][detected].to_value(u.day),
-            phot["ab_mag"][detected],
-            yerr=5 * phot["mag_err"][detected],
-            marker="s",
-            mfc=color,
-            mec="k",
-            ecolor=color,
-            linestyle="none",
-            label=band,
-        )
-    if np.any(upper_limits):
-        ax.errorbar(
-            phot["t"][upper_limits].to_value(u.day),
-            phot["ab_mag"][upper_limits],
-            yerr=[
-                phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-            ],
-            marker="v",
-            mfc="w",
-            mec=color,
-            ecolor=color,
-            linestyle="none",
-        )
+    plot_band_light_curve(
+        ax,
+        band,
+        phot["t"],
+        phot,
+        t_theory=t_theory,
+        theory_mag=theory_mag,
+        snr_threshold=SNR_THRESHOLD,
+        color=get_band_color(band),
+        err_scale=5.0,
+        label=band,
+    )
 
 ax.invert_yaxis()
 ax.set_xlabel("Days since explosion")

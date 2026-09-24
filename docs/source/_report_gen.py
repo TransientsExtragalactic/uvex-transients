@@ -29,6 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.table import QTable
 
+from uvex_transients.utils.plotting import resolve_fig_axes
+
 GITHUB_REPO = "TransientsExtragalactic/uvex-transients"
 ASSET_NAMES = ("yield_summary.ecsv", "detection_counts.ecsv")
 
@@ -187,7 +189,7 @@ def _plot_detection_curve(sub_table: QTable, out_path: Path, title: str) -> bool
     upper = np.asarray(sub_table["expected_events_binom_upper"], dtype=float)[mask]
     yerr = np.vstack([expected - lower, upper - expected])
 
-    fig, ax = plt.subplots(figsize=(5.5, 3.8), dpi=150)
+    fig, ax = resolve_fig_axes(fig_size=(5.5, 3.8), dpi=150)
     ax.errorbar(
         k,
         expected,

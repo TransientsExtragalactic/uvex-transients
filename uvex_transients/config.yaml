@@ -101,6 +101,39 @@ schedules:
 
 
 # ------------------------------- #
+# PLOTTING CONFIGURATION          #
+# ------------------------------- #
+# Default settings for uvex_transients.utils.plotting, used by every plotting function in the
+# package and docs gallery unless the caller overrides them explicitly (see
+# uvex_transients.utils.plotting.resolve_fig_axes/set_plot_style/get_default_cmap/get_band_color).
+plotting:
+  default_figsize: [10, 6]  # Default figure size (inches) for a newly created figure.
+  dpi: 100                  # Default figure resolution.
+  default_cmap: viridis     # Default colormap for anything without its own per-series color.
+  use_tex: false            # Whether to render plot text with LaTeX. False so plotting works out of
+                            # the box; enable if LaTeX is installed.
+  latex_preamble: '\usepackage{amsmath,amssymb}'
+
+  # Shared per-band colors, so a given photometric band reads as the same color everywhere it's
+  # plotted across the docs gallery and reports (see
+  # uvex_transients.utils.plotting.get_band_color). UVEX's own FUV/NUV plus Rubin/LSST's ugrizy,
+  # both drawn from the same fixed, colorblind-legible palette used throughout the gallery.
+  band_colors:
+    FUV: "#4C72B0"
+    NUV: "#DD8452"
+    u: "#56B4E9"
+    g: "#008060"
+    r: "#FF4000"
+    i: "#850000"
+    z: "#6600CC"
+    y: "#000000"
+
+  # Default bar color for uvex_transients.utils.plotting.plot_detection_funnel when the caller
+  # doesn't specify one.
+  funnel_color: "#4C72B0"
+
+
+# ------------------------------- #
 # SIMULATION CONFIGURATION        #
 # ------------------------------- #
 simulation:

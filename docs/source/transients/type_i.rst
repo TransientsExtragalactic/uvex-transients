@@ -264,6 +264,7 @@ differ only in their event rates, implemented as two sibling transient populatio
 
          from m4opt.missions import uvex
          from uvex_transients.transients.supernovae import TypeIaSNe
+         from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
          rng = np.random.default_rng(20260923)
          n_samples = 2000
@@ -280,7 +281,7 @@ differ only in their event rates, implemented as two sibling transient populatio
          t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
          z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-         visible_rates = {}
+         visible_counts = {}
          for band_name, bandpass in uvex.detector.bandpasses.items():
              mag_curve = sn.sed.mag_bandpass(
                  bandpass, t_obs_grid, redshift=z_grid_bcast, **params_grid
@@ -288,21 +289,31 @@ differ only in their event rates, implemented as two sibling transient populatio
              magnitudes = np.nanmin(mag_curve, axis=1)
 
              visible = magnitudes < 24.5
-             visible_fraction = np.mean(visible)
-             visible_rate = visible_fraction * all_sky_rate
-
-             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+             visible_counts[band_name] = int(np.count_nonzero(visible))
 
              print(
-                 f"{band_name}: {visible_rate:.2f} "
-                 f"({visible_fraction:.1%} of events visible)"
+                 f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                 f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
              )
 
+         # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+         # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+         band_names = list(visible_counts)
+
          fig, ax = plt.subplots(figsize=(5, 4))
-         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         plot_rate_bars(
+             ax,
+             band_names,
+             [visible_counts[band] for band in band_names],
+             n_samples,
+             all_sky_rate,
+             rate_ci=sn.RATE_CI,
+             color=[get_band_color(band) for band in band_names],
+         )
          ax.set_yscale("log")
          ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
          ax.set_title("Peak-visible Type Ia rate")
+         add_funnel_legend(ax, loc="lower right")
 
          fig.tight_layout()
 
@@ -565,6 +576,7 @@ differ only in their event rates, implemented as two sibling transient populatio
 
          from m4opt.missions import uvex
          from uvex_transients.transients.supernovae import TypeIbSNe
+         from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
          rng = np.random.default_rng(20260918)
          n_samples = 1000
@@ -581,7 +593,7 @@ differ only in their event rates, implemented as two sibling transient populatio
          t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
          z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-         visible_rates = {}
+         visible_counts = {}
          for band_name, bandpass in uvex.detector.bandpasses.items():
              mag_curve = sn.sed.mag_bandpass(
                  bandpass,
@@ -592,21 +604,31 @@ differ only in their event rates, implemented as two sibling transient populatio
              magnitudes = np.nanmin(mag_curve, axis=1)
 
              visible = magnitudes < 24.5
-             visible_fraction = np.mean(visible)
-             visible_rate = visible_fraction * all_sky_rate
-
-             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+             visible_counts[band_name] = int(np.count_nonzero(visible))
 
              print(
-                 f"{band_name}: {visible_rate:.2f} "
-                 f"({visible_fraction:.1%} of events visible)"
+                 f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                 f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
              )
 
+         # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+         # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+         band_names = list(visible_counts)
+
          fig, ax = plt.subplots(figsize=(5, 4))
-         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         plot_rate_bars(
+             ax,
+             band_names,
+             [visible_counts[band] for band in band_names],
+             n_samples,
+             all_sky_rate,
+             rate_ci=sn.RATE_CI,
+             color=[get_band_color(band) for band in band_names],
+         )
          ax.set_yscale("log")
          ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
          ax.set_title("Peak-visible Type Ib rate")
+         add_funnel_legend(ax, loc="lower right")
 
          fig.tight_layout()
 
@@ -871,6 +893,7 @@ differ only in their event rates, implemented as two sibling transient populatio
 
          from m4opt.missions import uvex
          from uvex_transients.transients.supernovae import TypeIcSNe
+         from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
          rng = np.random.default_rng(20260918)
          n_samples = 1000
@@ -887,7 +910,7 @@ differ only in their event rates, implemented as two sibling transient populatio
          t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
          z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-         visible_rates = {}
+         visible_counts = {}
          for band_name, bandpass in uvex.detector.bandpasses.items():
              mag_curve = sn.sed.mag_bandpass(
                  bandpass,
@@ -898,21 +921,31 @@ differ only in their event rates, implemented as two sibling transient populatio
              magnitudes = np.nanmin(mag_curve, axis=1)
 
              visible = magnitudes < 24.5
-             visible_fraction = np.mean(visible)
-             visible_rate = visible_fraction * all_sky_rate
-
-             visible_rates[band_name] = visible_rate.to_value(1 / u.yr)
+             visible_counts[band_name] = int(np.count_nonzero(visible))
 
              print(
-                 f"{band_name}: {visible_rate:.2f} "
-                 f"({visible_fraction:.1%} of events visible)"
+                 f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+                 f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
              )
 
+         # Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+         # uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+         band_names = list(visible_counts)
+
          fig, ax = plt.subplots(figsize=(5, 4))
-         ax.bar(list(visible_rates), list(visible_rates.values()), color=["C0", "C1"])
+         plot_rate_bars(
+             ax,
+             band_names,
+             [visible_counts[band] for band in band_names],
+             n_samples,
+             all_sky_rate,
+             rate_ci=sn.RATE_CI,
+             color=[get_band_color(band) for band in band_names],
+         )
          ax.set_yscale("log")
          ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
          ax.set_title("Peak-visible Type Ic rate")
+         add_funnel_legend(ax, loc="lower right")
 
          fig.tight_layout()
 
