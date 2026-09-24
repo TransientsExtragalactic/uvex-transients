@@ -11,13 +11,18 @@ from numpy.typing import NDArray
 from uvex_transients.models.supernovae import (
     ArnettMagnetarSpindownSED,
     MoragShockCoolingSED,
+    TypeIaSED,
     TypeIbSED,
     TypeIcSED,
     TypeIIbSED,
     TypeIIPExcessSED,
     TypeIIPSED,
 )
-from uvex_transients.utils.cosmology import core_collapse_rate_coefficient, core_collapse_rate_shape
+from uvex_transients.utils.cosmology import (
+    core_collapse_rate_coefficient,
+    core_collapse_rate_shape,
+    supernovae_Ia_rate,
+)
 
 from .base import ExtragalacticTransient
 
@@ -190,3 +195,59 @@ class MagnetarSLSNe(_CoreCollapseSNe):
     DEFAULT_Z_LIM = 4
 
     RATE_FRACTION = _SLSN_FRACTION
+
+
+class TypeIaSNe(ExtragalacticTransient):
+    """
+    Type Ia (thermonuclear) supernova population.
+
+    Modeled with `TypeIaSED` (an Arnett-style radioactive-decay diffusion light curve with a
+    floored-photosphere blackbody photosphere, its priors fit to the ZTF SNe Ia sample of
+    Sarin et al. 2026). Unlike the `_CoreCollapseSNe` subtypes above, SNe Ia are thermonuclear
+    rather than core-collapse events, so this class does not share their machinery: the rate is
+    the cosmic star formation history convolved with the Maoz & Graur (2017) power-law delay-time
+    distribution (`supernovae_Ia_rate`), not a fixed fraction of the core-collapse rate. The delay
+    times are broadly distributed (a power law from 40 Myr to the age of the universe), so the
+    resulting rate shape tracks the *integrated* star-formation history rather than the
+    core-collapse subtypes' instantaneous one -- flatter at low z and slower to decline at high z.
+
+    `DEFAULT_DURATION` (365 d) covers the rise to peak (median ~14 d after explosion, in this
+    model's prior) through the decline to 1e-3 of peak for nearly the whole prior (16th--84th
+    percentile ~270--325 d, rest frame).
+
+    `DEFAULT_Z_LIM` is set from an actual `sample_event_redshift`/peak-apparent-magnitude check
+    against the UVEX bandpasses (25 AB mag limiting-magnitude screen): with `redshift_limit`
+    temporarily raised to 4, no simulated event peaks above the limit beyond z ~ 0.8 in either
+    band, and the NUV-detected fraction per redshift bin has already fallen to zero by z = 1 --
+    consistent with this model's fixed, non-evolving ``kappa_gamma`` leaving no UV-bright
+    high-redshift tail the way `MagnetarSLSNe`'s magnetar engine does.
+    """
+
+    DEFAULT_MODEL = TypeIaSED
+    DEFAULT_DURATION = 365 * u.day
+    DEFAULT_Z_LIM = 1.0
+
+    @property
+    def rate(self) -> Quantity:
+        """~astropy.units.Quantity: The local (z=0) volumetric Type Ia rate (Maoz & Graur 2017 DTD x MD14 SFH)."""
+        return supernovae_Ia_rate(0.0, cosmology=self.cosmology)
+
+    def rate_shape(self, z: Union[float, NDArray[np.float64]]) -> Union[float, NDArray[np.float64]]:
+        """
+        Return the DTD-convolved Type Ia rate shape (Maoz & Graur 2017 x Madau & Dickinson 2014) at `z`.
+
+        Parameters
+        ----------
+        z : float or numpy.ndarray
+            Redshift(s) at which to evaluate the rate shape.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            `supernovae_Ia_rate(z)`, normalized by `rate` so that the shape equals 1 at ``z=0``.
+        """
+        z_arr = np.asarray(z, dtype=np.float64)
+        numerator = np.atleast_1d(supernovae_Ia_rate(z_arr, cosmology=self.cosmology).to_value(u.Mpc**-3 * u.yr**-1))
+        denominator = self.rate.to_value(u.Mpc**-3 * u.yr**-1)
+        shape = numerator / denominator
+        return shape if z_arr.ndim > 0 else shape.item()

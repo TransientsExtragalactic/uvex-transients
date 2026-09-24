@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:02.922** total execution time for 5 files **from all galleries**:
+**01:02.464** total execution time for 5 files **from all galleries**:
 
 .. container::
 
@@ -32,18 +32,18 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
-     - 00:02.922
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_multiband_too_followup.py` (``galleries/simulating/plot_multiband_too_followup.py``)
-     - 00:00.000
+     - 00:48.760
      - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
-     - 00:00.000
+     - 00:10.445
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
+     - 00:02.061
      - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_too_followup.py` (``galleries/simulating/plot_too_followup.py``)
-     - 00:00.000
+     - 00:01.046
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_multiband_too_followup.py` (``galleries/simulating/plot_multiband_too_followup.py``)
+     - 00:00.153
      - 0.0
