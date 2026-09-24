@@ -251,9 +251,10 @@ transient class itself, that uncertainty is a single class variable:
 
 .. code-block:: python
 
-    TidalDisruptionEvent.RATE_CI    # (0.6774..., 1.1935...) -- multiplicative (lower, upper) factors
-    Kilonova.RATE_CI                # (0.0755..., 4.3208...) -- multiplicative (lower, upper) factors
-    LuminousFastBlueOpticalTransient.RATE_CI  # None -- no rate uncertainty sourced for this class yet
+    TidalDisruptionEvent.RATE_CI              # (0.6774..., 1.1935...) -- multiplicative (lower, upper) factors
+    Kilonova.RATE_CI                          # (0.2545..., 2.7454...) -- multiplicative (lower, upper) factors
+    LuminousFastBlueOpticalTransient.RATE_CI  # (0.09, 1.25) -- multiplicative (lower, upper) factors
+    TypeIaSNe.RATE_CI                         # None -- no rate uncertainty sourced for this class yet
 
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI` is a pair of
 *multiplicative* factors on ``rate`` (not absolute bounds), at a 90% confidence level by
