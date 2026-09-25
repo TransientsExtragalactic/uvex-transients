@@ -166,9 +166,7 @@ class Event:
             try:
                 value = window.to_value(u.day)
             except u.UnitConversionError as err:
-                raise u.UnitConversionError(
-                    f"'{name}' must be convertible to time units, got {window.unit}."
-                ) from err
+                raise u.UnitConversionError(f"'{name}' must be convertible to time units, got {window.unit}.") from err
             if not np.isfinite(value) or (value < 0 if allow_zero else value <= 0):
                 bound = "non-negative" if allow_zero else "positive"
                 raise ValueError(f"'{name}' must be finite and {bound}, got {window!r}.")
