@@ -1,0 +1,844 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.cli.pipeline &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/cli/pipeline';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.7alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.cli.pipeline</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.cli.pipeline</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.</span>
+
+<span class="sd">`uvex_transients.cli.main`'s subcommands are thin wrappers around these -- each one parses</span>
+<span class="sd">arguments, calls one of these, and reports a short summary.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.exposure_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExposureCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.photometry_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.yield_table</span><span class="w"> </span><span class="kn">import</span> <span class="n">YieldTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunConfig</span>
+
+
+<div class="viewcode-block" id="run_generate">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_generate.html#uvex_transients.cli.pipeline.run_generate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_generate</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Sample a Monte Carlo `EventCatalog` per the config's ``generate:`` section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EventCatalog</span>
+<span class="sd">        The generated catalog.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">generate</span>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">generate_events</span><span class="p">(</span>
+        <span class="n">time_bins</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
+        <span class="n">nside</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+        <span class="n">downsample</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run_exposure">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_exposure.html#uvex_transients.cli.pipeline.run_exposure">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_exposure</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureCatalog</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Tabulate an `ExposureCatalog` per the config's ``generate:`` section.</span>
+
+<span class="sd">    Uses the same ``time_bins``/``nside``/``order`` as `run_generate`, so both describe</span>
+<span class="sd">    the same footprint query -- see `SurveySimulator.compute_effective_exposure`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ExposureCatalog</span>
+<span class="sd">        The tabulated per-(transient type, time bin) exposure.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">generate</span>
+    <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">compute_effective_exposure</span><span class="p">(</span>
+        <span class="n">time_bins</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
+        <span class="n">nside</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run_yield_summary">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_yield_summary.html#uvex_transients.cli.pipeline.run_yield_summary">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_yield_summary</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
+    <span class="n">detected</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
+    <span class="n">exposure</span><span class="p">:</span> <span class="n">ExposureCatalog</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YieldTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build a `YieldTable` per the config's ``yield:`` section (Clopper-Pearson confidence level).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    raw : EventCatalog</span>
+<span class="sd">        The feasible (pre-cut) catalog -- typically `run_generate`'s own output.</span>
+<span class="sd">    detected : EventCatalog</span>
+<span class="sd">        The detected (post-cut) catalog -- typically `run_cuts`'s own output.</span>
+<span class="sd">    exposure : ExposureCatalog</span>
+<span class="sd">        Typically `run_exposure`'s own output.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    YieldTable</span>
+<span class="sd">        One row per transient type in `config.transients`.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">yield_config</span>
+    <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">compute_yield_summary</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">transients</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">confidence</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run_cuts">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_cuts.html#uvex_transients.cli.pipeline.run_cuts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_cuts</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run one or more of the config's declared ``cuts:`` against `catalog`, chained in order.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The catalog to filter.</span>
+<span class="sd">    names : list of str, optional</span>
+<span class="sd">        Which of the config's `cuts:` keys to run, and in what order. If `None` (the</span>
+<span class="sd">        default), runs every declared cut, in the order it was declared in the config.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EventCatalog</span>
+<span class="sd">        The filtered catalog.</span>
+<span class="sd">    """</span>
+    <span class="n">cuts</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">cuts</span>
+
+    <span class="k">if</span> <span class="n">names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cuts</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown cut key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">:</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">cuts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">catalog</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">run_cut</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">spec</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">catalog</span></div>
+
+
+
+<div class="viewcode-block" id="run_photometry">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_photometry.html#uvex_transients.cli.pipeline.run_photometry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_photometry</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The catalog of events to simulate photometry for.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.table.QTable</span>
+<span class="sd">        One row per (event, time, band) synthetic observation.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">photometry</span>
+    <span class="k">return</span> <span class="n">catalog</span><span class="o">.</span><span class="n">simulate_photometry</span><span class="p">(</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">mission</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">transients</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">bands</span><span class="p">,</span>
+        <span class="n">n_sigma</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">n_sigma</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="run_detection_counts">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.run_detection_counts.html#uvex_transients.cli.pipeline.run_detection_counts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_detection_counts</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span>
+    <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
+    <span class="n">exposure</span><span class="p">:</span> <span class="n">ExposureCatalog</span><span class="p">,</span>
+    <span class="n">photometry</span><span class="p">:</span> <span class="n">PhotometryCatalog</span> <span class="o">|</span> <span class="n">QTable</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the detection-count estimator table per the config's ``detection_counts:`` section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The full per-type event list `photometry` was computed over -- forwarded to</span>
+<span class="sd">        `PhotometryCatalog.compute_detection_count_table`.</span>
+<span class="sd">    exposure : ExposureCatalog</span>
+<span class="sd">        Typically `run_exposure`'s own output.</span>
+<span class="sd">    photometry : PhotometryCatalog or ~astropy.table.QTable</span>
+<span class="sd">        Typically `run_photometry`'s own output, or a `PhotometryCatalog` wrapping it; a</span>
+<span class="sd">        bare `QTable` (the shape `run_photometry` itself returns) is wrapped automatically.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    astropy.table.QTable</span>
+<span class="sd">        One row per ``(transient_type, n_detections)`` pair; see</span>
+<span class="sd">        `PhotometryCatalog.compute_detection_count_table`'s own docstring for the column list.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">detection_counts</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">photometry</span><span class="p">,</span> <span class="n">PhotometryCatalog</span><span class="p">):</span>
+        <span class="n">photometry</span> <span class="o">=</span> <span class="n">PhotometryCatalog</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">photometry</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">photometry</span><span class="o">.</span><span class="n">compute_detection_count_table</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">transients</span><span class="p">,</span>
+        <span class="n">snr_threshold</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">snr_threshold</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">confidence</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="dry_run_report">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.pipeline.dry_run_report.html#uvex_transients.cli.pipeline.dry_run_report">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dry_run_report</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span>
+    <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cut_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Validate `config` for `command` and describe what it would do, without sampling or writing anything.</span>
+
+<span class="sd">    Resolving each section the command needs is itself the validation: an unknown transient</span>
+<span class="sd">    class, a bad parameter override, an unknown cut type or cut name, an unknown mission, or an</span>
+<span class="sd">    unreadable schedule all raise exactly as they would in a real run. The (potentially large)</span>
+<span class="sd">    schedule *is* loaded, but no events are sampled and no output file is created.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    command : {"generate", "cut", "photometry", "detection-counts", "run"}</span>
+<span class="sd">        Which command is being dry-run; decides which config sections are validated. ``"run"``</span>
+<span class="sd">        validates ``generate:``, ``cuts:`` (if declared), ``photometry:``, and</span>
+<span class="sd">        ``detection_counts:`` (if declared).</span>
+<span class="sd">    outputs : iterable of pathlib.Path, optional</span>
+<span class="sd">        The files the real command would write, checked for collisions.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Whether the real command would be run with ``--overwrite``.</span>
+<span class="sd">    cut_names : list of str, optional</span>
+<span class="sd">        For ``"cut"``, which of the config's cuts would run (default: every declared cut).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lines : list of str</span>
+<span class="sd">        The report, one line per entry.</span>
+<span class="sd">    ok : bool</span>
+<span class="sd">        `False` if the real command would fail on an output file that already exists.</span>
+<span class="sd">    """</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" (config: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">_source</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">_source</span> <span class="k">else</span> <span class="s2">""</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"dry run: </span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mission:   </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"schedule:  </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">schedule</span><span class="p">)</span><span class="si">}</span><span class="s2"> scheduled actions"</span><span class="p">)</span>
+
+    <span class="n">transients</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">transients</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"transients (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">transients</span><span class="p">)</span><span class="si">}</span><span class="s2">):"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">transient</span> <span class="ow">in</span> <span class="n">transients</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">transient</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&lt;34s</span><span class="si">}</span><span class="s2"> sed=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">sed</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&lt;32s</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"z&lt;=</span><span class="si">{</span><span class="n">transient</span><span class="o">.</span><span class="n">redshift_limit</span><span class="si">}</span><span class="s2">  duration=</span><span class="si">{</span><span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">command</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"generate"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">):</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">generate</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"generate"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"seed"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"generate:  time_bins=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">time_bins</span><span class="si">}</span><span class="s2">, nside=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">nside</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'default'</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"order=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">order</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'default'</span><span class="si">}</span><span class="s2">, downsample=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">downsample</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'none'</span><span class="si">}</span><span class="s2">, seed=</span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">"cut"</span> <span class="ow">or</span> <span class="p">(</span><span class="n">command</span> <span class="o">==</span> <span class="s2">"run"</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">has_section</span><span class="p">(</span><span class="s2">"cuts"</span><span class="p">)):</span>
+        <span class="n">cuts</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">cuts</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span> <span class="k">if</span> <span class="n">cut_names</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">"run"</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">cut_names</span><span class="p">)</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">selected</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cuts</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown cut key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">cuts</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuts (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span><span class="si">}</span><span class="s2">, in order):"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cuts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cuts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">params</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">command</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"photometry"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">):</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">photometry</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"photometry: bands=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">bands</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'every band'</span><span class="si">}</span><span class="s2">, n_sigma=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">n_sigma</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'default'</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">"run"</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"yield:     confidence=</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">yield_config</span><span class="o">.</span><span class="n">confidence</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">"detection-counts"</span> <span class="ow">or</span> <span class="p">(</span><span class="n">command</span> <span class="o">==</span> <span class="s2">"run"</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">has_section</span><span class="p">(</span><span class="s2">"detection_counts"</span><span class="p">)):</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">detection_counts</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"detection_counts: snr_threshold=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">snr_threshold</span><span class="si">}</span><span class="s2">, confidence=</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">confidence</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outputs</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"outputs:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  WOULD FAIL   </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> already exists (pass --overwrite)"</span><span class="p">)</span>
+                <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  would write  </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"nothing was sampled or written."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lines</span><span class="p">,</span> <span class="n">ok</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

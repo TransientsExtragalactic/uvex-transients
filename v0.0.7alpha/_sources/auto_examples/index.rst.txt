@@ -1,0 +1,244 @@
+:orphan:
+
+.. image:: ../images/uvex_logo_dark.png
+   :width: 200px
+   :align: center
+
+.. _examples:
+
+********
+Examples
+********
+
+.. card::
+   :class-card: sd-shadow-sm gallery-banner
+
+   Runnable, self-contained examples: building and validating a survey schedule, simulating
+   transient populations against it, and extending the code base with a new transient class.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+******************
+Custom Transients
+******************
+
+.. card::
+   :class-card: sd-shadow-sm gallery-banner
+
+   *Module:* :mod:`~uvex_transients.transients`
+
+   Write your own :class:`~uvex_transients.models.core.base.SpectralModel` and
+   :class:`~uvex_transients.transients.base.TransientBase` subclass, sampled and simulated just
+   like the built-in transient classes.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+*********************************
+Working with Simulation Schedules
+*********************************
+
+.. card::
+   :class-card: sd-shadow-sm gallery-banner
+
+   *Module:* :mod:`~uvex_transients.surveys`
+
+   Build, validate, and inspect a :class:`~uvex_transients.surveys.base.SurveySchedule` before
+   handing it to a simulation.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="user_guide_surveys_cadence lays out six cadence diagnostics that SurveySchedule can compute, each as a full-sky HEALPix map, to answer some flavor of &quot;how well does this survey sample transients on a particular timescale?&quot; That page&#x27;s own runnable examples build small synthetic schedules to keep things fast and self-contained. Here, we instead run every one of those diagnostics against the real thing: the default UVEX schedule, as published by the UVEX scheduler project and fetched via get_schedule.">
+
+.. only:: html
+
+  .. image:: /auto_examples/schedules/images/thumb/sphx_glr_plot_cadence_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/schedules/plot_cadence`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cadence Diagnostics on the Default Schedule</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+**********************
+Simulating Transients
+**********************
+
+.. card::
+   :class-card: sd-shadow-sm gallery-banner
+
+   *Module:* :mod:`~uvex_transients.simulation`
+
+   Run a :class:`~uvex_transients.simulation.core.SurveySimulator` end to end: sample, screen,
+   and generate synthetic photometry for individual events.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py starts from a whole population, Monte Carlo sampled and screened against a real SurveySchedule. A target-of-opportunity (ToO) follow-up is the opposite problem: one specific TDE, at a position and redshift already known (from an alert, say), that gets pointed at directly on whatever cadence is chosen -- no schedule, no windowed sampling, no Event.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_too_followup_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_too_followup`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Target-of-Opportunity Follow-up of a TDE</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A minimal example of an end-to-end simulation of transient yields from a UVEX survey schedule. In this example, we&#x27;ll determine the anticipated yield of TDEs with the default UVEX schedule. To do this, we&#x27;ll take the following steps:">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_tde_end_to_end_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_tde_end_to_end`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">TDE End-to-End Simulation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The primary design scope of uvex-transients is to simulate yields from UVEX&#x27;s various surveys; however, there will certainly be cases when UVEX observes sources with corresponding OIR data from ZTF / Rubin / other ground based surveys. In some cases, this may be serendipetous, but in others, it may be because the sources was discovered and classified by a ground based observatory and a TOO was triggered on UVEX.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_multiband_too_followup_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_multiband_too_followup`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Multi-Band ToO Follow-up</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The Morag+24 shock-cooling emission of Type IIb supernovae comes in two flavors that share the same physical parameters and the same bolometric-luminosity/color-temperature evolution, but differ in the shape of the spectrum: MoragShockCoolingBlackbodySED is a pure blackbody (Eq. A8), while MoragShockCoolingSED adds the UV line suppression and free-free correction of Eq. A7. Since UVEX observes precisely in the UV where those two disagree the most, it&#x27;s a useful test case for a follow-up campaign.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_shock_cooling_comparison_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_shock_cooling_comparison`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Shock-Cooling Models: Blackbody vs. Full SED</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+   :includehidden:
+
+
+   /auto_examples/custom_transients/index.rst
+   /auto_examples/schedules/index.rst
+   /auto_examples/simulating/index.rst
+
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
+
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download all examples in Python source code: auto_examples_python.zip </auto_examples/auto_examples_python.zip>`
+
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download all examples in Jupyter notebooks: auto_examples_jupyter.zip </auto_examples/auto_examples_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

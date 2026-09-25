@@ -1,0 +1,930 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Cadence Diagnostics on the Default Schedule &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'auto_examples/schedules/plot_cadence';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.7alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulating Transients" href="../simulating/index.html" />
+    <link rel="prev" title="Working with Simulation Schedules" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../custom_transients/index.html">Custom Transients</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Working with Simulation Schedules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Cadence Diagnostics on the Default Schedule</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../simulating/index.html">Simulating Transients</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_too_followup.html">Target-of-Opportunity Follow-up of a TDE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_tde_end_to_end.html">TDE End-to-End Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_multiband_too_followup.html">Multi-Band ToO Follow-up</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_shock_cooling_comparison.html">Shock-Cooling Models: Blackbody vs. Full SED</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Examples</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Working with Simulation Schedules</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Cadence Diagnostics on the Default Schedule</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-schedules-plot-cadence-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="cadence-diagnostics-on-the-default-schedule">
+<span id="sphx-glr-auto-examples-schedules-plot-cadence-py"></span><h1>Cadence Diagnostics on the Default Schedule<a class="headerlink" href="#cadence-diagnostics-on-the-default-schedule" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="../../user_guide/surveys/overview.html#user-guide-surveys-cadence"><span class="std std-ref">Survey Cadence</span></a> lays out six cadence diagnostics that
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> can compute, each as a
+full-sky HEALPix map, to answer some flavor of “how well does this survey
+sample transients on a particular timescale?” That page’s own runnable
+examples build small synthetic schedules to keep things fast and
+self-contained. Here, we instead run every one of those diagnostics against
+the real thing: the <em>default</em> UVEX schedule, as published by the
+<a class="reference external" href="https://github.com/m4opt/uvex-scheduler">UVEX scheduler</a> project and
+fetched via <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.get_schedule.html#uvex_transients.surveys.utils.get_schedule" title="uvex_transients.surveys.utils.get_schedule"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_schedule()</span></code></a>.</p>
+<p>Two of the six diagnostics, <em>Pair Counts</em> and <em>Control-Time Curve</em>, come
+in a <code class="docutils literal notranslate"><span class="pre">_curve</span></code> variant that sweeps an entire array of transient timescales,
+re-scanning every observed sky pixel once per timescale. That’s the right
+tool for scanning “how does sensitivity change with timescale,” but on a
+two-year, ~34,000-observation schedule it’s also the one part of this page
+we deliberately skip: each single-timescale call below already touches every
+observed pixel once, so sweeping a few dozen timescales means paying that
+cost a few dozen times over. The <a class="reference internal" href="../../user_guide/surveys/overview.html#user-guide-surveys-cadence"><span class="std std-ref">Survey Cadence</span></a> page runs
+the <code class="docutils literal notranslate"><span class="pre">_curve</span></code> sweep itself, on a much smaller synthetic schedule built for
+exactly that purpose.</p>
+<section id="loading-the-default-schedule">
+<h2>Loading the default schedule<a class="headerlink" href="#loading-the-default-schedule" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.get_schedule.html#uvex_transients.surveys.utils.get_schedule" title="uvex_transients.surveys.utils.get_schedule"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_schedule()</span></code></a>, called with no
+arguments, downloads and locally caches whichever schedule is registered as
+<code class="docutils literal notranslate"><span class="pre">config[&quot;schedules.default_schedule&quot;]</span></code>; network access is required the
+first time this runs for a given schedule, after which the cached copy is
+reused.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="nn">.</span><span class="nn">pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span><span class="w">
+</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="w">
+</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="nn">.</span><span class="nn">plotting</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.get_default_cmap.html#uvex_transients.utils.plotting.get_default_cmap" title="uvex_transients.utils.plotting.get_default_cmap"><span class="n">get_default_cmap</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">(</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">n_observations</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.count_nonzero.html#numpy.count_nonzero" title="numpy.count_nonzero"><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.table.html#uvex_transients.surveys.base.SurveySchedule.table" title="uvex_transients.SurveySchedule.table"><span class="n">schedule</span><span class="o">.</span><span class="n">table</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">action</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="s2">observe</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">n_observations</span></a><span class="si">}</span><span class="s2"> observations over </span><span class="si">{</span><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.end_time.html#uvex_transients.surveys.base.SurveySchedule.end_time" title="uvex_transients.SurveySchedule.end_time"><span class="n">schedule</span><span class="o">.</span><span class="n">end_time</span></a><span class="w"> </span><span class="o">-</span><span class="w"> </span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.start_time.html#uvex_transients.surveys.base.SurveySchedule.start_time" title="uvex_transients.SurveySchedule.start_time"><span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span></a><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;SurveySchedule n_actions=112803 start_time='2030-01-01 00:00:00.000' end_time='2032-01-01 06:14:00.046'&gt;
+53480 observations over 730.2597227546296 d
+</pre></div>
+</div>
+<p>Every diagnostic below gets the same two views: a full-sky map and a
+histogram over its per-pixel (or, for <em>Successive Gaps</em>, per-pair) values.
+<a class="reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_healpix_map()</span></code></a> and
+<a class="reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_histogram()</span></code></a> do the plotting for
+all of them.</p>
+<p>Every quantity on this page (a count, a separation, a duration) is
+strictly positive and spans several orders of magnitude between its
+quietest and busiest sky pixels, so both helpers plot on a <strong>log</strong> scale
+throughout: <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LogNorm.html#matplotlib.colors.LogNorm" title="(in Matplotlib v3.11.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogNorm</span></code></a> for the map color, and
+log-spaced bins for the histogram. Both settle on a single perceptually
+uniform colormap, <code class="docutils literal notranslate"><span class="pre">config[&quot;plotting.default_cmap&quot;]</span></code> (<code class="docutils literal notranslate"><span class="pre">viridis</span></code>), kept
+consistent across every plot on the page (and echoed in the histogram
+bars) rather than switching palettes diagnostic to diagnostic; it avoids
+the very dark, near-black low end other sequential colormaps (e.g.
+<code class="docutils literal notranslate"><span class="pre">magma</span></code>) use, which reads poorly next to the black axis labels and
+titles surrounding each plot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">nside=64</span></code> is used throughout, coarser than the <code class="docutils literal notranslate"><span class="pre">nside=128</span></code> default
+used elsewhere in the docs, purely to keep this page’s dozen full-sky
+passes over a real two-year schedule quick to render; nothing here is
+sensitive to that choice.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a> <span class="o">=</span> <span class="mi">64</span><span class="w">
+</span><span class="w">
+</span><span class="c1"># A mid-tone point on the shared default colormap, so the histograms read as part of the same</span><span class="w">
+</span><span class="c1"># palette as the maps' colorbars.</span><span class="w">
+</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="tuple"><span class="n">HIST_COLOR</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.get_default_cmap.html#uvex_transients.utils.plotting.get_default_cmap" title="uvex_transients.utils.plotting.get_default_cmap"><span class="n">get_default_cmap</span></a><span class="p">(</span><span class="p">)</span><span class="p">(</span><span class="mf">0.55</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+</section>
+<section id="visit-count-distribution">
+<h2>Visit Count Distribution<a class="headerlink" href="#visit-count-distribution" title="Link to this heading">#</a></h2>
+<p>The coarsest diagnostic: how many times, <span class="math notranslate nohighlight">\(N(p)\)</span>, did an <code class="docutils literal notranslate"><span class="pre">&quot;observe&quot;</span></code>
+footprint cover each HEALPix pixel <span class="math notranslate nohighlight">\(p\)</span>. It says nothing about
+<em>when</em> those visits happened, but it’s the right first question: every
+other diagnostic on this page is only defined where <span class="math notranslate nohighlight">\(N(p) \geq 2\)</span>.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_count</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count" title="uvex_transients.SurveySchedule.compute_visit_count"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_visit_count</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">covered</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.count_nonzero.html#numpy.count_nonzero" title="numpy.count_nonzero"><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_count</span></a> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">covered</span></a><span class="si">}</span><span class="s2">/</span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">visit_count</span><span class="o">.</span><span class="n">size</span></a><span class="si">}</span><span class="s2"> pixels observed (</span><span class="si">{</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">covered</span></a><span class="w"> </span><span class="o">/</span><span class="w"> </span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">visit_count</span><span class="o">.</span><span class="n">size</span></a><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> of the sky)</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_count</span></a><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Visit count</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Visits</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_001.png" srcset="../../_images/sphx_glr_plot_cadence_001.png" alt="Visit count" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>48626/49152 pixels observed (98.9% of the sky)
+
+(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Visit count'}&gt;)
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count_histogram()</span></code></a>
+gives the same information as a proper histogram over <em>observed</em> pixels:
+the one below, plotted on log-log axes since a handful of heavily-revisited
+pixels span orders of magnitude more visits than the typical one.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_counts</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">pixel_counts</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram" title="uvex_transients.SurveySchedule.compute_visit_count_histogram"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_visit_count_histogram</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">observed</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_counts</span></a> <span class="o">&gt;</span> <span class="mi">0</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure"><span class="n">fig</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes"><span class="n">ax</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">)</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.bar.html#matplotlib.axes.Axes.bar" title="matplotlib.axes.Axes.bar"><span class="n">ax</span><span class="o">.</span><span class="n">bar</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">visit_counts</span></a><span class="p">[</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">observed</span></a><span class="p">]</span><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">pixel_counts</span></a><span class="p">[</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">observed</span></a><span class="p">]</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="tuple"><span class="n">HIST_COLOR</span></a><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xscale.html#matplotlib.axes.Axes.set_xscale" title="matplotlib.axes.Axes.set_xscale"><span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">log</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_yscale.html#matplotlib.axes.Axes.set_yscale" title="matplotlib.axes.Axes.set_yscale"><span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">log</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Visits to a pixel</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Pixels</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_title.html#matplotlib.axes.Axes.set_title" title="matplotlib.axes.Axes.set_title"><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Visit count histogram</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_002.png" srcset="../../_images/sphx_glr_plot_cadence_002.png" alt="Visit count histogram" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Text(0.5, 1.0, 'Visit count histogram')
+</pre></div>
+</div>
+</section>
+<section id="pair-wise-cadence">
+<h2>Pair-wise Cadence<a class="headerlink" href="#pair-wise-cadence" title="Link to this heading">#</a></h2>
+<p>For every pixel with <span class="math notranslate nohighlight">\(N(p) \geq 2\)</span>, consider every unique pair of its
+own visits and how far apart in time they fall
+(<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a>,
+<code class="docutils literal notranslate"><span class="pre">pairs='all'</span></code>) and reduce that to per-pixel statistics
+(<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a>).
+The median of that distribution is a general-purpose “how far apart in time
+were the observations of this point” number, the one to compare against a
+transient’s characteristic fade time to see whether typical sampling could
+even resolve it.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">cadence_stats</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.SurveySchedule.compute_cadence_statistics"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_cadence_statistics</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span> <span class="n">pairs</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">all</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">median_separation</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">cadence_stats</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">median</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">median_separation</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median pairwise separation</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median separation [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_003.png" srcset="../../_images/sphx_glr_plot_cadence_003.png" alt="Median pairwise separation" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Median pairwise separation'}&gt;)
+</pre></div>
+</div>
+<p>The same values, pooled into a histogram rather than mapped by position:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">median_separation</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median pairwise separation</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median separation [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_004.png" srcset="../../_images/sphx_glr_plot_cadence_004.png" alt="Median pairwise separation" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 900x550 with 1 Axes&gt;, &lt;Axes: title={'center': 'Median pairwise separation'}, xlabel='Median separation [days]', ylabel='Pixels'&gt;)
+</pre></div>
+</div>
+</section>
+<section id="successive-gaps">
+<h2>Successive Gaps<a class="headerlink" href="#successive-gaps" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pairs='consecutive'</span></code> case of the same underlying method isolates the
+gaps between one visit and the very next one. Unlike the <code class="docutils literal notranslate"><span class="pre">'all'</span></code>
+distribution above, it can’t be inflated by long baselines between distant,
+non-adjacent revisits of the same pixel, so it’s the more literal answer to
+“how long between one look and the next.”</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">consecutive_stats</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.SurveySchedule.compute_cadence_statistics"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_cadence_statistics</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span> <span class="n">pairs</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">consecutive</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">median_gap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">consecutive_stats</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">median</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">median_gap</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median successive-visit gap</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Median gap [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_005.png" srcset="../../_images/sphx_glr_plot_cadence_005.png" alt="Median successive-visit gap" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Median successive-visit gap'}&gt;)
+</pre></div>
+</div>
+<p>Pooling every pixel’s <em>individual</em> successive gaps into one histogram,
+rather than mapping their per-pixel median as above, shows the shape of
+that distribution across the whole schedule at once: a sub-day peak from
+same-block revisits, with a long tail out toward seasonal,
+solar-avoidance-driven gaps.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">successive_gaps</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">_</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.SurveySchedule.compute_cadence_time_differences"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_cadence_time_differences</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span> <span class="n">pairs</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">consecutive</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-method reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity.to_value" title="astropy.units.Quantity.to_value"><span class="n">successive_gaps</span><span class="o">.</span><span class="n">to_value</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Successive-gap distribution, pooled over the whole sky</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Successive-visit gap [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Pairs of visits</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_006.png" srcset="../../_images/sphx_glr_plot_cadence_006.png" alt="Successive-gap distribution, pooled over the whole sky" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 900x550 with 1 Axes&gt;, &lt;Axes: title={'center': 'Successive-gap distribution, pooled over the whole sky'}, xlabel='Successive-visit gap [days]', ylabel='Pairs of visits'&gt;)
+</pre></div>
+</div>
+</section>
+<section id="max-gap">
+<h2>Max Gap<a class="headerlink" href="#max-gap" title="Link to this heading">#</a></h2>
+<p>The single worst-case successive gap at each pixel
+(<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_max_gap.html#uvex_transients.surveys.base.SurveySchedule.compute_max_gap" title="uvex_transients.surveys.base.SurveySchedule.compute_max_gap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_max_gap()</span></code></a>):
+the maximum, rather than the mean or median, of the <em>Successive Gaps</em> set.
+A pixel can look fine on the median-gap map above and still hide one long
+lapse here, e.g. across a seasonal visibility gap, during which a fast
+transient could rise and fade without a single supporting observation.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">max_gap</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_max_gap.html#uvex_transients.surveys.base.SurveySchedule.compute_max_gap" title="uvex_transients.SurveySchedule.compute_max_gap"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_max_gap</span></a><span class="p">(</span><span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">max_gap</span></a><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Worst-case successive gap</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Max gap [days]</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_007.png" srcset="../../_images/sphx_glr_plot_cadence_007.png" alt="Worst-case successive gap" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Worst-case successive gap'}&gt;)
+</pre></div>
+</div>
+<p>The same values, pooled into a histogram rather than mapped by position:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">max_gap</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Worst-case successive gap</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Max gap [days]</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_008.png" srcset="../../_images/sphx_glr_plot_cadence_008.png" alt="Worst-case successive gap" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 900x550 with 1 Axes&gt;, &lt;Axes: title={'center': 'Worst-case successive gap'}, xlabel='Max gap [days]', ylabel='Pixels'&gt;)
+</pre></div>
+</div>
+</section>
+<section id="pair-counts">
+<h2>Pair Counts<a class="headerlink" href="#pair-counts" title="Link to this heading">#</a></h2>
+<p>The first timescale-specific diagnostic: fix a characteristic transient
+timescale <span class="math notranslate nohighlight">\(T\)</span> (here, three days, roughly the rise-or-fade timescale
+of a kilonova, one of the transient classes this package simulates) and a
+qualifying separation window <span class="math notranslate nohighlight">\([0.5T,\ 2T]\)</span> wide enough to bracket
+it. <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_counts.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_counts" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_counts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_counts()</span></code></a>
+counts, per pixel, how many visit pairs fall in that window, and reports
+the total <strong>sensitive area</strong>: the solid angle of pixels with at least one
+qualifying pair at all. It’s a cheap <em>existence</em> question, “could this
+cadence ever catch a three-day transient rising or fading here?”, not yet
+“for how much of the survey.”</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">pair_counts</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">sensitive_area</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_counts.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_counts" title="uvex_transients.SurveySchedule.compute_pair_counts"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_pair_counts</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Sensitive area at </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2">: </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-method reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity.to" title="astropy.units.Quantity.to"><span class="n">sensitive_area</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">deg</span></a><span class="o">*</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">pair_counts</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Qualifying pairs for a </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2"> timescale</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Qualifying pairs</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_009.png" srcset="../../_images/sphx_glr_plot_cadence_009.png" alt="Qualifying pairs for a 3.0 d timescale" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sensitive area at 3.0 d: 14907.5 deg2
+
+(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Qualifying pairs for a 3.0 d timescale'}&gt;)
+</pre></div>
+</div>
+<p>The same values, pooled into a histogram rather than mapped by position:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">pair_counts</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Qualifying pairs for a </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2"> timescale</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Qualifying pairs</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Pixels</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_010.png" srcset="../../_images/sphx_glr_plot_cadence_010.png" alt="Qualifying pairs for a 3.0 d timescale" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 900x550 with 1 Axes&gt;, &lt;Axes: title={'center': 'Qualifying pairs for a 3.0 d timescale'}, xlabel='Qualifying pairs', ylabel='Pixels'&gt;)
+</pre></div>
+</div>
+</section>
+<section id="control-time">
+<h2>Control Time<a class="headerlink" href="#control-time" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time()</span></code></a>
+refines <em>Pair Counts</em> from “does a qualifying pair exist” to “for how much
+of the survey would a transient starting here actually be caught.” That
+distinguishes a pixel with one lucky qualifying pair from one with
+continuous, repeated cadence support at this timescale, something <em>Pair
+Counts</em> alone can’t tell apart. This is the single-timescale half of the
+diagnostic; sweeping it into a curve over many timescales
+(<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time_curve()</span></code></a>)
+is exactly the sweep this page skips. See <a class="reference internal" href="../../user_guide/surveys/overview.html#user-guide-surveys-cadence"><span class="std std-ref">Survey Cadence</span></a>
+for that version, run on a small synthetic schedule.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">control_time</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">exposure</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time" title="uvex_transients.SurveySchedule.compute_control_time"><span class="n">schedule</span><span class="o">.</span><span class="n">compute_control_time</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Area-time exposure at </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2">: </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-method reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity.to" title="astropy.units.Quantity.to"><span class="n">exposure</span><span class="o">.</span><span class="n">to</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">deg</span></a><span class="o">*</span><span class="o">*</span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">control_time_days</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-method reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity.to_value" title="astropy.units.Quantity.to_value"><span class="n">control_time</span><span class="o">.</span><span class="n">to_value</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><span class="n">plot_healpix_map</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">control_time_days</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">nside</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">NSIDE</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Control time for a </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2"> timescale</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Control time [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_011.png" srcset="../../_images/sphx_glr_plot_cadence_011.png" alt="Control time for a 3.0 d timescale" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Area-time exposure at 3.0 d: 574858.1 deg2 d
+
+(&lt;Figure size 1000x550 with 2 Axes&gt;, &lt;AitoffAxes: title={'center': 'Control time for a 3.0 d timescale'}&gt;)
+</pre></div>
+</div>
+<p>The same values, pooled into a histogram rather than mapped by position:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><span class="n">plot_histogram</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">control_time_days</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Control time for a </span><span class="si">{</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">kilonova_timescale</span></a><span class="si">}</span><span class="s2"> timescale</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span>    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">Control time [days]</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_cadence_012.png" srcset="../../_images/sphx_glr_plot_cadence_012.png" alt="Control time for a 3.0 d timescale" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 900x550 with 1 Axes&gt;, &lt;Axes: title={'center': 'Control time for a 3.0 d timescale'}, xlabel='Control time [days]', ylabel='Pixels'&gt;)
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 1.471 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-schedules-plot-cadence-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/40e08c119e0e4a5b8b7162ccc246610d/plot_cadence.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_cadence.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/a381de9403bfdf5f4638bdac528feb90/plot_cadence.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_cadence.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/4109fc6ca6ef0786af91c8b597493a6f/plot_cadence.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">plot_cadence.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Working with Simulation Schedules</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../simulating/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Simulating Transients</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-default-schedule">Loading the default schedule</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visit-count-distribution">Visit Count Distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pair-wise-cadence">Pair-wise Cadence</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#successive-gaps">Successive Gaps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#max-gap">Max Gap</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pair-counts">Pair Counts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#control-time">Control Time</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/auto_examples/schedules/plot_cadence.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,861 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Superluminous Supernovae (SLSNe-I) &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'transients/slsne';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.7alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples" href="../auto_examples/index.html" />
+    <link rel="prev" title="Shock-Cooling Emission from Type IIb SNe" href="shock_cooling_iib.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="kilonovae.html">Kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdes.html">Tidal Disruption Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lfbots.html">Luminous Fast Blue Optical Transients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_ii.html">Type II Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_i.html">Type I (Stripped-Envelope) Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shock_cooling_iib.html">Shock-Cooling Emission from Type IIb SNe</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Superluminous Supernovae (SLSNe-I)</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Transients</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Superluminous Supernovae (SLSNe-I)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="superluminous-supernovae-slsne-i">
+<span id="transients-slsne"></span><h1>Superluminous Supernovae (SLSNe-I)<a class="headerlink" href="#superluminous-supernovae-slsne-i" title="Link to this heading">#</a></h1>
+<p>Superluminous supernovae (SLSNe) reach peak luminosities roughly ten times higher than ordinary
+core-collapse or Type Ia supernovae and stay bright for weeks to months. The hydrogen-poor
+subclass, SLSNe-I, is the best studied: radioactive <span class="math notranslate nohighlight">\(^{56}\mathrm{Ni}\)</span> decay alone cannot
+supply enough energy to power most of these events, and their bright, blue, slowly-declining
+light curves are instead widely explained by the spin-down power of a newly formed,
+rapidly-rotating, strongly-magnetized neutron star (a magnetar) embedded in the expanding ejecta
+<a class="footnote-reference brackets" href="#footcite-2010apj-717-245k" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a><a class="footnote-reference brackets" href="#footcite-2010apj-719l-204w" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>This population is implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">MagnetarSLSNe</span></code></a>,
+pairing <a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettMagnetarSpindownSED.html#uvex_transients.models.arnett.ArnettMagnetarSpindownSED" title="uvex_transients.models.arnett.ArnettMagnetarSpindownSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettMagnetarSpindownSED</span></code></a> with the
+rate/duration metadata described below. Unlike the purely phenomenological SED shapes used
+elsewhere in this package, this SED is a semi-analytic solution of the underlying diffusion
+physics (Arnett<a class="footnote-reference brackets" href="#footcite-1982apj-253-785a" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, extended by Nicholl <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> and
+Wang <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2015apj-799-107w" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>), so it is grouped with the other detailed physical models.</p>
+<section id="quick-facts">
+<h2>Quick Facts<a class="headerlink" href="#quick-facts" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p><span class="math notranslate nohighlight">\(R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)\)</span>; SLSN-I <span class="math notranslate nohighlight">\(1/3500\)</span> of <span class="math notranslate nohighlight">\(R_\mathrm{CC}(z)\)</span>
+(<span class="math notranslate nohighlight">\(\approx18\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span> locally)</p></td>
+<td><p>Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>, Madau and Dickinson<a class="footnote-reference brackets" href="#footcite-madau2014" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>, Frohmaier <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2021mnras-500-5142f" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a></p></td>
+<td><p>Frohmaier <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2021mnras-500-5142f" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> measure a local ratio of SLSN-I to all core-collapse SNe of
+<span class="math notranslate nohighlight">\(1/3500^{+2800}_{-720}\)</span> (uncertainty on the denominator, i.e. the rate itself spans
+<span class="math notranslate nohighlight">\(1/6300\)</span> to <span class="math notranslate nohighlight">\(1/2780\)</span>). Adopted as a constant fraction of the core-collapse rate,
+so it tracks the same star-formation history. Combined in quadrature with
+Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>’s <span class="math notranslate nohighlight">\(+27\%/-31\%\)</span> normalization uncertainty, this gives
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI.html#uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI" title="uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> (see
+<a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 4\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Set from an actual <code class="docutils literal notranslate"><span class="pre">generate_events</span></code>/<code class="docutils literal notranslate"><span class="pre">filter_by_snr</span></code> run against the default UVEX
+schedule (25 AB mag limiting-magnitude screen, SNR <span class="math notranslate nohighlight">\(&gt;5\)</span>).</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>600 days</p></td>
+<td><p>–</p></td>
+<td><p>Covers the rise (median <span class="math notranslate nohighlight">\(\approx30\)</span> d) and most of the decline. The bolometric light
+curve falls to <span class="math notranslate nohighlight">\(10^{-3}\)</span> of peak after a median of <span class="math notranslate nohighlight">\(\approx540\)</span> d (16th-84th
+percentile 250-1400 d, rest frame), so the slowest events’ faint tails are truncated by this
+window rather than fully simulated.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="sed-model">
+<h2>SED Model<a class="headerlink" href="#sed-model" title="Link to this heading">#</a></h2>
+<p><em>Model Class</em>: <a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettMagnetarSpindownSED.html#uvex_transients.models.arnett.ArnettMagnetarSpindownSED" title="uvex_transients.models.arnett.ArnettMagnetarSpindownSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettMagnetarSpindownSED</span></code></a></p>
+<p>The SED model for the SLSNe-I population utilizes the standard Arnett-style
+diffusion<a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> model driven by a magnetar spin-down power source.</p>
+<p>The magnetar’s total rotation energy and spin-down timescale are<a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></p>
+<div class="math notranslate nohighlight">
+\[E_\mathrm{mag} = 2.6\times10^{52}\left(\frac{M_\mathrm{NS}}{1.4\,M_\odot}\right)^{3/2}\left(\frac{P}{1\,\mathrm{ms}}\right)^{-2}\ \mathrm{erg},\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[t_\mathrm{mag} = 1.3\times10^{5}\left(\frac{M_\mathrm{NS}}{1.4\,M_\odot}\right)^{3/2}\left(\frac{P}{1\,\mathrm{ms}}\right)^{2}\left(\frac{B_\perp}{10^{14}\,\mathrm{G}}\right)^{-2}\ \mathrm{s}.\]</div>
+<p>We therefore adopt the engine power source</p>
+<div class="math notranslate nohighlight">
+\[F_\mathrm{mag}(t) = \frac{E_\mathrm{mag}}{t_\mathrm{mag}}\left(1 + \frac{t}{t_\mathrm{mag}}\right)^{-2}.\]</div>
+<p>The resulting bolometric lightcurve, including leakage, is</p>
+<div class="math notranslate nohighlight">
+\[L(t) = e^{-(t/t_d)^2}\left(1 - e^{-A/t^2}\right)
+       \int_0^t 2 F_\mathrm{mag}(t')\,\frac{t'}{t_d}\,e^{(t'/t_d)^2}\,\frac{dt'}{t_d},\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[t_d = \sqrt{\frac{2\kappa M_\mathrm{ej}}{\beta c\,v_\mathrm{ej}}}\]</div>
+<p>is the photon diffusion time and</p>
+<div class="math notranslate nohighlight">
+\[A = \frac{3\kappa_\gamma M_\mathrm{ej}}{4\pi v_\mathrm{ej}^2},\]</div>
+<p>is the leakage parameter. We adopt the density-profile constant <span class="math notranslate nohighlight">\(\beta=13.8\)</span><a class="footnote-reference brackets" href="#footcite-1982apj-253-785a" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.
+The photosphere expands at the constant ejecta velocity <span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span>, so its temperature follows the
+Stefan-Boltzmann law until it cools to a floor <span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span>, after which it holds there (the photosphere then
+recedes rather than continuing to cool):</p>
+<div class="math notranslate nohighlight">
+\[T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},\ T_\mathrm{floor}\right\},
+\qquad
+L_\nu(\nu, t) = L(t)\,\frac{\pi B_\nu(\nu, T(t))}{\sigma_\mathrm{SB}T(t)^4}.\]</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 14.0%" />
+<col style="width: 38.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">spin_period</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(P\)</span></p></td>
+<td><p>TruncatedLogNormal(<span class="math notranslate nohighlight">\(\log_{10}(P/\mathrm{ms})\)</span>; mean=:math:<cite>log_{10}(3.0)</cite>,
+<span class="math notranslate nohighlight">\(\sigma\)</span>=0.104; bounds <span class="math notranslate nohighlight">\([0.7, 20]\)</span> ms)</p></td>
+<td><p>Calibrated as a group with <code class="docutils literal notranslate"><span class="pre">B_perp</span></code>/<code class="docutils literal notranslate"><span class="pre">M_ej</span></code> (see note above); bounds are
+Nicholl <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>’s own fit-prior range.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">B_perp</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(B_\perp\)</span></p></td>
+<td><p>TruncatedLogNormal(<span class="math notranslate nohighlight">\(\log_{10}(B_\perp/10^{14}\,\mathrm{G})\)</span>; mean=:math:<cite>log_{10}(0.8)</cite>,
+<span class="math notranslate nohighlight">\(\sigma\)</span>=0.192; bounds <span class="math notranslate nohighlight">\([0.01, 10]\times10^{14}\)</span> G)</p></td>
+<td><p>Calibrated as a group with <code class="docutils literal notranslate"><span class="pre">spin_period</span></code>/<code class="docutils literal notranslate"><span class="pre">M_ej</span></code> (see note above); bounds are
+Nicholl <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>’s own fit-prior range.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p>TruncatedLogNormal(<span class="math notranslate nohighlight">\(\log_{10}(M_\mathrm{ej}/M_\odot)\)</span>; mean=:math:<cite>log_{10}(4.8)</cite>,
+<span class="math notranslate nohighlight">\(\sigma\)</span>=0.152; bounds <span class="math notranslate nohighlight">\([0.1, 100]\,M_\odot\)</span>)</p></td>
+<td><p>Calibrated as a group with <code class="docutils literal notranslate"><span class="pre">spin_period</span></code>/<code class="docutils literal notranslate"><span class="pre">B_perp</span></code> (see note above); bounds are
+Nicholl <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>’s own fit-prior range.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p>TruncatedNormal(<span class="math notranslate nohighlight">\(v_\mathrm{ej}/10^4\,\mathrm{km\,s^{-1}}\)</span>; mean=0.9, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3;
+bounds <span class="math notranslate nohighlight">\([0.1, 3.0]\)</span>)</p></td>
+<td><p><span class="math notranslate nohighlight">\(\approx9000\ \mathrm{km\,s^{-1}}\)</span>, from <span class="math notranslate nohighlight">\(\sqrt{2E_K/M_\mathrm{ej}}\)</span> at the
+posterior median <span class="math notranslate nohighlight">\(E_K=3.9\times10^{51}\)</span> erg, <span class="math notranslate nohighlight">\(M_\mathrm{ej}=4.8\,M_\odot\)</span>
+<a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>; width chosen here.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">M_ns</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_\mathrm{NS}\)</span></p></td>
+<td><p>Uniform(1.4, 2.2) <span class="math notranslate nohighlight">\(M_\odot\)</span></p></td>
+<td><p>Fit-prior range <a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p>Uniform(0.05, 0.2) <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p>Fit-prior range <a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p>LogUniform(0.01, 1) <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p>Narrower than the fit-prior’s full <span class="math notranslate nohighlight">\(0.01\)</span>-<span class="math notranslate nohighlight">\(100\ \mathrm{cm^2\,g^{-1}}\)</span> range: only
+a few events have late enough data to constrain <span class="math notranslate nohighlight">\(\kappa_\gamma\)</span>, but those that do
+favour similarly low values (e.g. SN 2015bn, <span class="math notranslate nohighlight">\(\kappa_\gamma\approx0.01\)</span>)
+<a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p>TruncatedNormal(6000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K; bounds <span class="math notranslate nohighlight">\([3000, 10000]\)</span> K)</p></td>
+<td><p>Matches the fit prior exactly <a class="footnote-reference brackets" href="#footcite-2017apj-850-55n" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="simulated-light-curves">
+<h3>Simulated Light Curves<a class="headerlink" href="#simulated-light-curves" title="Link to this heading">#</a></h3>
+<p>The plot below draws 300 random parameter realizations from the priors above and shows the
+resulting bolometric light curves and photospheric temperatures. Overlaid lightcurves are from
+Gomez <em>et al.</em><a class="footnote-reference brackets" href="#footcite-gomez2024" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>, which provides a curated set of SLSN-I light curves from the literature, with bolometric
+luminosities derived from multi-band photometry.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/c0fb0cd4c90534650ba1860d2fb9d0e3/slsne-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/ee137e371e513e961c6b313ac2fedad0/slsne-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/09bd4f7ed70b2e5e1355f7c7d93fe2aa/slsne-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/03966974ca76c87031bce778ff0a89bb/slsne-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/slsne-1.png" class="plot-directive" src="../_images/slsne-1.png" />
+</figure>
+</section>
+</section>
+<hr class="docutils" />
+<section id="observability-summary">
+<h2>Observability Summary<a class="headerlink" href="#observability-summary" title="Link to this heading">#</a></h2>
+<p>The light curve here has no single parameter that is exactly the bolometric peak time (<span class="math notranslate nohighlight">\(L(t)\)</span>
+is a numerically integrated diffusion solution), so each event’s peak apparent magnitude is found by
+searching a rest-frame time grid rather than evaluating at one closed-form epoch. Below are the
+redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes <span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of
+2000 simulated events drawn from the priors above, with the UVEX 1 Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span>
+overplotted. This justifies the <span class="math notranslate nohighlight">\(z=4\)</span> redshift limit adopted above.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/9299a572b76f778185295cd48161bb77/slsne-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/06bb4da76ccdfb040965a34eb7d7848d/slsne-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0ce4ae9e6d18b8a4c43c2c65088d7a47/slsne-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/ed919948817e387f1cbde637432b7c9e/slsne-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/slsne-2.png" class="plot-directive" src="../_images/slsne-2.png" />
+</figure>
+<p>The anticipated rate of SLSNe-I detectable by UVEX at this limit is as follows, assuming that any
+event above the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is isotropic and
+homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=4\)</span>:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/e556f12f47b6aa80d029958159d93e76/slsne-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/81cc12565c5d7121bc8ccdc722e8bdac/slsne-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/c13ccd8f67147b32d33252c1610738af/slsne-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/fdd0aaa3c4050b2c80a02f8b42a7f7d6/slsne-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/slsne-3.png" class="plot-directive" src="../_images/slsne-3.png" />
+</figure>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id23">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-2010apj-717-245k" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Daniel Kasen and Lars Bildsten. Supernova Light Curves Powered by Young Magnetars. <em>\apj </em>, 717(1):245–249, July 2010. <a class="reference external" href="https://arxiv.org/abs/0911.0680">arXiv:0911.0680</a>, <a class="reference external" href="https://doi.org/10.1088/0004-637X/717/1/245">doi:10.1088/0004-637X/717/1/245</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-2010apj-719l-204w" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>S. E. Woosley. Bright Supernovae from Magnetar Birth. <em>\apjl </em>, 719(2):L204–L207, August 2010. <a class="reference external" href="https://arxiv.org/abs/0911.0698">arXiv:0911.0698</a>, <a class="reference external" href="https://doi.org/10.1088/2041-8205/719/2/L204">doi:10.1088/2041-8205/719/2/L204</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-1982apj-253-785a" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id13">2</a>)</span>
+<p>W. D. Arnett. Type I supernovae. I - Analytic solutions for the early part of the light curve. <em>\apj </em>, 253:785–797, February 1982. <a class="reference external" href="https://doi.org/10.1086/159681">doi:10.1086/159681</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-2017apj-850-55n" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id4">1</a>,<a role="doc-backlink" href="#id11">2</a>,<a role="doc-backlink" href="#id12">3</a>,<a role="doc-backlink" href="#id14">4</a>,<a role="doc-backlink" href="#id15">5</a>,<a role="doc-backlink" href="#id16">6</a>,<a role="doc-backlink" href="#id17">7</a>,<a role="doc-backlink" href="#id18">8</a>,<a role="doc-backlink" href="#id19">9</a>,<a role="doc-backlink" href="#id20">10</a>,<a role="doc-backlink" href="#id21">11</a>)</span>
+<p>Matt Nicholl, James Guillochon, and Edo Berger. The Magnetar Model for Type I Superluminous Supernovae. I. Bayesian Analysis of the Full Multicolor Light-curve Sample with MOSFiT. <em>\apj </em>, 850(1):55, November 2017. <a class="reference external" href="https://arxiv.org/abs/1706.00825">arXiv:1706.00825</a>, <a class="reference external" href="https://doi.org/10.3847/1538-4357/aa9334">doi:10.3847/1538-4357/aa9334</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-2015apj-799-107w" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p>S. Q. Wang, L. J. Wang, Z. G. Dai, and X. F. Wu. Superluminous Supernovae Powered by Magnetars: Late-time Light Curves and Hard Emission Leakage. <em>\apj </em>, 799(1):107, January 2015. <a class="reference external" href="https://arxiv.org/abs/1411.5126">arXiv:1411.5126</a>, <a class="reference external" href="https://doi.org/10.1088/0004-637X/799/1/107">doi:10.1088/0004-637X/799/1/107</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-strolger2015" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id6">1</a>,<a role="doc-backlink" href="#id10">2</a>)</span>
+<p>Louis-Gregory Strolger, Tomas Dahlen, Steven A. Rodney, Or Graur, Adam G. Riess, Curtis McCully, Swara Ravindranath, Bahram Mobasher, and A. Kristin Shahady. The rate of core collapse supernovae to redshift 2.5 from the CANDELS and CLASH supernova surveys. <em>The Astrophysical Journal</em>, 813(2):93, 2015. <a class="reference external" href="https://arxiv.org/abs/1509.06574">arXiv:1509.06574</a>, <a class="reference external" href="https://doi.org/10.1088/0004-637X/813/2/93">doi:10.1088/0004-637X/813/2/93</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-madau2014" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">7</a><span class="fn-bracket">]</span></span>
+<p>Piero Madau and Mark Dickinson. Cosmic star-formation history. <em>Annual Review of Astronomy and Astrophysics</em>, 52:415–486, 2014. <a class="reference external" href="https://arxiv.org/abs/1403.0007">arXiv:1403.0007</a>, <a class="reference external" href="https://doi.org/10.1146/annurev-astro-081811-125615">doi:10.1146/annurev-astro-081811-125615</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-2021mnras-500-5142f" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id8">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
+<p>C. Frohmaier, C. R. Angus, M. Vincenzi, M. Sullivan, M. Smith, P. E. Nugent, S. B. Cenko, A. Gal-Yam, S. R. Kulkarni, N. M. Law, and R. M. Quimby. From core collapse to superluminous: the rates of massive stellar explosions from the Palomar Transient Factory. <em>\mnras </em>, 500(4):5142–5161, January 2021. <a class="reference external" href="https://arxiv.org/abs/2010.15270">arXiv:2010.15270</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/staa3607">doi:10.1093/mnras/staa3607</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-gomez2024" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id22">9</a><span class="fn-bracket">]</span></span>
+<p>Sebastian Gomez, Matt Nicholl, Edo Berger, Peter K. Blanchard, V. Ashley Villar, and others. The Type I superluminous supernova catalogue - I. Light-curve properties, models, and catalogue description. <em>\mnras </em>, 535(1):471–515, November 2024. <a class="reference external" href="https://arxiv.org/abs/2407.07946">arXiv:2407.07946</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stae2270">doi:10.1093/mnras/stae2270</a>.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="shock_cooling_iib.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Shock-Cooling Emission from Type IIb SNe</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../auto_examples/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-facts">Quick Facts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sed-model">SED Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simulated-light-curves">Simulated Light Curves</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observability-summary">Observability Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/transients/slsne.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
