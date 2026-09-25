@@ -159,19 +159,19 @@ class Event:
         if not isinstance(photometry_pre_window, u.Quantity):
             raise TypeError(f"'photometry_pre_window' must be a Quantity, got {type(photometry_pre_window)}.")
 
-        try:
-            _ = photometry_pre_window.to(u.day).value
-        except u.UnitConversionError as err:
-            raise u.UnitConversionError(
-                f"'photometry_pre_window' must be convertible to time units, got {photometry_pre_window.unit}."
-            ) from err
-
-        try:
-            _ = photometry_post_window.to(u.day).value
-        except u.UnitConversionError as err:
-            raise u.UnitConversionError(
-                f"'photometry_post_window' must be convertible to time units, got {photometry_post_window.unit}."
-            ) from err
+        for name, window, allow_zero in (
+            ("photometry_pre_window", photometry_pre_window, True),
+            ("photometry_post_window", photometry_post_window, False),
+        ):
+            try:
+                value = window.to_value(u.day)
+            except u.UnitConversionError as err:
+                raise u.UnitConversionError(
+                    f"'{name}' must be convertible to time units, got {window.unit}."
+                ) from err
+            if not np.isfinite(value) or (value < 0 if allow_zero else value <= 0):
+                bound = "non-negative" if allow_zero else "positive"
+                raise ValueError(f"'{name}' must be finite and {bound}, got {window!r}.")
 
         self._photometry_post_window = photometry_post_window
         self._photometry_pre_window = photometry_pre_window
