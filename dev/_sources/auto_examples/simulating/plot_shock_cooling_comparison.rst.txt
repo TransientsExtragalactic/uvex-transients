@@ -36,7 +36,7 @@ In this example, we'll:
    parameters, and
 3. **Plot the light curves** in a 5 x 2 grid, one event per panel.
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-33
+.. GENERATED FROM PYTHON SOURCE LINES 20-36
 
 .. code-block:: Python
 
@@ -52,6 +52,9 @@ In this example, we'll:
     from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
     from uvex_transients.models.supernovae import MoragShockCoolingBlackbodySED
     from uvex_transients.transients.supernovae import ShockCoolingIIb
+    from uvex_transients.utils.plotting import get_band_color, set_plot_style
+
+    set_plot_style()
 
 
 
@@ -60,7 +63,7 @@ In this example, we'll:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-47
+.. GENERATED FROM PYTHON SOURCE LINES 37-50
 
 Sample the events
 --------------------
@@ -76,7 +79,7 @@ window we want to observe. We also cut the redshift limit down from its survey-s
 1: shock-cooling peaks are only ~-17 to -18 mag, so at the rate-weighted typical z ~ 0.5-1 nearly every
 event would sit below the detection limit of either instrument and make for an empty plot.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-80
+.. GENERATED FROM PYTHON SOURCE LINES 50-83
 
 .. code-block:: Python
 
@@ -120,7 +123,7 @@ event would sit below the detection limit of either instrument and make for an e
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-89
+.. GENERATED FROM PYTHON SOURCE LINES 84-92
 
 Choosing the cadences
 -------------------------
@@ -131,7 +134,7 @@ Rubin's redder bands (``r``/``i``/``z``/``y``) every 5 days and its bluer bands 
 UVEX's ``FUV``/``NUV`` every 20 days at 900 s. Each visit sequence starts at 0.1 days rather than
 exactly 0, since the shock-cooling model is undefined at the moment of explosion itself.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-114
+.. GENERATED FROM PYTHON SOURCE LINES 92-117
 
 .. code-block:: Python
 
@@ -167,7 +170,7 @@ exactly 0, since the shock-cooling model is undefined at the moment of explosion
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-121
+.. GENERATED FROM PYTHON SOURCE LINES 118-124
 
 Simulating photometry
 --------------------------
@@ -176,7 +179,7 @@ For each event and each SED, one :meth:`~uvex_transients.models.core.base.Spectr
 call is made per (instrument, cadence) group and the results are stacked. The same random seed is used for
 both SEDs so that any difference between them is down to the model, not the noise realization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-167
+.. GENERATED FROM PYTHON SOURCE LINES 124-170
 
 .. code-block:: Python
 
@@ -247,7 +250,7 @@ both SEDs so that any difference between them is down to the model, not the nois
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-174
+.. GENERATED FROM PYTHON SOURCE LINES 171-177
 
 The light curves
 -------------------
@@ -256,7 +259,7 @@ Each panel is one event, with events ordered by redshift. Solid lines and filled
 the noiseless curve and simulated visits for the full SED; dashed lines and open diamonds are the same for the
 blackbody. Only visits with SNR > 5 are drawn as points.
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-241
+.. GENERATED FROM PYTHON SOURCE LINES 177-235
 
 .. code-block:: Python
 
@@ -265,16 +268,7 @@ blackbody. Only visits with SNR > 5 are drawn as points.
     t_theory = np.linspace(T_START.value, DURATION.value, 300) * u.day
 
     band_detectors = dict.fromkeys(RUBIN_CADENCES, rubin.detector) | {"FUV": uvex.detector, "NUV": uvex.detector}
-    band_colors = {
-        "u": "#56B4E9",
-        "g": "#008060",
-        "r": "#FF4000",
-        "i": "#850000",
-        "z": "#6600CC",
-        "y": "#000000",
-        "FUV": "#4C72B0",
-        "NUV": "#DD8452",
-    }
+    band_colors = {band: get_band_color(band) for band in band_detectors}
     band_nu = {
         band: detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
         for band, detector in band_detectors.items()
@@ -342,7 +336,7 @@ blackbody. Only visits with SNR > 5 are drawn as points.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 6.663 seconds)
+   **Total running time of the script:** (0 minutes 6.445 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_shock_cooling_comparison.py:

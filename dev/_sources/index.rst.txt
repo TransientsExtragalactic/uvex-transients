@@ -192,6 +192,28 @@ Resources
 
             API Reference
 
+    .. grid-item-card::
+        :class-card: sd-text-center
+
+        :octicon:`graph;2em;capabilities-icon`
+
+        Report
+        ^^^^^^
+
+        Curious what UVEX will actually see? The report page tabulates detected event counts and
+        detection probabilities, and plots expected yields vs. detection threshold, for every
+        transient class -- generated automatically from the latest published release.
+
+        +++
+
+        .. button-ref:: report/index
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
+
+            Report
+
 Contents
 ========
 .. raw:: html
@@ -204,6 +226,7 @@ Contents
    user_guide
    transients/index
    auto_examples/index
+   report/index
    api
 
 Indices and tables

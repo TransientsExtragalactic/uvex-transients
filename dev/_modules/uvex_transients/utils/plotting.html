@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.utils.plotting &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/utils/plotting';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../utils.html" class="nav-link">uvex_transients.utils</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.utils.plotting</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.utils.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Shared plotting infrastructure for uvex_transients.</span>
+
+<span class="sd">Two layers live here:</span>
+
+<span class="sd">- **General infrastructure** (`resolve_fig_axes`, `set_plot_style`, `get_default_cmap`, `get_cmap`,</span>
+<span class="sd">  `get_band_color`) that every plotting function in the package and docs gallery is expected to go</span>
+<span class="sd">  through, so that figure size, style, and color choices come from one place --</span>
+<span class="sd">  ``config["plotting.*"]`` -- rather than being repeated (and drifting) at each call site.</span>
+<span class="sd">- **Reusable generators** for the plot shapes that recur throughout the docs gallery: a full-sky</span>
+<span class="sd">  HEALPix map plus its pooled histogram (`plot_healpix_map`/`plot_histogram`, both driven by</span>
+<span class="sd">  `~uvex_transients.surveys.base.SurveySchedule`'s per-pixel diagnostics), a per-band light curve of</span>
+<span class="sd">  theory curve + SNR-thresholded detections + upper limits (`plot_band_light_curve`, driven by</span>
+<span class="sd">  `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`), and the "detection funnel"</span>
+<span class="sd">  figures below.</span>
+
+<span class="sd">A detection funnel shows how many events of a population survive each progressively more expensive</span>
+<span class="sd">screening stage (sampled -&gt; magnitude-limited -&gt; SNR-detected; see</span>
+<span class="sd">`~uvex_transients.simulation.core.SurveySimulator`). Each stage count carries two independent</span>
+<span class="sd">sources of uncertainty that are otherwise easy to conflate into a single, misleadingly precise bar:</span>
+
+<span class="sd">- **MC (statistical) uncertainty**: every stage after the first is a binomial subsample of the raw</span>
+<span class="sd">  Monte Carlo draws in the first ("sampled") stage, so its uncertainty is exactly the same</span>
+<span class="sd">  Clopper-Pearson interval `~uvex_transients.simulation.event_catalog.EventCatalog.compute_detection_efficiency`</span>
+<span class="sd">  and `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary` already use for</span>
+<span class="sd">  detection efficiency, propagated back into count units.</span>
+<span class="sd">- **Rate (systematic) uncertainty**: the population's overall normalization, from</span>
+<span class="sd">  `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`. Because it is a pure</span>
+<span class="sd">  multiplicative scale on the underlying rate, it applies identically to every stage's point</span>
+<span class="sd">  estimate -- unlike the MC uncertainty, it does not shrink as later stages winnow the sample down.</span>
+
+<span class="sd">`compute_funnel_bounds` computes both; `plot_detection_funnel` draws them, together with the bars</span>
+<span class="sd">themselves, as two visually distinct error layers on the same `matplotlib.axes.Axes`.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">zlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Colormap</span><span class="p">,</span> <span class="n">to_rgba</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Patch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation._stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">clopper_pearson_interval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_healpix_resolution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"resolve_fig_axes"</span><span class="p">,</span>
+    <span class="s2">"set_plot_style"</span><span class="p">,</span>
+    <span class="s2">"get_default_cmap"</span><span class="p">,</span>
+    <span class="s2">"get_cmap"</span><span class="p">,</span>
+    <span class="s2">"get_band_color"</span><span class="p">,</span>
+    <span class="s2">"plot_healpix_map"</span><span class="p">,</span>
+    <span class="s2">"plot_histogram"</span><span class="p">,</span>
+    <span class="s2">"plot_band_light_curve"</span><span class="p">,</span>
+    <span class="s2">"compute_funnel_bounds"</span><span class="p">,</span>
+    <span class="s2">"plot_detection_funnel"</span><span class="p">,</span>
+    <span class="s2">"add_funnel_legend"</span><span class="p">,</span>
+    <span class="s2">"plot_rate_bars"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ============================================================================== #</span>
+<span class="c1"># General Infrastructure                                                         #</span>
+<span class="c1"># ============================================================================== #</span>
+<div class="viewcode-block" id="resolve_fig_axes">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.resolve_fig_axes.html#uvex_transients.utils.plotting.resolve_fig_axes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_fig_axes</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">axes</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dpi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">subplot_kw</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Figure</span><span class="p">,</span> <span class="n">Axes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a ``(figure, axes)`` pair from any combination of already-provided pieces.</span>
+
+<span class="sd">    Every plotting function in the package takes optional ``fig``/``axes`` arguments and starts by</span>
+<span class="sd">    calling this, so callers can either let a function create its own figure or hand it axes already</span>
+<span class="sd">    embedded in a larger layout (e.g. one panel of a `~matplotlib.pyplot.subplots` grid), without the</span>
+<span class="sd">    function needing its own branching for the two cases.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fig : matplotlib.figure.Figure, optional</span>
+<span class="sd">        An existing figure. If `None`, one is created (unless `axes` is given, in which case its</span>
+<span class="sd">        parent figure is used).</span>
+<span class="sd">    axes : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Existing axes to draw onto. If `None`, new axes are created on `fig`.</span>
+<span class="sd">    fig_size : tuple, optional</span>
+<span class="sd">        ``(width, height)`` in inches for a newly created figure, forwarded to</span>
+<span class="sd">        `~matplotlib.pyplot.subplots`. Defaults to ``config["plotting.default_figsize"]``.</span>
+<span class="sd">    dpi : float, optional</span>
+<span class="sd">        Resolution for a newly created figure, forwarded to `~matplotlib.pyplot.subplots`. Defaults</span>
+<span class="sd">        to ``config["plotting.dpi"]`` (the same default `set_plot_style` applies globally via</span>
+<span class="sd">        ``rcParams["figure.dpi"]``); pass explicitly to override it for one figure, e.g. a</span>
+<span class="sd">        higher-resolution figure meant to be saved as a small thumbnail.</span>
+<span class="sd">    subplot_kw : dict, optional</span>
+<span class="sd">        Forwarded to `~matplotlib.pyplot.subplots` when new axes are created, e.g.</span>
+<span class="sd">        ``{"projection": "aitoff"}``. Ignored when `axes` is already given.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        The resolved figure.</span>
+<span class="sd">    axes : matplotlib.axes.Axes</span>
+<span class="sd">        The resolved axes.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="k">if</span> <span class="n">fig_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig_size</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.default_figsize"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dpi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dpi</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.dpi"</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">fig_size</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="n">subplot_kw</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">axes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">figure</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+
+
+<div class="viewcode-block" id="set_plot_style">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_plot_style</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Apply the package's default `matplotlib` style, from ``config["plotting.*"]``.</span>
+
+<span class="sd">    Sets figure resolution, tick appearance (inward-pointing major/minor ticks on all four sides,</span>
+<span class="sd">    the conventional look for a publication-style plot), and optional LaTeX text rendering. Every</span>
+<span class="sd">    plotting function that creates its own figure calls this first, so a single edit to</span>
+<span class="sd">    ``config["plotting.*"]`` (or a project-local override; see</span>
+<span class="sd">    `~uvex_transients.utils.config.get_config`) is enough to restyle every plot in the package and</span>
+<span class="sd">    docs gallery consistently.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"figure.dpi"</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.dpi"</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"text.usetex"</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.use_tex"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.use_tex"</span><span class="p">]:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"text.latex.preamble"</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.latex_preamble"</span><span class="p">]</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"xtick.major.size"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"xtick.minor.size"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"ytick.major.size"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"ytick.minor.size"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"xtick.direction"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"in"</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"ytick.direction"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"in"</span></div>
+
+
+
+<div class="viewcode-block" id="get_default_cmap">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.get_default_cmap.html#uvex_transients.utils.plotting.get_default_cmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_default_cmap</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Colormap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the package's default colormap, ``config["plotting.default_cmap"]``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.colors.Colormap</span>
+<span class="sd">        The default colormap.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+
+    <span class="k">return</span> <span class="n">mpl</span><span class="o">.</span><span class="n">colormaps</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s2">"plotting.default_cmap"</span><span class="p">]]</span></div>
+
+
+
+<div class="viewcode-block" id="get_cmap">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.get_cmap.html#uvex_transients.utils.plotting.get_cmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Colormap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Colormap</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a colormap name (or an already-resolved colormap) to a `~matplotlib.colors.Colormap`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cmap : str or matplotlib.colors.Colormap</span>
+<span class="sd">        Either the name of a registered Matplotlib colormap, or a `Colormap` instance (returned</span>
+<span class="sd">        unchanged).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.colors.Colormap</span>
+<span class="sd">        The resolved colormap.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If `cmap` is neither a `str` nor a `Colormap`.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `cmap` is a `str` but names no registered colormap.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">Colormap</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cmap</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mpl</span><span class="o">.</span><span class="n">colormaps</span><span class="p">[</span><span class="n">cmap</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown colormap name </span><span class="si">{</span><span class="n">cmap</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"cmap must be either a matplotlib.colors.Colormap instance or a string colormap name."</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_band_color">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.get_band_color.html#uvex_transients.utils.plotting.get_band_color">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_band_color</span><span class="p">(</span><span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Look up a photometric band's plotting color, from ``config["plotting.band_colors"]``.</span>
+
+<span class="sd">    Every gallery example and report figure that plots multiple bands on the same axes (e.g. UVEX's</span>
+<span class="sd">    ``FUV``/``NUV`` alongside Rubin's ``u``/``g``/``r``/``i``/``z``/``y``) shares this single mapping,</span>
+<span class="sd">    so a given band always reads as the same color everywhere it appears in the docs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    band : str</span>
+<span class="sd">        Band name, e.g. ``"FUV"`` or ``"r"``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        A hex color string. Bands not present in ``config["plotting.band_colors"]`` fall back to a</span>
+<span class="sd">        color sampled from `get_default_cmap`, keyed by a hash of `band` so the same unknown band name</span>
+<span class="sd">        always maps to the same color, both within and across runs.</span>
+<span class="sd">    """</span>
+    <span class="n">band_colors</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.band_colors"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_colors</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">band_colors</span><span class="p">[</span><span class="n">band</span><span class="p">]</span>
+
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">get_default_cmap</span><span class="p">()</span>
+    <span class="c1"># `hash(str)` is salted per-process (PYTHONHASHSEED) unless explicitly disabled, so it would give</span>
+    <span class="c1"># a *different* fallback color for the same unknown band name on every run -- use a stable,</span>
+    <span class="c1"># unsalted hash instead so the "same band always reads as the same color" guarantee above holds</span>
+    <span class="c1"># across runs (docs builds, notebooks, ...), not just within one.</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">zlib</span><span class="o">.</span><span class="n">crc32</span><span class="p">(</span><span class="n">band</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">to_rgba</span><span class="p">(</span><span class="n">cmap</span><span class="p">(</span><span class="n">digest</span> <span class="o">%</span> <span class="mi">997</span> <span class="o">/</span> <span class="mi">997</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ============================================================================== #</span>
+<span class="c1"># Reusable Generators                                                            #</span>
+<span class="c1"># ============================================================================== #</span>
+<div class="viewcode-block" id="plot_healpix_map">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_healpix_map</span><span class="p">(</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cbar_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Colormap</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">),</span>
+    <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Figure</span><span class="p">,</span> <span class="n">Axes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Aitoff-projected scatter of a full-sky HEALPix map, log-color-scaled.</span>
+
+<span class="sd">    Non-positive and non-finite pixels are dropped rather than plotted, since every diagnostic this</span>
+<span class="sd">    is meant for (a `~uvex_transients.surveys.base.SurveySchedule` per-pixel count, separation, or</span>
+<span class="sd">    duration) is strictly positive, and the color scale is always logarithmic.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array-like</span>
+<span class="sd">        Per-pixel values, ordered to match a HEALPix map at `nside`/`order` (i.e. length</span>
+<span class="sd">        ``12 * nside**2``).</span>
+<span class="sd">    nside, order : int, str, optional</span>
+<span class="sd">        HEALPix resolution/ordering for `values`; see</span>
+<span class="sd">        `~uvex_transients.utils.resolve_healpix_resolution` for the shared default.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Axes title.</span>
+<span class="sd">    cbar_label : str, optional</span>
+<span class="sd">        Colorbar label.</span>
+<span class="sd">    cmap : str or matplotlib.colors.Colormap, optional</span>
+<span class="sd">        Defaults to `get_default_cmap`.</span>
+<span class="sd">    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes, optional</span>
+<span class="sd">        Existing figure/axes to draw onto, via `resolve_fig_axes`; `ax`, if given, must already carry</span>
+<span class="sd">        an ``"aitoff"`` projection.</span>
+<span class="sd">    fig_size : tuple, optional</span>
+<span class="sd">        Passed to `resolve_fig_axes` when creating a new figure.</span>
+<span class="sd">    s : float, optional</span>
+<span class="sd">        Marker size, forwarded to `~matplotlib.axes.Axes.scatter`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        The resolved figure.</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        The aitoff-projected axes the map was drawn onto.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">astropy_healpix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ah</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
+
+    <span class="n">set_plot_style</span><span class="p">()</span>
+    <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+    <span class="n">resolved_cmap</span> <span class="o">=</span> <span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span> <span class="k">if</span> <span class="n">cmap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_default_cmap</span><span class="p">()</span>
+
+    <span class="n">hpx</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">HEALPix</span><span class="p">(</span><span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">"icrs"</span><span class="p">)</span>
+    <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">hpx</span><span class="o">.</span><span class="n">healpix_to_lonlat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hpx</span><span class="o">.</span><span class="n">npix</span><span class="p">))</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">resolve_fig_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">fig_size</span><span class="p">,</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">"projection"</span><span class="p">:</span> <span class="s2">"aitoff"</span><span class="p">})</span>
+    <span class="n">sc</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">lon</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span><span class="o">.</span><span class="n">wrap_at</span><span class="p">(</span><span class="mi">180</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">radian</span><span class="p">,</span>
+        <span class="n">lat</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span><span class="o">.</span><span class="n">radian</span><span class="p">,</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">resolved_cmap</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">valid</span><span class="p">]),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">valid</span><span class="p">])),</span>
+        <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">,</span>
+        <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">cbar_label</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_histogram">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_histogram</span><span class="p">(</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Pixels"</span><span class="p">,</span>
+    <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Figure</span><span class="p">,</span> <span class="n">Axes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Log-binned histogram of a strictly positive quantity, e.g. one pooled across a HEALPix map's pixels.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array-like</span>
+<span class="sd">        Values to histogram. Non-positive and non-finite entries are dropped before binning.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Axes title.</span>
+<span class="sd">    xlabel : str, optional</span>
+<span class="sd">        X-axis label.</span>
+<span class="sd">    ylabel : str, optional</span>
+<span class="sd">        Y-axis label. The default, ``"Pixels"``, suits a per-pixel diagnostic; pass e.g.</span>
+<span class="sd">        ``"Pairs of visits"`` for a per-pair one.</span>
+<span class="sd">    n_bins : int, optional</span>
+<span class="sd">        Number of log-spaced bins between `values`' min and max. The default is ``50``.</span>
+<span class="sd">    color : str, optional</span>
+<span class="sd">        Bar color. Defaults to a fixed point on `get_default_cmap`, so histograms across a page share</span>
+<span class="sd">        one consistent color drawn from the same palette as any accompanying `plot_healpix_map` calls.</span>
+<span class="sd">    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes, optional</span>
+<span class="sd">        Existing figure/axes to draw onto, via `resolve_fig_axes`.</span>
+<span class="sd">    fig_size : tuple, optional</span>
+<span class="sd">        Passed to `resolve_fig_axes` when creating a new figure.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        The resolved figure.</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        The axes the histogram was drawn onto.</span>
+<span class="sd">    """</span>
+    <span class="n">set_plot_style</span><span class="p">()</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">to_rgba</span><span class="p">(</span><span class="n">get_default_cmap</span><span class="p">()(</span><span class="mf">0.55</span><span class="p">))</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">values</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)]</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">resolve_fig_axes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">fig_size</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">n_bins</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xlabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="plot_band_light_curve">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_band_light_curve.html#uvex_transients.utils.plotting.plot_band_light_curve">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_band_light_curve</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span>
+    <span class="n">band</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">t_obs</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span>
+    <span class="n">phot</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">t_theory</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">theory_mag</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">err_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">marker</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"s"</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Draw one photometric band's theory curve, SNR-detected points, and upper limits onto `ax`.</span>
+
+<span class="sd">    This is the light-curve convention shared by every simulated-photometry gallery example: a</span>
+<span class="sd">    faint, semi-transparent noiseless theory curve; SNR-detected visits as filled points with</span>
+<span class="sd">    symmetric error bars; and fainter visits as downward-pointing open upper limits, from a</span>
+<span class="sd">    `~uvex_transients.models.core.base.SpectralModel.simulate_photometry` table's asymmetric</span>
+<span class="sd">    ``mag_lower``/``mag_upper`` bounds.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        Axes to draw onto.</span>
+<span class="sd">    band : str</span>
+<span class="sd">        Band name to select from `phot`'s ``"band"`` column, and (absent an explicit `color`) to look</span>
+<span class="sd">        up via `get_band_color`.</span>
+<span class="sd">    t_obs : astropy.units.Quantity</span>
+<span class="sd">        Observation times, one per row of `phot` (not necessarily a column of `phot` itself, e.g. a</span>
+<span class="sd">        precomputed "time since explosion").</span>
+<span class="sd">    phot : astropy.table.Table</span>
+<span class="sd">        A `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`-style table with</span>
+<span class="sd">        ``"band"``, ``"ab_mag"``, ``"snr"``, and ``"mag_err"`` columns; ``"mag_lower"``/``"mag_upper"``</span>
+<span class="sd">        are used for upper limits when present, and upper limits are skipped otherwise.</span>
+<span class="sd">    t_theory : astropy.units.Quantity, optional</span>
+<span class="sd">        Time grid for the noiseless theory curve. Both `t_theory` and `theory_mag` must be given to</span>
+<span class="sd">        draw it; the curve is omitted otherwise.</span>
+<span class="sd">    theory_mag : astropy.units.Quantity or array-like, optional</span>
+<span class="sd">        Noiseless AB magnitude at `t_theory`.</span>
+<span class="sd">    snr_threshold : float, optional</span>
+<span class="sd">        SNR above which a visit is drawn as a detection rather than an upper limit. The default is</span>
+<span class="sd">        ``5.0``.</span>
+<span class="sd">    color : str, optional</span>
+<span class="sd">        Overrides `get_band_color(band)`.</span>
+<span class="sd">    err_scale : float, optional</span>
+<span class="sd">        Multiplicative factor applied to ``phot["mag_err"]`` for detected points' error bars (some</span>
+<span class="sd">        galleries plot a wider, more conservative bar than the raw 1-sigma value). The default is</span>
+<span class="sd">        ``1.0``.</span>
+<span class="sd">    marker : str, optional</span>
+<span class="sd">        Marker for detected points. The default is ``"s"``.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        Legend label for the detected points (upper limits are always unlabeled, since they share the</span>
+<span class="sd">        detection's color and would otherwise duplicate its legend entry).</span>
+<span class="sd">    """</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_band_color</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">t_theory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">theory_mag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">theory_values</span> <span class="o">=</span> <span class="n">theory_mag</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">theory_mag</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theory_mag</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">t_theory</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">theory_values</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+
+    <span class="n">in_band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"band"</span><span class="p">])</span> <span class="o">==</span> <span class="n">band</span><span class="p">)</span>
+    <span class="n">detected</span> <span class="o">=</span> <span class="n">in_band</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span><span class="p">)</span>
+    <span class="n">upper_limits</span> <span class="o">=</span> <span class="n">in_band</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">snr_threshold</span><span class="p">)</span>
+
+    <span class="n">t_days</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">t_obs</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">detected</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+            <span class="n">t_days</span><span class="p">[</span><span class="n">detected</span><span class="p">],</span>
+            <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">detected</span><span class="p">],</span>
+            <span class="n">yerr</span><span class="o">=</span><span class="n">err_scale</span> <span class="o">*</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"mag_err"</span><span class="p">][</span><span class="n">detected</span><span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
+            <span class="n">mfc</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">mec</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span>
+            <span class="n">ecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">has_bounds</span> <span class="o">=</span> <span class="s2">"mag_lower"</span> <span class="ow">in</span> <span class="n">phot</span><span class="o">.</span><span class="n">colnames</span> <span class="ow">and</span> <span class="s2">"mag_upper"</span> <span class="ow">in</span> <span class="n">phot</span><span class="o">.</span><span class="n">colnames</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">upper_limits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">has_bounds</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+            <span class="n">t_days</span><span class="p">[</span><span class="n">upper_limits</span><span class="p">],</span>
+            <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">],</span>
+            <span class="n">yerr</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">phot</span><span class="p">[</span><span class="s2">"mag_upper"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]</span> <span class="o">-</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"mag_lower"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]</span> <span class="o">-</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]),</span>
+            <span class="p">],</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">"v"</span><span class="p">,</span>
+            <span class="n">mfc</span><span class="o">=</span><span class="s2">"w"</span><span class="p">,</span>
+            <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">ecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_funnel_bounds">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.compute_funnel_bounds.html#uvex_transients.utils.plotting.compute_funnel_bounds">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_funnel_bounds</span><span class="p">(</span>
+    <span class="n">stage_counts</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">rate_ci</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Compute per-stage MC and rate bounds for a detection-funnel's raw (undownsampled) counts.</span>
+
+<span class="sd">    ``stage_counts[0]`` is taken as the funnel's binomial denominator :math:`n` -- the number of raw</span>
+<span class="sd">    Monte Carlo draws in the "sampled" stage -- and every later stage's count :math:`k_i` is treated</span>
+<span class="sd">    as a binomial subsample of it, with a `clopper_pearson_interval` bound on :math:`k_i/n` converted</span>
+<span class="sd">    back into count units. This matches `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`'s</span>
+<span class="sd">    own convention (feasible draws as :math:`n`, a later cut's count as :math:`k`), just applied to</span>
+<span class="sd">    every stage rather than only the final one.</span>
+
+<span class="sd">    `rate_ci` (an `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`-style</span>
+<span class="sd">    ``(lower, upper)`` multiplicative pair, or `None`) is applied uniformly to every stage's point</span>
+<span class="sd">    estimate, since it rescales the population's overall rate normalization rather than any stage's</span>
+<span class="sd">    selection efficiency.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stage_counts : sequence of int</span>
+<span class="sd">        Raw (undownsampled) event counts at each funnel stage, in order, e.g.</span>
+<span class="sd">        ``(len(catalog), len(mag_filtered), len(detected))``. Each entry must not exceed</span>
+<span class="sd">        ``stage_counts[0]``.</span>
+<span class="sd">    rate_ci : tuple of float, optional</span>
+<span class="sd">        ``(lower, upper)`` multiplicative bounds, as `ExtragalacticTransient.RATE_CI`. `None`</span>
+<span class="sd">        (the default) collapses the rate bounds to the point estimate, i.e. ``(1.0, 1.0)``.</span>
+<span class="sd">    confidence : float, optional</span>
+<span class="sd">        Confidence level for the Clopper-Pearson MC bounds. The default is ``0.9``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mc_lower : numpy.ndarray</span>
+<span class="sd">        Per-stage Clopper-Pearson lower bound, in the same (undownsampled) count units.</span>
+<span class="sd">    mc_upper : numpy.ndarray</span>
+<span class="sd">        Per-stage Clopper-Pearson upper bound, in the same (undownsampled) count units.</span>
+<span class="sd">    rate_lower : numpy.ndarray</span>
+<span class="sd">        Per-stage rate-normalization lower bound, in the same (undownsampled) count units.</span>
+<span class="sd">    rate_upper : numpy.ndarray</span>
+<span class="sd">        Per-stage rate-normalization upper bound, in the same (undownsampled) count units.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    To plot alongside a downsample-rescaled ``counts`` array, multiply all four returned arrays by</span>
+<span class="sd">    the same downsample factor first.</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mc_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">))</span>
+    <span class="n">mc_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">):</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">clopper_pearson_interval</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">confidence</span><span class="p">)</span>
+        <span class="n">mc_lower</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="n">mc_upper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper</span> <span class="o">*</span> <span class="n">n</span>
+
+    <span class="n">lower_factor</span><span class="p">,</span> <span class="n">upper_factor</span> <span class="o">=</span> <span class="n">rate_ci</span> <span class="k">if</span> <span class="n">rate_ci</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">rate_lower</span> <span class="o">=</span> <span class="n">counts</span> <span class="o">*</span> <span class="n">lower_factor</span>
+    <span class="n">rate_upper</span> <span class="o">=</span> <span class="n">counts</span> <span class="o">*</span> <span class="n">upper_factor</span>
+
+    <span class="k">return</span> <span class="n">mc_lower</span><span class="p">,</span> <span class="n">mc_upper</span><span class="p">,</span> <span class="n">rate_lower</span><span class="p">,</span> <span class="n">rate_upper</span></div>
+
+
+
+<div class="viewcode-block" id="plot_detection_funnel">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_detection_funnel.html#uvex_transients.utils.plotting.plot_detection_funnel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_detection_funnel</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">counts</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">mc_lower</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">mc_upper</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">rate_lower</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">rate_upper</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Draw one funnel's bars plus its MC and rate uncertainty layers onto `ax`.</span>
+
+<span class="sd">    The two uncertainty sources are drawn as visually distinct layers rather than combined into one</span>
+<span class="sd">    interval, since they behave differently (MC uncertainty narrows at later stages as the binomial</span>
+<span class="sd">    denominator's share grows more certain; rate uncertainty is a constant fractional band on every</span>
+<span class="sd">    stage) and conflating them would hide that:</span>
+
+<span class="sd">    - **Rate (systematic)** uncertainty is drawn first, as a wide, pale-filled rectangle in `color`</span>
+<span class="sd">      spanning the full bar width from `rate_lower` to `rate_upper`, outlined with an opaque edge</span>
+<span class="sd">      in the same color -- a shaded envelope rather than an error bar, since it applies uniformly</span>
+<span class="sd">      to every stage and reads more like a systematic "this whole bar could be scaled by ..." than</span>
+<span class="sd">      a per-point measurement uncertainty. The opaque outline keeps both endpoints -- including the</span>
+<span class="sd">      lower bound, which a capless translucent line alone tends to fade into the axes background --</span>
+<span class="sd">      legible at a glance.</span>
+<span class="sd">    - **MC (statistical)** uncertainty is drawn on top, as a narrow black error bar with caps -- the</span>
+<span class="sd">      conventional per-point measurement-uncertainty treatment, layered over the systematic band so</span>
+<span class="sd">      both remain legible at once.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        Axes to draw onto.</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Bar center positions, one per stage.</span>
+<span class="sd">    counts : numpy.ndarray</span>
+<span class="sd">        Bar heights (downsample-rescaled stage counts), one per stage.</span>
+<span class="sd">    mc_lower, mc_upper, rate_lower, rate_upper : numpy.ndarray</span>
+<span class="sd">        Bound arrays from `compute_funnel_bounds`, rescaled by the same downsample factor as</span>
+<span class="sd">        `counts`.</span>
+<span class="sd">    color : str or sequence of str, optional</span>
+<span class="sd">        Bar (and rate-band) color: either one color shared by every bar, or one color per bar</span>
+<span class="sd">        (e.g. one per funnel stage, or one per transient type in a grouped funnel), matched</span>
+<span class="sd">        positionally against `x`. Defaults to ``config["plotting.funnel_color"]``.</span>
+<span class="sd">    width : float, optional</span>
+<span class="sd">        Bar width, forwarded to `~matplotlib.axes.Axes.bar`. The default is ``0.8``.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        Legend label for the bars.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"plotting.funnel_color"</span><span class="p">]</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">xi</span><span class="p">,</span> <span class="n">rlo</span><span class="p">,</span> <span class="n">rhi</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rate_lower</span><span class="p">,</span> <span class="n">rate_upper</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+            <span class="n">xi</span><span class="p">,</span>
+            <span class="n">rhi</span> <span class="o">-</span> <span class="n">rlo</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">bottom</span><span class="o">=</span><span class="n">rlo</span><span class="p">,</span>
+            <span class="n">facecolor</span><span class="o">=</span><span class="n">to_rgba</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">),</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="n">to_rgba</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">counts</span><span class="p">,</span>
+        <span class="n">yerr</span><span class="o">=</span><span class="p">[</span><span class="n">counts</span> <span class="o">-</span> <span class="n">mc_lower</span><span class="p">,</span> <span class="n">mc_upper</span> <span class="o">-</span> <span class="n">counts</span><span class="p">],</span>
+        <span class="n">fmt</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">ecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span>
+        <span class="n">elinewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+        <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">capthick</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+        <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">"_nolegend_"</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="add_funnel_legend">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.add_funnel_legend.html#uvex_transients.utils.plotting.add_funnel_legend">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_funnel_legend</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"best"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Add legend entries explaining `plot_detection_funnel`'s two uncertainty layers.</span>
+
+<span class="sd">    Appends two proxy handles -- a black capped error bar labeled "MC (statistical)</span>
+<span class="sd">    uncertainty" and a pale, outlined gray patch labeled "Rate (systematic) uncertainty" -- to whatever</span>
+<span class="sd">    handles/labels `ax` already has (e.g. one legend entry per bar color/label from a grouped</span>
+<span class="sd">    funnel), then redraws the legend with all of them together. The proxies use a neutral gray</span>
+<span class="sd">    rather than matching any one bar's color, since both uncertainty layers have the same meaning</span>
+<span class="sd">    for every bar regardless of its own color.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        Axes to add the legend to; normally the same `ax` passed to one or more</span>
+<span class="sd">        `plot_detection_funnel` calls.</span>
+<span class="sd">    loc : str, optional</span>
+<span class="sd">        Forwarded to `~matplotlib.axes.Axes.legend`. The default is ``"best"``.</span>
+<span class="sd">    """</span>
+    <span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+
+    <span class="n">stat_handle</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">yerr</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span> <span class="n">ecolor</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">elinewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">capthick</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+    <span class="n">rate_handle</span> <span class="o">=</span> <span class="n">Patch</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="n">to_rgba</span><span class="p">(</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">),</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">to_rgba</span><span class="p">(</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+
+    <span class="n">handles</span> <span class="o">+=</span> <span class="p">[</span><span class="n">stat_handle</span><span class="p">,</span> <span class="n">rate_handle</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"MC (statistical) uncertainty"</span><span class="p">,</span> <span class="s2">"Rate (systematic) uncertainty"</span><span class="p">]</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_rate_bars">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_rate_bars.html#uvex_transients.utils.plotting.plot_rate_bars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_rate_bars</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span>
+    <span class="n">categories</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">visible_counts</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">all_sky_rate</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">rate_ci</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">rate_unit</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Bar chart of an all-sky rate estimate per category (e.g. band), with MC + rate uncertainty.</span>
+
+<span class="sd">    Each category's rate is estimated as the fraction of `n_samples` Monte Carlo draws that satisfy</span>
+<span class="sd">    some visibility criterion (e.g. "peak apparent magnitude below the survey's limit"), scaled by</span>
+<span class="sd">    the population's `all_sky_rate`. That is exactly `compute_funnel_bounds`'s "sampled -&gt;</span>
+<span class="sd">    screened" convention with `n_samples` playing the role of its shared binomial denominator, so the</span>
+<span class="sd">    same two uncertainty layers `plot_detection_funnel` draws for a detection funnel apply here too:</span>
+<span class="sd">    MC (statistical) uncertainty from treating each category's count as a Clopper-Pearson binomial</span>
+<span class="sd">    subsample of `n_samples`, and rate (systematic) uncertainty from `rate_ci` (see</span>
+<span class="sd">    `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`), which scales every category's</span>
+<span class="sd">    point estimate by the same factor rather than shrinking with the sample.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        Axes to draw onto.</span>
+<span class="sd">    categories : sequence of str</span>
+<span class="sd">        Bar labels, e.g. band names.</span>
+<span class="sd">    visible_counts : sequence of int</span>
+<span class="sd">        Number of the `n_samples` draws satisfying each category's visibility criterion, e.g.</span>
+<span class="sd">        ``np.count_nonzero(peak_mag &lt; limit)`` per band.</span>
+<span class="sd">    n_samples : int</span>
+<span class="sd">        Total Monte Carlo draws each `visible_counts` entry is a subsample of.</span>
+<span class="sd">    all_sky_rate : astropy.units.Quantity</span>
+<span class="sd">        The population's all-sky rate (`~uvex_transients.transients.base.ExtragalacticTransient.all_sky_rate`);</span>
+<span class="sd">        each bar height is ``visible_counts[i] / n_samples * all_sky_rate``.</span>
+<span class="sd">    rate_ci : tuple of float, optional</span>
+<span class="sd">        ``(lower, upper)`` multiplicative rate bounds; see `compute_funnel_bounds`. `None` (the</span>
+<span class="sd">        default) omits the rate (systematic) uncertainty band.</span>
+<span class="sd">    confidence : float, optional</span>
+<span class="sd">        Confidence level for the MC (statistical) uncertainty. The default is ``0.9``.</span>
+<span class="sd">    color : str or sequence of str, optional</span>
+<span class="sd">        Forwarded to `plot_detection_funnel`.</span>
+<span class="sd">    width : float, optional</span>
+<span class="sd">        Bar width. The default is ``0.6``.</span>
+<span class="sd">    rate_unit : astropy.units.Unit, optional</span>
+<span class="sd">        Unit the bars (and the returned array) are expressed in. The default is ``1 / u.yr``.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        Legend label for the bars themselves.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The plotted bar heights (visible rates), in `rate_unit`.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    add_funnel_legend : Adds legend entries explaining the two uncertainty layers.</span>
+<span class="sd">    """</span>
+    <span class="n">set_plot_style</span><span class="p">()</span>
+
+    <span class="n">stage_counts</span> <span class="o">=</span> <span class="p">[</span><span class="n">n_samples</span><span class="p">,</span> <span class="o">*</span><span class="n">visible_counts</span><span class="p">]</span>
+    <span class="n">mc_lower</span><span class="p">,</span> <span class="n">mc_upper</span><span class="p">,</span> <span class="n">rate_lower</span><span class="p">,</span> <span class="n">rate_upper</span> <span class="o">=</span> <span class="n">compute_funnel_bounds</span><span class="p">(</span>
+        <span class="n">stage_counts</span><span class="p">,</span> <span class="n">rate_ci</span><span class="o">=</span><span class="n">rate_ci</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span>
+    <span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">all_sky_rate</span> <span class="o">/</span> <span class="n">n_samples</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">rate_unit</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">))</span>
+    <span class="n">rates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">visible_counts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="n">plot_detection_funnel</span><span class="p">(</span>
+        <span class="n">ax</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">counts</span><span class="o">=</span><span class="n">rates</span><span class="p">,</span>
+        <span class="n">mc_lower</span><span class="o">=</span><span class="n">mc_lower</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+        <span class="n">mc_upper</span><span class="o">=</span><span class="n">mc_upper</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+        <span class="n">rate_lower</span><span class="o">=</span><span class="n">rate_lower</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+        <span class="n">rate_upper</span><span class="o">=</span><span class="n">rate_upper</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+        <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rates</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

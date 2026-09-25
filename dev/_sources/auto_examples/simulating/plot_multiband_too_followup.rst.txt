@@ -31,7 +31,7 @@ In this example, we'll show off a simulation of this sort of scenario: Rubin get
 starts a multi-band follow-up campaign of its own, then UVEX is triggered and joins in with its two UV
 bands.
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-41
+.. GENERATED FROM PYTHON SOURCE LINES 15-44
 
 .. code-block:: Python
 
@@ -46,6 +46,9 @@ bands.
 
     from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
     from uvex_transients.transients.TDEs import TidalDisruptionEvent
+    from uvex_transients.utils.plotting import get_band_color, plot_band_light_curve, resolve_fig_axes, set_plot_style
+
+    set_plot_style()
 
     # Configure the transient and its parameters.
     tde = TidalDisruptionEvent()
@@ -75,7 +78,7 @@ bands.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-52
+.. GENERATED FROM PYTHON SOURCE LINES 45-55
 
 Choosing the cadences
 -------------------------
@@ -88,7 +91,7 @@ cadence for ``FUV``/``NUV``. Every band that shares an (instrument, cadence) pai
 also shares one time grid, so :meth:`~uvex_transients.models.core.base.SpectralModel.simulate_photometry`
 only needs to be called once per group.
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-85
+.. GENERATED FROM PYTHON SOURCE LINES 55-88
 
 .. code-block:: Python
 
@@ -132,7 +135,7 @@ only needs to be called once per group.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-103
+.. GENERATED FROM PYTHON SOURCE LINES 89-106
 
 Simulating photometry
 --------------------------
@@ -152,7 +155,7 @@ column. Rubin's call also passes ``sys_err=RUBIN_SIGMA_SYS``, so its
 itself -- reflect the combined shot-noise-plus-systematic uncertainty; UVEX's call
 doesn't, so its points stay pure shot noise.
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-147
+.. GENERATED FROM PYTHON SOURCE LINES 106-150
 
 .. code-block:: Python
 
@@ -224,7 +227,7 @@ doesn't, so its points stay pure shot noise.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-156
+.. GENERATED FROM PYTHON SOURCE LINES 151-159
 
 The light curves
 -------------------
@@ -235,7 +238,7 @@ instruments: detections above SNR=5 as points with error bars, fainter visits as
 downward-pointing upper limits -- the same plotting convention used at the end of
 :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-228
+.. GENERATED FROM PYTHON SOURCE LINES 159-199
 
 .. code-block:: Python
 
@@ -247,20 +250,9 @@ downward-pointing upper limits -- the same plotting convention used at the end o
         "FUV": uvex.detector,
         "NUV": uvex.detector,
     }
-    band_colors = {
-        "u": "#56B4E9",
-        "g": "#008060",
-        "r": "#FF4000",
-        "i": "#850000",
-        "z": "#6600CC",
-        "y": "#000000",
-        "FUV": "#4C72B0",
-        "NUV": "#DD8452",
-    }
 
-    fig, ax = plt.subplots(figsize=(9, 5))
-    for band, color in band_colors.items():
-        detector = band_detectors[band]
+    fig, ax = resolve_fig_axes(fig_size=(9, 5))
+    for band, detector in band_detectors.items():
         nu = detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
         theory_mag = tde.sed.mag(
             nu,
@@ -270,38 +262,17 @@ downward-pointing upper limits -- the same plotting convention used at the end o
             log_attenuation=log_attenuation(nu, ebv),
             **params,
         )
-        ax.plot(t_theory.value, theory_mag.value, color=color, lw=1.2, alpha=0.5)
-
-        in_band = np.isfinite(phot["ab_mag"]) & (phot["band"] == band)
-        detected = in_band & (phot["snr"] > SNR_THRESHOLD)
-        upper_limits = in_band & (phot["snr"] <= SNR_THRESHOLD)
-
-        if np.any(detected):
-            ax.errorbar(
-                phot["t"][detected].to_value(u.day),
-                phot["ab_mag"][detected],
-                yerr=phot["mag_err"][detected],
-                marker="s",
-                mfc=color,
-                mec="k",
-                ecolor=color,
-                linestyle="none",
-                label=band,
-            )
-        if np.any(upper_limits):
-            ax.errorbar(
-                phot["t"][upper_limits].to_value(u.day),
-                phot["ab_mag"][upper_limits],
-                yerr=[
-                    phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                    np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-                ],
-                marker="v",
-                mfc="w",
-                mec=color,
-                ecolor=color,
-                linestyle="none",
-            )
+        plot_band_light_curve(
+            ax,
+            band,
+            phot["t"],
+            phot,
+            t_theory=t_theory,
+            theory_mag=theory_mag,
+            snr_threshold=SNR_THRESHOLD,
+            color=get_band_color(band),
+            label=band,
+        )
 
     ax.invert_yaxis()
     ax.set_xlabel("Days since explosion")
@@ -326,7 +297,7 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.482 seconds)
+   **Total running time of the script:** (0 minutes 0.467 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_multiband_too_followup.py:

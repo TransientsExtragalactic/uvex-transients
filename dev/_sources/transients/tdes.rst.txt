@@ -29,13 +29,16 @@ Quick Facts
      - Source
      - Notes
    * - Rate
-     - :math:`3.1\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}}` (constant in :math:`z`)
+     - :math:`3.1^{+0.6}_{-1.0}\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}}` (constant in :math:`z`)
      - :footcite:t:`yao2023`
      - Maximum-volume-corrected demographic rate from 33 spectroscopically-confirmed TDEs from
        three years of the Zwicky Transient Facility. Taken as constant in :math:`z`, since its
        evolution remains actively debated -- :footcite:t:`karmen2026` show the observed
        redshift-dependent TDE rate is highly sensitive to the poorly-constrained evolution of the
-       supermassive black hole mass function itself.
+       supermassive black hole mass function itself. The quoted :math:`+0.6/-1.0` bounds are
+       :footcite:t:`yao2023`'s own 90% confidence interval and are carried through as
+       :attr:`~uvex_transients.transients.TDEs.TidalDisruptionEvent.RATE_CI` (see
+       :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
      - :math:`z = 2`
      - --
@@ -95,11 +98,11 @@ late-time disk plateau discussed below is faint and rarely detected.
      - Photospheric temperature, :math:`\approx2\times10^4` K :footcite:p:`2021ApJ...908....4V`.
    * - ``sigma_rise``
      - :math:`\sigma`
-     - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=1.3, :math:`\sigma`\=0.3)
+     - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=0.91, :math:`\sigma`\=0.25)
      - Gaussian width of the pre-peak rise :footcite:p:`2021ApJ...908....4V`.
    * - ``tau_decline``
      - :math:`\tau`
-     - LogNormal(:math:`\log_{10}(\tau/\mathrm{d})`; mean=2, :math:`\sigma`\=0.2)
+     - LogNormal(:math:`\log_{10}(\tau/\mathrm{d})`; mean=1.7, :math:`\sigma`\=0.2)
      - Exponential decline timescale after peak :footcite:p:`2021ApJ...908....4V`.
 
 Plateau visibility: AlushStoneTDESED
@@ -147,7 +150,7 @@ late-time decline persisting for decades to centuries.
      - Early-time photospheric temperature, :math:`\approx2\times10^4` K :footcite:p:`2021ApJ...908....4V`.
    * - ``sigma_rise``
      - :math:`\sigma`
-     - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=0.91, :math:`\sigma`\=0.2)
+     - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=0.91, :math:`\sigma`\=0.25)
      - Gaussian width of the pre-peak rise :footcite:p:`2021ApJ...908....4V`.
    * - ``tau_decline``
      - :math:`\tau`
@@ -319,6 +322,7 @@ in comoving volume out to :math:`z=2`:
 
     from m4opt.missions import uvex
     from uvex_transients.transients.TDEs import TidalDisruptionEvent
+    from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
 
     rng = np.random.default_rng(20260911)
@@ -340,8 +344,8 @@ in comoving volume out to :math:`z=2`:
         "NUV": 24.5 * u.ABmag,
     }
 
-    # Compute peak-visible rates.
-    visible_rates = {}
+    # Compute the number of the n_samples draws visible in each band.
+    visible_counts = {}
 
     for band_name, bandpass in uvex.detector.bandpasses.items():
         magnitudes = tde.sed.mag_bandpass(
@@ -352,27 +356,33 @@ in comoving volume out to :math:`z=2`:
         ).to_value(u.ABmag)
 
         visible = magnitudes < detection_limits[band_name].to_value(u.ABmag)
-        visible_fraction = np.mean(visible)
-        visible_rate = visible_fraction * all_sky_rate
-
-        visible_rates[band_name] = visible_rate
+        visible_counts[band_name] = int(np.count_nonzero(visible))
 
         print(
-            f"{band_name}: {visible_rate:.2f} "
-            f"({visible_fraction:.1%} of events visible)"
+            f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+            f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
         )
 
-    # Plot all-sky visible rates.
-    band_names = list(visible_rates)
-    rates = [visible_rates[band].to_value(1 / u.yr) for band in band_names]
+    # Plot all-sky visible rates, with MC (statistical) and rate (systematic) uncertainty --
+    # see uvex_transients.utils.plotting.plot_rate_bars.
+    band_names = list(visible_counts)
 
     fig, ax = plt.subplots(figsize=(5, 4))
 
-    ax.bar(band_names, rates)
+    plot_rate_bars(
+        ax,
+        band_names,
+        [visible_counts[band] for band in band_names],
+        n_samples,
+        all_sky_rate,
+        rate_ci=tde.RATE_CI,
+        color=[get_band_color(band) for band in band_names],
+    )
 
     ax.set_yscale("log")
     ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
     ax.set_title("Peak-visible TDE rate")
+    add_funnel_legend(ax, loc="lower right")
 
     fig.tight_layout()
     plt.show()

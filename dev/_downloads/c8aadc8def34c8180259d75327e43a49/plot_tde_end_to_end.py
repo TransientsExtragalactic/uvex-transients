@@ -32,6 +32,17 @@ from matplotlib import pyplot as plt
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
+from uvex_transients.utils.plotting import (
+    add_funnel_legend,
+    compute_funnel_bounds,
+    get_band_color,
+    plot_band_light_curve,
+    plot_detection_funnel,
+    resolve_fig_axes,
+    set_plot_style,
+)
+
+set_plot_style()
 
 schedule = get_schedule()
 tde = TidalDisruptionEvent()
@@ -81,17 +92,44 @@ print(f"{len(detected) * DOWNSAMPLE} were detected above SNR={SNR_THRESHOLD}.")
 # %%
 # Detection funnel
 # --------------------
+#
+# Each stage's raw count carries two distinct sources of uncertainty: MC (statistical) uncertainty
+# from having only finitely many simulated draws (a black Clopper-Pearson error bar), and rate
+# (systematic) uncertainty from the literature normalization underlying TDE's event rate itself
+# (a pale shaded band, from :attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`).
+# See :func:`~uvex_transients.utils.plotting.compute_funnel_bounds` for how the two are computed.
 
 stages = ["Sampled", f"Mag < {MAG_LIMIT}", f"SNR > {SNR_THRESHOLD}"]
-counts = [len(catalog) * DOWNSAMPLE, len(mag_filtered) * DOWNSAMPLE, len(detected) * DOWNSAMPLE]
+raw_counts = [len(catalog), len(mag_filtered), len(detected)]
+counts = [c * DOWNSAMPLE for c in raw_counts]
 
-fig, ax = plt.subplots()
-ax.bar(stages, counts, color=["#888888", "#4C72B0", "#55A868"])
+mc_lower, mc_upper, rate_lower, rate_upper = compute_funnel_bounds(raw_counts, rate_ci=tde.RATE_CI)
+
+fig, ax = resolve_fig_axes()
+plot_detection_funnel(
+    ax,
+    x=np.arange(len(stages)),
+    counts=np.asarray(counts, dtype=float),
+    mc_lower=mc_lower * DOWNSAMPLE,
+    mc_upper=mc_upper * DOWNSAMPLE,
+    rate_lower=rate_lower * DOWNSAMPLE,
+    rate_upper=rate_upper * DOWNSAMPLE,
+)
+ax.set_xticks(np.arange(len(stages)), stages)
+ax.set_yscale("log")
 for i, count in enumerate(counts):
-    ax.text(i, count, f"{count:,}", ha="center", va="bottom")
+    ax.text(i, rate_upper[i] * DOWNSAMPLE, f"{count:,}", ha="center", va="bottom")
 ax.set_ylabel("Number of TDEs")
 ax.set_title("TDE detection funnel")
+add_funnel_legend(ax)
 fig.tight_layout()
+
+# %%
+# Black error bars are the MC (statistical) uncertainty on each stage's count, from treating it as
+# a binomial subsample of the raw simulated draws (Clopper-Pearson); the pale shaded band is the
+# rate (systematic) uncertainty from the TDE rate's own literature normalization
+# (:attr:`~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`), which scales every
+# stage by the same factor rather than shrinking as the sample is cut down.
 
 # %%
 # Sky distribution
@@ -101,8 +139,7 @@ fig.tight_layout()
 # whatever fraction of it UVEX actually caught above :math:`\mathrm{SNR}=5`.
 
 # sphinx_gallery_thumbnail_number = 2
-fig = plt.figure(figsize=(8, 4))
-ax = fig.add_subplot(111, projection="aitoff")
+fig, ax = resolve_fig_axes(fig_size=(8, 4), subplot_kw={"projection": "aitoff"})
 ax.grid(True)
 
 ra_sampled = catalog.coord.ra.wrap_at(180 * u.deg).radian
@@ -141,40 +178,20 @@ phot = event.simulate_photometry(uvex)
 t_since_explosion = (phot["obs_time"] - event.t_explosion).to(u.day)
 t_theory = np.linspace(0, tde.duration_limit.to_value(u.day), 300) * u.day
 
-fig, ax = plt.subplots(figsize=(7, 4))
-for band, color in {"FUV": "#4C72B0", "NUV": "#DD8452"}.items():
-    ax.plot(t_theory.value, event.mag(t_theory, uvex, band=band).value, color=color, lw=1.5, alpha=0.6)
-
-    in_band = np.isfinite(phot["ab_mag"]) & (phot["band"] == band)
-    detected_pts = in_band & (phot["snr"] > SNR_THRESHOLD)
-    upper_limits = in_band & (phot["snr"] <= SNR_THRESHOLD)
-
-    if np.any(detected_pts):
-        ax.errorbar(
-            t_since_explosion[detected_pts].value,
-            phot["ab_mag"][detected_pts],
-            yerr=5 * phot["mag_err"][detected_pts],
-            marker="s",
-            mfc=color,
-            mec="k",
-            ecolor=color,
-            linestyle="none",
-            label=band,
-        )
-    if np.any(upper_limits):
-        ax.errorbar(
-            t_since_explosion[upper_limits].value,
-            phot["ab_mag"][upper_limits],
-            yerr=[
-                phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-            ],
-            marker="v",
-            mfc="w",
-            mec=color,
-            ecolor=color,
-            linestyle="none",
-        )
+fig, ax = resolve_fig_axes(fig_size=(7, 4))
+for band in ("FUV", "NUV"):
+    plot_band_light_curve(
+        ax,
+        band,
+        t_since_explosion,
+        phot,
+        t_theory=t_theory,
+        theory_mag=event.mag(t_theory, uvex, band=band),
+        snr_threshold=SNR_THRESHOLD,
+        color=get_band_color(band),
+        err_scale=5.0,
+        label=band,
+    )
 
 ax.invert_yaxis()
 ax.set_xlabel("Days since explosion")
