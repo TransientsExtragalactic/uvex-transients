@@ -1,0 +1,1312 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Type I (Stripped-Envelope) Supernovae &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'transients/type_i';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.6alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Shock-Cooling Emission from Type IIb SNe" href="shock_cooling_iib.html" />
+    <link rel="prev" title="Type II Supernovae" href="type_ii.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="kilonovae.html">Kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdes.html">Tidal Disruption Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lfbots.html">Luminous Fast Blue Optical Transients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="type_ii.html">Type II Supernovae</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Type I (Stripped-Envelope) Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shock_cooling_iib.html">Shock-Cooling Emission from Type IIb SNe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slsne.html">Superluminous Supernovae (SLSNe-I)</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Transients</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Type I (Stripped-Envelope) Supernovae</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="type-i-stripped-envelope-supernovae">
+<span id="transients-type-i"></span><h1>Type I (Stripped-Envelope) Supernovae<a class="headerlink" href="#type-i-stripped-envelope-supernovae" title="Link to this heading">#</a></h1>
+<p>Type Ib and Type Ic supernovae are core-collapse explosions of massive stars that lost their
+hydrogen envelope (Ib: helium remains; Ic: helium is also stripped) before exploding. Their light
+curves are powered by the radioactive decay of <span class="math notranslate nohighlight">\(^{56}\mathrm{Ni}\)</span> and are typically a single
+peak, roughly two to three weeks after explosion, followed by a decline; unlike Type IIb SNe
+(<a class="reference internal" href="type_ii.html#transients-type-ii"><span class="std std-ref">Type II Supernovae</span></a>) they lack a distinct early shock-cooling peak. All three subtypes on
+this page – Ib, Ic and Ic-BL (broad-lined) – are modeled with the same first-principles
+Arnett-style radioactive-decay diffusion physics as Type Ia
+(<a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettDecaySED.html#uvex_transients.models.arnett.ArnettDecaySED" title="uvex_transients.models.arnett.ArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettDecaySED</span></code></a>), differing only in their priors (and, for
+Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
+are implemented as sibling transient classes below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Type Ib and Type Ic priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> and <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are the per-subtype sample
+statistics (mean, sample standard deviation) of the analytical Arnett-model fits in Table 6 of
+Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (13 Ib and 8 Ic events). <code class="docutils literal notranslate"><span class="pre">kappa</span></code> is fixed at the single value
+(<span class="math notranslate nohighlight">\(0.06\,\mathrm{cm^2\,g^{-1}}\)</span>) Lyman et al. 2016 themselves assume for every fit in their
+sample rather than fitting per event. <code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> has no analogue in Lyman et al. 2016’s
+leakage-free formalism (the original Arnett 1982 diffusion model), so it is instead fixed at
+<span class="math notranslate nohighlight">\(0.04\,\mathrm{cm^2\,g^{-1}}\)</span>, comparable to <cite>Type Ia</cite>’s Scalzo+14-derived value. Ib and Ic
+share this same construction and differ only in the subsample statistics and event rates. Type
+Ic-BL instead uses sample statistics of its own explosion-property table – see its tab below.</p>
+</div>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Type Ia</label><div class="sd-tab-content docutils">
+<p>Type Ia supernovae are thermonuclear explosions of carbon-oxygen white dwarfs, not
+core-collapse events – there is no compact remnant and no massive-star progenitor, so
+neither this population’s SED nor its rate shares any machinery with the Type Ib/Ic/II
+populations elsewhere on this page. Their light curves are powered by the radioactive decay
+of <span class="math notranslate nohighlight">\(^{56}\mathrm{Ni}\)</span> synthesized in the explosion, following the same Arnett-style
+diffusion physics as the SLSNe-I model (<a class="reference internal" href="slsne.html#transients-slsne"><span class="std std-ref">Superluminous Supernovae (SLSNe-I)</span></a>), but without a magnetar
+central engine.</p>
+<p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIaSNe.html#uvex_transients.transients.supernovae.TypeIaSNe" title="uvex_transients.transients.supernovae.TypeIaSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSNe</span></code></a>, pairing
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED" title="uvex_transients.models.supernovae.Ia.TypeIaSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSED</span></code></a> with a delay-time-distribution
+rate (below) rather than a fixed fraction of the core-collapse rate.</p>
+<p class="rubric">Quick Facts</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p>Cosmic star formation history convolved with a power-law delay-time distribution
+(DTD); local rate <span class="math notranslate nohighlight">\(\approx2.3\times10^{-5}\ \mathrm{Mpc^{-3}\,yr^{-1}}\)</span>
+(<span class="math notranslate nohighlight">\(\approx2.3\times10^{4}\ \mathrm{Gpc^{-3}\,yr^{-1}}\)</span>)</p></td>
+<td><p>Maoz and Graur<a class="footnote-reference brackets" href="#footcite-2017apj-848-25m" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, Madau and Dickinson<a class="footnote-reference brackets" href="#footcite-madau2014" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></td>
+<td><p><a class="reference internal" href="../_as_gen/uvex_transients.utils.cosmology.supernovae_Ia_rate.html#uvex_transients.utils.cosmology.supernovae_Ia_rate" title="uvex_transients.utils.cosmology.supernovae_Ia_rate"><code class="xref py py-func docutils literal notranslate"><span class="pre">supernovae_Ia_rate()</span></code></a>: DTD
+<span class="math notranslate nohighlight">\(\Psi(\tau)\propto\tau^{-1.1}\)</span> for <span class="math notranslate nohighlight">\(\tau&gt;40\)</span> Myr, normalized to
+<span class="math notranslate nohighlight">\(N_\mathrm{Ia}/M_\star=(1.3\pm0.1)\times10^{-3}\,M_\odot^{-1}\)</span> (Maoz &amp; Graur
+2017), convolved with the Madau &amp; Dickinson (2014) star formation history. Unlike the
+core-collapse subtypes’ instantaneous tracer, the broadly distributed delay times
+give SNe Ia a flatter, slower-declining rate shape at high redshift. The rate is
+exactly linear in <span class="math notranslate nohighlight">\(N_\mathrm{Ia}/M_\star\)</span>, so
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIaSNe.RATE_CI.html#uvex_transients.transients.supernovae.TypeIaSNe.RATE_CI" title="uvex_transients.transients.supernovae.TypeIaSNe.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> (<span class="math notranslate nohighlight">\(\pm7.7\%\)</span>)
+is evaluated by calling <cite>supernovae_Ia_rate</cite> directly at that normalization’s
+<span class="math notranslate nohighlight">\(\pm1\sigma\)</span> endpoints, rather than assumed analytically – see
+<a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 1\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Set from an actual <code class="docutils literal notranslate"><span class="pre">sample_event_redshift</span></code>/peak-apparent-magnitude check against
+the UVEX bandpasses (25 AB mag limiting-magnitude screen): no simulated event peaks
+above the limit beyond <span class="math notranslate nohighlight">\(z\approx0.8\)</span> in either band, and the NUV-detected
+fraction per redshift bin has already fallen to zero by <span class="math notranslate nohighlight">\(z=1\)</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>365 days</p></td>
+<td><p>–</p></td>
+<td><p>Covers the rise to peak (median <span class="math notranslate nohighlight">\(\approx14\)</span> d after explosion) through the
+decline to <span class="math notranslate nohighlight">\(10^{-3}\)</span> of peak for nearly the whole prior (16th-84th percentile
+<span class="math notranslate nohighlight">\(\approx270\)</span>-<span class="math notranslate nohighlight">\(325\)</span> d, rest frame).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">SED Model</p>
+<p><em>Model Class</em>: <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED" title="uvex_transients.models.supernovae.Ia.TypeIaSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSED</span></code></a></p>
+<p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED" title="uvex_transients.models.supernovae.Ia.TypeIaSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSED</span></code></a> reuses
+<a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettDecaySED.html#uvex_transients.models.arnett.ArnettDecaySED" title="uvex_transients.models.arnett.ArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettDecaySED</span></code></a>’s Arnett-style radioactive-decay
+diffusion light curve and floored-photosphere blackbody entirely (the same
+<span class="math notranslate nohighlight">\(L(t)\)</span>/<span class="math notranslate nohighlight">\(T(t)\)</span> machinery documented for the SLSNe-I model in
+<a class="reference internal" href="slsne.html#transients-slsne"><span class="std std-ref">Superluminous Supernovae (SLSNe-I)</span></a>, but driven by <span class="math notranslate nohighlight">\(^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}\)</span>
+decay heating rather than magnetar spin-down):</p>
+<div class="math notranslate nohighlight">
+\[F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
++ \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
+\qquad
+T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+T_\mathrm{floor}\right\}.\]</div>
+<p>The priors follow Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> (a sample of 2205 SNe Ia from ZTF): <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> and
+<code class="docutils literal notranslate"><span class="pre">M_ej</span></code> are the population-level Gaussians from that paper’s hierarchical Arnett-model fit
+(<span class="math notranslate nohighlight">\(\mu_\mathrm{Ni}=0.64\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{Ni}=0.42\,M_\odot\)</span>;
+<span class="math notranslate nohighlight">\(\mu_\mathrm{ej}=1.26\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{ej}=0.33\,M_\odot\)</span>),
+<code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> is fixed at the value adopted by Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>, and <code class="docutils literal notranslate"><span class="pre">kappa</span></code> is
+uniform over that paper’s marginalization range.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 14.0%" />
+<col style="width: 38.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
+<th class="head"><p class="sd-card-text">Symbol</p></th>
+<th class="head"><p class="sd-card-text">Prior</p></th>
+<th class="head"><p class="sd-card-text">Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(0.64, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.42; bounds <span class="math notranslate nohighlight">\([0.05, 3.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(1.26, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.33; bounds <span class="math notranslate nohighlight">\([0.05, 3.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">Normal(11, <span class="math notranslate nohighlight">\(\sigma\)</span>=1) <span class="math notranslate nohighlight">\(\times10^3\ \mathrm{km\,s^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p class="sd-card-text">Uniform(0.05, 0.15) <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Marginalization-prior range, Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 0.03 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(6000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K; bounds <span class="math notranslate nohighlight">\([3000, 10000]\)</span> K)</p></td>
+<td><p class="sd-card-text">Same floor as the other Arnett-based models on this site (see
+<a class="reference internal" href="slsne.html#transients-slsne"><span class="std std-ref">Superluminous Supernovae (SLSNe-I)</span></a>); not calibrated against SNe Ia data specifically.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</details><p class="rubric">Simulated Light Curves</p>
+<p>The plot below draws 300 random parameter realizations from the priors above and shows the
+resulting bolometric light curves and photospheric temperatures. The top panel is overlaid
+with the individual bolometric light curves (time since explosion) of the five Type Ia SNe
+of Sharon <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sharon2025" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>. No photospheric temperature data is bundled for Type Ia, so the
+bottom panel is unadorned.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/6704d9d3857bc83f7c3a691712a4ae6c/type_i-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/6bc5645441e2688970e2e429556da8ef/type_i-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/f1536404f2d1046e2f43481e760a8f01/type_i-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/8b4f32fa58e1bca02129cfa3e46cbcf0/type_i-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-1.png" class="plot-directive" src="../_images/type_i-1.png" />
+</figure>
+<p class="rubric">Observability Summary</p>
+<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
+<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 2000 simulated events drawn from the priors above (with
+<cite>redshift_limit</cite> temporarily raised to 4 to show the falloff), with the UVEX 1 Dwell limit
+of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted. This justifies the <span class="math notranslate nohighlight">\(z=1\)</span> redshift limit adopted above.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/fb3828a21ecff9f850e4cb19dba86215/type_i-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/45df007dda2629dbc8ff5f8c933cf2cc/type_i-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/dcfea48bd0bb42800bdd92e0d813b5d4/type_i-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e7711f1f25d159289b85be1a095c0f9a/type_i-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-2.png" class="plot-directive" src="../_images/type_i-2.png" />
+</figure>
+<p>The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
+that any event above the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is
+isotropic and homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=1\)</span>:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/b9fa6a55dad88a56cea22ff3120e25d4/type_i-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/2eca9dfbefe7472dc50b02e0e6d88ae3/type_i-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/dd1152758ebb54bf30743a9467f7a543/type_i-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/319e84271c89410b78af528834f0a4d4/type_i-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-3.png" class="plot-directive" src="../_images/type_i-3.png" />
+</figure>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Type Ib</label><div class="sd-tab-content docutils">
+<p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.html#uvex_transients.transients.supernovae.TypeIbSNe" title="uvex_transients.transients.supernovae.TypeIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSNe</span></code></a>, pairing
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a> with the rate/duration metadata
+described below.</p>
+<p class="rubric">Quick Facts</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p><span class="math notranslate nohighlight">\(R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)\)</span>; Type Ib 10.8% of <span class="math notranslate nohighlight">\(R_\mathrm{CC}(z)\)</span></p></td>
+<td><p>Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>, Madau and Dickinson<a class="footnote-reference brackets" href="#footcite-madau2014" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>,
+Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id14" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a></p></td>
+<td><p>Tracks the cosmic star-formation history. Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id15" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> find Ib is
+<span class="math notranslate nohighlight">\(35.6\pm11.4\%\)</span> of the stripped-envelope (SESNe) rate, which is itself
+<span class="math notranslate nohighlight">\(30.4^{+5.0}_{-4.9}\%\)</span> of the total core-collapse rate, so the Type Ib fraction
+is <span class="math notranslate nohighlight">\(0.356\times0.304=0.108\)</span>. Combined in quadrature with
+Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id16" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>’s <span class="math notranslate nohighlight">\(+27\%/-31\%\)</span> normalization uncertainty, this gives
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI.html#uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI" title="uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> (see
+<a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.5\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
+in the UV: in the observability check below, no simulated event beyond
+<span class="math notranslate nohighlight">\(z \approx 0.3\)</span> clears the UVEX limit.</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>100 days</p></td>
+<td><p>–</p></td>
+<td><p>Covers the rise, peak (<span class="math notranslate nohighlight">\(t_p \approx 16\)</span> d after explosion, prior median) and the decline.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">SED Model</p>
+<p><em>Model Class</em>: <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a></p>
+<p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a> reuses
+<a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettDecaySED.html#uvex_transients.models.arnett.ArnettDecaySED" title="uvex_transients.models.arnett.ArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettDecaySED</span></code></a>’s Arnett-style radioactive-decay
+diffusion light curve and floored-photosphere blackbody entirely – the same
+<span class="math notranslate nohighlight">\(L(t)\)</span>/<span class="math notranslate nohighlight">\(T(t)\)</span> machinery documented for <cite>Type Ia</cite> above – with a single Ni-56 mass
+decaying through <span class="math notranslate nohighlight">\(^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
++ \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
+\qquad
+T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+T_\mathrm{floor}\right\}.\]</div>
+<p>The priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> and <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are the SN Ib subsample statistics (mean, sample
+standard deviation) of the analytical-model fits in Table 6 of Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (13
+events). <code class="docutils literal notranslate"><span class="pre">kappa</span></code> is fixed at <span class="math notranslate nohighlight">\(0.06\,\mathrm{cm^2\,g^{-1}}\)</span>, the single grey optical
+opacity value that paper assumes (rather than fits) for every event in its sample.
+<code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> is fixed at <span class="math notranslate nohighlight">\(0.04\,\mathrm{cm^2\,g^{-1}}\)</span>, comparable to <cite>Type Ia</cite>’s
+Scalzo+14-derived value, since Lyman et al. 2016’s own analytical model has no gamma-ray
+leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
+direct constraint on it. <code class="docutils literal notranslate"><span class="pre">T_floor</span></code> is left close to <cite>Type Ia</cite>’s value.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 14.0%" />
+<col style="width: 38.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
+<th class="head"><p class="sd-card-text">Symbol</p></th>
+<th class="head"><p class="sd-card-text">Prior</p></th>
+<th class="head"><p class="sd-card-text">Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(0.17, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.16; bounds <span class="math notranslate nohighlight">\([0.01, 3.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id18" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ib subsample (13 events).</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(2.6, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.1; bounds <span class="math notranslate nohighlight">\([0.1, 8.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id19" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ib subsample.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(9.9, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.4; bounds <span class="math notranslate nohighlight">\([4, 16]\times10^3\ \mathrm{km\,s^{-1}}\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id20" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ib subsample photospheric velocities.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 0.06 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id21" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>’s assumed (not fit) value.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 0.04 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Not constrained by Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id22" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (no leakage term in their model);
+comparable to <cite>Type Ia</cite>’s Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> value.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(5000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K; bounds <span class="math notranslate nohighlight">\([3000, 10000]\)</span> K)</p></td>
+<td><p class="sd-card-text">Same floor family as the other Arnett-based models on this site; not calibrated
+against Ib data specifically.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</details><p class="rubric">Simulated Light Curves</p>
+<p>The plot below draws 300 random parameter realizations from the priors above. The top panel shows
+the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
+individual bolometric light curves of the Type Ib SNe in Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id24" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, which are measured
+relative to maximum light; this checks the <em>shape</em> of the light curve (rise, peak width and
+decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
+from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+explosion, overlaid with the temperatures of the Type Ib SNe in Prentice <em>et al.</em><a class="footnote-reference brackets" href="#footcite-prentice2019" id="id25" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>,
+shifted to time since explosion using the tabulated <span class="math notranslate nohighlight">\(t_p\)</span>.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/3689ef124721b6ba72c6f7ac161c049c/type_i-4.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/88b1b43f6e3b27ceec592c3f9122adbe/type_i-4.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/b5df133fb6fcdd57fb6eb0a65ef1e524/type_i-4.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/79d6d7f9ab5131551cc763cfc04058ac/type_i-4.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-4.png" class="plot-directive" src="../_images/type_i-4.png" />
+</figure>
+<p class="rubric">Observability Summary</p>
+<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
+<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
+Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/9f9001765cde5651d8d2fb4c7862ef1b/type_i-5.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/08323bfd79fe444001a432ee2b89b144/type_i-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/129aeb3da3f4e5c37af89f24806718a6/type_i-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e12bfcf6d88d443ca70481ef29d32cc2/type_i-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-5.png" class="plot-directive" src="../_images/type_i-5.png" />
+</figure>
+<p>The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
+the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is isotropic and homogeneous in
+comoving volume out to its redshift limit:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/dfe9de02d2d9c683f71d9118a09d7b0d/type_i-6.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/8c07b8c303a9c180701611ef64e47274/type_i-6.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/b1fa33762adf82db055c7d0133fe30df/type_i-6.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/78e55324ab95280a802c93fc754006e8/type_i-6.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-6.png" class="plot-directive" src="../_images/type_i-6.png" />
+</figure>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+Type Ic</label><div class="sd-tab-content docutils">
+<p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.html#uvex_transients.transients.supernovae.TypeIcSNe" title="uvex_transients.transients.supernovae.TypeIcSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSNe</span></code></a>, pairing
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIcSED.html#uvex_transients.models.supernovae.Ibc.TypeIcSED" title="uvex_transients.models.supernovae.Ibc.TypeIcSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSED</span></code></a> with the rate/duration metadata
+described below.</p>
+<p class="rubric">Quick Facts</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p><span class="math notranslate nohighlight">\(R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)\)</span>; Type Ic 6.5% of <span class="math notranslate nohighlight">\(R_\mathrm{CC}(z)\)</span></p></td>
+<td><p>Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>, Madau and Dickinson<a class="footnote-reference brackets" href="#footcite-madau2014" id="id27" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>,
+Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id28" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a></p></td>
+<td><p>Tracks the cosmic star-formation history. Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id29" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> find Ic is
+<span class="math notranslate nohighlight">\(21.5\pm8.6\%\)</span> of the stripped-envelope (SESNe) rate, which is itself
+<span class="math notranslate nohighlight">\(30.4^{+5.0}_{-4.9}\%\)</span> of the total core-collapse rate, so the Type Ic fraction
+is <span class="math notranslate nohighlight">\(0.215\times0.304=0.065\)</span>. Combined in quadrature with
+Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id30" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>’s <span class="math notranslate nohighlight">\(+27\%/-31\%\)</span> normalization uncertainty, this gives
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI.html#uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI" title="uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> (see
+<a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.5\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
+in the UV: in the observability check below, no simulated event beyond
+<span class="math notranslate nohighlight">\(z \approx 0.5\)</span> clears the UVEX limit.</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>100 days</p></td>
+<td><p>–</p></td>
+<td><p>Covers the rise, peak (<span class="math notranslate nohighlight">\(t_p \approx 17\)</span> d after explosion, prior median) and the decline.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">SED Model</p>
+<p><em>Model Class</em>: <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIcSED.html#uvex_transients.models.supernovae.Ibc.TypeIcSED" title="uvex_transients.models.supernovae.Ibc.TypeIcSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSED</span></code></a></p>
+<p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIcSED.html#uvex_transients.models.supernovae.Ibc.TypeIcSED" title="uvex_transients.models.supernovae.Ibc.TypeIcSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSED</span></code></a> shares its construction entirely
+with <cite>Type Ib</cite>’s <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a> (see its SED Model
+section above for the <span class="math notranslate nohighlight">\(F_\mathrm{decay}(t)\)</span>/<span class="math notranslate nohighlight">\(T(t)\)</span> math and the reasoning behind
+<code class="docutils literal notranslate"><span class="pre">kappa</span></code>, <code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> and <code class="docutils literal notranslate"><span class="pre">T_floor</span></code>), differing only in that <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> and
+<code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are drawn from the SN Ic subsample statistics of Table 6 of Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id31" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
+(8 events) instead of the Type Ib ones.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 14.0%" />
+<col style="width: 38.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
+<th class="head"><p class="sd-card-text">Symbol</p></th>
+<th class="head"><p class="sd-card-text">Prior</p></th>
+<th class="head"><p class="sd-card-text">Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(0.22, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.16; bounds <span class="math notranslate nohighlight">\([0.01, 3.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id32" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ic subsample (8 events).</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(3.0, <span class="math notranslate nohighlight">\(\sigma\)</span>=2.8; bounds <span class="math notranslate nohighlight">\([0.1, 6.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id33" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ic subsample.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(10.4, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.2; bounds <span class="math notranslate nohighlight">\([4, 16]\times10^3\ \mathrm{km\,s^{-1}}\)</span>)</p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id34" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, SN Ic subsample photospheric velocities.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 0.06 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id35" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>’s assumed (not fit) value.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 0.04 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Not constrained by Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id36" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (no leakage term in their model);
+comparable to <cite>Type Ia</cite>’s Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id37" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> value.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(6000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K; bounds <span class="math notranslate nohighlight">\([3000, 10000]\)</span> K)</p></td>
+<td><p class="sd-card-text">Same floor family as the other Arnett-based models on this site; not calibrated
+against Ic data specifically.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</details><p class="rubric">Simulated Light Curves</p>
+<p>The plot below draws 300 random parameter realizations from the priors above. The top panel shows
+the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
+individual bolometric light curves of the Type Ic SNe in Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id38" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, which are measured
+relative to maximum light; this checks the <em>shape</em> of the light curve (rise, peak width and
+decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
+from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+explosion, overlaid with the temperatures of the Type Ic SNe in Prentice <em>et al.</em><a class="footnote-reference brackets" href="#footcite-prentice2019" id="id39" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>,
+shifted to time since explosion using the tabulated <span class="math notranslate nohighlight">\(t_p\)</span>.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/98c871edb31954e91b4684c14dd6f963/type_i-7.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/c54806e80d6a47660f6865f9d09df2b7/type_i-7.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/cf0a8aff610db9f25f0e5eac493e6fcf/type_i-7.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0bfed414a62456b1814aa38ae13c3627/type_i-7.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-7.png" class="plot-directive" src="../_images/type_i-7.png" />
+</figure>
+<p class="rubric">Observability Summary</p>
+<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
+<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
+Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/522c4d407f9e2c3a64a5d43bdb817b8c/type_i-8.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/11718245424cb2d2355e93c7a10d9787/type_i-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/564329b5f05c7c827d4926dcc2cee94e/type_i-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/90793011b2aa077691d54ae37f1ded2c/type_i-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-8.png" class="plot-directive" src="../_images/type_i-8.png" />
+</figure>
+<p>The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
+the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is isotropic and homogeneous in
+comoving volume out to its redshift limit:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/ae28a5c4f80ab3f740d56a3c6b7faa1b/type_i-9.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/135fffd36bf6de34e9654d76f745bd74/type_i-9.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/bc6303caa6f04dcaa558ca4a5337ec30/type_i-9.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0d755af1d3cf2ae5afcbd63cc5d9bb9e/type_i-9.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-9.png" class="plot-directive" src="../_images/type_i-9.png" />
+</figure>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+Type Ic-BL</label><div class="sd-tab-content docutils">
+<p>Type Ic-BL (broad-lined) supernovae are Type Ic explosions with unusually high kinetic
+energies and ejecta velocities, identified spectroscopically by their broad, blended
+absorption features. Like <cite>Type Ib</cite>/<cite>Type Ic</cite> above and <cite>Type Ia</cite>, this population’s SED
+follows the same first-principles Arnett-style radioactive-decay model, but with its own
+priors, calibrated from an explosion-property table (nickel mass, ejecta mass, photospheric
+velocity) specific to its own ZTF sample rather than the Lyman et al. 2016 sample used for
+<cite>Type Ib</cite>/<cite>Type Ic</cite>.</p>
+<p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIcBLSNe.html#uvex_transients.transients.supernovae.TypeIcBLSNe" title="uvex_transients.transients.supernovae.TypeIcBLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSNe</span></code></a>, pairing
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IcBL.TypeIcBLSED.html#uvex_transients.models.supernovae.IcBL.TypeIcBLSED" title="uvex_transients.models.supernovae.IcBL.TypeIcBLSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSED</span></code></a> with the rate/duration
+metadata described below.</p>
+<p class="rubric">Quick Facts</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Source</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rate</p></td>
+<td><p><span class="math notranslate nohighlight">\(R_\mathrm{CC}(z) = k\,\psi_\mathrm{UV}(z)\)</span>; Type Ic-BL 1.1% of <span class="math notranslate nohighlight">\(R_\mathrm{CC}(z)\)</span></p></td>
+<td><p>Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id40" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>, Madau and Dickinson<a class="footnote-reference brackets" href="#footcite-madau2014" id="id41" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>,
+Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id42" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a></p></td>
+<td><p>Tracks the cosmic star-formation history. Shivvers <em>et al.</em><a class="footnote-reference brackets" href="#footcite-shivvers2017" id="id43" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> find Ic-BL is
+<span class="math notranslate nohighlight">\(3.7^{+2.9}_{-3.7}\%\)</span> of the stripped-envelope (SESNe) rate, which is itself
+<span class="math notranslate nohighlight">\(30.4^{+5.0}_{-4.9}\%\)</span> of the total core-collapse rate, so the Type Ic-BL
+fraction is <span class="math notranslate nohighlight">\(0.037\times0.304=0.0112\)</span>. Combined in quadrature with
+Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-strolger2015" id="id44" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>’s <span class="math notranslate nohighlight">\(+27\%/-31\%\)</span> normalization uncertainty, this gives
+<a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIcBLSNe.RATE_CI.html#uvex_transients.transients.supernovae.TypeIcBLSNe.RATE_CI" title="uvex_transients.transients.supernovae.TypeIcBLSNe.RATE_CI"><code class="xref py py-attr docutils literal notranslate"><span class="pre">RATE_CI</span></code></a> (see
+<a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>). The lower bound on the Ic-BL-of-SESNe
+fraction is itself consistent with zero, so the combined lower <cite>RATE_CI</cite> factor is
+slightly negative; treat the lower bound as effectively zero rather than literally.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Redshift limit</p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 1\)</span></p></td>
+<td><p>–</p></td>
+<td><p>Wider than the Type Ib/Type Ic limit, to cover this population’s higher ejecta
+velocities and kinetic energies; in the observability check below, no simulated event
+beyond <span class="math notranslate nohighlight">\(z \approx 0.55\)</span> clears the UVEX limit.</p></td>
+</tr>
+<tr class="row-even"><td><p>Duration</p></td>
+<td><p>100 days</p></td>
+<td><p>–</p></td>
+<td><p>Covers the rise, peak and decline, matching <cite>Type Ib</cite>/<cite>Type Ic</cite>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">SED Model</p>
+<p><em>Model Class</em>: <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IcBL.TypeIcBLSED.html#uvex_transients.models.supernovae.IcBL.TypeIcBLSED" title="uvex_transients.models.supernovae.IcBL.TypeIcBLSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSED</span></code></a></p>
+<p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IcBL.TypeIcBLSED.html#uvex_transients.models.supernovae.IcBL.TypeIcBLSED" title="uvex_transients.models.supernovae.IcBL.TypeIcBLSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSED</span></code></a> reuses
+<a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.ArnettDecaySED.html#uvex_transients.models.arnett.ArnettDecaySED" title="uvex_transients.models.arnett.ArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettDecaySED</span></code></a>’s Arnett-style radioactive-decay
+diffusion light curve and floored-photosphere blackbody entirely (the same
+<span class="math notranslate nohighlight">\(L(t)\)</span>/<span class="math notranslate nohighlight">\(T(t)\)</span> machinery documented for <cite>Type Ia</cite> above and for the SLSNe-I model
+in <a class="reference internal" href="slsne.html#transients-slsne"><span class="std std-ref">Superluminous Supernovae (SLSNe-I)</span></a>):</p>
+<div class="math notranslate nohighlight">
+\[F_\mathrm{decay}(t) = M_\mathrm{Ni}\left[\epsilon_\mathrm{Ni}\,e^{-t/\tau_\mathrm{Ni}}
++ \epsilon_\mathrm{Co}\left(e^{-t/\tau_\mathrm{Co}} - e^{-t/\tau_\mathrm{Ni}}\right)\right],
+\qquad
+T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
+T_\mathrm{floor}\right\}.\]</div>
+<p>The priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> and <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are sample statistics (mean, sample standard
+deviation) of the 36-event explosion-property table of Srinivasaragavan <em>et al.</em><a class="footnote-reference brackets" href="#footcite-srinivasaragavan2024" id="id45" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>
+(nickel mass, kinetic energy, ejecta mass and photospheric velocity per event). One event
+(SN 2020wgz), whose reported
+<span class="math notranslate nohighlight">\(M_\mathrm{Ni}=2.46\,M_\odot\)</span> is a &gt;5-sigma outlier driven by an <code class="docutils literal notranslate"><span class="pre">e_k</span></code>/<code class="docutils literal notranslate"><span class="pre">m_ej</span></code> <em>lower
+limit</em> rather than a measurement, is excluded from the <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> statistics; <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> uses only
+rows with a measured (non-lower-limit) value; <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> is identified with the sample’s
+photospheric velocities (<code class="docutils literal notranslate"><span class="pre">v_ph</span></code>), regardless of the epoch quoted. <code class="docutils literal notranslate"><span class="pre">kappa</span></code> and
+<code class="docutils literal notranslate"><span class="pre">T_floor</span></code> are not constrained by that table and are left at <cite>Type Ia</cite>’s values;
+<code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> is instead fixed at a large value (full gamma-ray trapping across the
+simulated window), unlike <cite>Type Ia</cite>’s Scalzo+14 value.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 14.0%" />
+<col style="width: 38.0%" />
+<col style="width: 32.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
+<th class="head"><p class="sd-card-text">Symbol</p></th>
+<th class="head"><p class="sd-card-text">Prior</p></th>
+<th class="head"><p class="sd-card-text">Notes / Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(0.33, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.24; bounds <span class="math notranslate nohighlight">\([0.02, 2.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Srinivasaragavan <em>et al.</em><a class="footnote-reference brackets" href="#footcite-srinivasaragavan2024" id="id46" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a> (SN 2020wgz excluded, see above).</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(2.54, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.95; bounds <span class="math notranslate nohighlight">\([0.1, 10.0]\,M_\odot\)</span>)</p></td>
+<td><p class="sd-card-text">Srinivasaragavan <em>et al.</em><a class="footnote-reference brackets" href="#footcite-srinivasaragavan2024" id="id47" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a>, measured (non-lower-limit) rows only.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(20.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=4.96; bounds <span class="math notranslate nohighlight">\([5, 45]\times10^3\ \mathrm{km\,s^{-1}}\)</span>)</p></td>
+<td><p class="sd-card-text">Sample photospheric velocities (<code class="docutils literal notranslate"><span class="pre">v_ph</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p class="sd-card-text">Uniform(0.05, 0.15) <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Not constrained by the table; same range as <cite>Type Ia</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p class="sd-card-text">Fixed, 1000 <span class="math notranslate nohighlight">\(\mathrm{cm^2\,g^{-1}}\)</span></p></td>
+<td><p class="sd-card-text">Approximates full gamma-ray trapping across the simulated window; unlike <cite>Type Ia</cite>,
+not Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id48" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>’s value.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">TruncatedNormal(6000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K; bounds <span class="math notranslate nohighlight">\([3000, 10000]\)</span> K)</p></td>
+<td><p class="sd-card-text">Same floor as the other Arnett-based models on this site; not calibrated against
+Ic-BL data specifically.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</details><p class="rubric">Simulated Light Curves</p>
+<p>The plot below draws 300 random parameter realizations from the priors above and shows the
+resulting bolometric light curves and photospheric temperatures. The top panel is overlaid
+with the individual bolometric light curves (time since explosion) of the 26 Type Ic-BL SNe
+of Srinivasaragavan <em>et al.</em><a class="footnote-reference brackets" href="#footcite-srinivasaragavan2024" id="id49" role="doc-noteref"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></a> with a full explosion-property fit (the same sample the
+priors above are derived from). No photospheric temperature data is bundled for Type Ic-BL,
+so the bottom panel is unadorned.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/0fa29f18a8b4ca5b5cfcdaded644b421/type_i-10.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/60a8fb62d79bc001ca639ac9b06baba6/type_i-10.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/3740e5ff95cf5e6cdfb80aeede47bde5/type_i-10.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7b9faf6e8a60056ad8c18af6426dbcf6/type_i-10.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-10.png" class="plot-directive" src="../_images/type_i-10.png" />
+</figure>
+<p class="rubric">Observability Summary</p>
+<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
+<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
+Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/6dd5c8cd93f318be8cd387efb88e3594/type_i-11.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/1d157a35e934bced85a8e34dab4cbf2a/type_i-11.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7c3eeb3bfc56f9096f2bec28a5505a5e/type_i-11.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/70cc16c4a00d6c461566111c050da442/type_i-11.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-11.png" class="plot-directive" src="../_images/type_i-11.png" />
+</figure>
+<p>The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
+the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is isotropic and homogeneous in
+comoving volume out to its redshift limit:</p>
+<p>(<a class="reference download internal" download="" href="../_downloads/14b6b50e73881672ccf3d81e827c276f/type_i-12.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/47c9a65bed4c0ed1f7da4fdcc4010d6b/type_i-12.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/5825308a1a50fe6930e5010076b28267/type_i-12.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/89ac48520e94027a0a0baa455b27b97b/type_i-12.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../_images/type_i-12.png" class="plot-directive" src="../_images/type_i-12.png" />
+</figure>
+</div>
+</div>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id50">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-lyman2016" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id17">2</a>,<a role="doc-backlink" href="#id18">3</a>,<a role="doc-backlink" href="#id19">4</a>,<a role="doc-backlink" href="#id20">5</a>,<a role="doc-backlink" href="#id21">6</a>,<a role="doc-backlink" href="#id22">7</a>,<a role="doc-backlink" href="#id24">8</a>,<a role="doc-backlink" href="#id31">9</a>,<a role="doc-backlink" href="#id32">10</a>,<a role="doc-backlink" href="#id33">11</a>,<a role="doc-backlink" href="#id34">12</a>,<a role="doc-backlink" href="#id35">13</a>,<a role="doc-backlink" href="#id36">14</a>,<a role="doc-backlink" href="#id38">15</a>)</span>
+<p>J. D. Lyman, D. Bersier, P. A. James, P. A. Mazzali, J. J. Eldridge, M. Fraser, and E. Pian. Bolometric light curves and explosion parameters of 38 stripped-envelope core-collapse supernovae. <em>Monthly Notices of the Royal Astronomical Society</em>, 457:328–350, 2016. <a class="reference external" href="https://arxiv.org/abs/1512.03422">arXiv:1512.03422</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stv2983">doi:10.1093/mnras/stv2983</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-2017apj-848-25m" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Dan Maoz and Or Graur. Star Formation, Supernovae, Iron, and \ensuremath \alpha : Consistent Cosmic and Galactic Histories. <em>\apj </em>, 848(1):25, October 2017. <a class="reference external" href="https://arxiv.org/abs/1703.04540">arXiv:1703.04540</a>, <a class="reference external" href="https://doi.org/10.3847/1538-4357/aa8b6e">doi:10.3847/1538-4357/aa8b6e</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-madau2014" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id13">2</a>,<a role="doc-backlink" href="#id27">3</a>,<a role="doc-backlink" href="#id41">4</a>)</span>
+<p>Piero Madau and Mark Dickinson. Cosmic star-formation history. <em>Annual Review of Astronomy and Astrophysics</em>, 52:415–486, 2014. <a class="reference external" href="https://arxiv.org/abs/1403.0007">arXiv:1403.0007</a>, <a class="reference external" href="https://doi.org/10.1146/annurev-astro-081811-125615">doi:10.1146/annurev-astro-081811-125615</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-sarin2026" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id4">1</a>,<a role="doc-backlink" href="#id6">2</a>,<a role="doc-backlink" href="#id7">3</a>,<a role="doc-backlink" href="#id8">4</a>,<a role="doc-backlink" href="#id9">5</a>)</span>
+<p>Nikhil Sarin, Ellen Lindsjö, Lisa Kelsey, Matthew Grayling, Jesper Sollerman, Steve Schulze, Adam A. Miller, Madeleine Ginolin, Erin E. Hayes, Conor M. B. Omand, Kaisey S. Mandel, Aaron Do, Suhail Dhawan, and Joel Johansson. Lightcurve Modelling of 2,205 ZTF DR2 Type Ia Supernovae: Implications for SN Ia Physics and Cosmology. <em>\mnras </em>, September 2026. <a class="reference external" href="https://arxiv.org/abs/2602.02677">arXiv:2602.02677</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stag1739">doi:10.1093/mnras/stag1739</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-scalzo2014" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id10">2</a>,<a role="doc-backlink" href="#id23">3</a>,<a role="doc-backlink" href="#id37">4</a>,<a role="doc-backlink" href="#id48">5</a>)</span>
+<p>R. Scalzo, G. Aldering, P. Antilogus, C. Aragon, S. Bailey, C. Baltay, S. Bongard, C. Button, F. Cellier-Holzem, M. Childress, N. Chotard, Y. Copin, H. K. Fakhouri, E. Gangler, J. Guy, A. Kim, M. Kowalski, M. Kromer, J. Nordin, P. Nugent, K. Paech, R. Pain, E. Pecontal, R. Pereira, S. Perlmutter, D. Rabinowitz, M. Rigault, K. Runge, C. Saunders, S. A. Sim, G. Smadja, C. Tao, S. Taubenberger, R. C. Thomas, and B. A. Weaver. Type ia supernova bolometric light curves and ejected mass estimates from the nearby supernova factory. <em>Monthly Notices of the Royal Astronomical Society</em>, 440(2):1498–1518, 2014. <a class="reference external" href="https://arxiv.org/abs/1402.6842">arXiv:1402.6842</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stu350">doi:10.1093/mnras/stu350</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-sharon2025" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">6</a><span class="fn-bracket">]</span></span>
+<p>Amir Sharon, Doron Kushnir, and Nahliel Wygoda. All known Type Ia supernovae models fail to reproduce the observed bolometric luminosity–width correlation. <em>\mnras </em>, 540(4):3247–3262, July 2025. <a class="reference external" href="https://arxiv.org/abs/2407.06859">arXiv:2407.06859</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/staf808">doi:10.1093/mnras/staf808</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-strolger2015" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id12">1</a>,<a role="doc-backlink" href="#id16">2</a>,<a role="doc-backlink" href="#id26">3</a>,<a role="doc-backlink" href="#id30">4</a>,<a role="doc-backlink" href="#id40">5</a>,<a role="doc-backlink" href="#id44">6</a>)</span>
+<p>Louis-Gregory Strolger, Tomas Dahlen, Steven A. Rodney, Or Graur, Adam G. Riess, Curtis McCully, Swara Ravindranath, Bahram Mobasher, and A. Kristin Shahady. The rate of core collapse supernovae to redshift 2.5 from the CANDELS and CLASH supernova surveys. <em>The Astrophysical Journal</em>, 813(2):93, 2015. <a class="reference external" href="https://arxiv.org/abs/1509.06574">arXiv:1509.06574</a>, <a class="reference external" href="https://doi.org/10.1088/0004-637X/813/2/93">doi:10.1088/0004-637X/813/2/93</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-shivvers2017" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id14">1</a>,<a role="doc-backlink" href="#id15">2</a>,<a role="doc-backlink" href="#id28">3</a>,<a role="doc-backlink" href="#id29">4</a>,<a role="doc-backlink" href="#id42">5</a>,<a role="doc-backlink" href="#id43">6</a>)</span>
+<p>Isaac Shivvers, Maryam Modjaz, WeiKang Zheng, Yuqian Liu, Alexei V. Filippenko, Jeffrey M. Silverman, Thomas Matheson, Andrea Pastorello, Or Graur, Ryan J. Foley, Ryan Chornock, Nathan Smith, Jesse Leaman, and Stefano Benetti. Revisiting the lick observatory supernova search volume-limited sample: updated classifications and revised stripped-envelope supernova fractions. <em>Publications of the Astronomical Society of the Pacific</em>, 129(975):054201, 2017. <a class="reference external" href="https://arxiv.org/abs/1609.02922">arXiv:1609.02922</a>, <a class="reference external" href="https://doi.org/10.1088/1538-3873/aa54a6">doi:10.1088/1538-3873/aa54a6</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-prentice2019" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id25">1</a>,<a role="doc-backlink" href="#id39">2</a>)</span>
+<p>S. J. Prentice, C. Ashall, P. A. James, L. Short, P. A. Mazzali, D. Bersier, P. A. Crowther, C. Barbarino, T.-W. Chen, C. M. Copperwheat, M. J. Darnley, L. Denneau, N. Elias-Rosa, M. Fraser, L. Galbany, A. Gal-Yam, J. Harmanen, D. A. Howell, G. Hosseinzadeh, C. Inserra, E. Kankare, E. Karamehmetoglu, G. P. Lamb, M. Limongi, K. Maguire, C. McCully, F. Olivares E., A. S. Piascik, G. Pignata, D. E. Reichart, A. Rest, T. Reynolds, Ó. Rodríguez, J. L. O. Saario, S. Schulze, S. J. Smartt, K. W. Smith, J. Sollerman, B. Stalder, M. Sullivan, F. Taddia, S. Valenti, S. D. Vergani, S. C. Williams, and D. R. Young. Investigating the properties of stripped-envelope supernovae; what are the implications for their progenitors? <em>Monthly Notices of the Royal Astronomical Society</em>, 485(2):1559–1578, 2019. <a class="reference external" href="https://arxiv.org/abs/1812.03716">arXiv:1812.03716</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/sty3399">doi:10.1093/mnras/sty3399</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-srinivasaragavan2024" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id45">1</a>,<a role="doc-backlink" href="#id46">2</a>,<a role="doc-backlink" href="#id47">3</a>,<a role="doc-backlink" href="#id49">4</a>)</span>
+<p>Gokul P. Srinivasaragavan, Sheng Yang, Shreya Anand, Jesper Sollerman, Anna Y. Q. Ho, Alessandra Corsi, S. Bradley Cenko, Daniel Perley, Steve Schulze, Marquice Sanchez-Fleming, Jack Pope, Nikhil Sarin, Conor Omand, Kaustav K. Das, Christoffer Fremling, Igor Andreoni, Rachel Bruch, Kevin B. Burdge, Kishalay De, Avishay Gal-Yam, Anjasha Gangopadhyay, Matthew J. Graham, Jacob E. Jencson, Viraj Karambelkar, Mansi M. Kasliwal, S. R. Kulkarni, Julia Martikainen, Yashvi S. Sharma, Anastasios Tzanidakis, Lin Yan, Yuhan Yao, Eric C. Bellm, Steven L. Groom, Frank J. Masci, Guy Nir, Josiah Purdum, Roger Smith, and Niharika Sravan. Optical and radio analysis of systematically classified broad-lined type ic supernovae from the zwicky transient facility. <em>The Astrophysical Journal</em>, 2024. <a class="reference external" href="https://arxiv.org/abs/2408.14586">arXiv:2408.14586</a>.</p>
+</aside>
+</aside>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="type_ii.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Type II Supernovae</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="shock_cooling_iib.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Shock-Cooling Emission from Type IIb SNe</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/transients/type_i.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

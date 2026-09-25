@@ -1,0 +1,1299 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Command-Line Interface &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/cli/overview';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.6alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Transients" href="../../transients/index.html" />
+    <link rel="prev" title="Yield Statistics" href="../simulation/yield_statistics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../models/overview.html">Models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../transients/overview.html">Transients</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../surveys/overview.html">Surveys</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Command-Line Interface</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Command-Line Interface</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="command-line-interface">
+<span id="user-guide-cli"></span><h1>Command-Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">#</a></h1>
+<p>Everything covered in <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> (sampling an
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a>, screening it down with one or
+more cuts, and running synthetic photometry) is also available without writing any Python, via
+the <code class="docutils literal notranslate"><span class="pre">uvex-transients</span></code> console script (<a class="reference internal" href="../../_as_gen/uvex_transients.cli.html#module-uvex_transients.cli" title="uvex_transients.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.cli</span></code></a>). One YAML <strong>run-config</strong> file
+describes <em>what</em> to simulate (which transients, what schedule, what screening); the CLI’s four
+subcommands (<code class="docutils literal notranslate"><span class="pre">generate</span></code>, <code class="docutils literal notranslate"><span class="pre">cut</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>, and <code class="docutils literal notranslate"><span class="pre">run</span></code>) describe <em>when</em> to do each step,
+reading and writing plain <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> files
+between stages.</p>
+<p>This page is a hands-on tour of the run-config format and the commands themselves. See
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for what each stage actually does under the hood; this page is about
+driving that same pipeline from a config file and a terminal instead of a Python script.</p>
+<section id="quick-look">
+<h2>Quick Look<a class="headerlink" href="#quick-look" title="Link to this heading">#</a></h2>
+<p>The repository ships a ready-to-run example, <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/quickstart_tde.yaml">quickstart_tde.yaml</a>, at
+the top of the source tree. Once the package is installed (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> from a source
+checkout registers the <code class="docutils literal notranslate"><span class="pre">uvex-transients</span></code> command), running the whole pipeline is one line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>quickstart_results/
+</pre></div>
+</div>
+<p>That samples tidal disruption events against the default UVEX schedule, tabulates the survey’s
+effective exposure to them, screens them by magnitude and then by SNR, summarizes the resulting
+yield, and runs synthetic photometry on whatever survives – leaving every intermediate catalog in
+<code class="docutils literal notranslate"><span class="pre">quickstart_results/</span></code>: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, one numbered file per cut,
+<code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code>, and a final <code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>. The rest of this
+page explains the config file that made that happen and the commands it works with, so you can
+build your own.</p>
+</section>
+<hr class="docutils" />
+<section id="the-run-config-file">
+<h2>The Run-Config File<a class="headerlink" href="#the-run-config-file" title="Link to this heading">#</a></h2>
+<p>A run-config is a single YAML file with up to seven top-level sections. Every CLI command reads the
+<em>same</em> file (there’s no separate config per command), but each command only needs the section(s)
+it actually touches, resolved lazily by <a class="reference internal" href="../../_as_gen/uvex_transients.cli.config.RunConfig.html#uvex_transients.cli.config.RunConfig" title="uvex_transients.cli.config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a>: a config
+with no <code class="docutils literal notranslate"><span class="pre">photometry:</span></code> block is perfectly valid as long as you never run
+<code class="docutils literal notranslate"><span class="pre">uvex-transients</span> <span class="pre">photometry</span></code> against it.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id1">
+<caption><span class="caption-text">Top-level sections</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Section</p></th>
+<th class="head"><p>Required by</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">schedule:</span></code></p></td>
+<td><p>all commands</p></td>
+<td><p>Which <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> to simulate against. Optional;
+falls back to the package’s own default schedule if omitted entirely.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mission:</span></code></p></td>
+<td><p>all commands</p></td>
+<td><p>Which <code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code> (bandpasses, detector, background) to evaluate
+against. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">&quot;uvex&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transients:</span></code></p></td>
+<td><p>all commands</p></td>
+<td><p>At least one <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a> type to simulate.
+Required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">generate:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">generate</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a>’s own arguments.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cuts:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cut</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p>Named screening passes, run in the order they’re declared.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">photometry:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">photometry</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry.html#uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry" title="uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a>’s
+optional <code class="docutils literal notranslate"><span class="pre">bands</span></code>/<code class="docutils literal notranslate"><span class="pre">n_sigma</span></code> arguments. Optional; omit entirely to use every band at the
+package’s default detection significance.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">yield:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary" title="uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_yield_summary()</span></code></a>’s
+optional <code class="docutils literal notranslate"><span class="pre">confidence</span></code> argument. Optional; defaults to a <code class="docutils literal notranslate"><span class="pre">0.9</span></code> Clopper-Pearson
+confidence level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">detection-counts</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code> (if declared)</p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_detection_count_table()</span></code></a>’s
+<code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>/<code class="docutils literal notranslate"><span class="pre">confidence</span></code> arguments. Optional; <code class="docutils literal notranslate"><span class="pre">run</span></code> skips this stage entirely if
+the section is omitted.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">keep_intermediate:</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p>Whether <code class="docutils literal notranslate"><span class="pre">run</span></code> writes each <em>intermediate</em> stage’s catalog to <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>, in addition to
+the final event catalog and photometry table (always written). Optional bool; defaults to
+<code class="docutils literal notranslate"><span class="pre">true</span></code>. Overridden either way by <code class="docutils literal notranslate"><span class="pre">run</span></code>’s own <code class="docutils literal notranslate"><span class="pre">--keep-intermediate</span></code>/
+<code class="docutils literal notranslate"><span class="pre">--no-keep-intermediate</span></code> flag.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p><code class="docutils literal notranslate"><span class="pre">schedule:</span></code>, <code class="docutils literal notranslate"><span class="pre">mission:</span></code>, and <code class="docutils literal notranslate"><span class="pre">transients:</span></code> are the shared “setup” every command needs to
+build a <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a>
+(<a class="reference internal" href="../../_as_gen/uvex_transients.cli.config.RunConfig.simulator.html#uvex_transients.cli.config.RunConfig.simulator" title="uvex_transients.cli.config.RunConfig.simulator"><code class="xref py py-attr docutils literal notranslate"><span class="pre">simulator</span></code></a>); they’re listed as required by “all
+commands” above even though, individually, <code class="docutils literal notranslate"><span class="pre">schedule:</span></code>/<code class="docutils literal notranslate"><span class="pre">mission:</span></code> each have a fallback
+default.</p>
+</div>
+<section id="the-schedule">
+<h3>The Schedule<a class="headerlink" href="#the-schedule" title="Link to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvex_initial_main</span><span class="w">    </span><span class="c1"># one of the names in `schedules.schedule_urls`</span>
+
+<span class="c1"># ...or, to fetch a URL directly instead of a name registered in the package config:</span>
+<span class="c1">#</span>
+<span class="c1">#   schedule:</span>
+<span class="c1">#     url: https://example.com/plan.ecsv</span>
+<span class="c1">#</span>
+<span class="c1"># ...or to read a schedule already saved to disk (as written by</span>
+<span class="c1"># `SurveySchedule.to_disk(path, fov_path=...)`):</span>
+<span class="c1">#</span>
+<span class="c1">#   schedule:</span>
+<span class="c1">#     path: my_schedule.ecsv</span>
+<span class="c1">#     fov_path: my_schedule.reg</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">name:</span></code>, <code class="docutils literal notranslate"><span class="pre">url:</span></code>, and <code class="docutils literal notranslate"><span class="pre">path:</span></code>/<code class="docutils literal notranslate"><span class="pre">fov_path:</span></code> are mutually exclusive: giving more than one
+raises. See <a class="reference internal" href="../surveys/overview.html#user-guide-surveys"><span class="std std-ref">Surveys</span></a> for what a schedule actually is and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.list_schedules.html#uvex_transients.surveys.utils.list_schedules" title="uvex_transients.surveys.utils.list_schedules"><code class="xref py py-func docutils literal notranslate"><span class="pre">list_schedules()</span></code></a> for the full set of registered names.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id2">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">schedule:</span></code> parameters</span><a class="headerlink" href="#id2" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p>str</p></td>
+<td><p>A name registered in <code class="docutils literal notranslate"><span class="pre">schedules.schedule_urls</span></code> (the package config). Mutually exclusive
+with <code class="docutils literal notranslate"><span class="pre">url</span></code>/<code class="docutils literal notranslate"><span class="pre">path</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">url</span></code></p></td>
+<td><p>str</p></td>
+<td><p>A direct URL to fetch a schedule table from. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">name</span></code>/<code class="docutils literal notranslate"><span class="pre">path</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">path</span></code></p></td>
+<td><p>str</p></td>
+<td><p>A local schedule table path, as written by <code class="docutils literal notranslate"><span class="pre">SurveySchedule.to_disk</span></code>. Requires
+<code class="docutils literal notranslate"><span class="pre">fov_path</span></code>; mutually exclusive with <code class="docutils literal notranslate"><span class="pre">name</span></code>/<code class="docutils literal notranslate"><span class="pre">url</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fov_path</span></code></p></td>
+<td><p>str</p></td>
+<td><p>The companion instrument-FOV region file for <code class="docutils literal notranslate"><span class="pre">path</span></code>. Required alongside <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="the-mission">
+<h3>The Mission<a class="headerlink" href="#the-mission" title="Link to this heading">#</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">mission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvex</span>
+</pre></div>
+</div>
+<p>A bare name, resolved against every <code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code> instance in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code> (<code class="docutils literal notranslate"><span class="pre">rubin</span></code>, <code class="docutils literal notranslate"><span class="pre">ultrasat</span></code>, <code class="docutils literal notranslate"><span class="pre">uvex</span></code>, <code class="docutils literal notranslate"><span class="pre">ztf</span></code> as of this writing); an
+unrecognized name raises, listing the real ones.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id3">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">mission:</span></code> parameter</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(bare value)</p></td>
+<td><p>str</p></td>
+<td><p>A name from <code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code>. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">&quot;uvex&quot;</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="the-transients">
+<h3>The Transients<a class="headerlink" href="#the-transients" title="Link to this heading">#</a></h3>
+<p>Each entry under <code class="docutils literal notranslate"><span class="pre">transients:</span></code> is a label of your choosing (used as the catalog’s
+<code class="docutils literal notranslate"><span class="pre">transient_type</span></code> value; see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>) mapping to a <code class="docutils literal notranslate"><span class="pre">class:</span></code> plus whatever
+overrides you want on top of its defaults:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">transients</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tde</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TidalDisruptionEvent</span>
+<span class="w">    </span><span class="nt">z_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0</span><span class="w">                 </span><span class="c1"># overrides ExtragalacticTransient.redshift_limit</span>
+<span class="w">    </span><span class="nt">duration_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200 day</span><span class="w">      </span><span class="c1"># overrides TransientBase.duration_limit</span>
+<span class="w">    </span><span class="nt">cosmology</span><span class="p">:</span><span class="w"> </span><span class="kt">!astropy_cosmology</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">Planck18</span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">amplitude</span><span class="p">:</span><span class="w"> </span><span class="kt">!prior</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="nv">normal</span><span class="p p-Indicator">,</span><span class="nt"> mean</span><span class="p">:</span><span class="w"> </span><span class="nv">43.8</span><span class="p p-Indicator">,</span><span class="nt"> sigma</span><span class="p">:</span><span class="w"> </span><span class="nv">0.3</span><span class="p p-Indicator">}</span>
+<span class="w">      </span><span class="nt">sigma_rise</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0 day</span><span class="w">        </span><span class="c1"># a bare value fixes the parameter instead</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">class:</span></code> must name a registered <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a>
+subclass: every built-in type (<code class="docutils literal notranslate"><span class="pre">TidalDisruptionEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">Kilonova</span></code>,
+<code class="docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIbSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIcSNe</span></code>) is available by class name; an unrecognized one
+raises, listing what <em>is</em> registered.</p>
+<p>Everything under <code class="docutils literal notranslate"><span class="pre">parameters:</span></code> is applied the same way
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Event.simulate_photometry</span></code></a>
+expects to find it later: a plain value fixes that parameter
+(<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.parameters.Parameter.fix.html#uvex_transients.models.core.parameters.Parameter.fix" title="uvex_transients.models.core.parameters.Parameter.fix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fix()</span></code></a>), while a <code class="docutils literal notranslate"><span class="pre">!prior</span></code> node replaces
+its prior entirely (<a class="reference internal" href="../../_as_gen/uvex_transients.models.core.parameters.Parameter.set_prior.html#uvex_transients.models.core.parameters.Parameter.set_prior" title="uvex_transients.models.core.parameters.Parameter.set_prior"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_prior()</span></code></a>). A value
+with units (like <code class="docutils literal notranslate"><span class="pre">sigma_rise</span></code> above) needs a unit string (<code class="docutils literal notranslate"><span class="pre">&quot;1.0</span> <span class="pre">day&quot;</span></code>); a bare, unitless
+number only works for a genuinely dimensionless parameter. See <a class="reference internal" href="../models/overview.html#user-guide-models"><span class="std std-ref">Models</span></a> for what a
+model’s parameters actually are.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><code class="docutils literal notranslate"><span class="pre">!prior</span></code> takes a <code class="docutils literal notranslate"><span class="pre">type:</span></code> naming one of <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.priors.Prior.html#uvex_transients.models.core.priors.Prior" title="uvex_transients.models.core.priors.Prior"><code class="xref py py-class docutils literal notranslate"><span class="pre">Prior</span></code></a>’s
+built-in subclasses, plus that class’s own fields:</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id4">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">!prior</span></code> types</span><a class="headerlink" href="#id4" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">type:</span></code></p></th>
+<th class="head"><p>Fields</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">constant</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">value</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">uniform</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lower</span></code>, <code class="docutils literal notranslate"><span class="pre">upper</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">normal</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lognormal</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code> (of the underlying normal, not the lognormal itself)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">truncated_normal</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, <code class="docutils literal notranslate"><span class="pre">lower</span></code>, <code class="docutils literal notranslate"><span class="pre">upper</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">exponential</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">scale</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">power_law</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code>, <code class="docutils literal notranslate"><span class="pre">lower</span></code>, <code class="docutils literal notranslate"><span class="pre">upper</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">discrete</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">values</span></code>, <code class="docutils literal notranslate"><span class="pre">probabilities</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>An unrecognized <code class="docutils literal notranslate"><span class="pre">type:</span></code>, a missing <code class="docutils literal notranslate"><span class="pre">type:</span></code>, or an unknown field for the chosen type all
+raise at load time, naming the line the problem is on.</p>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id5">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">transients:</span></code> entry parameters</span><a class="headerlink" href="#id5" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 20.0%" />
+<col style="width: 62.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">class</span></code></p></td>
+<td><p>str</p></td>
+<td><p>A registered <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a> subclass name.
+Required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">z_limit</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Overrides <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_limit.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_limit" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_limit</span></code></a>.
+Optional.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">duration_limit</span></code></p></td>
+<td><p>str or number</p></td>
+<td><p>Overrides <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.duration_limit.html#uvex_transients.transients.base.TransientBase.duration_limit" title="uvex_transients.transients.base.TransientBase.duration_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">duration_limit</span></code></a> (a unit
+string like <code class="docutils literal notranslate"><span class="pre">&quot;200</span> <span class="pre">day&quot;</span></code>, or a bare number of days). Optional.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cosmology</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">!astropy_cosmology</span></code></p></td>
+<td><p>Overrides the transient’s cosmology. Optional; defaults to the package’s own default
+cosmology.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parameters</span></code></p></td>
+<td><p>mapping</p></td>
+<td><p>Per-SED-parameter overrides, keyed by parameter name; each value is either a fixed value
+or a <code class="docutils literal notranslate"><span class="pre">!prior</span></code> node. Optional.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="generating-events">
+<h2>Generating Events<a class="headerlink" href="#generating-events" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generate</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">time_bins</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">nside</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
+<span class="w">  </span><span class="nt">downsample</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
+</pre></div>
+</div>
+<p>A direct pass-through to
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a>; see
+<a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for what each field means.</p>
+<p><code class="docutils literal notranslate"><span class="pre">downsample:</span></code> can also give a different factor per transient type instead of one number for
+every type – keys are the <code class="docutils literal notranslate"><span class="pre">transients:</span></code> section’s own keys, and a type left out isn’t
+downsampled at all:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generate</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">time_bins</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">downsample</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">tde</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="nt">kilonova</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>generate<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out<span class="w"> </span>catalog.ecsv
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id6">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">generate:</span></code> parameters</span><a class="headerlink" href="#id6" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">time_bins</span></code></p></td>
+<td><p>int</p></td>
+<td><p>Number of evenly-spaced time bins to divide the schedule’s span into. Required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">nside</span></code></p></td>
+<td><p>int</p></td>
+<td><p>HEALPix resolution. Optional; falls back to the package’s <code class="docutils literal notranslate"><span class="pre">healpix.default_nside</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">order</span></code></p></td>
+<td><p>str</p></td>
+<td><p>HEALPix pixel ordering (<code class="docutils literal notranslate"><span class="pre">&quot;nested&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;ring&quot;</span></code>). Optional; falls back to the package’s
+<code class="docutils literal notranslate"><span class="pre">healpix.default_order</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">downsample</span></code></p></td>
+<td><p>int or mapping of str to int</p></td>
+<td><p>Draw a random <code class="docutils literal notranslate"><span class="pre">1/downsample</span></code> subset instead of the full population. Either a single
+factor applied to every registered transient type, or a <code class="docutils literal notranslate"><span class="pre">{transient</span> <span class="pre">key:</span> <span class="pre">factor}</span></code>
+mapping to downsample types individually (a type left out of the mapping is not
+downsampled). Optional; no downsampling by default.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<td><p>int</p></td>
+<td><p>Root seed for <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a>. Optional.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<hr class="docutils" />
+<section id="screening-with-cuts">
+<h2>Screening With Cuts<a class="headerlink" href="#screening-with-cuts" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cuts</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mag_screen</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">limiting_magnitude</span>
+<span class="w">    </span><span class="nt">mag_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25.0</span>
+<span class="w">  </span><span class="nt">snr_screen</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snr</span>
+<span class="w">    </span><span class="nt">snr_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+</pre></div>
+</div>
+<p>Every entry needs a <code class="docutils literal notranslate"><span class="pre">type:</span></code> naming one of
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.available_cuts.html#uvex_transients.simulation.core.SurveySimulator.available_cuts" title="uvex_transients.simulation.core.SurveySimulator.available_cuts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SurveySimulator.available_cuts()</span></code></a>:
+the two screening methods from <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>, <code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code>
+(<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_limiting_magnitude()</span></code></a>) and
+<code class="docutils literal notranslate"><span class="pre">snr</span></code> (<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_snr.html#uvex_transients.simulation.core.SurveySimulator.filter_by_snr" title="uvex_transients.simulation.core.SurveySimulator.filter_by_snr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_snr()</span></code></a>), registered via
+the <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.cut.html#uvex_transients.simulation.core.cut" title="uvex_transients.simulation.core.cut"><code class="xref py py-func docutils literal notranslate"><span class="pre">cut()</span></code></a> decorator. Everything else under a cut is
+forwarded straight through as keyword arguments to that method.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run every cut declared above, in order, chained into one output catalog:</span>
+uvex-transients<span class="w"> </span>cut<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--in<span class="w"> </span>catalog.ecsv<span class="w"> </span>--out<span class="w"> </span>screened.ecsv
+
+<span class="c1"># Or run just one, useful for debugging a single stage:</span>
+uvex-transients<span class="w"> </span>cut<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>mag_screen<span class="w"> </span>--in<span class="w"> </span>catalog.ecsv<span class="w"> </span>--out<span class="w"> </span>mag_only.ecsv
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Cuts are ordinary <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a> methods, not a
+separate plugin class: decorating a new method on a
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a> subclass with <code class="docutils literal notranslate"><span class="pre">&#64;cut(&quot;my_cut&quot;)</span></code>
+registers it automatically, immediately usable from a <code class="docutils literal notranslate"><span class="pre">type:</span></code> in any run-config.</p>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id7">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">cuts:</span></code> entry parameters, by <code class="docutils literal notranslate"><span class="pre">type:</span></code></span><a class="headerlink" href="#id7" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 24.0%" />
+<col style="width: 54.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">type:</span></code></p></th>
+<th class="head"><p>Required params</p></th>
+<th class="head"><p>Optional params</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mag_limit</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">n_phase</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code>, <code class="docutils literal notranslate"><span class="pre">n_visits</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">snr</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code>, <code class="docutils literal notranslate"><span class="pre">n_visits</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<hr class="docutils" />
+<section id="synthetic-photometry">
+<h2>Synthetic Photometry<a class="headerlink" href="#synthetic-photometry" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">photometry</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bands</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">FUV</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">NUV</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">n_sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+</pre></div>
+</div>
+<p>Both fields are optional; omit the section entirely to evaluate every band the mission’s detector
+has, at the package’s default detection significance (<code class="docutils literal notranslate"><span class="pre">simulation.detection_n_sigma</span></code> in the
+package config; see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>photometry<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--in<span class="w"> </span>screened.ecsv<span class="w"> </span>--out<span class="w"> </span>photometry.ecsv
+</pre></div>
+</div>
+<p>The output is one row per (event, observation, band): exactly
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Event.simulate_photometry</span></code></a>’s
+own column schema, stacked across every event in the input catalog via
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry.html#uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry" title="uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a>.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id8">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">photometry:</span></code> parameters</span><a class="headerlink" href="#id8" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 20.0%" />
+<col style="width: 62.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bands</span></code></p></td>
+<td><p>list of str</p></td>
+<td><p>Which of the mission detector’s bandpasses to evaluate. Optional; defaults to every band.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">n_sigma</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Width, in multiples of the flux error, of the reported detection interval. Optional;
+defaults to the package’s <code class="docutils literal notranslate"><span class="pre">simulation.detection_n_sigma</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<hr class="docutils" />
+<section id="yield-and-exposure">
+<h2>Yield and Exposure<a class="headerlink" href="#yield-and-exposure" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">yield</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+</pre></div>
+</div>
+<p>Optional; the one field defaults to a <code class="docutils literal notranslate"><span class="pre">0.9</span></code> Clopper-Pearson confidence level if the whole
+section is omitted. Unlike the other sections, there’s no standalone <code class="docutils literal notranslate"><span class="pre">yield</span></code> subcommand – a
+yield summary needs a raw (pre-cut) catalog, a detected (post-cut) catalog, <em>and</em> an exposure
+tabulation all at once (see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation-yield"><span class="std std-ref">Exposure and Yield</span></a>), so it’s only ever produced as
+part of <code class="docutils literal notranslate"><span class="pre">run</span></code>, which already has all three in hand.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id9">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">yield:</span></code> parameters</span><a class="headerlink" href="#id9" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">confidence</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">0.9</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">run</span></code> (see below) always computes an
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a> and a
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.html#uvex_transients.simulation.yield_table.YieldTable" title="uvex_transients.simulation.yield_table.YieldTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">YieldTable</span></code></a> alongside the event catalog and
+photometry, writing <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>, and a human-readable
+<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code> into <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="estimating-detection-counts">
+<h2>Estimating Detection Counts<a class="headerlink" href="#estimating-detection-counts" title="Link to this heading">#</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detection_counts</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">snr_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+</pre></div>
+</div>
+<p>Estimates, per transient type, how many events would show <span class="math notranslate nohighlight">\(N_{\rm det}\geq k\)</span> detected
+epochs, for every <span class="math notranslate nohighlight">\(k\)</span> at once – see
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_detection_count_table()</span></code></a>
+and <a class="reference internal" href="../simulation/overview.html#user-guide-simulation-yield"><span class="std std-ref">Exposure and Yield</span></a>. Unlike <code class="docutils literal notranslate"><span class="pre">yield:</span></code>, this section is entirely optional even
+for <code class="docutils literal notranslate"><span class="pre">run</span></code>: leaving it out of the config skips this stage everywhere, including <code class="docutils literal notranslate"><span class="pre">run</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>detection-counts<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--catalog<span class="w"> </span>catalog.ecsv<span class="w"> </span>--photometry<span class="w"> </span>photometry.ecsv<span class="w"> </span>--exposure<span class="w"> </span>exposure.ecsv<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--out<span class="w"> </span>detection_counts.ecsv
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="id10">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> parameters</span><a class="headerlink" href="#id10" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 15.0%" />
+<col style="width: 67.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code></p></td>
+<td><p>float</p></td>
+<td><p>An observation epoch counts as detected if at least one band’s SNR exceeds this value.
+Required.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">confidence</span></code></p></td>
+<td><p>float</p></td>
+<td><p>Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">0.9</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--catalog</span></code> is the event catalog <code class="docutils literal notranslate"><span class="pre">--photometry</span></code> was computed over (typically the same catalog
+<code class="docutils literal notranslate"><span class="pre">photometry</span></code> ran against, i.e. whatever survived every declared cut) – it’s needed alongside
+the photometry table itself so that events with zero qualifying epochs (including ones the
+schedule never observed at all) are still counted at <span class="math notranslate nohighlight">\(N_{\rm det}=0\)</span>. <code class="docutils literal notranslate"><span class="pre">--exposure</span></code> is an
+exposure catalog as written by <code class="docutils literal notranslate"><span class="pre">run</span></code> (or
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure.html#uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure" title="uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_effective_exposure()</span></code></a> directly).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> is declared, <code class="docutils literal notranslate"><span class="pre">run</span></code> runs this stage automatically too, writing
+<code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code> into <code class="docutils literal notranslate"><span class="pre">--out-dir</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="running-the-whole-pipeline">
+<h2>Running the Whole Pipeline<a class="headerlink" href="#running-the-whole-pipeline" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/
+</pre></div>
+</div>
+<p>Chains <code class="docutils literal notranslate"><span class="pre">generate</span></code>, an <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a>
+tabulation, every declared cut (in order), a
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.html#uvex_transients.simulation.yield_table.YieldTable" title="uvex_transients.simulation.yield_table.YieldTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">YieldTable</span></code></a> summary, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>, and (if
+<code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> is declared) a detection-count table, all in one process, writing each
+stage’s output to <code class="docutils literal notranslate"><span class="pre">results/</span></code> as it goes: <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>, then one
+<code class="docutils literal notranslate"><span class="pre">NN_&lt;cut</span> <span class="pre">key&gt;.ecsv</span></code> per cut, then <code class="docutils literal notranslate"><span class="pre">yield_summary.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.txt</span></code>,
+<code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>, and (if declared) <code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code>. A config with no <code class="docutils literal notranslate"><span class="pre">cuts:</span></code>
+section at all is fine here too; <code class="docutils literal notranslate"><span class="pre">run</span></code> goes straight from <code class="docutils literal notranslate"><span class="pre">generate</span></code> to the yield summary and
+<code class="docutils literal notranslate"><span class="pre">photometry</span></code>.</p>
+<p>Every stage’s catalog stays in memory and feeds the next stage regardless, so writing the
+<em>intermediate</em> event catalogs (everything up to, but not including, the catalog that photometry
+actually runs against – <code class="docutils literal notranslate"><span class="pre">exposure.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">yield_summary.*</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry.ecsv</span></code>/
+<code class="docutils literal notranslate"><span class="pre">detection_counts.ecsv</span></code> are always written regardless) is purely for inspection/debugging – set
+the config’s top-level <code class="docutils literal notranslate"><span class="pre">keep_intermediate:</span> <span class="pre">false</span></code> (or pass <code class="docutils literal notranslate"><span class="pre">--no-keep-intermediate</span></code>, which
+overrides the config either way) to have <code class="docutils literal notranslate"><span class="pre">run</span></code> skip those and write only <code class="docutils literal notranslate"><span class="pre">final_catalog.ecsv</span></code>
+(the catalog photometry ran against) instead of <code class="docutils literal notranslate"><span class="pre">00_generated.ecsv</span></code>/<code class="docutils literal notranslate"><span class="pre">NN_&lt;cut</span> <span class="pre">key&gt;.ecsv</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>quickstart_tde.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/<span class="w"> </span>--no-keep-intermediate
+</pre></div>
+</div>
+<p>Every command accepts <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> to replace an existing output file/directory contents
+instead of raising.</p>
+<p>Every command also accepts <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>, which validates the config and prints what the real
+command would do without sampling, computing photometry, or writing anything:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>run<span class="w"> </span>configs/full_run.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/<span class="w"> </span>--dry-run
+</pre></div>
+</div>
+<p>It resolves every section the command needs, so an unknown transient <code class="docutils literal notranslate"><span class="pre">class:</span></code>, a bad
+<code class="docutils literal notranslate"><span class="pre">parameters:</span></code> override, an unknown cut type or cut name, an unknown mission, or an unreadable
+schedule fails here exactly as it would in the real run (as a short <code class="docutils literal notranslate"><span class="pre">dry</span> <span class="pre">run</span> <span class="pre">failed:</span> <span class="pre">...</span></code>
+message). On success it reports the mission, the size of the schedule, each transient population
+(class, SED, redshift limit, duration window), the <code class="docutils literal notranslate"><span class="pre">generate:</span></code>, <code class="docutils literal notranslate"><span class="pre">cuts:</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">yield:</span></code> (for <code class="docutils literal notranslate"><span class="pre">run</span></code>), and <code class="docutils literal notranslate"><span class="pre">detection_counts:</span></code> (if declared) settings, and each output file it
+would write. If a real run would refuse to overwrite one that already exists, the dry run flags it
+as <code class="docutils literal notranslate"><span class="pre">WOULD</span> <span class="pre">FAIL</span></code> and exits non-zero unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> is also given. The schedule is loaded
+(and downloaded on first use), but the command never reads the <code class="docutils literal notranslate"><span class="pre">--in</span></code>/<code class="docutils literal notranslate"><span class="pre">--catalog</span></code>/
+<code class="docutils literal notranslate"><span class="pre">--photometry</span></code>/<code class="docutils literal notranslate"><span class="pre">--exposure</span></code> inputs of <code class="docutils literal notranslate"><span class="pre">cut</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry</span></code>/<code class="docutils literal notranslate"><span class="pre">detection-counts</span></code>, only checks
+that they exist.</p>
+</section>
+<hr class="docutils" />
+<section id="using-it-from-python">
+<h2>Using It From Python<a class="headerlink" href="#using-it-from-python" title="Link to this heading">#</a></h2>
+<p>Every command is a thin wrapper: <a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.html#module-uvex_transients.cli.pipeline" title="uvex_transients.cli.pipeline"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.cli.pipeline</span></code></a>’s
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_generate.html#uvex_transients.cli.pipeline.run_generate" title="uvex_transients.cli.pipeline.run_generate"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_generate()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_exposure.html#uvex_transients.cli.pipeline.run_exposure" title="uvex_transients.cli.pipeline.run_exposure"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_exposure()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_cuts.html#uvex_transients.cli.pipeline.run_cuts" title="uvex_transients.cli.pipeline.run_cuts"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_cuts()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_yield_summary.html#uvex_transients.cli.pipeline.run_yield_summary" title="uvex_transients.cli.pipeline.run_yield_summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_yield_summary()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_photometry.html#uvex_transients.cli.pipeline.run_photometry" title="uvex_transients.cli.pipeline.run_photometry"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_photometry()</span></code></a>, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.pipeline.run_detection_counts.html#uvex_transients.cli.pipeline.run_detection_counts" title="uvex_transients.cli.pipeline.run_detection_counts"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_detection_counts()</span></code></a> take a parsed
+<a class="reference internal" href="../../_as_gen/uvex_transients.cli.config.RunConfig.html#uvex_transients.cli.config.RunConfig" title="uvex_transients.cli.config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a> and do the real work, with no <code class="docutils literal notranslate"><span class="pre">click</span></code>
+dependency, useful if you want the same config-driven setup inside a notebook or a larger script
+instead of a fresh subprocess per stage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.cli.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.cli.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">run_cuts</span><span class="p">,</span> <span class="n">run_detection_counts</span><span class="p">,</span> <span class="n">run_exposure</span><span class="p">,</span> <span class="n">run_generate</span><span class="p">,</span> <span class="n">run_photometry</span><span class="p">,</span> <span class="n">run_yield_summary</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">RunConfig</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">"quickstart_tde.yaml"</span><span class="p">)</span>
+
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">run_generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">exposure</span> <span class="o">=</span> <span class="n">run_exposure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">screened</span> <span class="o">=</span> <span class="n">run_cuts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">catalog</span><span class="p">)</span>                          <span class="c1"># every declared cut, in order</span>
+<span class="n">yields</span> <span class="o">=</span> <span class="n">run_yield_summary</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">screened</span><span class="p">,</span> <span class="n">exposure</span><span class="p">)</span>
+<span class="n">phot</span> <span class="o">=</span> <span class="n">run_photometry</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">screened</span><span class="p">)</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="n">run_detection_counts</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">screened</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">phot</span><span class="p">)</span>   <span class="c1"># only if config has 'detection_counts:'</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">config.simulator</span></code>, <code class="docutils literal notranslate"><span class="pre">config.schedule</span></code>, <code class="docutils literal notranslate"><span class="pre">config.mission</span></code>, and <code class="docutils literal notranslate"><span class="pre">config.transients</span></code> are each
+resolved once and cached, so building a <code class="docutils literal notranslate"><span class="pre">RunConfig</span></code> and calling every function above costs one
+schedule fetch and one round of transient construction, no matter how many stages you run.</p>
+<hr class="docutils" />
+<p>See <a class="reference internal" href="../../_as_gen/uvex_transients.cli.html#module-uvex_transients.cli" title="uvex_transients.cli"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.cli</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a> reference for exhaustive, method-by-method
+detail, and <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for the pipeline these commands are driving.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../simulation/yield_statistics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Yield Statistics</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../transients/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Transients</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-look">Quick Look</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-run-config-file">The Run-Config File</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-schedule">The Schedule</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mission">The Mission</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-transients">The Transients</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-events">Generating Events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#screening-with-cuts">Screening With Cuts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthetic-photometry">Synthetic Photometry</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#yield-and-exposure">Yield and Exposure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#estimating-detection-counts">Estimating Detection Counts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-whole-pipeline">Running the Whole Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-it-from-python">Using It From Python</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user_guide/cli/overview.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

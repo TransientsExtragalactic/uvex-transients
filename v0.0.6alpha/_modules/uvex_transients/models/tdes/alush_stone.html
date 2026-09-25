@@ -1,0 +1,797 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.tdes.alush_stone &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/tdes/alush_stone';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.21.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.0.6alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.tdes.alush_stone</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.tdes.alush_stone</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""Tidal disruption event SED with an early decline and a late-time disk plateau.</span>
+
+<span class="sd">Following :footcite:t:`2025arXiv250303811A`.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">UniformPrior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.lightcurves.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GREDLightcurve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.spectra.thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlackbodySpectrum</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"AlushStoneTDESED"</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AlushStoneTDESED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.tdes.alush_stone.AlushStoneTDESED.html#uvex_transients.models.tdes.alush_stone.AlushStoneTDESED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlushStoneTDESED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A Gaussian-rise/exponential-decline photosphere followed by a magnetized-disk plateau.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\nu(\nu, t) = L_\mathrm{bol}^\mathrm{early}(t) \cdot S(\nu, T)</span>
+<span class="sd">            + L_\mathrm{bol}^\mathrm{plat}(t) \cdot S(\nu, T_\mathrm{p}),</span>
+
+<span class="sd">    where :math:`S(\nu, T)` is :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`'s</span>
+<span class="sd">    normalized shape, :math:`L_\mathrm{bol}^\mathrm{early}(t)` is</span>
+<span class="sd">    :class:`~uvex_transients.models.lightcurves.generic.GREDLightcurve`</span>
+<span class="sd">    (peaking at :math:`t_\mathrm{peak} = 5\sigma`, that class's own convention), and</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\mathrm{bol}^\mathrm{plat}(t) = L_\mathrm{p}</span>
+<span class="sd">            \left(1 + \frac{t - t_\mathrm{peak}}{\tau_\mathrm{p}}\right)^{-\alpha_\mathrm{p}}.</span>
+
+<span class="sd">    The plateau branch is referenced to the same :math:`t_\mathrm{peak}` as the early</span>
+<span class="sd">    branch (the same convention `GaussianRisePowerLawLightcurve` uses for its power-law</span>
+<span class="sd">    tail): :math:`L_\mathrm{bol}^\mathrm{plat}(t_\mathrm{peak}) = L_\mathrm{p}` exactly,</span>
+<span class="sd">    and it smoothly softens from a flat plateau (for :math:`t - t_\mathrm{peak} \ll</span>
+<span class="sd">    \tau_\mathrm{p}`) to a :math:`t^{-\alpha_\mathrm{p}}` power-law decline (for</span>
+<span class="sd">    :math:`t - t_\mathrm{peak} \gg \tau_\mathrm{p}`) -- exactly the family of</span>
+<span class="sd">    theory-agnostic plateau shapes fit to late-time TDE disks by</span>
+<span class="sd">    :footcite:t:`2025arXiv251024696A`. The two components are summed in linear space</span>
+<span class="sd">    (:func:`numpy.logaddexp` on their logs) rather than switched between, since a real</span>
+<span class="sd">    disk plateau does not sharply replace the fading early-time emission.</span>
+
+<span class="sd">    Physically, the early branch is the same reprocessed/photospheric emission</span>
+<span class="sd">    :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` models, while the</span>
+<span class="sd">    plateau is the late-time, UV-bright emission from a magnetized accretion disk that</span>
+<span class="sd">    :footcite:t:`2025arXiv250303811A` predict settles onto an asymptotic</span>
+<span class="sd">    :math:`L \propto t^{-5/6}` decline persisting for decades to centuries --</span>
+<span class="sd">    ``plateau_decline``'s default prior is a wide, uninformative :math:`\mathrm{Uniform}(0, 2)`</span>
+<span class="sd">    that brackets that theoretical value rather than pinning it, since</span>
+<span class="sd">    :footcite:t:`2025arXiv251024696A` find real plateaus vary in how flat/evolving they are.</span>
+
+<span class="sd">    ``temperature``/``sigma_rise``/``tau_decline`` reuse the same ZTF-sample-informed</span>
+<span class="sd">    defaults as :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` (see that</span>
+<span class="sd">    class's docstring); ``plateau_temperature``, ``plateau_amplitude``, and</span>
+<span class="sd">    ``plateau_timescale`` do not yet have literature-calibrated defaults and use</span>
+<span class="sd">    order-of-magnitude fiducial scales instead -- narrow these once fit to real</span>
+<span class="sd">    late-time photometry.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The model parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`L_0`</span>
+<span class="sd">         - Peak bolometric luminosity of the early-time component,</span>
+<span class="sd">           :math:`L_0 = L_\mathrm{bol}^\mathrm{early}(t_\mathrm{peak})`.</span>
+<span class="sd">           :math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)`.</span>
+<span class="sd">       * - ``temperature``</span>
+<span class="sd">         - :math:`T`</span>
+<span class="sd">         - Early-time photospheric blackbody temperature.</span>
+<span class="sd">           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)`.</span>
+<span class="sd">       * - ``sigma_rise``</span>
+<span class="sd">         - :math:`\sigma`</span>
+<span class="sd">         - Gaussian width of the pre-peak rise.</span>
+<span class="sd">           :math:`\log_{10}(\sigma/\mathrm{d}) \sim \mathcal{N}(0.91, 0.25^2)`.</span>
+<span class="sd">       * - ``tau_decline``</span>
+<span class="sd">         - :math:`\tau`</span>
+<span class="sd">         - Exponential decline timescale of the early-time component, after peak.</span>
+<span class="sd">           :math:`\log_{10}(\tau/\mathrm{d}) \sim \mathcal{N}(1.8, 0.2^2)`.</span>
+<span class="sd">       * - ``plateau_temperature``</span>
+<span class="sd">         - :math:`T_\mathrm{p}`</span>
+<span class="sd">         - Blackbody temperature of the late-time disk plateau.</span>
+<span class="sd">           :math:`\log_{10}(T_\mathrm{p}/\mathrm{K}) \sim \mathcal{N}(4.0, 0.3^2)`.</span>
+<span class="sd">       * - ``plateau_amplitude``</span>
+<span class="sd">         - :math:`L_\mathrm{p}`</span>
+<span class="sd">         - Plateau bolometric luminosity at :math:`t_\mathrm{peak}`,</span>
+<span class="sd">           :math:`L_\mathrm{p} = L_\mathrm{bol}^\mathrm{plat}(t_\mathrm{peak})`.</span>
+<span class="sd">           :math:`\log_{10}(L_\mathrm{p}/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(41.5, 0.2^2)`.</span>
+<span class="sd">       * - ``plateau_timescale``</span>
+<span class="sd">         - :math:`\tau_\mathrm{p}`</span>
+<span class="sd">         - Timescale over which the plateau softens into its power-law decline.</span>
+<span class="sd">           :math:`\log_{10}(\tau_\mathrm{p}/\mathrm{d}) \sim \mathcal{N}(2.3, 0.3^2)`.</span>
+<span class="sd">       * - ``plateau_decline``</span>
+<span class="sd">         - :math:`\alpha_\mathrm{p}`</span>
+<span class="sd">         - Late-time power-law decline index, :math:`L \propto t^{-\alpha_\mathrm{p}}`</span>
+<span class="sd">           for :math:`t - t_\mathrm{peak} \gg \tau_\mathrm{p}`.</span>
+<span class="sd">           :math:`\alpha_\mathrm{p} \sim \mathrm{Uniform}(0, 2)`, a wide prior bracketing the</span>
+<span class="sd">           magnetized-disk prediction :math:`\alpha_\mathrm{p}=5/6` of</span>
+<span class="sd">           :footcite:t:`2025arXiv250303811A`.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">43.8</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.3^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"temperature"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.3</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.1^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"sigma_rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.91</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.25</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Gaussian width of the pre-peak rise. log10(sigma/day) ~ N(0.91, 0.25^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\sigma"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_decline"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale after peak. log10(tau/day) ~ N(1.8, 0.2^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"plateau_temperature"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Blackbody temperature of the late-time disk plateau. log10(T_p/K) ~ N(4.0, 0.3^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{p}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"plateau_amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">41.5</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau bolometric luminosity, L_p = L_bol_plat(t_peak). log10(L_p/[erg/s]) ~ N(41.5, 0.2^2)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_\mathrm</span><span class="si">{p}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"plateau_timescale"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"Timescale over which the plateau softens into a power-law decline. log10(tau_p/day) ~ N(2.3, 0.3^2)."</span>
+            <span class="p">),</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{p}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"plateau_decline"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"Late-time power-law decline index, L ~ t^-alpha_p. Uniform(0, 2), bracketing "</span>
+                <span class="s2">"the magnetized-disk prediction alpha_p = 5/6."</span>
+            <span class="p">),</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{p}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># ============================================== #</span>
+    <span class="c1"># SED Methods                                    #</span>
+    <span class="c1"># ============================================== #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Evaluate the natural log of :math:`L_\nu(\nu, t)`, in cgs units.</span>
+
+<span class="sd">        This is the one method every model must implement. ``nu``, ``t``,</span>
+<span class="sd">        and every parameter value are combined using plain NumPy</span>
+<span class="sd">        broadcasting -- no axes are inserted automatically. See the module</span>
+<span class="sd">        docstring for what that means in practice.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds. Always non-negative.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units, broadcastable</span>
+<span class="sd">            against ``nu`` and ``t``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Evaluate the early- and late-time spectral shapes using the</span>
+        <span class="c1"># blackbody function provided in the thermal spectrum module.</span>
+        <span class="n">early_spec</span> <span class="o">=</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"temperature"</span><span class="p">])</span>
+        <span class="n">late_spec</span> <span class="o">=</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"plateau_temperature"</span><span class="p">])</span>
+
+        <span class="c1"># Evaluate the two components' bolometric envelopes, both referenced</span>
+        <span class="c1"># to the same t_peak (GREDLightcurve's own convention -- see its</span>
+        <span class="c1"># docstring). The early envelope is a Gaussian rise / exponential</span>
+        <span class="c1"># decline in time, not frequency, so `t` (not `nu`) is what it's</span>
+        <span class="c1"># evaluated at.</span>
+        <span class="n">t_peak</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"sigma_rise"</span><span class="p">]</span>
+        <span class="n">early_amp</span> <span class="o">=</span> <span class="n">GREDLightcurve</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">amplitude</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">],</span>
+            <span class="n">sigma_rise</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"sigma_rise"</span><span class="p">],</span>
+            <span class="n">tau_decline</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"tau_decline"</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The plateau softens from flat (near t_peak) to a t^-plateau_decline</span>
+        <span class="c1"># power law once t - t_peak &gt;&gt; plateau_timescale -- see the class</span>
+        <span class="c1"># docstring, which only defines this behavior for t &gt;= t_peak (x &gt;=</span>
+        <span class="c1"># 0). `(1+x)^-plateau_decline` is not just undefined but singular as</span>
+        <span class="c1"># x -&gt; -1 from above (since 1+x -&gt; 0+ with a negative exponent), so</span>
+        <span class="c1"># letting the branch run for -1 &lt; x &lt; 0 doesn't just risk a NaN at</span>
+        <span class="c1"># the boundary -- it produces a spurious blow-up in luminosity</span>
+        <span class="c1"># immediately after it, whenever `plateau_timescale` is smaller than</span>
+        <span class="c1"># `t_peak`. Restricting to x &gt;= 0 keeps evaluation inside the domain</span>
+        <span class="c1"># the formula (and docstring) actually describe, where it's smooth</span>
+        <span class="c1"># and bounded by L_p; a plateau that hasn't reached t_peak yet</span>
+        <span class="c1"># contributes zero luminosity, i.e. -inf in log space.</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t_peak</span><span class="p">)</span> <span class="o">/</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"plateau_timescale"</span><span class="p">]</span>
+        <span class="n">plateau_active</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">plateau_shape</span> <span class="o">=</span> <span class="o">-</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"plateau_decline"</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">plateau_active</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">late_amp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">plateau_active</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"plateau_amplitude"</span><span class="p">])</span> <span class="o">+</span> <span class="n">plateau_shape</span><span class="p">,</span>
+            <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Combine each component's shape and envelope in log space (shape +</span>
+        <span class="c1"># envelope, since `early_spec`/`late_spec` are already normalized</span>
+        <span class="c1"># log-shapes -- see `BlackbodySpectrum`), then sum the two</span>
+        <span class="c1"># components themselves via logaddexp rather than a linear-space</span>
+        <span class="c1"># sum, since both are already logarithmic.</span>
+        <span class="n">early_sed</span> <span class="o">=</span> <span class="n">early_spec</span> <span class="o">+</span> <span class="n">early_amp</span>
+        <span class="n">late_sed</span> <span class="o">=</span> <span class="n">late_spec</span> <span class="o">+</span> <span class="n">late_amp</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">early_sed</span><span class="p">,</span> <span class="n">late_sed</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
