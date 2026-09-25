@@ -26,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 from astropy.table import QTable
 
@@ -131,12 +132,21 @@ def _fmt(value: float, precision: int = 3) -> str:
     return f"{value:,.{decimals}f}"
 
 
-def _asym_math(value: float, lower: float, upper: float, precision: int = 3) -> str:
-    """Render ``value`` with an asymmetric interval as an RST ``:math:`` role."""
+def _double_asym_math(
+    value: float,
+    binom_lower: float,
+    binom_upper: float,
+    rate_lower: float,
+    rate_upper: float,
+    precision: int = 3,
+) -> str:
+    """Render ``value`` with both stacked asymmetric intervals (binomial, then rate) as an RST ``:math:`` role."""
     if np.isnan(value):
         return "--"
     return (
-        f":math:`{_fmt(value, precision)}^{{+{_fmt(upper - value, precision)}}}_{{-{_fmt(value - lower, precision)}}}`"
+        f":math:`{_fmt(value, precision)}"
+        f"^{{+{_fmt(binom_upper - value, precision)}}}_{{-{_fmt(value - binom_lower, precision)}}}"
+        f"\\,{{}}^{{+{_fmt(rate_upper - value, precision)}}}_{{-{_fmt(value - rate_lower, precision)}}}`"
     )
 
 
@@ -144,30 +154,32 @@ def _summary_table_rst(yield_table: QTable) -> str:
     lines = [
         ".. list-table::",
         "   :header-rows: 1",
-        "   :widths: 24 16 22 22",
+        "   :widths: 26 37 37",
         "",
         "   * - Transient Type",
-        "     - Detected Events",
         "     - Detection Probability",
         "     - Expected Detections",
     ]
     for row in yield_table:
         lines.append(f"   * - {_display_name(str(row['transient_type']))}")
-        lines.append(f"     - {int(row['detected_events'])}")
         lines.append(
             "     - "
-            + _asym_math(
+            + _double_asym_math(
                 float(row["detection_probability"]),
                 float(row["detection_probability_binom_lower"]),
                 float(row["detection_probability_binom_upper"]),
+                float(row["detection_probability_rate_lower"]),
+                float(row["detection_probability_rate_upper"]),
             )
         )
         lines.append(
             "     - "
-            + _asym_math(
+            + _double_asym_math(
                 float(row["expected_detections"]),
                 float(row["expected_detections_binom_lower"]),
                 float(row["expected_detections_binom_upper"]),
+                float(row["expected_detections_rate_lower"]),
+                float(row["expected_detections_rate_upper"]),
             )
         )
     return "\n".join(lines)
@@ -177,7 +189,10 @@ def _summary_table_rst(yield_table: QTable) -> str:
 # Plotting                                   #
 # ----------------------------------------- #
 def _plot_detection_curve(sub_table: QTable, out_path: Path, title: str) -> bool:
-    """Plot expected events with >= k detected epochs vs. k; returns whether anything was drawn."""
+    """Plot expected events with >= k detected epochs vs. k, log-log with both uncertainty sources.
+
+    Returns whether anything was drawn.
+    """
     k = np.asarray(sub_table["n_detections"])
     mask = k >= 1
     if not mask.any():
@@ -185,34 +200,57 @@ def _plot_detection_curve(sub_table: QTable, out_path: Path, title: str) -> bool
 
     k = k[mask]
     expected = np.asarray(sub_table["expected_events"], dtype=float)[mask]
-    lower = np.asarray(sub_table["expected_events_binom_lower"], dtype=float)[mask]
-    upper = np.asarray(sub_table["expected_events_binom_upper"], dtype=float)[mask]
-    yerr = np.vstack([expected - lower, upper - expected])
+    binom_lower = np.asarray(sub_table["expected_events_binom_lower"], dtype=float)[mask]
+    binom_upper = np.asarray(sub_table["expected_events_binom_upper"], dtype=float)[mask]
+    rate_lower = np.asarray(sub_table["expected_events_rate_lower"], dtype=float)[mask]
+    rate_upper = np.asarray(sub_table["expected_events_rate_upper"], dtype=float)[mask]
+    binom_yerr = np.vstack([expected - binom_lower, binom_upper - expected])
+    rate_yerr = np.vstack([expected - rate_lower, rate_upper - expected])
 
     fig, ax = resolve_fig_axes(fig_size=(5.5, 3.8), dpi=150)
+
+    # Wider, paler rate-uncertainty band, drawn behind the binomial (Clopper-Pearson) bars.
     ax.errorbar(
         k,
         expected,
-        yerr=yerr,
+        yerr=rate_yerr,
+        fmt="none",
+        ecolor=_SERIES_COLOR,
+        elinewidth=5,
+        alpha=0.3,
+        capsize=0,
+        zorder=1,
+    )
+    ax.errorbar(
+        k,
+        expected,
+        yerr=binom_yerr,
         fmt="o-",
         color=_SERIES_COLOR,
-        ecolor=_SERIES_COLOR,
-        linewidth=2,
+        markerfacecolor=_SERIES_COLOR,
+        markeredgecolor="black",
+        markeredgewidth=1.0,
+        ecolor="black",
+        linewidth=1.8,
         markersize=7,
         capsize=3,
-        elinewidth=1.5,
+        elinewidth=1.3,
+        zorder=2,
     )
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.set_xticks(k.astype(int))
     ax.set_xlabel(r"Detected epochs $N_\mathrm{det} \geq k$")
     ax.set_ylabel("Expected UVEX events")
     ax.set_title(title, fontsize=11, color="#3a3a38")
-    ax.set_xticks(k.astype(int))
-    ax.set_ylim(bottom=0)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color(_MUTED)
     ax.spines["bottom"].set_color(_MUTED)
     ax.tick_params(colors=_MUTED)
-    ax.grid(axis="y", color=_MUTED, alpha=0.3, linewidth=0.8)
+    ax.grid(which="major", color=_MUTED, alpha=0.3, linewidth=0.8)
     ax.set_axisbelow(True)
     fig.tight_layout()
     fig.savefig(out_path, transparent=True)
@@ -277,8 +315,9 @@ Detections vs. Threshold
 =========================
 
 For each transient type, the expected number of UVEX events detected in at
-least :math:`k` SNR-qualifying epochs, as :math:`k` increases. Error bars are
-90% Clopper-Pearson simulation-only uncertainty.
+least :math:`k` SNR-qualifying epochs, as :math:`k` increases. The narrow,
+black-capped bars are 90% Clopper-Pearson simulation-only uncertainty; the
+wide, pale bands are the event-rate uncertainty.
 
 {tabs_rst}
 """
