@@ -507,7 +507,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Self</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -515,16 +514,16 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">EarthLocation</span><span class="p">,</span> <span class="n">SkyCoord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLRW</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.modeling</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">vstack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">observing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">quad_vec</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceSpectrum</span><span class="p">,</span> <span class="n">SpectralElement</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">synphot_units</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">attenuation_callable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">AB_MAG_ZERO_POINT</span><span class="p">,</span> <span class="n">H_CGS</span>
@@ -547,20 +546,12 @@
     <span class="n">_SPEC_LUM_UNIT</span><span class="p">,</span>
     <span class="n">hz_per_unit</span><span class="p">,</span>
     <span class="n">model_class_from_kernel</span><span class="p">,</span>
+    <span class="n">simulate_detector_photometry</span><span class="p">,</span>
     <span class="n">to_cgs_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ComposedSpectralModel"</span><span class="p">,</span> <span class="s2">"Lightcurve"</span><span class="p">,</span> <span class="s2">"SpectralModel"</span><span class="p">,</span> <span class="s2">"Spectrum"</span><span class="p">]</span>
-
-<span class="c1"># `SpectralModel.simulate_photometry`'s defaults for `observer_location`/`obstime` when</span>
-<span class="c1"># the caller doesn't supply real ones -- correct as long as `background` doesn't</span>
-<span class="c1"># actually depend on either (true of `m4opt.synphot.background.GalacticBackground`,</span>
-<span class="c1"># false of `ZodiacalBackground`/`EarthshineBackground`; see that method's docstring).</span>
-<span class="c1"># `m4opt.synphot.observing`'s own state only requires these to be broadcastable</span>
-<span class="c1"># against `coord`, not physically meaningful.</span>
-<span class="n">_PLACEHOLDER_OBSERVER_LOCATION</span> <span class="o">=</span> <span class="n">EarthLocation</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-<span class="n">_PLACEHOLDER_OBSTIME</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="s2">"2000-01-01T00:00:00"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">"utc"</span><span class="p">)</span>
 
 <span class="c1"># Loose enough that it only fires on genuine `quad_vec` non-convergence (its own default</span>
 <span class="c1"># `epsrel` is 1e-8), not routine floating-point noise -- see `_warn_if_not_converged`.</span>
@@ -978,7 +969,7 @@
 
 
 <div class="viewcode-block" id="Lightcurve">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.html#uvex_transients.models.core.base.Lightcurve">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.html#uvex_transients.models.arnett.Lightcurve">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Lightcurve</span><span class="p">(</span><span class="n">_ModelBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Abstract base class for time-dependent bolometric luminosity models.</span>
@@ -1034,7 +1025,7 @@
         <span class="o">...</span>
 
 <div class="viewcode-block" id="Lightcurve.eval_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_log_cgs.html#uvex_transients.models.core.base.Lightcurve.eval_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_log_cgs.html#uvex_transients.models.arnett.Lightcurve.eval_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1065,7 +1056,7 @@
 
 
 <div class="viewcode-block" id="Lightcurve.eval_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_log.html#uvex_transients.models.core.base.Lightcurve.eval_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_log.html#uvex_transients.models.arnett.Lightcurve.eval_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1097,7 +1088,7 @@
 
 
 <div class="viewcode-block" id="Lightcurve.eval_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_cgs.html#uvex_transients.models.core.base.Lightcurve.eval_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_cgs.html#uvex_transients.models.arnett.Lightcurve.eval_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1120,7 +1111,7 @@
 
 
 <div class="viewcode-block" id="Lightcurve.eval">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval.html#uvex_transients.models.core.base.Lightcurve.eval">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval.html#uvex_transients.models.arnett.Lightcurve.eval">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1142,7 +1133,7 @@
 
 
 <div class="viewcode-block" id="Lightcurve.eval_from_arrays">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_from_arrays.html#uvex_transients.models.core.base.Lightcurve.eval_from_arrays">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.eval_from_arrays.html#uvex_transients.models.arnett.Lightcurve.eval_from_arrays">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_from_arrays</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1175,7 +1166,7 @@
     <span class="c1"># Simulation                              #</span>
     <span class="c1"># -------------------------------------- #</span>
 <div class="viewcode-block" id="Lightcurve.simulate">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.simulate.html#uvex_transients.models.core.base.Lightcurve.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Lightcurve.simulate.html#uvex_transients.models.arnett.Lightcurve.simulate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">        Draw random parameter realizations and evaluate the model at the given time.</span>
@@ -1207,7 +1198,7 @@
 
 
 <div class="viewcode-block" id="Spectrum">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.html#uvex_transients.models.core.base.Spectrum">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.html#uvex_transients.models.arnett.Spectrum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Spectrum</span><span class="p">(</span><span class="n">_ModelBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Abstract base class for frequency-dependent spectral shape models.</span>
@@ -1276,7 +1267,7 @@
         <span class="o">...</span>
 
 <div class="viewcode-block" id="Spectrum.eval_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_log_cgs.html#uvex_transients.models.core.base.Spectrum.eval_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_log_cgs.html#uvex_transients.models.arnett.Spectrum.eval_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1307,7 +1298,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_log.html#uvex_transients.models.core.base.Spectrum.eval_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_log.html#uvex_transients.models.arnett.Spectrum.eval_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1339,7 +1330,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_cgs.html#uvex_transients.models.core.base.Spectrum.eval_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_cgs.html#uvex_transients.models.arnett.Spectrum.eval_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1362,7 +1353,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval.html#uvex_transients.models.core.base.Spectrum.eval">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval.html#uvex_transients.models.arnett.Spectrum.eval">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1384,7 +1375,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_from_arrays">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_from_arrays.html#uvex_transients.models.core.base.Spectrum.eval_from_arrays">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_from_arrays.html#uvex_transients.models.arnett.Spectrum.eval_from_arrays">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_from_arrays</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1469,7 +1460,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">integral</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Spectrum.eval_normalization_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_log_cgs.html#uvex_transients.models.core.base.Spectrum.eval_normalization_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_log_cgs.html#uvex_transients.models.arnett.Spectrum.eval_normalization_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_normalization_log_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1497,7 +1488,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_normalization_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_log.html#uvex_transients.models.core.base.Spectrum.eval_normalization_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_log.html#uvex_transients.models.arnett.Spectrum.eval_normalization_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_normalization_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1519,7 +1510,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_normalization_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_cgs.html#uvex_transients.models.core.base.Spectrum.eval_normalization_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization_cgs.html#uvex_transients.models.arnett.Spectrum.eval_normalization_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_normalization_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1540,7 +1531,7 @@
 
 
 <div class="viewcode-block" id="Spectrum.eval_normalization">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization.html#uvex_transients.models.core.base.Spectrum.eval_normalization">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.eval_normalization.html#uvex_transients.models.arnett.Spectrum.eval_normalization">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_normalization</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1569,7 +1560,7 @@
     <span class="c1"># Simulation                              #</span>
     <span class="c1"># -------------------------------------- #</span>
 <div class="viewcode-block" id="Spectrum.simulate">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.simulate.html#uvex_transients.models.core.base.Spectrum.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.Spectrum.simulate.html#uvex_transients.models.arnett.Spectrum.simulate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">        Draw random parameter realizations and evaluate the model at the given frequency.</span>
@@ -1601,7 +1592,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.html#uvex_transients.models.core.base.SpectralModel">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.html#uvex_transients.models.arnett.SpectralModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SpectralModel</span><span class="p">(</span><span class="n">_ModelBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Abstract base class for time-dependent spectral energy distribution models.</span>
@@ -1698,7 +1689,7 @@
         <span class="o">...</span>
 
 <div class="viewcode-block" id="SpectralModel.eval_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_log_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_log_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1732,7 +1723,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_log.html#uvex_transients.models.core.base.SpectralModel.eval_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_log.html#uvex_transients.models.arnett.SpectralModel.eval_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1768,7 +1759,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1793,7 +1784,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval.html#uvex_transients.models.core.base.SpectralModel.eval">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval.html#uvex_transients.models.arnett.SpectralModel.eval">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1817,7 +1808,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_from_arrays">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_from_arrays.html#uvex_transients.models.core.base.SpectralModel.eval_from_arrays">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_from_arrays.html#uvex_transients.models.arnett.SpectralModel.eval_from_arrays">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_from_arrays</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1908,7 +1899,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">integral</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SpectralModel.eval_bolometric_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_log_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_log_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_bolometric_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_bolometric_log_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1939,7 +1930,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_bolometric_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_log.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_log.html#uvex_transients.models.arnett.SpectralModel.eval_bolometric_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_bolometric_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1971,7 +1962,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_bolometric_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_bolometric_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_bolometric_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1994,7 +1985,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_bolometric">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric.html#uvex_transients.models.core.base.SpectralModel.eval_bolometric">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_bolometric.html#uvex_transients.models.arnett.SpectralModel.eval_bolometric">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -2053,7 +2044,7 @@
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">-</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SpectralModel.eval_spectrum_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_log_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_log_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_spectrum_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_spectrum_log_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span>
@@ -2089,7 +2080,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_spectrum_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_log.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_log.html#uvex_transients.models.arnett.SpectralModel.eval_spectrum_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_spectrum_log</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -2125,7 +2116,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_spectrum_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_cgs.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum_cgs.html#uvex_transients.models.arnett.SpectralModel.eval_spectrum_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_spectrum_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -2150,7 +2141,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.eval_spectrum">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum.html#uvex_transients.models.core.base.SpectralModel.eval_spectrum">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.eval_spectrum.html#uvex_transients.models.arnett.SpectralModel.eval_spectrum">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -2181,7 +2172,7 @@
     <span class="c1"># which are not immediately compatible with the machinery of the SpectralModel class. These</span>
     <span class="c1"># methods allow a user to provide a set of parameters and generate spectra objects.</span>
 <div class="viewcode-block" id="SpectralModel.as_astropy_model">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.as_astropy_model.html#uvex_transients.models.core.base.SpectralModel.as_astropy_model">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.as_astropy_model.html#uvex_transients.models.arnett.SpectralModel.as_astropy_model">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_astropy_model</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2407,7 +2398,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.as_source_spectrum">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.as_source_spectrum.html#uvex_transients.models.core.base.SpectralModel.as_source_spectrum">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.as_source_spectrum.html#uvex_transients.models.arnett.SpectralModel.as_source_spectrum">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">as_source_spectrum</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2619,7 +2610,7 @@
         <span class="k">return</span> <span class="n">log_flux</span>
 
 <div class="viewcode-block" id="SpectralModel.flux_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_log_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_log_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_log_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2679,7 +2670,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_log.html#uvex_transients.models.core.base.SpectralModel.flux_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_log.html#uvex_transients.models.arnett.SpectralModel.flux_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_log</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2751,7 +2742,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2800,7 +2791,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux.html#uvex_transients.models.core.base.SpectralModel.flux">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux.html#uvex_transients.models.arnett.SpectralModel.flux">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2910,7 +2901,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="SpectralModel.flux_bolometric_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_log_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_log_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_bolometric_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_bolometric_log_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -2953,7 +2944,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_bolometric_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_log.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_log.html#uvex_transients.models.arnett.SpectralModel.flux_bolometric_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_bolometric_log</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3018,7 +3009,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_bolometric_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_bolometric_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_bolometric_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3051,7 +3042,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_bolometric">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric.html#uvex_transients.models.core.base.SpectralModel.flux_bolometric">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_bolometric.html#uvex_transients.models.arnett.SpectralModel.flux_bolometric">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_bolometric</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3109,7 +3100,7 @@
     <span class="c1"># Observed Band-Averaged Flux: F_band(t)  #</span>
     <span class="c1"># -------------------------------------- #</span>
 <div class="viewcode-block" id="SpectralModel.flux_band_log_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_log_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_band_log_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_log_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_band_log_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_band_log_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3199,7 +3190,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_band_log">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_log.html#uvex_transients.models.core.base.SpectralModel.flux_band_log">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_log.html#uvex_transients.models.arnett.SpectralModel.flux_band_log">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_band_log</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3277,7 +3268,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_band_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_cgs.html#uvex_transients.models.core.base.SpectralModel.flux_band_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band_cgs.html#uvex_transients.models.arnett.SpectralModel.flux_band_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_band_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3330,7 +3321,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.flux_band">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band.html#uvex_transients.models.core.base.SpectralModel.flux_band">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band.html#uvex_transients.models.arnett.SpectralModel.flux_band">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux_band</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3403,7 +3394,7 @@
     <span class="c1"># "log" form here -- just a bare-float `*_cgs` form and a unitful form</span>
     <span class="c1"># returning an `astropy.units.Magnitude` (`u.ABmag`).</span>
 <div class="viewcode-block" id="SpectralModel.mag_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_cgs.html#uvex_transients.models.core.base.SpectralModel.mag_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_cgs.html#uvex_transients.models.arnett.SpectralModel.mag_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mag_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3456,7 +3447,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.mag">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag.html#uvex_transients.models.core.base.SpectralModel.mag">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag.html#uvex_transients.models.arnett.SpectralModel.mag">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mag</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3528,7 +3519,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.mag_band_cgs">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band_cgs.html#uvex_transients.models.core.base.SpectralModel.mag_band_cgs">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band_cgs.html#uvex_transients.models.arnett.SpectralModel.mag_band_cgs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mag_band_cgs</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3583,7 +3574,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.mag_band">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band.html#uvex_transients.models.core.base.SpectralModel.mag_band">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band.html#uvex_transients.models.arnett.SpectralModel.mag_band">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mag_band</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3659,7 +3650,7 @@
 
 
 <div class="viewcode-block" id="SpectralModel.mag_bandpass">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_bandpass.html#uvex_transients.models.core.base.SpectralModel.mag_bandpass">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_bandpass.html#uvex_transients.models.arnett.SpectralModel.mag_bandpass">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mag_bandpass</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3731,7 +3722,7 @@
     <span class="c1"># Detector-Aware (Noisy) Photometry       #</span>
     <span class="c1"># -------------------------------------- #</span>
 <div class="viewcode-block" id="SpectralModel.simulate_photometry">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate_photometry.html#uvex_transients.models.core.base.SpectralModel.simulate_photometry">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate_photometry.html#uvex_transients.models.arnett.SpectralModel.simulate_photometry">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate_photometry</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
@@ -3875,115 +3866,60 @@
 <span class="sd">            have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`</span>
 <span class="sd">            is a mapping missing an entry for one of `bands`.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">n_sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_sigma</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"simulation.detection_n_sigma"</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">background</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">detector</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">)</span>
-
-        <span class="n">band_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span> <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
-        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys_err</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-            <span class="n">missing_sys_err</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys_err</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">missing_sys_err</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'sys_err' is missing entries for band(s) </span><span class="si">{</span><span class="n">missing_sys_err</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">coord</span><span class="o">.</span><span class="n">isscalar</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Parameter 'coord' must be a scalar SkyCoord."</span><span class="p">)</span>
-
-        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
-        <span class="n">exptime</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">exptime</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">exptime</span><span class="o">.</span><span class="n">isscalar</span><span class="p">:</span>
-            <span class="n">exptime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">exptime</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">subok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">exptime</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'exptime' must be scalar or match 't' shape </span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">exptime</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-        <span class="n">n_obs</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">observer_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">observer_location</span> <span class="o">=</span> <span class="n">_PLACEHOLDER_OBSERVER_LOCATION</span>
-        <span class="k">if</span> <span class="n">obstime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">obstime</span> <span class="o">=</span> <span class="n">_PLACEHOLDER_OBSTIME</span>
-
-        <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
         <span class="c1"># Trailing batch axis reserved for `t`, as in `Event.simulate_photometry` --</span>
         <span class="c1"># keeps this batch from colliding with whatever wavelength grid the spectrum</span>
-        <span class="c1"># is later called with (e.g. a bandpass's `waveset`).</span>
-        <span class="n">spectra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_source_spectrum</span><span class="p">(</span>
-            <span class="n">t</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-            <span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
-            <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance</span><span class="p">,</span>
-            <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
-            <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
-            <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span>
-            <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
-            <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="c1"># is later called with (e.g. a bandpass's `waveset`). Deferred to a factory</span>
+        <span class="c1"># so `simulate_detector_photometry` can validate `bands`/`sys_err`/`coord`</span>
+        <span class="c1"># first and never build this spectrum at all if that validation fails.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">spectra_factory</span><span class="p">(</span><span class="n">t_norm</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SourceSpectrum</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""</span>
+<span class="sd">            Build this model's `~synphot.SourceSpectrum` for `t_norm`'s normalized shape.</span>
 
-        <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            t_norm : ~astropy.units.Quantity</span>
+<span class="sd">                `t`, already validated/normalized to shape ``(N,)`` by</span>
+<span class="sd">                `~uvex_transients.models._utils.simulate_detector_photometry`.</span>
 
-        <span class="k">with</span> <span class="n">observing</span><span class="p">(</span><span class="n">observer_location</span><span class="p">,</span> <span class="n">coord</span><span class="p">,</span> <span class="n">obstime</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span><span class="p">:</span>
-                <span class="n">snr</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_snr</span><span class="p">(</span><span class="n">exptime</span><span class="p">,</span> <span class="n">spectra</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-                <span class="n">band_sys_err</span> <span class="o">=</span> <span class="n">sys_err</span><span class="p">[</span><span class="n">band</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys_err</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">sys_err</span>
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            ~synphot.SourceSpectrum</span>
+<span class="sd">                This model's spectrum to simulate photometry of.</span>
+<span class="sd">            """</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_source_spectrum</span><span class="p">(</span>
+                <span class="n">t_norm</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
+                <span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
+                <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance</span><span class="p">,</span>
+                <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
+                <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
+                <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span>
+                <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
+                <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="p">)</span>
 
-                <span class="n">pivot</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">[</span><span class="n">band</span><span class="p">]</span><span class="o">.</span><span class="n">pivot</span><span class="p">()</span>
-                <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
-                    <span class="n">true_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">spectra</span><span class="p">(</span><span class="n">pivot</span><span class="p">,</span> <span class="n">flux_unit</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-
-                    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">snr</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">snr</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-                    <span class="n">safe_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                    <span class="n">flux_err</span> <span class="o">=</span> <span class="n">true_flux</span> <span class="o">/</span> <span class="n">safe_snr</span>
-                    <span class="n">reported_snr</span> <span class="o">=</span> <span class="n">snr</span>
-                    <span class="k">if</span> <span class="n">band_sys_err</span><span class="p">:</span>
-                        <span class="c1"># `sys_err` is a fixed fractional-magnitude floor; convert to a</span>
-                        <span class="c1"># fractional flux error (exact for the same small-error limit</span>
-                        <span class="c1"># `mag_err = 2.5 / (ln(10) * snr)` already assumes) and combine</span>
-                        <span class="c1"># in quadrature with the shot-noise flux error above, before</span>
-                        <span class="c1"># anything is drawn from it -- so the noise realization itself</span>
-                        <span class="c1"># carries the systematic scatter, not just a wider reported bar</span>
-                        <span class="c1"># around an unchanged draw.</span>
-                        <span class="n">flux_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">flux_err</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">true_flux</span><span class="p">)</span> <span class="o">*</span> <span class="n">band_sys_err</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.5</span><span class="p">)</span>
-                        <span class="n">reported_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">true_flux</span> <span class="o">/</span> <span class="n">flux_err</span><span class="p">,</span> <span class="n">snr</span><span class="p">)</span>
-                    <span class="n">flux</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">true_flux</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">flux_err</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">))</span>
-                    <span class="n">flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                    <span class="n">mag_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="mf">2.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">reported_snr</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                    <span class="n">mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flux</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">flux</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ABmag</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-
-                    <span class="n">flux_upper</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">+</span> <span class="n">n_sigma</span> <span class="o">*</span> <span class="n">flux_err</span>
-                    <span class="n">flux_lower</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">-</span> <span class="n">n_sigma</span> <span class="o">*</span> <span class="n">flux_err</span>
-                    <span class="n">mag_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flux_upper</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">flux_upper</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ABmag</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                    <span class="n">mag_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flux_lower</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">flux_lower</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">ABmag</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-
-                <span class="n">band_table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"exptime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">exptime</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"band"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reported_snr</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_err</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_upper</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"flux_lower"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_lower</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mag</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"mag_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mag_err</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"mag_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mag_upper</span>
-                <span class="n">band_table</span><span class="p">[</span><span class="s2">"mag_lower"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mag_lower</span>
-                <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">band_table</span><span class="p">)</span>
-
-        <span class="n">table</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">table</span><span class="p">[</span><span class="s2">"band"</span><span class="p">],</span> <span class="n">table</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">unit</span><span class="p">)))</span>
-        <span class="k">return</span> <span class="n">table</span><span class="p">[</span><span class="n">order</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">simulate_detector_photometry</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">exptime</span><span class="p">,</span>
+            <span class="n">detector</span><span class="p">,</span>
+            <span class="n">coord</span><span class="p">,</span>
+            <span class="n">spectra_factory</span><span class="p">,</span>
+            <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span>
+            <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span>
+            <span class="n">observer_location</span><span class="o">=</span><span class="n">observer_location</span><span class="p">,</span>
+            <span class="n">obstime</span><span class="o">=</span><span class="n">obstime</span><span class="p">,</span>
+            <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">,</span>
+            <span class="n">sys_err</span><span class="o">=</span><span class="n">sys_err</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
     <span class="c1"># -------------------------------------- #</span>
     <span class="c1"># Simulation                              #</span>
     <span class="c1"># -------------------------------------- #</span>
 <div class="viewcode-block" id="SpectralModel.simulate">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate.html#uvex_transients.models.core.base.SpectralModel.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate.html#uvex_transients.models.arnett.SpectralModel.simulate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">        Draw random parameter realizations and evaluate the model at the given frequency and time.</span>
@@ -4019,7 +3955,7 @@
 
 
 <div class="viewcode-block" id="ComposedSpectralModel">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.ComposedSpectralModel.html#uvex_transients.models.core.base.ComposedSpectralModel">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.ComposedSpectralModel.html#uvex_transients.models.arnett.ComposedSpectralModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ComposedSpectralModel</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    A :class:`SpectralModel` built by pairing a :class:`Lightcurve` with a :class:`Spectrum`.</span>

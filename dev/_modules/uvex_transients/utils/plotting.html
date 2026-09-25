@@ -899,7 +899,12 @@
 <span class="sd">    phot : astropy.table.Table</span>
 <span class="sd">        A `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`-style table with</span>
 <span class="sd">        ``"band"``, ``"ab_mag"``, ``"snr"``, and ``"mag_err"`` columns; ``"mag_lower"``/``"mag_upper"``</span>
-<span class="sd">        are used for upper limits when present, and upper limits are skipped otherwise.</span>
+<span class="sd">        are used for upper limits when present, and upper limits are skipped otherwise. A row whose</span>
+<span class="sd">        ``"mag_upper"`` isn't finite -- always true of a background/non-detection row, from an</span>
+<span class="sd">        ``"in_model"`` column (see `~uvex_transients.simulation.event.Event.simulate_photometry`)</span>
+<span class="sd">        being ``False`` -- is drawn as a one-sided limit anchored at ``"mag_lower"`` instead of the</span>
+<span class="sd">        usual ``"ab_mag"``-centered asymmetric error bar, since neither ``"ab_mag"`` nor</span>
+<span class="sd">        ``"mag_upper"`` is a secure number there.</span>
 <span class="sd">    t_theory : astropy.units.Quantity, optional</span>
 <span class="sd">        Time grid for the noiseless theory curve. Both `t_theory` and `theory_mag` must be given to</span>
 <span class="sd">        draw it; the curve is omitted otherwise.</span>
@@ -926,16 +931,23 @@
         <span class="n">theory_values</span> <span class="o">=</span> <span class="n">theory_mag</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">theory_mag</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">theory_mag</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">t_theory</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="n">theory_values</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
 
-    <span class="n">in_band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"band"</span><span class="p">])</span> <span class="o">==</span> <span class="n">band</span><span class="p">)</span>
-    <span class="n">detected</span> <span class="o">=</span> <span class="n">in_band</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span><span class="p">)</span>
-    <span class="n">upper_limits</span> <span class="o">=</span> <span class="n">in_band</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">snr_threshold</span><span class="p">)</span>
+    <span class="n">band_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"band"</span><span class="p">])</span> <span class="o">==</span> <span class="n">band</span>
+    <span class="n">ab_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">])</span>
+    <span class="n">snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">])</span>
+
+    <span class="c1"># Rows outside a transient's `photometry_pre_window`/`photometry_post_window` (see</span>
+    <span class="c1"># `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real</span>
+    <span class="c1"># source to detect -- their `snr` is pure noise around a true flux of zero.</span>
+    <span class="n">is_background</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"in_model"</span><span class="p">])</span> <span class="k">if</span> <span class="s2">"in_model"</span> <span class="ow">in</span> <span class="n">phot</span><span class="o">.</span><span class="n">colnames</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phot</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="n">detected</span> <span class="o">=</span> <span class="n">band_mask</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">is_background</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ab_mag</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">snr</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span><span class="p">)</span>
 
     <span class="n">t_days</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">t_obs</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">detected</span><span class="p">):</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
             <span class="n">t_days</span><span class="p">[</span><span class="n">detected</span><span class="p">],</span>
-            <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">detected</span><span class="p">],</span>
+            <span class="n">ab_mag</span><span class="p">[</span><span class="n">detected</span><span class="p">],</span>
             <span class="n">yerr</span><span class="o">=</span><span class="n">err_scale</span> <span class="o">*</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"mag_err"</span><span class="p">][</span><span class="n">detected</span><span class="p">],</span>
             <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
             <span class="n">mfc</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
@@ -946,20 +958,56 @@
         <span class="p">)</span>
 
     <span class="n">has_bounds</span> <span class="o">=</span> <span class="s2">"mag_lower"</span> <span class="ow">in</span> <span class="n">phot</span><span class="o">.</span><span class="n">colnames</span> <span class="ow">and</span> <span class="s2">"mag_upper"</span> <span class="ow">in</span> <span class="n">phot</span><span class="o">.</span><span class="n">colnames</span>
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">upper_limits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">has_bounds</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
-            <span class="n">t_days</span><span class="p">[</span><span class="n">upper_limits</span><span class="p">],</span>
-            <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">],</span>
-            <span class="n">yerr</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">phot</span><span class="p">[</span><span class="s2">"mag_upper"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]</span> <span class="o">-</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">],</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"mag_lower"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]</span> <span class="o">-</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">][</span><span class="n">upper_limits</span><span class="p">]),</span>
-            <span class="p">],</span>
-            <span class="n">marker</span><span class="o">=</span><span class="s2">"v"</span><span class="p">,</span>
-            <span class="n">mfc</span><span class="o">=</span><span class="s2">"w"</span><span class="p">,</span>
-            <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
-            <span class="n">ecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
-            <span class="n">linestyle</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
-        <span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">has_bounds</span><span class="p">:</span>
+        <span class="n">mag_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"mag_lower"</span><span class="p">])</span>
+        <span class="n">mag_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"mag_upper"</span><span class="p">])</span>
+
+        <span class="c1"># `mag_upper` (from `flux_lower = flux - n_sigma*flux_err`) is only finite when a</span>
+        <span class="c1"># row's own noisy flux draw cleared `n_sigma` toward the faint side too -- true for</span>
+        <span class="c1"># a real, still-somewhat-informative sub-threshold detection often enough, but</span>
+        <span class="c1"># essentially never for a background/non-detection row (`is_background`): its true</span>
+        <span class="c1"># flux is ~0, so `flux` is itself only ~`flux_err` in size, and `flux - n_sigma *</span>
+        <span class="c1"># flux_err` needs a &gt;n_sigma-sigma downward fluctuation to ever land positive.</span>
+        <span class="c1"># `ab_mag` fails the same way (`nan` whenever the noisy `flux` draw is &lt;= 0, which</span>
+        <span class="c1"># for a ~zero-true-flux row is about half the time) -- so neither is usable as this</span>
+        <span class="c1"># row's anchor. `mag_lower` (from `flux_upper = flux + n_sigma*flux_err`) has the</span>
+        <span class="c1"># opposite asymmetry and is essentially always finite here, so it's the one secure</span>
+        <span class="c1"># number these rows have: the n_sigma detection depth reached by that observation,</span>
+        <span class="c1"># i.e. a one-sided "the source, if any, is fainter than this" limit.</span>
+        <span class="n">hard_limit</span> <span class="o">=</span> <span class="n">band_mask</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">mag_lower</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">is_background</span> <span class="o">|</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">mag_upper</span><span class="p">))</span>
+        <span class="n">soft_limit</span> <span class="o">=</span> <span class="n">band_mask</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">hard_limit</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ab_mag</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">mag_upper</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">snr</span> <span class="o">&lt;=</span> <span class="n">snr_threshold</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">soft_limit</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+                <span class="n">t_days</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">],</span>
+                <span class="n">ab_mag</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">],</span>
+                <span class="n">yerr</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">mag_upper</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">]</span> <span class="o">-</span> <span class="n">ab_mag</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">],</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mag_lower</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">]</span> <span class="o">-</span> <span class="n">ab_mag</span><span class="p">[</span><span class="n">soft_limit</span><span class="p">]),</span>
+                <span class="p">],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">"v"</span><span class="p">,</span>
+                <span class="n">mfc</span><span class="o">=</span><span class="s2">"w"</span><span class="p">,</span>
+                <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">ecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">hard_limit</span><span class="p">):</span>
+            <span class="c1"># Drawn as a bare open marker at `mag_lower`, not `errorbar`'s `lolims=True`</span>
+            <span class="c1"># (the natural match for a one-sided "true value is at least this faint"</span>
+            <span class="c1"># limit): that draws its caret's direction from the axes' *current*</span>
+            <span class="c1"># inversion state at call time (`Axes.errorbar` requires `invert_yaxis()` to</span>
+            <span class="c1"># already have been called for a correctly-oriented arrow), a call-order</span>
+            <span class="c1"># dependency this function has no way to guarantee its caller respects --</span>
+            <span class="c1"># every gallery example inverts the axis *after* plotting, not before.</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">t_days</span><span class="p">[</span><span class="n">hard_limit</span><span class="p">],</span>
+                <span class="n">mag_lower</span><span class="p">[</span><span class="n">hard_limit</span><span class="p">],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">"v"</span><span class="p">,</span>
+                <span class="n">mfc</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+                <span class="n">mec</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 

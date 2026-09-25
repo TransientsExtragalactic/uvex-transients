@@ -628,6 +628,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_sed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">DEFAULT_MODEL</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">DEFAULT_DURATION</span>
 
+        <span class="c1"># `Event.simulate_photometry`'s windowing defaults: no pre-explosion photometry,</span>
+        <span class="c1"># and a post-explosion window that tracks `duration_limit` (via the</span>
+        <span class="c1"># `photometry_post_window` getter) until explicitly overridden.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="c1"># ------------------------------ #</span>
     <span class="c1"># Properties                     #</span>
     <span class="c1"># ------------------------------ #</span>
@@ -733,7 +739,103 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">duration_limit</span><span class="p">)</span> <span class="ow">or</span> <span class="n">duration_limit</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`duration_limit` must be finite and positive, got </span><span class="si">{</span><span class="n">duration_limit</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">duration_limit</span></div>
+        <span class="k">return</span> <span class="n">duration_limit</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">photometry_pre_window</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: How far before explosion `Event.simulate_photometry` still generates photometry.</span>
+
+<span class="sd">        Passed straight through to</span>
+<span class="sd">        `~uvex_transients.simulation.event.Event.__init__`'s `photometry_pre_window`:</span>
+<span class="sd">        observations in this window never reach `sed` (outside its valid domain,</span>
+<span class="sd">        ``t &gt;= 0``) and instead get pure background/non-detection photometry. Defaults</span>
+<span class="sd">        to ``0 * u.day`` -- no pre-explosion photometry -- since that's a strict</span>
+<span class="sd">        addition to how much of the schedule an event's photometry covers, unlike</span>
+<span class="sd">        `duration_limit`/`photometry_post_window`, which bound something that must</span>
+<span class="sd">        already be supplied.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span>
+
+    <span class="nd">@photometry_pre_window</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">photometry_pre_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">photometry_pre_window</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set how far before explosion `Event.simulate_photometry` still generates photometry.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        photometry_pre_window : ~astropy.units.Quantity</span>
+<span class="sd">            The new pre-explosion window; see :attr:`photometry_pre_window`.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_photometry_window</span><span class="p">(</span>
+            <span class="n">photometry_pre_window</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"photometry_pre_window"</span><span class="p">,</span> <span class="n">allow_zero</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">photometry_post_window</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ~astropy.units.Quantity: How far after explosion `Event.simulate_photometry` evaluates `sed`.</span>
+
+<span class="sd">        Passed straight through to</span>
+<span class="sd">        `~uvex_transients.simulation.event.Event.__init__`'s `photometry_post_window`;</span>
+<span class="sd">        observations past it get background/non-detection photometry instead of `sed`</span>
+<span class="sd">        evaluation, the same as before `t=0`. Tracks `duration_limit` (including any</span>
+<span class="sd">        later change to it) until set explicitly here, at which point it's decoupled --</span>
+<span class="sd">        the same relationship `Event.__init__` itself has between the two parameters.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duration_limit</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span>
+
+    <span class="nd">@photometry_post_window</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">photometry_post_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">photometry_post_window</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set how far after explosion `Event.simulate_photometry` evaluates `sed`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        photometry_post_window : ~astropy.units.Quantity</span>
+<span class="sd">            The new post-explosion window; see :attr:`photometry_post_window`.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_photometry_window</span><span class="p">(</span>
+            <span class="n">photometry_post_window</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"photometry_post_window"</span><span class="p">,</span> <span class="n">allow_zero</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_photometry_window</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">allow_zero</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Validate a candidate `photometry_pre_window`/`photometry_post_window`, shared by both setters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        window : ~astropy.units.Quantity</span>
+<span class="sd">            The candidate value to validate.</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Which property this is for, used only to phrase the error message.</span>
+<span class="sd">        allow_zero : bool</span>
+<span class="sd">            Whether ``0`` is an acceptable value (true for `photometry_pre_window`,</span>
+<span class="sd">            since "no pre-explosion window" is its own default; false for</span>
+<span class="sd">            `photometry_post_window`, which -- like `duration_limit` -- must bound a</span>
+<span class="sd">            strictly positive span).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            `window`, unchanged.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `window` is not a Quantity with time units.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `window` is not finite, or isn't within the bound `allow_zero` implies.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="n">window</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">physical_type</span> <span class="o">!=</span> <span class="s2">"time"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` must be an astropy Quantity with time units, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">window</span><span class="p">)</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">window</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">allow_zero</span> <span class="k">else</span> <span class="n">window</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">bound</span> <span class="o">=</span> <span class="s2">"non-negative"</span> <span class="k">if</span> <span class="n">allow_zero</span> <span class="k">else</span> <span class="s2">"positive"</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` must be finite and </span><span class="si">{</span><span class="n">bound</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">window</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">window</span></div>
 
 
 

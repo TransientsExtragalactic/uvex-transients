@@ -695,11 +695,12 @@
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transients</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No transient type </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in 'transients'; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">transients</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
+            <span class="n">transient</span> <span class="o">=</span> <span class="n">transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
             <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">Event</span><span class="p">(</span>
                     <span class="n">event_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]),</span>
                     <span class="n">schedule</span><span class="o">=</span><span class="n">schedule</span><span class="p">,</span>
-                    <span class="n">transient</span><span class="o">=</span><span class="n">transients</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                    <span class="n">transient</span><span class="o">=</span><span class="n">transient</span><span class="p">,</span>
                     <span class="n">coord</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">],</span>
                     <span class="n">redshift</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">]),</span>
                     <span class="n">t_explosion</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">],</span>
@@ -707,6 +708,12 @@
                     <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"luminosity_distance"</span><span class="p">]</span> <span class="k">if</span> <span class="n">has_distance</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">ebv</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"ebv"</span><span class="p">])</span> <span class="k">if</span> <span class="n">has_ebv</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">transient_type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="c1"># Each transient type's own settings (see</span>
+                    <span class="c1"># `TransientBase.photometry_pre_window`/`photometry_post_window`) --</span>
+                    <span class="c1"># not a fixed default -- so a config's per-class override actually</span>
+                    <span class="c1"># reaches `Event.simulate_photometry`.</span>
+                    <span class="n">photometry_pre_window</span><span class="o">=</span><span class="n">transient</span><span class="o">.</span><span class="n">photometry_pre_window</span><span class="p">,</span>
+                    <span class="n">photometry_post_window</span><span class="o">=</span><span class="n">transient</span><span class="o">.</span><span class="n">photometry_post_window</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
