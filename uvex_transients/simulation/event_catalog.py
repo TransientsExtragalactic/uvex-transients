@@ -229,11 +229,12 @@ class EventCatalog:
             if name not in transients:
                 raise KeyError(f"No transient type {name!r} in 'transients'; available: {list(transients)}.")
 
+            transient = transients[name]
             events.append(
                 Event(
                     event_id=int(row["event_id"]),
                     schedule=schedule,
-                    transient=transients[name],
+                    transient=transient,
                     coord=row["coord"],
                     redshift=float(row["redshift"]),
                     t_explosion=row["t_explosion"],
@@ -241,6 +242,12 @@ class EventCatalog:
                     luminosity_distance=row["luminosity_distance"] if has_distance else None,
                     ebv=float(row["ebv"]) if has_ebv else None,
                     transient_type=name,
+                    # Each transient type's own settings (see
+                    # `TransientBase.photometry_pre_window`/`photometry_post_window`) --
+                    # not a fixed default -- so a config's per-class override actually
+                    # reaches `Event.simulate_photometry`.
+                    photometry_pre_window=transient.photometry_pre_window,
+                    photometry_post_window=transient.photometry_post_window,
                 )
             )
 

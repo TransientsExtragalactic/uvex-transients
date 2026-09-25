@@ -276,7 +276,15 @@ class PhotometryCatalog:
         n_detections = np.zeros(len(all_ids), dtype=np.int64)
         id_to_index = {int(eid): i for i, eid in enumerate(all_ids)}
 
+        # Background/non-detection rows (`in_model == False`, from a transient's
+        # `photometry_pre_window`/`photometry_post_window` -- see
+        # `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real
+        # source to detect; their `snr` is pure noise around a true flux of zero, and
+        # excluding them here is the only thing standing between that noise and this
+        # table's detection counts/yields.
         phot = self.table
+        if "in_model" in phot.colnames:
+            phot = phot[np.asarray(phot["in_model"])]
         if len(phot) > 0:
             event_ids = np.asarray(phot["event_id"], dtype=np.int64)
             obs_jd = np.asarray(phot["obs_time"].jd, dtype=np.float64)

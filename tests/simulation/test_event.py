@@ -124,6 +124,7 @@ def test_simulate_photometry_empty_observations(make_schedule_from_pointings):
     assert phot.colnames == [
         "event_id",
         "obs_time",
+        "rel_time",
         "exptime",
         "band",
         "snr",
@@ -135,6 +136,7 @@ def test_simulate_photometry_empty_observations(make_schedule_from_pointings):
         "mag_err",
         "mag_upper",
         "mag_lower",
+        "in_model",
     ]
 
 

@@ -48,7 +48,6 @@ combines one of each into a full :class:`SpectralModel`, with
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Mapping
 from copy import copy, deepcopy
-from dataclasses import replace
 from typing import ClassVar, Self
 
 import numpy as np
@@ -56,16 +55,16 @@ from astropy import units as u
 from astropy.coordinates import EarthLocation, SkyCoord
 from astropy.cosmology import FLRW
 from astropy.modeling import Model
-from astropy.table import QTable, vstack
+from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
-from m4opt.synphot import Detector, observing
+from m4opt.synphot import Detector
 from scipy.integrate import quad_vec
 from synphot import SourceSpectrum, SpectralElement
 from synphot import units as synphot_units
 
 from uvex_transients.dust import attenuation_callable
-from uvex_transients.utils import config, get_rng, logger
+from uvex_transients.utils import logger
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
 from .._constants import AB_MAG_ZERO_POINT, H_CGS
@@ -88,20 +87,12 @@ from .._utils import (
     _SPEC_LUM_UNIT,
     hz_per_unit,
     model_class_from_kernel,
+    simulate_detector_photometry,
     to_cgs_value,
 )
 from .parameters import Parameter
 
 __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
-
-# `SpectralModel.simulate_photometry`'s defaults for `observer_location`/`obstime` when
-# the caller doesn't supply real ones -- correct as long as `background` doesn't
-# actually depend on either (true of `m4opt.synphot.background.GalacticBackground`,
-# false of `ZodiacalBackground`/`EarthshineBackground`; see that method's docstring).
-# `m4opt.synphot.observing`'s own state only requires these to be broadcastable
-# against `coord`, not physically meaningful.
-_PLACEHOLDER_OBSERVER_LOCATION = EarthLocation(0 * u.m, 0 * u.m, 0 * u.m)
-_PLACEHOLDER_OBSTIME = Time("2000-01-01T00:00:00", scale="utc")
 
 # Loose enough that it only fires on genuine `quad_vec` non-convergence (its own default
 # `epsrel` is 1e-8), not routine floating-point noise -- see `_warn_if_not_converged`.
@@ -3262,108 +3253,53 @@ class SpectralModel(_ModelBase):
             have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`
             is a mapping missing an entry for one of `bands`.
         """
-        if n_sigma is None:
-            n_sigma = config["simulation.detection_n_sigma"]
-
-        if background is not None:
-            detector = replace(detector, background=background)
-
-        band_names = list(detector.bandpasses) if bands is None else list(bands)
-        unknown = [band for band in band_names if band not in detector.bandpasses]
-        if unknown:
-            raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
-
-        if isinstance(sys_err, Mapping):
-            missing_sys_err = [band for band in band_names if band not in sys_err]
-            if missing_sys_err:
-                raise ValueError(f"'sys_err' is missing entries for band(s) {missing_sys_err}.")
-
-        if not coord.isscalar:
-            raise ValueError("Parameter 'coord' must be a scalar SkyCoord.")
-
-        t = np.atleast_1d(u.Quantity(t))
-        exptime = u.Quantity(exptime)
-        if exptime.isscalar:
-            exptime = np.broadcast_to(exptime, t.shape, subok=True)
-        elif exptime.shape != t.shape:
-            raise ValueError(f"'exptime' must be scalar or match 't' shape {t.shape}, got {exptime.shape}.")
-        n_obs = t.shape[0]
-
-        if observer_location is None:
-            observer_location = _PLACEHOLDER_OBSERVER_LOCATION
-        if obstime is None:
-            obstime = _PLACEHOLDER_OBSTIME
-
-        rng = get_rng(rng)
 
         # Trailing batch axis reserved for `t`, as in `Event.simulate_photometry` --
         # keeps this batch from colliding with whatever wavelength grid the spectrum
-        # is later called with (e.g. a bandpass's `waveset`).
-        spectra = self.as_source_spectrum(
-            t[:, np.newaxis],
-            redshift=redshift,
-            luminosity_distance=luminosity_distance,
-            angular_diameter_distance=angular_diameter_distance,
-            proper_distance=proper_distance,
-            cosmology=cosmology,
-            ebv=ebv,
-            dust_law=dust_law,
-            **parameters,
+        # is later called with (e.g. a bandpass's `waveset`). Deferred to a factory
+        # so `simulate_detector_photometry` can validate `bands`/`sys_err`/`coord`
+        # first and never build this spectrum at all if that validation fails.
+        def spectra_factory(t_norm: Quantity) -> SourceSpectrum:
+            """
+            Build this model's `~synphot.SourceSpectrum` for `t_norm`'s normalized shape.
+
+            Parameters
+            ----------
+            t_norm : ~astropy.units.Quantity
+                `t`, already validated/normalized to shape ``(N,)`` by
+                `~uvex_transients.models._utils.simulate_detector_photometry`.
+
+            Returns
+            -------
+            ~synphot.SourceSpectrum
+                This model's spectrum to simulate photometry of.
+            """
+            return self.as_source_spectrum(
+                t_norm[:, np.newaxis],
+                redshift=redshift,
+                luminosity_distance=luminosity_distance,
+                angular_diameter_distance=angular_diameter_distance,
+                proper_distance=proper_distance,
+                cosmology=cosmology,
+                ebv=ebv,
+                dust_law=dust_law,
+                **parameters,
+            )
+
+        return simulate_detector_photometry(
+            t,
+            exptime,
+            detector,
+            coord,
+            spectra_factory,
+            background=background,
+            bands=bands,
+            observer_location=observer_location,
+            obstime=obstime,
+            n_sigma=n_sigma,
+            sys_err=sys_err,
+            rng=rng,
         )
-
-        tables = []
-
-        with observing(observer_location, coord, obstime):
-            for band in band_names:
-                snr = detector.get_snr(exptime, spectra, band)
-                band_sys_err = sys_err[band] if isinstance(sys_err, Mapping) else sys_err
-
-                pivot = detector.bandpasses[band].pivot()
-                with np.errstate(invalid="ignore", divide="ignore"):
-                    true_flux = np.squeeze(spectra(pivot, flux_unit=u.Jy).to_value(u.Jy), axis=-1)
-
-                    valid = np.isfinite(snr) & (snr > 0)
-                    safe_snr = np.where(valid, snr, np.nan)
-                    flux_err = true_flux / safe_snr
-                    reported_snr = snr
-                    if band_sys_err:
-                        # `sys_err` is a fixed fractional-magnitude floor; convert to a
-                        # fractional flux error (exact for the same small-error limit
-                        # `mag_err = 2.5 / (ln(10) * snr)` already assumes) and combine
-                        # in quadrature with the shot-noise flux error above, before
-                        # anything is drawn from it -- so the noise realization itself
-                        # carries the systematic scatter, not just a wider reported bar
-                        # around an unchanged draw.
-                        flux_err = np.hypot(flux_err, np.abs(true_flux) * band_sys_err * np.log(10) / 2.5)
-                        reported_snr = np.where(valid, true_flux / flux_err, snr)
-                    flux = rng.normal(true_flux, np.where(valid, np.abs(flux_err), 1.0))
-                    flux = np.where(valid, flux, np.nan)
-                    mag_err = np.where(valid, 2.5 / (np.log(10) * np.abs(reported_snr)), np.nan)
-                    mag = np.where(flux > 0, (flux * u.Jy).to_value(u.ABmag), np.nan)
-
-                    flux_upper = flux + n_sigma * flux_err
-                    flux_lower = flux - n_sigma * flux_err
-                    mag_lower = np.where(flux_upper > 0, (flux_upper * u.Jy).to_value(u.ABmag), np.nan)
-                    mag_upper = np.where(flux_lower > 0, (flux_lower * u.Jy).to_value(u.ABmag), np.nan)
-
-                band_table = QTable()
-                band_table["t"] = t
-                band_table["exptime"] = exptime
-                band_table["band"] = np.full(n_obs, band)
-                band_table["snr"] = reported_snr
-                band_table["flux"] = flux * u.Jy
-                band_table["flux_err"] = flux_err * u.Jy
-                band_table["flux_upper"] = flux_upper * u.Jy
-                band_table["flux_lower"] = flux_lower * u.Jy
-                band_table["ab_mag"] = mag
-                band_table["mag_err"] = mag_err
-                band_table["mag_upper"] = mag_upper
-                band_table["mag_lower"] = mag_lower
-                tables.append(band_table)
-
-        table = vstack(tables)
-        order = np.lexsort((table["band"], table["t"].to_value(t.unit)))
-        return table[order]
 
     # -------------------------------------- #
     # Simulation                              #

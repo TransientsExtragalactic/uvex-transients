@@ -414,7 +414,12 @@ def plot_band_light_curve(
     phot : astropy.table.Table
         A `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`-style table with
         ``"band"``, ``"ab_mag"``, ``"snr"``, and ``"mag_err"`` columns; ``"mag_lower"``/``"mag_upper"``
-        are used for upper limits when present, and upper limits are skipped otherwise.
+        are used for upper limits when present, and upper limits are skipped otherwise. A row whose
+        ``"mag_upper"`` isn't finite -- always true of a background/non-detection row, from an
+        ``"in_model"`` column (see `~uvex_transients.simulation.event.Event.simulate_photometry`)
+        being ``False`` -- is drawn as a one-sided limit anchored at ``"mag_lower"`` instead of the
+        usual ``"ab_mag"``-centered asymmetric error bar, since neither ``"ab_mag"`` nor
+        ``"mag_upper"`` is a secure number there.
     t_theory : astropy.units.Quantity, optional
         Time grid for the noiseless theory curve. Both `t_theory` and `theory_mag` must be given to
         draw it; the curve is omitted otherwise.
@@ -441,16 +446,23 @@ def plot_band_light_curve(
         theory_values = theory_mag.value if hasattr(theory_mag, "value") else np.asarray(theory_mag)
         ax.plot(u.Quantity(t_theory).to_value(u.day), theory_values, color=color, lw=1.5, alpha=0.6)
 
-    in_band = np.isfinite(phot["ab_mag"]) & (np.asarray(phot["band"]) == band)
-    detected = in_band & (phot["snr"] > snr_threshold)
-    upper_limits = in_band & (phot["snr"] <= snr_threshold)
+    band_mask = np.asarray(phot["band"]) == band
+    ab_mag = np.asarray(phot["ab_mag"])
+    snr = np.asarray(phot["snr"])
+
+    # Rows outside a transient's `photometry_pre_window`/`photometry_post_window` (see
+    # `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real
+    # source to detect -- their `snr` is pure noise around a true flux of zero.
+    is_background = ~np.asarray(phot["in_model"]) if "in_model" in phot.colnames else np.zeros(len(phot), dtype=bool)
+
+    detected = band_mask & ~is_background & np.isfinite(ab_mag) & (snr > snr_threshold)
 
     t_days = u.Quantity(t_obs).to_value(u.day)
 
     if np.any(detected):
         ax.errorbar(
             t_days[detected],
-            phot["ab_mag"][detected],
+            ab_mag[detected],
             yerr=err_scale * phot["mag_err"][detected],
             marker=marker,
             mfc=color,
@@ -461,20 +473,56 @@ def plot_band_light_curve(
         )
 
     has_bounds = "mag_lower" in phot.colnames and "mag_upper" in phot.colnames
-    if np.any(upper_limits) and has_bounds:
-        ax.errorbar(
-            t_days[upper_limits],
-            phot["ab_mag"][upper_limits],
-            yerr=[
-                phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-            ],
-            marker="v",
-            mfc="w",
-            mec=color,
-            ecolor=color,
-            linestyle="none",
-        )
+    if has_bounds:
+        mag_lower = np.asarray(phot["mag_lower"])
+        mag_upper = np.asarray(phot["mag_upper"])
+
+        # `mag_upper` (from `flux_lower = flux - n_sigma*flux_err`) is only finite when a
+        # row's own noisy flux draw cleared `n_sigma` toward the faint side too -- true for
+        # a real, still-somewhat-informative sub-threshold detection often enough, but
+        # essentially never for a background/non-detection row (`is_background`): its true
+        # flux is ~0, so `flux` is itself only ~`flux_err` in size, and `flux - n_sigma *
+        # flux_err` needs a >n_sigma-sigma downward fluctuation to ever land positive.
+        # `ab_mag` fails the same way (`nan` whenever the noisy `flux` draw is <= 0, which
+        # for a ~zero-true-flux row is about half the time) -- so neither is usable as this
+        # row's anchor. `mag_lower` (from `flux_upper = flux + n_sigma*flux_err`) has the
+        # opposite asymmetry and is essentially always finite here, so it's the one secure
+        # number these rows have: the n_sigma detection depth reached by that observation,
+        # i.e. a one-sided "the source, if any, is fainter than this" limit.
+        hard_limit = band_mask & np.isfinite(mag_lower) & (is_background | ~np.isfinite(mag_upper))
+        soft_limit = band_mask & ~hard_limit & np.isfinite(ab_mag) & np.isfinite(mag_upper) & (snr <= snr_threshold)
+
+        if np.any(soft_limit):
+            ax.errorbar(
+                t_days[soft_limit],
+                ab_mag[soft_limit],
+                yerr=[
+                    mag_upper[soft_limit] - ab_mag[soft_limit],
+                    np.abs(mag_lower[soft_limit] - ab_mag[soft_limit]),
+                ],
+                marker="v",
+                mfc="w",
+                mec=color,
+                ecolor=color,
+                linestyle="none",
+            )
+
+        if np.any(hard_limit):
+            # Drawn as a bare open marker at `mag_lower`, not `errorbar`'s `lolims=True`
+            # (the natural match for a one-sided "true value is at least this faint"
+            # limit): that draws its caret's direction from the axes' *current*
+            # inversion state at call time (`Axes.errorbar` requires `invert_yaxis()` to
+            # already have been called for a correctly-oriented arrow), a call-order
+            # dependency this function has no way to guarantee its caller respects --
+            # every gallery example inverts the axis *after* plotting, not before.
+            ax.plot(
+                t_days[hard_limit],
+                mag_lower[hard_limit],
+                marker="v",
+                mfc="none",
+                mec=color,
+                linestyle="none",
+            )
 
 
 def compute_funnel_bounds(
