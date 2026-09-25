@@ -414,7 +414,10 @@ def plot_band_light_curve(
     phot : astropy.table.Table
         A `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`-style table with
         ``"band"``, ``"ab_mag"``, ``"snr"``, and ``"mag_err"`` columns; ``"mag_lower"``/``"mag_upper"``
-        are used for upper limits when present, and upper limits are skipped otherwise.
+        are used for upper limits when present, and upper limits are skipped otherwise. An
+        ``"in_model"`` column, if present (see
+        `~uvex_transients.simulation.event.Event.simulate_photometry`), forces its ``False`` rows
+        into upper limits regardless of ``snr`` -- they never had a real source to detect.
     t_theory : astropy.units.Quantity, optional
         Time grid for the noiseless theory curve. Both `t_theory` and `theory_mag` must be given to
         draw it; the curve is omitted otherwise.
@@ -442,8 +445,17 @@ def plot_band_light_curve(
         ax.plot(u.Quantity(t_theory).to_value(u.day), theory_values, color=color, lw=1.5, alpha=0.6)
 
     in_band = np.isfinite(phot["ab_mag"]) & (np.asarray(phot["band"]) == band)
-    detected = in_band & (phot["snr"] > snr_threshold)
-    upper_limits = in_band & (phot["snr"] <= snr_threshold)
+
+    # Rows outside a transient's `photometry_pre_window`/`photometry_post_window` (see
+    # `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real
+    # source to detect -- their `snr` is pure noise around a true flux of zero, so one
+    # scattering above `snr_threshold` is forced into `upper_limits` rather than
+    # `detected`, the same as it would be reported (`mag_upper`/`mag_lower` only, no
+    # secure `ab_mag`) by any real non-detection. They're still drawn, just never as a
+    # filled "detection" of the transient.
+    is_background = ~np.asarray(phot["in_model"]) if "in_model" in phot.colnames else np.zeros(len(phot), dtype=bool)
+    detected = in_band & ~is_background & (phot["snr"] > snr_threshold)
+    upper_limits = in_band & (is_background | (phot["snr"] <= snr_threshold))
 
     t_days = u.Quantity(t_obs).to_value(u.day)
 

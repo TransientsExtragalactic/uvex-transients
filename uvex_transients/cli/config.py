@@ -220,6 +220,14 @@ def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
         if duration_limit is not None:
             transient.duration_limit = _parse_quantity(duration_limit, u.day)
 
+        photometry_pre_window = entry.pop("photometry_pre_window", None)
+        if photometry_pre_window is not None:
+            transient.photometry_pre_window = _parse_quantity(photometry_pre_window, u.day)
+
+        photometry_post_window = entry.pop("photometry_post_window", None)
+        if photometry_post_window is not None:
+            transient.photometry_post_window = _parse_quantity(photometry_post_window, u.day)
+
         parameters = entry.pop("parameters", {}) or {}
         _apply_parameter_overrides(transient.sed, parameters)
 

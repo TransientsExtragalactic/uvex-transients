@@ -254,6 +254,20 @@ model's parameters actually are.
      - str or number
      - Overrides :attr:`~uvex_transients.transients.base.TransientBase.duration_limit` (a unit
        string like ``"200 day"``, or a bare number of days). Optional.
+   * - ``photometry_pre_window``
+     - str or number
+     - Overrides :attr:`~uvex_transients.transients.base.TransientBase.photometry_pre_window` --
+       how far before explosion :meth:`Event.simulate_photometry
+       <uvex_transients.simulation.event.Event.simulate_photometry>` still generates
+       background/non-detection photometry (a unit string or a bare number of days). Optional;
+       defaults to no pre-explosion photometry.
+   * - ``photometry_post_window``
+     - str or number
+     - Overrides :attr:`~uvex_transients.transients.base.TransientBase.photometry_post_window` --
+       how far after explosion :meth:`Event.simulate_photometry
+       <uvex_transients.simulation.event.Event.simulate_photometry>` evaluates the transient's SED
+       before falling back to background/non-detection photometry (a unit string or a bare number
+       of days). Optional; defaults to ``duration_limit``.
    * - ``cosmology``
      - ``!astropy_cosmology``
      - Overrides the transient's cosmology. Optional; defaults to the package's own default
