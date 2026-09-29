@@ -301,3 +301,93 @@ def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
 
     with pytest.raises(ValueError, match="unknown transient key"):
         sim.generate_events(time_bins=1, nside=16, downsample={"not-a-real-key": 5})
+
+
+# --------------------------------------------------------------------------- #
+# iter_epoch_snr_chunks                                                       #
+# --------------------------------------------------------------------------- #
+def _collect_epochs(sim, catalog, **kwargs):
+    from astropy.table import vstack
+
+    chunks = list(sim.iter_epoch_snr_chunks(catalog, uvex, progress=False, **kwargs))
+    return vstack(chunks) if chunks else None
+
+
+def test_iter_epoch_snr_chunks_reproduces_filter_by_snr(make_schedule, hot_spot):
+    """Thresholding / counting the yielded epochs gives exactly `filter_by_snr`'s survivors."""
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    epochs = _collect_epochs(sim, catalog, chunk_size=7)
+    assert epochs is not None
+
+    for threshold, n_visits in [(5.0, 1), (3.0, 2)]:
+        expected = set(
+            np.asarray(
+                sim.filter_by_snr(catalog, uvex, snr_threshold=threshold, chunk_size=7, n_visits=n_visits).table[
+                    "event_id"
+                ]
+            )
+        )
+        above = epochs[epochs["snr"] > threshold]
+        ids, counts = np.unique(np.asarray(above["event_id"]), return_counts=True)
+        assert set(ids[counts >= n_visits]) == expected
+
+    # Rows are grouped by event and time-ordered within each event.
+    order = np.lexsort((epochs["t_obs"].jd, epochs["event_id"]))
+    assert np.array_equal(order, np.arange(len(epochs)))
+
+
+def test_iter_epoch_snr_chunks_chunk_size_independent(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    small = _collect_epochs(sim, catalog, chunk_size=4)
+    large = _collect_epochs(sim, catalog, chunk_size=1000)
+    small = small[np.lexsort((small["t_obs"].jd, small["event_id"]))]
+    large = large[np.lexsort((large["t_obs"].jd, large["event_id"]))]
+
+    assert np.array_equal(small["event_id"], large["event_id"])
+    assert np.array_equal(small["observation_index"], large["observation_index"])
+    np.testing.assert_allclose(small["snr"], large["snr"], rtol=1e-10)
+
+
+def test_iter_epoch_snr_chunks_floor_and_mask(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    everything = _collect_epochs(sim, catalog, chunk_size=7)
+
+    floored = _collect_epochs(sim, catalog, chunk_size=7, detection_floor=3.0)
+    assert np.all(floored["snr"] >= 3.0)
+    assert len(floored) == np.count_nonzero(everything["snr"] >= 3.0)
+
+    wanted = np.arange(len(catalog)) % 2 == 0
+    masked = _collect_epochs(sim, catalog, chunk_size=7, mask=wanted)
+    assert set(np.asarray(masked["event_id"])) <= set(np.asarray(catalog.table["event_id"])[wanted])
+    assert len(masked) == np.isin(everything["event_id"], np.asarray(catalog.table["event_id"])[wanted]).sum()
+
+    # An integer index mask selects the same events as the equivalent boolean mask.
+    by_index = _collect_epochs(sim, catalog, chunk_size=7, mask=np.flatnonzero(wanted))
+    assert len(by_index) == len(masked)
+
+
+def test_iter_epoch_snr_chunks_validates_eagerly(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=5)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=5)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    # Errors surface at call time, without needing to start iterating.
+    with pytest.raises(ValueError, match="Unknown bandpass"):
+        sim.iter_epoch_snr_chunks(catalog, uvex, bands=["nope"])
+    with pytest.raises(ValueError, match="chunk_size"):
+        sim.iter_epoch_snr_chunks(catalog, uvex, chunk_size=0)
+    with pytest.raises(ValueError, match="mask"):
+        sim.iter_epoch_snr_chunks(catalog, uvex, mask=np.ones(3, dtype=bool))

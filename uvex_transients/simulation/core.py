@@ -17,7 +17,7 @@ above a given SNR" -- batched across many events at once the same way
 `Event.simulate_photometry` batches across one event's own observations.
 """
 
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from typing import Union
 
 import astropy_healpix as ah
@@ -600,6 +600,221 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
     # -------------------------------------------------- #
     # Filtering                                          #
     # -------------------------------------------------- #
+    def iter_epoch_snr_chunks(
+        self,
+        catalog: EventCatalog,
+        mission: Mission,
+        bands: list[str] | None = None,
+        chunk_size: int | None = None,
+        detection_floor: float = 0.0,
+        mask: np.ndarray | None = None,
+        progress: bool = True,
+    ) -> Iterator[QTable]:
+        """
+        Lazily yield the per-epoch SNRs of an `EventCatalog`'s events, one chunk of events at a time.
+
+        This is the same evaluation `filter_by_snr` does (schedule lookup, per-event
+        parameter regeneration from ``parameter_seed``, one vectorized ``get_snr`` per
+        band over every (event, observation) pair of a chunk), except that instead of
+        collapsing each chunk to a keep/discard decision against one threshold, it
+        yields the underlying (event, observation) table itself. Any threshold-,
+        visit-count- or cadence-style cut can then be computed from those tables
+        without re-evaluating a single SNR, and because events are independent the
+        chunks can be consumed (and discarded) one at a time, bounding memory no matter
+        how many events the catalog holds.
+
+        Each yielded `~astropy.table.QTable` has one row per (event, observation) pair
+        for up to `chunk_size` events of a single transient type, sorted by
+        ``(event_id, t_obs)``, with columns:
+
+        - ``event_id``: the event's own ``event_id`` in `catalog`.
+        - ``observation_index``: row index into ``survey_schedule.observe_rows``.
+        - ``t_obs``: `~astropy.time.Time` the observation started.
+        - ``t_since_explosion``: `~astropy.units.Quantity` (day), ``t_obs - t_explosion``.
+        - ``band``: str, the band with the highest SNR at this observation.
+        - ``snr``: float, the SNR in that best band (bands are collapsed to the best
+          one, as in `filter_by_snr`, so an observation is never counted once per band).
+
+        A chunk in which no event was observed, or in which every row falls below
+        `detection_floor`, yields nothing. An event with no rows at or above
+        `detection_floor` therefore never appears in any chunk.
+
+        Parameters
+        ----------
+        catalog : EventCatalog
+            The events to evaluate; see `filter_by_snr` for the columns required.
+        mission : m4opt.missions.Mission
+            Supplies the `~m4opt.synphot.Detector` `bands` selects from.
+        bands : list of str, optional
+            Which of `mission.detector`'s bandpasses to evaluate. Defaults to all of them.
+        chunk_size : int, optional
+            Number of events (per transient type) evaluated together. If `None`, uses
+            ``config["simulation.filter_by_snr.chunk_size"]``.
+        detection_floor : float, optional
+            Rows with ``snr < detection_floor`` are dropped before being yielded. This
+            bounds the size of the output, but also means a later cut can't use a
+            threshold below it. The default, 0, keeps every row with a non-negative SNR.
+        mask : numpy.ndarray, optional
+            Restricts evaluation to a subset of `catalog`'s events: either a boolean
+            array of length ``len(catalog)`` or an integer index array into
+            ``catalog.table``. Masked-out events cost nothing. `None` evaluates them all.
+        progress : bool, optional
+            Whether to show a progress bar over chunks.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One chunk's epoch table, as described above.
+        """
+        if not isinstance(catalog, EventCatalog):
+            raise TypeError(f"'catalog' must be an EventCatalog, got {type(catalog)} instead.")
+        if not isinstance(mission, Mission):
+            raise TypeError(f"'mission' must be an m4opt.missions.Mission, got {type(mission)} instead.")
+
+        if chunk_size is None:
+            chunk_size = config["simulation.filter_by_snr.chunk_size"]
+        if isinstance(chunk_size, bool) or not isinstance(chunk_size, (int, np.integer)) or chunk_size < 1:
+            raise ValueError(f"'chunk_size' must be a positive int, got {chunk_size!r}.")
+
+        detector = mission.detector
+        if detector is None:
+            raise ValueError(f"Mission {mission.name!r} has no detector configured.")
+
+        band_names = list(detector.bandpasses) if bands is None else list(bands)
+        if not band_names:
+            raise ValueError("'bands' must contain at least one band.")
+        unknown_bands = [band for band in band_names if band not in detector.bandpasses]
+        if unknown_bands:
+            raise ValueError(f"Unknown bandpass(es) {unknown_bands}; available: {list(detector.bandpasses)}.")
+
+        table = catalog.table
+        missing = [
+            col
+            for col in ("event_id", "luminosity_distance", "ebv", "healpix_id", "parameter_seed")
+            if col not in table.colnames
+        ]
+        if missing:
+            raise ValueError(f"'catalog' is missing column(s) {missing}; regenerate it via `generate_events`.")
+
+        selected = np.ones(len(table), dtype=bool)
+        if mask is not None:
+            mask = np.asarray(mask)
+            if mask.dtype == bool:
+                if mask.shape != (len(table),):
+                    raise ValueError(f"Boolean 'mask' must have shape ({len(table)},), got {mask.shape}.")
+                selected = mask
+            else:
+                selected = np.zeros(len(table), dtype=bool)
+                selected[mask] = True
+
+        transient_type = np.asarray(table["transient_type"]).astype(str)
+        unknown_types = sorted(set(transient_type[selected]) - set(self._transients))
+        if unknown_types:
+            raise ValueError(f"'catalog' contains transient type(s) {unknown_types} not in `transient_collection`.")
+
+        # Validation above runs eagerly, at call time; only the evaluation itself is lazy.
+        return self._iter_epoch_snr_chunks(
+            catalog, band_names, chunk_size, detection_floor, selected, transient_type, progress, detector
+        )
+
+    def _iter_epoch_snr_chunks(
+        self, catalog, band_names, chunk_size, detection_floor, selected, transient_type, progress, detector
+    ) -> Iterator[QTable]:
+        """Yield the chunks for `iter_epoch_snr_chunks`, which does all the argument validation."""
+        table = catalog.table
+        schedule = self._survey_schedule
+
+        type_idx = {
+            name: np.flatnonzero((transient_type == name) & selected) for name in sorted(set(transient_type[selected]))
+        }
+        total_chunks = sum(-(-idx.size // chunk_size) for idx in type_idx.values())
+
+        coord_all = table["coord"]
+        t_explosion_all = table["t_explosion"]
+        event_id_all = np.asarray(table["event_id"])
+
+        with tqdm(total=total_chunks, desc="Computing epoch SNRs", unit="chunk", disable=not progress) as pbar:
+            for name, idx in type_idx.items():
+                transient = self._transients[name]
+                n = idx.size
+
+                redshift_all = np.asarray(table["redshift"])[idx]
+                luminosity_distance_all = table["luminosity_distance"][idx]
+                ebv_all = np.asarray(table["ebv"])[idx]
+                coord_type = coord_all[idx]
+                t_explosion_type = t_explosion_all[idx]
+                event_id_type = event_id_all[idx]
+
+                # Each event's own `parameter_seed`, exactly as `filter_by_snr` does, so
+                # these SNRs agree with the cut and with `Event.simulate_photometry`.
+                sed_params_all = _sample_parameters_from_seeds(transient.sed, np.asarray(table["parameter_seed"])[idx])
+
+                for start in range(0, n, chunk_size):
+                    stop = min(start + chunk_size, n)
+                    pbar.set_postfix(type=name)
+
+                    coord_chunk = coord_type[start:stop]
+                    t_explosion_chunk = t_explosion_type[start:stop]
+
+                    event_index, row_index = schedule.get_observation_indices_of(
+                        coord_chunk,
+                        nside=catalog.nside,
+                        order=catalog.order,
+                        start_time=t_explosion_chunk,
+                        end_time=t_explosion_chunk + transient.duration_limit,
+                    )
+                    if len(row_index) == 0:
+                        pbar.update(1)
+                        continue
+
+                    flat = schedule.observe_rows[row_index]
+                    t_since_explosion = (flat["start_time"] - t_explosion_chunk[event_index]).to(u.day)
+
+                    # Trailing-axis conventions here are the same as (and are explained
+                    # in) `filter_by_snr`: everything on the flat row axis gets a
+                    # reserved trailing axis except `ebv`, which `log_attenuation` reserves itself.
+                    spectra = transient.sed.as_source_spectrum(
+                        t_since_explosion[:, np.newaxis],
+                        redshift=redshift_all[start:stop][event_index][:, np.newaxis],
+                        luminosity_distance=luminosity_distance_all[start:stop][event_index][:, np.newaxis],
+                        ebv=ebv_all[start:stop][event_index],
+                        **{
+                            param_name: value[start:stop][event_index][:, np.newaxis]
+                            for param_name, value in sed_params_all.items()
+                        },
+                    )
+
+                    snr_by_band = []
+                    with observing(flat["observer_location"], coord_chunk[event_index], flat["start_time"]):
+                        for band in band_names:
+                            snr = detector.get_snr(flat["duration"], spectra, band)
+                            snr_by_band.append(u.Quantity(snr).to_value(u.dimensionless_unscaled))
+                    snr_by_band = np.stack(snr_by_band)
+                    best = np.argmax(snr_by_band, axis=0)
+                    best_snr = np.take_along_axis(snr_by_band, best[np.newaxis], axis=0)[0]
+
+                    above = best_snr >= detection_floor
+                    if not np.any(above):
+                        pbar.update(1)
+                        continue
+
+                    chunk = QTable(
+                        {
+                            "event_id": event_id_type[start:stop][event_index],
+                            "observation_index": np.asarray(row_index),
+                            "t_obs": flat["start_time"],
+                            "t_since_explosion": t_since_explosion,
+                            "band": np.asarray(band_names)[best],
+                            "snr": best_snr,
+                        }
+                    )[above]
+                    # Guarantee each event's rows are contiguous and time-ordered, so
+                    # per-event reductions (reduceat, groupby) can rely on it.
+                    chunk = chunk[np.lexsort((chunk["t_obs"].jd, chunk["event_id"]))]
+
+                    pbar.update(1)
+                    yield chunk
+
     @classmethod
     def available_cuts(cls) -> tuple[str, ...]:
         """Tuple of str: Every cut name registered on this class via `@cut`, sorted."""
@@ -884,19 +1099,19 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
            different catalog, as long as the resolution matches), is a cheap lookup.
            An event the schedule never observed at all is discarded here, before any
            photometry.
-        2. Every (event, observation) pair surviving that -- however many observations
-           each individual event happens to have -- is flattened into one combined
-           table, tagged by which chunk-local event it came from.
+        2. Every (event, observation) pair surviving that is flattened into one combined
+           table, tagged by which event it came from.
         3. Physical SED parameters are regenerated from each event's own stored
            `parameter_seed` (see `_sample_parameters_from_seeds` -- the same helper
            `filter_by_limiting_magnitude` uses, so both screening passes and a
            surviving event's later `Event.mag`/`Event.simulate_photometry` all agree on
-           its physical parameters), repeated out to one row per (event, observation)
-           pair alongside `redshift`/`luminosity_distance`/`ebv`/the event's own sky
-           position, then the *whole* flattened chunk is evaluated in a single
-           vectorized `get_snr` call per band -- exactly the batching
-           `Event.simulate_photometry` does for one event's own observations, just
-           extended across many events at once.
+           its physical parameters) and the *whole* flattened chunk is evaluated in a
+           single vectorized `get_snr` call per band.
+
+        Steps 1-3 are `iter_epoch_snr_chunks`, which yields the per-epoch SNR table
+        this cut then reduces; see it for the details, and to reuse those SNRs for
+        other cuts without recomputing them.
+
         4. Each row's best-band SNR is compared against `snr_threshold`; an event
            survives if at least `n_visits` of its own rows clear it (mirroring
            `filter_by_limiting_magnitude`'s own `n_visits`: bands are collapsed to the
@@ -938,175 +1153,39 @@ class SurveySimulator(metaclass=_CutRegistryMeta):
             A new catalog over the surviving rows only (same `nside`/`order`/`time_bins`/
             `seed` as `catalog`; original `event_id` values are preserved, not renumbered).
         """
-        # Validate the event catalog and the mission along with the necessary number of visits
-        # to be considered worthwhile.
-        if not isinstance(catalog, EventCatalog):
-            raise TypeError(f"'catalog' must be an EventCatalog, got {type(catalog)} instead.")
-        if not isinstance(mission, Mission):
-            raise TypeError(f"'mission' must be an m4opt.missions.Mission, got {type(mission)} instead.")
+        # Validate what only this cut cares about; the catalog, mission, bands and chunk size
+        # are validated by `iter_epoch_snr_chunks` itself, eagerly, when it is called below.
         if isinstance(n_visits, bool) or not isinstance(n_visits, (int, np.integer)) or n_visits < 1:
             raise ValueError(f"'n_visits' must be a positive int, got {n_visits!r}.")
+        if not isinstance(catalog, EventCatalog):
+            raise TypeError(f"'catalog' must be an EventCatalog, got {type(catalog)} instead.")
 
-        if chunk_size is None:
-            chunk_size = config["simulation.filter_by_snr.chunk_size"]
-
-        detector = mission.detector
-        if detector is None:
-            raise ValueError(f"Mission {mission.name!r} has no detector configured.")
-
-        band_names = list(detector.bandpasses) if bands is None else list(bands)
-        unknown_bands = [band for band in band_names if band not in detector.bandpasses]
-        if unknown_bands:
-            raise ValueError(f"Unknown bandpass(es) {unknown_bands}; available: {list(detector.bandpasses)}.")
-
-        # Load the event catalog table and
         table = catalog.table
-        missing = [
-            col for col in ("luminosity_distance", "ebv", "healpix_id", "parameter_seed") if col not in table.colnames
-        ]
-        if missing:
-            raise ValueError(f"'catalog' is missing column(s) {missing}; regenerate it via `generate_events`.")
 
-        if len(table) == 0:
-            return EventCatalog(
-                table=table,
-                nside=catalog.nside,
-                order=catalog.order,
-                time_bins=catalog.time_bins,
-                seed=catalog.seed,
-                downsample=catalog.downsample,
-            )
+        # Rows at or below the threshold can never count as a visit, so let the iterator
+        # drop everything under it up front (it keeps ``snr >= floor``; the strict ``>``
+        # below then reproduces this cut's original comparison exactly).
+        epoch_chunks = self.iter_epoch_snr_chunks(
+            catalog,
+            mission,
+            bands=bands,
+            chunk_size=chunk_size,
+            detection_floor=snr_threshold,
+        )
 
-        schedule = self._survey_schedule
+        event_id = np.asarray(table["event_id"])
+        visit_count = np.zeros(len(table), dtype=np.int64)
+        row_of_event = np.argsort(event_id)
 
-        transient_type = np.asarray(table["transient_type"]).astype(str)
-        type_names = sorted(set(transient_type) & set(self._transients))
-        unknown_types = sorted(set(transient_type) - set(self._transients))
-        if unknown_types:
-            raise ValueError(f"'catalog' contains transient type(s) {unknown_types} not in `transient_collection`.")
-
-        keep = np.zeros(len(table), dtype=bool)
-
-        coord_all = table["coord"]
-        t_explosion_all = table["t_explosion"]
-        healpix_nside, healpix_order = catalog.nside, catalog.order
-
-        # Precompute chunk counts per type up front so the progress bar can report a
-        # single total spanning every chunk of every type, not just one tick per type.
-        type_idx = {name: np.flatnonzero(transient_type == name) for name in type_names}
-        n_chunks_by_type = {name: -(-idx.size // chunk_size) for name, idx in type_idx.items()}
-        total_chunks = sum(n_chunks_by_type.values())
-
-        with (
-            tqdm(total=total_chunks, desc="Filtering by SNR", unit="chunk") as pbar,
-            logging_redirect_tqdm(loggers=[logger]),
-        ):
-            for name in type_names:
-                transient = self._transients[name]
-                idx = type_idx[name]
-                n = idx.size
-                n_chunks = n_chunks_by_type[name]
-
-                redshift_all = np.asarray(table["redshift"])[idx]
-                luminosity_distance_all = table["luminosity_distance"][idx]
-                ebv_all = np.asarray(table["ebv"])[idx]
-                seeds_all = np.asarray(table["parameter_seed"])[idx]
-                coord_type = coord_all[idx]
-                t_explosion_type = t_explosion_all[idx]
-
-                # As in `filter_by_limiting_magnitude`: each event's own `parameter_seed`,
-                # not a shared per-type stream -- see `_sample_parameters_from_seeds`.
-                sed_params_all = _sample_parameters_from_seeds(transient.sed, seeds_all)
-
-                for chunk_num, start in enumerate(range(0, n, chunk_size), start=1):
-                    stop = min(start + chunk_size, n)
-                    chunk_idx = idx[start:stop]
-                    chunk_size_actual = stop - start
-
-                    pbar.set_postfix(type=name, chunk=f"{chunk_num}/{n_chunks}")
-
-                    # --- Step 1 & 2: gather every observation of every event in this
-                    # chunk in one shot (one `get_observation_indices_of` call for the
-                    # whole chunk, backed by the cached coverage index and doing
-                    # exactly one QTable construction -- indexing `observe_rows` once
-                    # by the whole chunk's row indices -- for the whole batch, *not*
-                    # one query and one small QTable per event: at chunk_size ~ a few
-                    # thousand, that per-event QTable-construction overhead was itself
-                    # the dominant cost of this whole method, dwarfing the actual SNR
-                    # computation below).
-                    coord_chunk = coord_type[start:stop]
-                    t_explosion_chunk = t_explosion_type[start:stop]
-
-                    event_index, row_index = schedule.get_observation_indices_of(
-                        coord_chunk,
-                        nside=healpix_nside,
-                        order=healpix_order,
-                        start_time=t_explosion_chunk,
-                        end_time=t_explosion_chunk + transient.duration_limit,
-                    )
-                    if len(row_index) == 0:
-                        pbar.update(1)
-                        continue
-
-                    flat = schedule.observe_rows[row_index]
-                    flat["event_index"] = event_index
-                    flat["t_since_explosion"] = (flat["start_time"] - t_explosion_chunk[event_index]).to(u.day)
-
-                    # --- Step 3: repeat each event's own quantities out to one row per
-                    # (event, observation) pair, then evaluate the whole flattened
-                    # chunk in one batch. Every batched quantity here (`t`, `redshift`,
-                    # `luminosity_distance`, every SED param) shares the exact same flat
-                    # row axis, so *those* need this reserved trailing axis -- otherwise
-                    # it collides with the wavelength axis introduced later inside
-                    # `get_snr` (see `Event.simulate_photometry`'s own comment on this;
-                    # the same broadcasting rule applies here to every one of these
-                    # arrays, not just `t`). `ebv` is the one exception: unlike
-                    # `_eval`/`_eval_flux`'s own plain-broadcasting parameters,
-                    # `dust.log_attenuation` reserves *its own* trailing axis internally
-                    # (`Av[..., np.newaxis]`) -- giving it one here too would reserve it
-                    # twice, silently producing an extra broadcast axis (verified: this
-                    # produced a wrong, doubled-up `(chunk, chunk)`-shaped SNR before the
-                    # fix). `ebv_flat` must stay flat, matching the same
-                    # `test_synthetic_photometry_with_batched_dust_extinction` distinction.
-                    redshift_chunk = redshift_all[start:stop]
-                    luminosity_distance_chunk = luminosity_distance_all[start:stop]
-                    ebv_chunk = ebv_all[start:stop]
-                    sed_params_chunk = {param_name: value[start:stop] for param_name, value in sed_params_all.items()}
-
-                    t_obs_flat = flat["t_since_explosion"][:, np.newaxis]
-                    redshift_flat = redshift_chunk[event_index][:, np.newaxis]
-                    luminosity_distance_flat = luminosity_distance_chunk[event_index][:, np.newaxis]
-                    ebv_flat = ebv_chunk[event_index]
-                    sed_params_flat = {
-                        param_name: value[event_index][:, np.newaxis] for param_name, value in sed_params_chunk.items()
-                    }
-                    coord_flat = coord_chunk[event_index]
-
-                    spectra = transient.sed.as_source_spectrum(
-                        t_obs_flat,
-                        redshift=redshift_flat,
-                        luminosity_distance=luminosity_distance_flat,
-                        ebv=ebv_flat,
-                        **sed_params_flat,
-                    )
-
-                    best_snr = None
-                    with observing(flat["observer_location"], coord_flat, flat["start_time"]):
-                        for band in band_names:
-                            snr = detector.get_snr(flat["duration"], spectra, band)
-                            best_snr = snr if best_snr is None else np.maximum(best_snr, snr)
-
-                    # --- Step 4: count, per chunk-local event, how many of its own
-                    # rows clear `snr_threshold` in their best band.
-                    above = best_snr > snr_threshold
-                    visit_count = np.zeros(chunk_size_actual, dtype=np.int64)
-                    np.add.at(visit_count, event_index[above], 1)
-                    keep[chunk_idx[visit_count >= n_visits]] = True
-
-                    pbar.update(1)
+        with logging_redirect_tqdm(loggers=[logger]):
+            for chunk in epoch_chunks:
+                above = np.asarray(chunk["snr"]) > snr_threshold
+                ids, counts = np.unique(np.asarray(chunk["event_id"])[above], return_counts=True)
+                rows = row_of_event[np.searchsorted(event_id[row_of_event], ids)]
+                visit_count[rows] += counts
 
         return EventCatalog(
-            table=table[keep],
+            table=table[visit_count >= n_visits],
             nside=catalog.nside,
             order=catalog.order,
             time_bins=catalog.time_bins,
