@@ -909,16 +909,55 @@ class SurveySchedule:
 
         return candidates[mask]
 
+    def get_next_action_id(self, times: Time, action: str) -> np.ma.MaskedArray:
+        """
+        For each of `times`, the row index of the earliest `action` row starting at or after it.
+
+        Parameters
+        ----------
+        times : ~astropy.time.Time
+            Query times, scalar or array-valued (e.g. one per event).
+        action : str
+            One of the registered action types (see :attr:`actions`), e.g. ``"downlink"``.
+
+        Returns
+        -------
+        ~numpy.ma.MaskedArray
+            Integer row indices into :attr:`table`, same shape as `times`, masked
+            wherever no `action` row starts at or after the corresponding query time
+            (e.g. the schedule ends before the next downlink).
+
+        Raises
+        ------
+        ValueError
+            If `action` is not one of :attr:`table`'s registered action types.
+        """
+        if action not in self._ACTION_SCHEMA:
+            raise ValueError(f"Unknown action {action!r}; must be one of {tuple(self._ACTION_SCHEMA)}.")
+
+        action_indices = np.flatnonzero(self.actions == action)
+        scale = self._start_time_scale
+        query_jd = getattr(times, scale).jd
+
+        if len(action_indices) == 0:
+            return np.ma.MaskedArray(np.zeros_like(query_jd, dtype=np.int64), mask=True)
+
+        # `self._start_time_jd` is `self._schedule_table`'s own chronological order (see
+        # `_ensure_chronological`), so indexing it down to just the `action` rows preserves
+        # that ordering -- exactly what `searchsorted` requires.
+        start_jd = self._start_time_jd[action_indices]
+        idx = np.searchsorted(start_jd, query_jd, side="left")
+        found = idx < len(start_jd)
+        clipped_idx = np.minimum(idx, len(start_jd) - 1)
+
+        return np.ma.MaskedArray(action_indices[clipped_idx], mask=~found)
+
     def next_action_time(self, times: Time, action: str, completion: bool = False) -> Time:
         """
         For each of `times`, the time of the earliest `action` row starting at or after it.
 
-        The vectorized building block behind "when is the next downlink after this
-        moment" -- used by
-        :meth:`~uvex_transients.simulation.core.SurveySimulator.run_alert_action` to find
-        each event's next downlink after its first qualifying detection, but not specific
-        to downlinks. Uses the same cached-float64-array `~numpy.searchsorted` trick as
-        `get_rows_between_times`, applied to just the `action` subset of :attr:`table`.
+        A thin wrapper around `get_next_action_id` that reads the matched row's time back
+        out of :attr:`table`.
 
         Parameters
         ----------
@@ -942,31 +981,15 @@ class SurveySchedule:
         ValueError
             If `action` is not one of :attr:`table`'s registered action types.
         """
-        if action not in self._ACTION_SCHEMA:
-            raise ValueError(f"Unknown action {action!r}; must be one of {tuple(self._ACTION_SCHEMA)}.")
-
-        action_rows = self._schedule_table[self.actions == action]
+        idx = self.get_next_action_id(times, action)
         scale = self._start_time_scale
-        query_jd = getattr(times, scale).jd
 
-        if len(action_rows) == 0:
-            jd = np.ma.MaskedArray(np.zeros_like(query_jd, dtype=np.float64), mask=True)
-            result = Time(jd, format="jd", scale=scale)
-            result.format = times.format
-            return result
+        found = ~np.ma.getmaskarray(idx)
+        rows = self._schedule_table[np.where(found, np.ma.getdata(idx), 0)]
 
-        # `action_rows` preserves `self._schedule_table`'s own chronological order (see
-        # `_ensure_chronological`), so its start times are already sorted ascending --
-        # exactly what `searchsorted` requires.
-        start_jd = np.asarray(action_rows["start_time"].jd, dtype=np.float64)
-        idx = np.searchsorted(start_jd, query_jd, side="left")
-        found = idx < len(start_jd)
-        clipped_idx = np.minimum(idx, len(start_jd) - 1)
-
-        result_jd = start_jd[clipped_idx]
+        result_jd = np.asarray(rows["start_time"].jd, dtype=np.float64)
         if completion:
-            duration_days = action_rows["duration"].to_value(u.day)
-            result_jd = result_jd + duration_days[clipped_idx]
+            result_jd = result_jd + rows["duration"].to_value(u.day)
 
         # `Time` natively supports a masked `numpy.ma.MaskedArray` internal representation
         # (unlike `~astropy.utils.masked.Masked`, which doesn't specialize for `Time`), so

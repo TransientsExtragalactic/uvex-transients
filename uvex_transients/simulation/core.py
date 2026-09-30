@@ -2337,7 +2337,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         mission: Mission,
         confidence: float = 0.9,
     ) -> YieldTable:
-        """
+        r"""
         Build a per-transient-type yield summary from a raw, a detected, and an exposure catalog.
 
         A thin wrapper over
@@ -2453,17 +2453,14 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         chunk_size: int | None = None,
         processing_delay: u.Quantity = 0 * u.s,
     ) -> QTable:
-        """
+        r"""
         Build a per-event alert-timing table: first detection, next downlink, and alert time.
 
-        An event's data isn't on the ground -- and so can't trigger a real alert -- until
-        it is both detected (best-band SNR crosses `snr_threshold`; same definition
-        `filter_by_snr` uses) *and* downlinked. This reduces each event in `catalog` to
-        its first qualifying detection epoch (`_collect_first_detection_epochs`, built on
-        the same `iter_epoch_snr_chunks` `filter_by_snr`/`filter_by_time_to_first_detection`
-        use), finds that observation's completion time, and looks up the next scheduled
-        ``"downlink"`` action at or after it
-        (`~uvex_transients.surveys.base.SurveySchedule.next_action_time`).
+        A transient with an explosion time :math:`t_0` may not have the opportunity to relay that information to
+        the ground until some :math:`t_{\rm transmission} > t_0` determined by the next downlink time. For fast
+        follow up of UVEX detected transients, this delay time may have very important implications for getting on
+        target with ground and space-based observatories. This function therefore provides an "alert" with the
+        corresponding trigger times to allow effective modeling of this.
 
         Parameters
         ----------
