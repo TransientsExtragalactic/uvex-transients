@@ -5,7 +5,7 @@ from astropy.table import QTable
 from m4opt.missions._uvex import uvex
 
 from uvex_transients.simulation.event import Event
-from uvex_transients.simulation.event_catalog import EventCatalog
+from uvex_transients.simulation.event_catalog import EventCatalog, get_example_event_catalog
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
 from .test_core import _make_catalog
@@ -83,3 +83,15 @@ def test_from_disk_defaults_downsample_to_none_when_absent_from_older_files(tmp_
 
     reloaded = EventCatalog.from_disk(path)
     assert reloaded.downsample is None
+
+
+# --------------------------------------------------------------------------- #
+# get_example_event_catalog                                                   #
+# --------------------------------------------------------------------------- #
+def test_get_example_event_catalog_loads_packaged_catalog():
+    """The packaged example catalog loads and contains both SLSNe-I and TDE events."""
+    catalog = get_example_event_catalog()
+
+    assert isinstance(catalog, EventCatalog)
+    assert len(catalog.table) > 0
+    assert set(catalog.table["transient_type"]) == {"slsn", "tde"}
