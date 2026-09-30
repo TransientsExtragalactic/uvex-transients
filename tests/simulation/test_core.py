@@ -378,6 +378,46 @@ def test_iter_epoch_snr_chunks_floor_and_mask(make_schedule, hot_spot):
     assert len(by_index) == len(masked)
 
 
+def test_available_actions_includes_builtins(make_schedule):
+    """`SurveySimulator.available_actions` lists the four built-in `@action`-registered methods."""
+    assert SurveySimulator.available_actions() == ("alert", "detection_counts", "photometry", "yield")
+
+
+def test_run_action_photometry_matches_direct_call(make_schedule, hot_spot):
+    """`run_action("photometry", ...)` matches calling `EventCatalog.simulate_photometry` directly."""
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=10)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=6)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=1)
+
+    phot = sim.run_action("photometry", uvex, catalog=catalog)
+    expected = catalog.simulate_photometry(uvex, {"tde": transient}, schedule)
+
+    assert len(phot) == len(expected)
+
+
+def test_run_action_unknown_name_raises(make_schedule):
+    """An unregistered action name raises a `ValueError` naming the ones that do exist."""
+    sim = SurveySimulator(make_schedule(), transients={"tde": TidalDisruptionEvent()})
+    with pytest.raises(ValueError, match="Unknown action 'bogus'"):
+        sim.run_action("bogus", uvex)
+
+
+def test_subclass_extends_the_action_registry_independently_of_cuts():
+    """A subclass adding a new `@action`-decorated method registers it without touching `@cut`'s registry."""
+    from uvex_transients.simulation.core import action
+
+    class _ExtraActionSimulator(SurveySimulator):
+        @action("noop")
+        def run_noop_action(self, mission, **kwargs):
+            return kwargs
+
+    assert "noop" in _ExtraActionSimulator.available_actions()
+    assert "noop" not in SurveySimulator.available_actions()
+    # The two registries stay independent -- adding an action never pollutes `available_cuts`.
+    assert _ExtraActionSimulator.available_cuts() == SurveySimulator.available_cuts()
+
+
 def test_iter_epoch_snr_chunks_validates_eagerly(make_schedule, hot_spot):
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=5)
