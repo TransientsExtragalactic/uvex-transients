@@ -51,7 +51,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
@@ -76,12 +76,12 @@ jobs:
       contents: write
       actions: write  # required to dispatch build_documentation.yml below
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # required for setuptools-scm tag-based versioning
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -92,7 +92,7 @@ jobs:
         run: uvex-transients run configs/full_run.yaml --out-dir results/release --overwrite
 
       - name: Attach data products to the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: results/release/*
           fail_on_unmatched_files: true
