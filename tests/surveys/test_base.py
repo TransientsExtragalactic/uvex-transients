@@ -312,3 +312,33 @@ def test_next_action_time_rejects_unknown_action(make_schedule):
 
     with pytest.raises(ValueError, match="Unknown action"):
         schedule.next_action_time(schedule.start_time, "bogus")
+
+
+# --------------------------------------------------------------------------- #
+# first_visit_mask                                                            #
+# --------------------------------------------------------------------------- #
+def test_first_visit_mask_all_true_when_fields_never_repeat(make_schedule):
+    """`make_schedule` gives every row its own `field_id`, so every row is its field's first visit."""
+    schedule = make_schedule(n_sched=5)
+
+    assert np.all(schedule.first_visit_mask)
+
+
+def test_first_visit_mask_flags_only_each_fields_earliest_row(make_schedule):
+    """A revisited field is flagged only on its earliest (not any later) chronological row."""
+    base = make_schedule(n_sched=6)
+    table = base.table.copy()
+    table["field_id"] = [0, 1, 0, 1, 2, 0]  # `make_schedule`'s rows are already time-sorted
+    schedule = SurveySchedule(table, base.fov)
+
+    assert list(schedule.first_visit_mask) == [True, True, False, False, True, False]
+
+
+def test_first_visit_mask_empty_when_no_observe_rows(make_schedule):
+    """A schedule with no `"observe"` rows has an empty mask, not an error."""
+    base = make_schedule(n_sched=3)
+    table = base.table.copy()
+    table["action"] = np.full(len(table), "slew")
+    schedule = SurveySchedule(table, base.fov)
+
+    assert schedule.first_visit_mask.shape == (0,)

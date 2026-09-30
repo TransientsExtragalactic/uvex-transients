@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.table import QTable
 from astropy.time import Time
 from m4opt.fov import contains as fov_contains
 from m4opt.missions._uvex import uvex
@@ -11,6 +12,7 @@ from regions import CircleSkyRegion
 
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.simulation.event_catalog import EventCatalog
+from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
 from .test_core import _make_catalog
@@ -169,6 +171,94 @@ def test_baseline_cut_two_sided_example(sim, catalog):
 def test_baseline_cut_requires_a_bound(sim, catalog):
     with pytest.raises(ValueError, match="At least one of"):
         sim.filter_by_baseline(catalog, uvex, snr_threshold=5.0)
+
+
+# --------------------------------------------------------------------------- #
+# first_visit_detected                                                        #
+# --------------------------------------------------------------------------- #
+def _first_visit_catalog() -> EventCatalog:
+    """A 4-event catalog with just enough columns for `filter_by_first_visit_detected`."""
+    table = QTable()
+    table["event_id"] = np.array([0, 1, 2, 3], dtype=np.int64)
+    return EventCatalog(table=table, nside=64, order="nested", time_bins=Time(["2025-01-01", "2025-06-01"]))
+
+
+def test_collect_solo_detection_observation_indices_keeps_only_single_epoch_events(sim, catalog, monkeypatch):
+    """Events with exactly one qualifying epoch are kept; zero- and multi-epoch events are dropped."""
+    chunk = QTable(
+        {
+            "event_id": np.array([0, 1, 1, 2]),
+            "observation_index": np.array([5, 6, 7, 8]),
+            "snr": np.array([9.0, 9.0, 9.0, 9.0]),
+        }
+    )
+    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: iter([chunk]))
+
+    solo = sim._collect_solo_detection_observation_indices(catalog, uvex, 5.0, None, None)
+
+    assert solo == {0: 5, 2: 8}  # event 1 has two epochs (6 and 7), so it's excluded entirely
+
+
+def _revisit_schedule_sim() -> SurveySimulator:
+    """A 4-observation `SurveySimulator` where row 2 revisits row 0's field; rows 1/3 are each unique."""
+    schedule = SurveySchedule(
+        QTable(
+            {
+                "start_time": Time("2025-01-01T00:00:00") + np.arange(4) * u.hour,
+                "duration": np.full(4, 900.0) * u.s,
+                "observer_location": uvex.observer_location(Time("2025-01-01T00:00:00") + np.arange(4) * u.hour),
+                "action": np.full(4, "observe"),
+                "target_coord": SkyCoord(np.zeros(4) * u.deg, np.zeros(4) * u.deg),
+                "roll": np.zeros(4) * u.deg,
+                "field_id": np.array([0, 1, 0, 3]),
+                "block_id": np.zeros(4, dtype=int),
+            }
+        ),
+        CircleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), radius=1 * u.deg),
+    )
+    assert list(schedule.first_visit_mask) == [True, True, False, True]
+    return SurveySimulator(schedule, transients={"tde": TidalDisruptionEvent()})
+
+
+def test_first_visit_detected_drops_solo_first_visit_and_keeps_the_rest(monkeypatch):
+    """
+    A hand-built solo-detection map exercises all three outcomes at once: dropped
+    (solo + first visit), kept (solo + revisit), and kept (no solo entry at all, standing
+    in for both multi-epoch and zero-epoch events, which `filter_by_first_visit_detected`
+    treats identically -- see `_collect_solo_detection_observation_indices`).
+    """
+    sim = _revisit_schedule_sim()
+    monkeypatch.setattr(
+        sim,
+        "_collect_solo_detection_observation_indices",
+        lambda *args, **kwargs: {0: 0, 1: 2},  # event 0 on a first visit; event 1 on a revisit
+    )
+
+    result = sim.filter_by_first_visit_detected(_first_visit_catalog(), uvex, snr_threshold=5.0)
+
+    assert set(np.asarray(result.table["event_id"])) == {1, 2, 3}
+
+
+def test_filter_by_snr_exclude_first_visit_detections(monkeypatch):
+    """`exclude_first_visit_detections=True` additionally drops a solo detection on a first-ever field visit."""
+    sim = _revisit_schedule_sim()
+    chunk = QTable(
+        {
+            "event_id": np.array([0, 1, 2, 2]),
+            "observation_index": np.array([0, 2, 1, 3]),  # event 0: first visit; event 1: a revisit
+            "snr": np.array([9.0, 9.0, 9.0, 9.0]),
+        }
+    )
+    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: iter([chunk]))
+
+    without_flag = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0)
+    with_flag = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0, exclude_first_visit_detections=True)
+
+    # Event 3 has no qualifying epoch either way, so `n_visits` alone already excludes it.
+    assert set(np.asarray(without_flag.table["event_id"])) == {0, 1, 2}
+    # With the flag, event 0's lone epoch on a first-ever visit is excluded too; event 1's
+    # lone epoch on a revisit, and event 2's two epochs, both survive regardless.
+    assert set(np.asarray(with_flag.table["event_id"])) == {1, 2}
 
 
 # --------------------------------------------------------------------------- #

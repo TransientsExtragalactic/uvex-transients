@@ -625,6 +625,240 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                     pbar.update(1)
                     yield chunk
 
+    def _collect_detection_epoch_stats(
+        self,
+        catalog: EventCatalog,
+        mission: Mission,
+        snr_threshold: float,
+        bands: list[str] | None,
+        chunk_size: int | None,
+    ) -> dict[int, tuple[float, float | None, float]]:
+        """
+        Per-event detection-timing stats, shared by `filter_by_time_to_first_detection`/`filter_by_baseline`.
+
+        Built on `iter_epoch_snr_chunks` (see its own docstring for what "qualifying"
+        means here), reduced per event to exactly what each of those two cuts needs,
+        without either re-running the schedule-aware SNR evaluation itself. The smallest
+        gap between any two qualifying epochs is always the smallest gap between two
+        consecutive ones once sorted by time, and the largest gap is always the full
+        first-to-last span, so only those two reductions are computed, not every
+        pairwise difference.
+
+        Parameters
+        ----------
+        catalog : EventCatalog
+            Forwarded to `iter_epoch_snr_chunks`.
+        mission : m4opt.missions.Mission
+            Forwarded to `iter_epoch_snr_chunks`.
+        snr_threshold : float
+            An epoch counts as a qualifying detection if its best-band SNR exceeds this
+            value (same definition `filter_by_snr` uses).
+        bands : list of str, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+        chunk_size : int, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+
+        Returns
+        -------
+        dict of int to (float, float or None, float)
+            ``{event_id: (t_first, min_gap, span)}`` in days, for every event with >= 1
+            qualifying epoch. `t_first` is the earliest qualifying epoch's
+            `t_since_explosion`; `span` is the latest minus the earliest (``0.0`` for a
+            single epoch); `min_gap` is the smallest gap between consecutive qualifying
+            epochs, or `None` if the event has only one.
+        """
+        stats: dict[int, tuple[float, float | None, float]] = {}
+
+        epoch_chunks = self.iter_epoch_snr_chunks(
+            catalog, mission, bands=bands, chunk_size=chunk_size, detection_floor=snr_threshold
+        )
+        with logging_redirect_tqdm(loggers=[logger]):
+            for chunk in epoch_chunks:
+                above = np.asarray(chunk["snr"]) > snr_threshold
+                sub = chunk[above]
+                if len(sub) == 0:
+                    continue
+
+                ids = np.asarray(sub["event_id"])
+                times = sub["t_since_explosion"].to_value(u.day)
+
+                # Each yielded chunk is already grouped by event and time-ordered within
+                # each event (see `iter_epoch_snr_chunks`'s docstring), and one event's
+                # rows never span two chunks (chunking splits events, not observations),
+                # so no cross-chunk merging is needed here.
+                boundaries = np.flatnonzero(np.diff(ids) != 0) + 1
+                for group in np.split(np.arange(len(ids)), boundaries):
+                    eid = int(ids[group[0]])
+                    t = times[group]
+                    gap = float(np.min(np.diff(t))) if len(t) > 1 else None
+                    stats[eid] = (float(t[0]), gap, float(t[-1] - t[0]))
+
+        return stats
+
+    def _collect_first_detection_epochs(
+        self,
+        catalog: EventCatalog,
+        mission: Mission,
+        snr_threshold: float,
+        bands: list[str] | None,
+        chunk_size: int | None,
+    ) -> dict[int, tuple[Time, str, float, int]]:
+        """
+        Per-event first qualifying detection epoch, shared by `run_alert_action`.
+
+        Built on `iter_epoch_snr_chunks`, like `_collect_detection_epoch_stats`, but keeps
+        the epoch's *absolute* `t_obs` (and which schedule row it came from) rather than
+        `t_since_explosion` -- what `run_alert_action` needs to look up the next downlink.
+
+        Parameters
+        ----------
+        catalog : EventCatalog
+            Forwarded to `iter_epoch_snr_chunks`.
+        mission : m4opt.missions.Mission
+            Forwarded to `iter_epoch_snr_chunks`.
+        snr_threshold : float
+            An epoch counts as a qualifying detection if its best-band SNR exceeds this
+            value (same definition `filter_by_snr` uses).
+        bands : list of str, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+        chunk_size : int, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+
+        Returns
+        -------
+        dict of int to (Time, str, float, int)
+            ``{event_id: (t_obs, band, snr, observation_index)}`` for every event with
+            >= 1 qualifying epoch, giving the *earliest* one. `t_obs` is absolute;
+            `observation_index` indexes into `self.survey_schedule.observe_rows`,
+            letting a caller look up that observation's own `duration`.
+        """
+        stats: dict[int, tuple[Time, str, float, int]] = {}
+
+        epoch_chunks = self.iter_epoch_snr_chunks(
+            catalog, mission, bands=bands, chunk_size=chunk_size, detection_floor=snr_threshold
+        )
+        with logging_redirect_tqdm(loggers=[logger]):
+            for chunk in epoch_chunks:
+                above = np.asarray(chunk["snr"]) > snr_threshold
+                sub = chunk[above]
+                if len(sub) == 0:
+                    continue
+
+                ids = np.asarray(sub["event_id"])
+
+                # Each yielded chunk is already grouped by event and time-ordered within
+                # each event (see `iter_epoch_snr_chunks`'s docstring), and one event's
+                # rows never span two chunks (chunking splits events, not observations),
+                # so the first row of each group is that event's earliest qualifying epoch.
+                boundaries = np.flatnonzero(np.diff(ids) != 0) + 1
+                for group in np.split(np.arange(len(ids)), boundaries):
+                    eid = int(ids[group[0]])
+                    first = group[0]
+                    stats[eid] = (
+                        sub["t_obs"][first],
+                        str(sub["band"][first]),
+                        float(sub["snr"][first]),
+                        int(sub["observation_index"][first]),
+                    )
+
+        return stats
+
+    def _mask_out_first_visit_solo_detections(
+        self, catalog: EventCatalog, solo: dict[int, int], keep: np.ndarray
+    ) -> None:
+        """
+        Clear `keep` in place for every event in `solo` whose epoch is its field's first visit.
+
+        Shared by `filter_by_first_visit_detected` and `filter_by_snr`'s own
+        `exclude_first_visit_detections` option, so the two apply the exact same
+        first-visit test rather than each rolling its own.
+
+        Parameters
+        ----------
+        catalog : EventCatalog
+            Supplies the ``event_id`` column `keep` is indexed against.
+        solo : dict of int to int
+            ``{event_id: observation_index}``, as returned by
+            `_collect_solo_detection_observation_indices`.
+        keep : numpy.ndarray
+            Boolean array, same length as `catalog`, indexed the same way as
+            `catalog.table`; modified in place.
+        """
+        if not solo:
+            return
+
+        first_visit = self.survey_schedule.first_visit_mask
+        event_id = np.asarray(catalog.table["event_id"])
+        for i, eid in enumerate(event_id):
+            obs_index = solo.get(int(eid))
+            if obs_index is not None and first_visit[obs_index]:
+                keep[i] = False
+
+    def _collect_solo_detection_observation_indices(
+        self,
+        catalog: EventCatalog,
+        mission: Mission,
+        snr_threshold: float,
+        bands: list[str] | None,
+        chunk_size: int | None,
+    ) -> dict[int, int]:
+        """
+        Per-event schedule row, restricted to events with exactly one qualifying detection epoch.
+
+        Built on `iter_epoch_snr_chunks`, like `_collect_first_detection_epochs`, but
+        keeps an event only when it has a single qualifying epoch total -- what
+        `filter_by_first_visit_detected` needs, since whether a reference image exists
+        only matters for an event that can't otherwise be confirmed across two or more
+        epochs.
+
+        Parameters
+        ----------
+        catalog : EventCatalog
+            Forwarded to `iter_epoch_snr_chunks`.
+        mission : m4opt.missions.Mission
+            Forwarded to `iter_epoch_snr_chunks`.
+        snr_threshold : float
+            An epoch counts as a qualifying detection if its best-band SNR exceeds this
+            value (same definition `filter_by_snr` uses).
+        bands : list of str, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+        chunk_size : int, optional
+            Forwarded to `iter_epoch_snr_chunks`.
+
+        Returns
+        -------
+        dict of int to int
+            ``{event_id: observation_index}``, one entry per event with exactly one
+            qualifying epoch; `observation_index` indexes into
+            `self.survey_schedule.observe_rows`. Events with zero or two-or-more
+            qualifying epochs are absent.
+        """
+        stats: dict[int, int] = {}
+
+        epoch_chunks = self.iter_epoch_snr_chunks(
+            catalog, mission, bands=bands, chunk_size=chunk_size, detection_floor=snr_threshold
+        )
+        with logging_redirect_tqdm(loggers=[logger]):
+            for chunk in epoch_chunks:
+                above = np.asarray(chunk["snr"]) > snr_threshold
+                sub = chunk[above]
+                if len(sub) == 0:
+                    continue
+
+                ids = np.asarray(sub["event_id"])
+
+                # Each yielded chunk is already grouped by event (see
+                # `iter_epoch_snr_chunks`'s docstring), and one event's rows never span
+                # two chunks, so a group's length here is that event's total qualifying
+                # epoch count.
+                boundaries = np.flatnonzero(np.diff(ids) != 0) + 1
+                for group in np.split(np.arange(len(ids)), boundaries):
+                    if len(group) == 1:
+                        eid = int(ids[group[0]])
+                        stats[eid] = int(sub["observation_index"][group[0]])
+
+        return stats
+
     def _filtered(self, catalog: EventCatalog, keep: np.ndarray) -> EventCatalog:
         """Return a new `EventCatalog` over `catalog.table[keep]`, carrying every other field unchanged."""
         return EventCatalog(
@@ -1161,6 +1395,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         bands: list[str] | None = None,
         chunk_size: int | None = None,
         n_visits: int = 1,
+        exclude_first_visit_detections: bool = False,
     ) -> EventCatalog:
         """
         Cut an `EventCatalog` down to events the schedule actually detects.
@@ -1196,6 +1431,12 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Minimum number of observations that must clear `snr_threshold` (in their
             best band) for an event to survive. The default is 1: an event survives if
             it is ever detected at all.
+        exclude_first_visit_detections : bool, optional
+            If `True`, also drop an event whose *only* qualifying epoch anywhere in
+            `catalog` (regardless of `n_visits`) falls on its field's first-ever survey
+            visit -- see `filter_by_first_visit_detected` for why that detection has no
+            reference image to be judged against. The default, `False`, leaves that
+            decision to a separate `filter_by_first_visit_detected` call.
 
         Returns
         -------
@@ -1206,6 +1447,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         See Also
         --------
         filter_by_limiting_magnitude : The cheaper, schedule-independent cut to run first.
+        filter_by_first_visit_detected : The standalone cut `exclude_first_visit_detections` wraps.
         iter_epoch_snr_chunks : Reuse the underlying per-epoch SNRs for other cuts.
 
         Notes
@@ -1219,12 +1461,21 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         single observation bright enough in two bands at once still counts as one
         visit, not two, mirroring `filter_by_limiting_magnitude`'s own `n_visits`.
 
+        `exclude_first_visit_detections` re-runs `iter_epoch_snr_chunks` a second time
+        (via `_collect_solo_detection_observation_indices`), rather than being folded
+        into the loop above, since it needs each solo event's total qualifying epoch
+        count -- exactly 1, irrespective of `n_visits` -- not just whether `n_visits` of
+        them cleared the threshold.
+
         Examples
         --------
         .. code-block:: python
 
             detected = simulator.filter_by_snr(
-                catalog, mission, snr_threshold=5.0
+                catalog,
+                mission,
+                snr_threshold=5.0,
+                exclude_first_visit_detections=True,
             )
         """
         # Validate what only this cut cares about; the catalog, mission, bands and chunk size
@@ -1258,8 +1509,13 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 rows = row_of_event[np.searchsorted(event_id[row_of_event], ids)]
                 visit_count[rows] += counts
 
+        keep = visit_count >= n_visits
+        if exclude_first_visit_detections:
+            solo = self._collect_solo_detection_observation_indices(catalog, mission, snr_threshold, bands, chunk_size)
+            self._mask_out_first_visit_solo_detections(catalog, solo, keep)
+
         return EventCatalog(
-            table=table[visit_count >= n_visits],
+            table=table[keep],
             nside=catalog.nside,
             order=catalog.order,
             time_bins=catalog.time_bins,
@@ -1670,34 +1926,35 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
         return self._filtered(catalog, keep)
 
-    def _collect_detection_epoch_stats(
+    @cut("first_visit_detected")
+    def filter_by_first_visit_detected(
         self,
         catalog: EventCatalog,
         mission: Mission,
         snr_threshold: float,
-        bands: list[str] | None,
-        chunk_size: int | None,
-    ) -> dict[int, tuple[float, float | None, float]]:
+        bands: list[str] | None = None,
+        chunk_size: int | None = None,
+    ) -> EventCatalog:
         """
-        Per-event detection-timing stats, shared by `filter_by_time_to_first_detection`/`filter_by_baseline`.
+        Drop single-epoch detections that fall on their field's very first survey visit.
 
-        Built on `iter_epoch_snr_chunks` (see its own docstring for what "qualifying"
-        means here), reduced per event to exactly what each of those two cuts needs,
-        without either re-running the schedule-aware SNR evaluation itself. The smallest
-        gap between any two qualifying epochs is always the smallest gap between two
-        consecutive ones once sorted by time, and the largest gap is always the full
-        first-to-last span, so only those two reductions are computed, not every
-        pairwise difference.
+        A transient with exactly one qualifying detection epoch can only be recognized as
+        a transient by differencing against an earlier template image of that field. If
+        that one epoch is the field's first-ever visit anywhere in `survey_schedule`, no
+        such template exists yet, so the detection isn't actually recoverable. Events
+        with zero or two-or-more qualifying epochs are left untouched: a multi-epoch
+        event has its own light curve to fall back on even without a template, and a
+        zero-epoch event was never a candidate detection in the first place.
 
         Parameters
         ----------
         catalog : EventCatalog
-            Forwarded to `iter_epoch_snr_chunks`.
+            Typically an already schedule-aware-filtered (e.g. `filter_by_snr`) catalog.
         mission : m4opt.missions.Mission
-            Forwarded to `iter_epoch_snr_chunks`.
+            Supplies the `~m4opt.synphot.Detector` `bands` selects from.
         snr_threshold : float
-            An epoch counts as a qualifying detection if its best-band SNR exceeds this
-            value (same definition `filter_by_snr` uses).
+            Same definition as `filter_by_snr`: an epoch qualifies if its best-band SNR
+            exceeds this value.
         bands : list of str, optional
             Forwarded to `iter_epoch_snr_chunks`.
         chunk_size : int, optional
@@ -1705,108 +1962,38 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
         Returns
         -------
-        dict of int to (float, float or None, float)
-            ``{event_id: (t_first, min_gap, span)}`` in days, for every event with >= 1
-            qualifying epoch. `t_first` is the earliest qualifying epoch's
-            `t_since_explosion`; `span` is the latest minus the earliest (``0.0`` for a
-            single epoch); `min_gap` is the smallest gap between consecutive qualifying
-            epochs, or `None` if the event has only one.
+        EventCatalog
+            A new catalog with every solo-detection, first-visit event removed; every
+            other event is kept as-is.
+
+        See Also
+        --------
+        filter_by_snr : The definition of a qualifying detection this cut builds on.
+        uvex_transients.surveys.base.SurveySchedule.first_visit_mask : The schedule lookup this wraps.
+
+        Notes
+        -----
+        "First visit" is judged against `survey_schedule`'s own earliest observation of
+        that field, not just within `catalog`'s sampling window, since a reference image
+        would have to predate the survey's first-ever look at that field regardless of
+        which events happen to be in this particular catalog.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            recoverable = (
+                simulator.filter_by_first_visit_detected(
+                    detected, mission, snr_threshold=5.0
+                )
+            )
         """
-        stats: dict[int, tuple[float, float | None, float]] = {}
+        solo = self._collect_solo_detection_observation_indices(catalog, mission, snr_threshold, bands, chunk_size)
 
-        epoch_chunks = self.iter_epoch_snr_chunks(
-            catalog, mission, bands=bands, chunk_size=chunk_size, detection_floor=snr_threshold
-        )
-        with logging_redirect_tqdm(loggers=[logger]):
-            for chunk in epoch_chunks:
-                above = np.asarray(chunk["snr"]) > snr_threshold
-                sub = chunk[above]
-                if len(sub) == 0:
-                    continue
+        keep = np.ones(len(catalog), dtype=bool)
+        self._mask_out_first_visit_solo_detections(catalog, solo, keep)
 
-                ids = np.asarray(sub["event_id"])
-                times = sub["t_since_explosion"].to_value(u.day)
-
-                # Each yielded chunk is already grouped by event and time-ordered within
-                # each event (see `iter_epoch_snr_chunks`'s docstring), and one event's
-                # rows never span two chunks (chunking splits events, not observations),
-                # so no cross-chunk merging is needed here.
-                boundaries = np.flatnonzero(np.diff(ids) != 0) + 1
-                for group in np.split(np.arange(len(ids)), boundaries):
-                    eid = int(ids[group[0]])
-                    t = times[group]
-                    gap = float(np.min(np.diff(t))) if len(t) > 1 else None
-                    stats[eid] = (float(t[0]), gap, float(t[-1] - t[0]))
-
-        return stats
-
-    def _collect_first_detection_epochs(
-        self,
-        catalog: EventCatalog,
-        mission: Mission,
-        snr_threshold: float,
-        bands: list[str] | None,
-        chunk_size: int | None,
-    ) -> dict[int, tuple[Time, str, float, int]]:
-        """
-        Per-event first qualifying detection epoch, shared by `run_alert_action`.
-
-        Built on `iter_epoch_snr_chunks`, like `_collect_detection_epoch_stats`, but keeps
-        the epoch's *absolute* `t_obs` (and which schedule row it came from) rather than
-        `t_since_explosion` -- what `run_alert_action` needs to look up the next downlink.
-
-        Parameters
-        ----------
-        catalog : EventCatalog
-            Forwarded to `iter_epoch_snr_chunks`.
-        mission : m4opt.missions.Mission
-            Forwarded to `iter_epoch_snr_chunks`.
-        snr_threshold : float
-            An epoch counts as a qualifying detection if its best-band SNR exceeds this
-            value (same definition `filter_by_snr` uses).
-        bands : list of str, optional
-            Forwarded to `iter_epoch_snr_chunks`.
-        chunk_size : int, optional
-            Forwarded to `iter_epoch_snr_chunks`.
-
-        Returns
-        -------
-        dict of int to (Time, str, float, int)
-            ``{event_id: (t_obs, band, snr, observation_index)}`` for every event with
-            >= 1 qualifying epoch, giving the *earliest* one. `t_obs` is absolute;
-            `observation_index` indexes into `self.survey_schedule.observe_rows`,
-            letting a caller look up that observation's own `duration`.
-        """
-        stats: dict[int, tuple[Time, str, float, int]] = {}
-
-        epoch_chunks = self.iter_epoch_snr_chunks(
-            catalog, mission, bands=bands, chunk_size=chunk_size, detection_floor=snr_threshold
-        )
-        with logging_redirect_tqdm(loggers=[logger]):
-            for chunk in epoch_chunks:
-                above = np.asarray(chunk["snr"]) > snr_threshold
-                sub = chunk[above]
-                if len(sub) == 0:
-                    continue
-
-                ids = np.asarray(sub["event_id"])
-
-                # Each yielded chunk is already grouped by event and time-ordered within
-                # each event (see `iter_epoch_snr_chunks`'s docstring), and one event's
-                # rows never span two chunks (chunking splits events, not observations),
-                # so the first row of each group is that event's earliest qualifying epoch.
-                boundaries = np.flatnonzero(np.diff(ids) != 0) + 1
-                for group in np.split(np.arange(len(ids)), boundaries):
-                    eid = int(ids[group[0]])
-                    first = group[0]
-                    stats[eid] = (
-                        sub["t_obs"][first],
-                        str(sub["band"][first]),
-                        float(sub["snr"][first]),
-                        int(sub["observation_index"][first]),
-                    )
-
-        return stats
+        return self._filtered(catalog, keep)
 
     @cut("time_to_first_detection")
     def filter_by_time_to_first_detection(

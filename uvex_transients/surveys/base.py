@@ -1010,6 +1010,30 @@ class SurveySchedule:
         """
         return self._schedule_table[self.actions == "observe"]
 
+    @property
+    def first_visit_mask(self) -> np.ndarray:
+        """
+        ~numpy.ndarray: A boolean mask marking the first visit to each field.
+
+        Notes
+        -----
+        In practice, the need for a reference / template image in order to get difference imaging and
+        transient detection means that an event which would be "detected" relative to the baseline in
+        the first observation of a given field is, realistically, not actually detectable. This mask allows us to
+        determine such cases.
+        """
+        field_id = np.asarray(self.observe_rows["field_id"])
+        mask = np.zeros(len(field_id), dtype=bool)
+        if len(field_id) == 0:
+            return mask
+
+        # `observe_rows` preserves `self._schedule_table`'s own chronological order (see
+        # `_ensure_chronological`), so `numpy.unique`'s first-occurrence index per field
+        # is exactly that field's earliest visit.
+        _, first_index = np.unique(field_id, return_index=True)
+        mask[first_index] = True
+        return mask
+
     def get_observed_regions(
         self,
         start_time: Time,

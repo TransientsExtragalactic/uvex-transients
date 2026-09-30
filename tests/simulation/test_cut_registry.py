@@ -39,6 +39,7 @@ def test_available_cuts_includes_builtins():
     """`SurveySimulator.available_cuts` lists every built-in filter method by its `@cut` name."""
     assert SurveySimulator.available_cuts() == (
         "baseline",
+        "first_visit_detected",
         "limiting_magnitude",
         "peak_flux",
         "peak_luminosity",
