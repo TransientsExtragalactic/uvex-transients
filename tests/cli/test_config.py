@@ -146,42 +146,163 @@ def test_generate_downsample_accepts_a_per_type_mapping():
     assert config.generate.downsample == {"tde": 5, "kilonova": 2}
 
 
-def test_cuts_unknown_type_raises():
-    """An unrecognized cut `type:` raises, listing `SurveySimulator.available_cuts()`."""
-    config = _config_from("cuts:\n  cut_1:\n    type: not_a_real_cut\n")
-    with pytest.raises(ValueError, match="unknown cut type 'not_a_real_cut'"):
-        _ = config.cuts
+def test_steps_defaults_to_empty_list_when_omitted():
+    """An entirely absent `steps:` section resolves to an empty list, not an error."""
+    config = _config_from("x: 1\n")
+    assert config.steps == []
 
 
-def test_cuts_reserved_param_name_raises():
+def test_steps_must_be_a_list():
+    """`steps:` given as a mapping (not a list) raises."""
+    config = _config_from("steps:\n  foo: bar\n")
+    with pytest.raises(ValueError, match="must be a list"):
+        _ = config.steps
+
+
+def test_steps_cut_unknown_cut_name_raises():
+    """An unrecognized `cut:` name raises, listing `SurveySimulator.available_cuts()`."""
+    doc = "steps:\n  - id: s1\n    type: cut\n    cut: not_a_real_cut\n    input: baseline\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="unknown cut 'not_a_real_cut'"):
+        _ = config.steps
+
+
+def test_steps_cut_reserved_param_name_raises():
     """A cut `params:` block using a reserved name (`catalog`/`mission`) raises."""
-    config = _config_from("cuts:\n  cut_1:\n    type: snr\n    mission: uvex\n")
+    doc = "steps:\n  - id: s1\n    type: cut\n    cut: snr\n    input: baseline\n    params:\n      mission: uvex\n"
+    config = _config_from(doc)
     with pytest.raises(ValueError, match="reserved name"):
-        _ = config.cuts
+        _ = config.steps
 
 
-def test_cuts_resolves_type_and_params_in_order():
-    """Cuts parse with their declared `type:`/params and preserve YAML declaration order."""
+def test_steps_cut_resolves_and_preserves_declared_order():
+    """Cut steps parse with their declared `cut:`/params and preserve YAML declaration order."""
     doc = """
-cuts:
-  cut_1:
-    type: limiting_magnitude
-    mag_limit: 25.0
-  cut_2:
-    type: snr
-    snr_threshold: 5.0
+steps:
+  - id: cut_1
+    type: cut
+    cut: limiting_magnitude
+    input: baseline
+    params:
+      mag_limit: 25.0
+  - id: cut_2
+    type: cut
+    cut: snr
+    input: cut_1
+    params:
+      snr_threshold: 5.0
 """
     config = _config_from(doc)
-    assert list(config.cuts) == ["cut_1", "cut_2"]
-    assert config.cuts["cut_1"].type == "limiting_magnitude"
-    assert config.cuts["cut_1"].params == {"mag_limit": 25.0}
+    assert [step.id for step in config.steps] == ["cut_1", "cut_2"]
+    assert config.steps[0].cut == "limiting_magnitude"
+    assert config.steps[0].params == {"mag_limit": 25.0}
+    assert config.steps[1].input == "cut_1"
 
 
-def test_photometry_defaults_when_omitted():
-    """An entirely absent `photometry:` section defaults every field to `None`."""
+def test_steps_cut_dangling_input_raises():
+    """A `cut` step's `input:` naming an id that doesn't exist yet (or at all) raises."""
+    doc = "steps:\n  - id: s1\n    type: cut\n    cut: snr\n    input: nope\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="not 'baseline'/'exposure' or an earlier step id"):
+        _ = config.steps
+
+
+def test_steps_duplicate_id_raises():
+    """Two steps reusing the same `id:` raises."""
+    doc = """
+steps:
+  - id: s1
+    type: cut
+    cut: snr
+    input: baseline
+  - id: s1
+    type: cut
+    cut: limiting_magnitude
+    input: baseline
+"""
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="duplicate step id"):
+        _ = config.steps
+
+
+def test_steps_id_cannot_reuse_reserved_artifact_id():
+    """A step `id:` of `"baseline"` or `"exposure"` raises (those are reserved)."""
+    doc = "steps:\n  - id: baseline\n    type: cut\n    cut: snr\n    input: baseline\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="duplicate step id"):
+        _ = config.steps
+
+
+def test_steps_logical_op_unknown_op_raises():
+    """An unrecognized `op:` raises, listing `LOGICAL_OP_ARITY`'s keys."""
+    doc = "steps:\n  - id: s1\n    type: logical_op\n    op: not_a_real_op\n    inputs: [baseline]\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="unknown op 'not_a_real_op'"):
+        _ = config.steps
+
+
+def test_steps_logical_op_arity_violation_raises():
+    """A `logical_op` step whose `inputs:` count violates `LOGICAL_OP_ARITY` raises."""
+    doc = "steps:\n  - id: s1\n    type: logical_op\n    op: difference\n    inputs: [baseline]\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="requires exactly 2"):
+        _ = config.steps
+
+
+def test_steps_logical_op_dangling_input_raises():
+    """A `logical_op` step referencing an unresolvable input id raises."""
+    doc = "steps:\n  - id: s1\n    type: logical_op\n    op: union\n    inputs: [baseline, nope]\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="not 'baseline'/'exposure' or earlier step ids"):
+        _ = config.steps
+
+
+def test_steps_action_unknown_action_raises():
+    """An unrecognized `action:` name raises, listing `SurveySimulator.available_actions()`."""
+    doc = "steps:\n  - id: s1\n    type: action\n    action: not_a_real_action\n    inputs: {catalog: baseline}\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="unknown action 'not_a_real_action'"):
+        _ = config.steps
+
+
+def test_steps_action_resolves_inputs_mapping():
+    """An `action` step's `inputs:` mapping (param name -> artifact id) round-trips."""
+    doc = """
+steps:
+  - id: phot
+    type: action
+    action: photometry
+    inputs:
+      catalog: baseline
+    params:
+      bands: [FUV]
+"""
+    config = _config_from(doc)
+    assert config.steps[0].action == "photometry"
+    assert config.steps[0].inputs == {"catalog": "baseline"}
+    assert config.steps[0].params == {"bands": ["FUV"]}
+
+
+def test_steps_unknown_type_raises():
+    """An unrecognized step `type:` raises."""
+    doc = "steps:\n  - id: s1\n    type: not_a_real_type\n"
+    config = _config_from(doc)
+    with pytest.raises(ValueError, match="unknown step type 'not_a_real_type'"):
+        _ = config.steps
+
+
+def test_step_by_id_looks_up_a_declared_step():
+    """`RunConfig.step_by_id` returns the matching `StepSpec`."""
+    doc = "steps:\n  - id: s1\n    type: cut\n    cut: snr\n    input: baseline\n"
+    config = _config_from(doc)
+    assert config.step_by_id("s1").cut == "snr"
+
+
+def test_step_by_id_unknown_raises():
+    """`RunConfig.step_by_id` raises, listing the real ids, for an unknown one."""
     config = _config_from("x: 1\n")
-    assert config.photometry.bands is None
-    assert config.photometry.n_sigma is None
+    with pytest.raises(ValueError, match="No step with id 'bogus'"):
+        config.step_by_id("bogus")
 
 
 def test_keep_intermediate_defaults_to_true_when_omitted():
@@ -197,11 +318,12 @@ def test_keep_intermediate_reads_the_config_value():
 
 
 def test_config_missing_unrelated_section_still_works():
-    """A config with only `transients:`/`schedule:` still resolves `.transients` fine, with no `cuts:`/`generate:`."""
+    """A config with only `transients:`/`schedule:` still resolves `.transients` fine, with no `steps:`/`generate:`."""
     config = _config_from(MINIMAL_TRANSIENTS)
     assert "tde" in config.transients
-    with pytest.raises(ValueError, match="required by the 'cut' command"):
-        _ = config.cuts
+    assert config.steps == []
+    with pytest.raises(ValueError, match="required by the 'generate' command"):
+        _ = config.generate
 
 
 def test_known_transient_modules_matches_the_package_directory():

@@ -909,6 +909,72 @@ class SurveySchedule:
 
         return candidates[mask]
 
+    def next_action_time(self, times: Time, action: str, completion: bool = False) -> Time:
+        """
+        For each of `times`, the time of the earliest `action` row starting at or after it.
+
+        The vectorized building block behind "when is the next downlink after this
+        moment" -- used by
+        :meth:`~uvex_transients.simulation.core.SurveySimulator.run_alert_action` to find
+        each event's next downlink after its first qualifying detection, but not specific
+        to downlinks. Uses the same cached-float64-array `~numpy.searchsorted` trick as
+        `get_rows_between_times`, applied to just the `action` subset of :attr:`table`.
+
+        Parameters
+        ----------
+        times : ~astropy.time.Time
+            Query times, scalar or array-valued (e.g. one per event).
+        action : str
+            One of the registered action types (see :attr:`actions`), e.g. ``"downlink"``.
+        completion : bool, optional
+            If `True`, return each match's completion time (``start_time + duration``)
+            instead of its start time. The default is `False`.
+
+        Returns
+        -------
+        ~astropy.time.Time
+            Same shape as `times`, masked (``.masked``/``.mask``) wherever no `action` row
+            starts at or after the corresponding query time (e.g. the schedule ends before
+            the next downlink).
+
+        Raises
+        ------
+        ValueError
+            If `action` is not one of :attr:`table`'s registered action types.
+        """
+        if action not in self._ACTION_SCHEMA:
+            raise ValueError(f"Unknown action {action!r}; must be one of {tuple(self._ACTION_SCHEMA)}.")
+
+        action_rows = self._schedule_table[self.actions == action]
+        scale = self._start_time_scale
+        query_jd = getattr(times, scale).jd
+
+        if len(action_rows) == 0:
+            jd = np.ma.MaskedArray(np.zeros_like(query_jd, dtype=np.float64), mask=True)
+            result = Time(jd, format="jd", scale=scale)
+            result.format = times.format
+            return result
+
+        # `action_rows` preserves `self._schedule_table`'s own chronological order (see
+        # `_ensure_chronological`), so its start times are already sorted ascending --
+        # exactly what `searchsorted` requires.
+        start_jd = np.asarray(action_rows["start_time"].jd, dtype=np.float64)
+        idx = np.searchsorted(start_jd, query_jd, side="left")
+        found = idx < len(start_jd)
+        clipped_idx = np.minimum(idx, len(start_jd) - 1)
+
+        result_jd = start_jd[clipped_idx]
+        if completion:
+            duration_days = action_rows["duration"].to_value(u.day)
+            result_jd = result_jd + duration_days[clipped_idx]
+
+        # `Time` natively supports a masked `numpy.ma.MaskedArray` internal representation
+        # (unlike `~astropy.utils.masked.Masked`, which doesn't specialize for `Time`), so
+        # masking is applied here rather than via `Masked`.
+        result = Time(np.ma.MaskedArray(result_jd, mask=~found), format="jd", scale=scale)
+        result.format = times.format
+        return result
+
     @property
     def observe_rows(self) -> QTable:
         """

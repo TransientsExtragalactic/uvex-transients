@@ -3,7 +3,7 @@ Parsing/validation for a CLI run-config YAML file.
 
 A single YAML file drives every CLI command (see `uvex_transients.cli.main`); each
 command only needs the section(s) relevant to it (`generate:` for ``generate``,
-`cuts:` for ``cut``, ...), so `RunConfig` resolves each section **lazily**, on first
+`steps:` for ``run``, ...), so `RunConfig` resolves each section **lazily**, on first
 access, rather than eagerly validating the whole file up front -- a config missing a
 section a given command doesn't need is perfectly valid.
 """
@@ -21,6 +21,7 @@ from m4opt.missions import Mission
 
 from uvex_transients.models.core.priors import Prior
 from uvex_transients.simulation.core import SurveySimulator
+from uvex_transients.simulation.logical_ops import LOGICAL_OP_ARITY
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.surveys.utils import get_schedule
 from uvex_transients.transients.base import TransientBase
@@ -29,10 +30,15 @@ from .yaml_tags import get_run_yaml
 
 _DEFAULT_MISSION = "uvex"
 
-# `run_cut`'s own positional parameters -- a cut's `params:` block may not use these
-# names, since they'd otherwise collide with the call `SurveySimulator.run_cut(type, catalog,
-# mission, **params)` makes.
+#: Reserved ``steps:`` entry ids auto-registered before any user-declared step runs --
+#: see `uvex_transients.cli.steps.run_steps`. A step may not reuse either as its own id.
+RESERVED_ARTIFACT_IDS = frozenset({"baseline", "exposure"})
+
+# A cut's `params:` block may not use these names, since they'd otherwise collide with
+# the call `SurveySimulator.run_cut(type, catalog, mission, **params)` makes.
 _RESERVED_CUT_PARAMS = frozenset({"catalog", "mission"})
+
+_STEP_TYPES = frozenset({"cut", "logical_op", "action"})
 
 # Every `uvex_transients.transients` submodule that defines a concrete `TransientBase`
 # subclass. Nothing in `uvex_transients`'s own import chain imports these eagerly -- a
@@ -239,45 +245,159 @@ def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
     return transients
 
 
-def _resolve_cuts(section: Mapping) -> dict[str, "CutSpec"]:
+def _resolve_steps(section: list) -> list["StepSpec"]:
     """
-    Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`.
+    Resolve a ``steps:`` block into an ordered list of `StepSpec`.
+
+    Every step's ``id`` must be unique and distinct from `RESERVED_ARTIFACT_IDS`; every
+    input it references (``input:``/``inputs:``) must resolve to `RESERVED_ARTIFACT_IDS`
+    or an *earlier* step's own ``id`` (steps run strictly in declared order -- see
+    `uvex_transients.cli.steps.run_steps` -- so a forward reference is never valid);
+    ``cut:``/``op:``/``action:`` names are checked against `SurveySimulator`/
+    `~uvex_transients.simulation.logical_ops.LOGICAL_OPS`; a `logical_op` step's input
+    count is checked against `~uvex_transients.simulation.logical_ops.LOGICAL_OP_ARITY`.
 
     Parameters
     ----------
-    section : Mapping
-        The parsed ``cuts:`` YAML block.
+    section : list
+        The parsed ``steps:`` YAML block -- a list of step mappings, in declared order.
 
     Returns
     -------
-    dict of str to CutSpec
-        One resolved `CutSpec` per declared key, in declared order.
+    list of StepSpec
+        One resolved `StepSpec` per declared entry, in declared order.
 
     Raises
     ------
     ValueError
-        If an entry is missing its required ``type`` key, names an unknown
-        cut type, or uses a reserved parameter name.
+        If `section` isn't a list, an entry is missing a required key, uses an unknown
+        ``type:``/``cut:``/``op:``/``action:``, reuses an ``id``, references an
+        unresolvable input, or violates a `logical_op`'s arity.
     """
-    available = SurveySimulator.available_cuts()
+    if not isinstance(section, list):
+        raise ValueError(f"'steps:' must be a list of step entries, got {type(section).__name__}.")
 
-    cuts: dict[str, CutSpec] = {}
-    for key, raw_entry in section.items():
+    available_cuts = SurveySimulator.available_cuts()
+    available_actions = SurveySimulator.available_actions()
+
+    steps: list[StepSpec] = []
+    seen_ids: set[str] = set(RESERVED_ARTIFACT_IDS)
+
+    for i, raw_entry in enumerate(section):
         entry = dict(raw_entry)
+        where = f"steps[{i}]"
 
-        cut_type = entry.pop("type", None)
-        if cut_type is None:
-            raise ValueError(f"cuts.{key!r} is missing required key 'type'.")
-        if cut_type not in available:
-            raise ValueError(f"cuts.{key!r}: unknown cut type {cut_type!r}; available: {list(available)}.")
+        step_id = entry.pop("id", None)
+        if step_id is None:
+            raise ValueError(f"{where} is missing required key 'id'.")
+        where = f"steps.{step_id!r}"
+        if step_id in seen_ids:
+            raise ValueError(f"{where}: duplicate step id (or reserved id {sorted(RESERVED_ARTIFACT_IDS)}).")
 
-        reserved = _RESERVED_CUT_PARAMS & set(entry)
-        if reserved:
-            raise ValueError(f"cuts.{key!r}: params cannot use reserved name(s) {sorted(reserved)}.")
+        step_type = entry.pop("type", None)
+        if step_type is None:
+            raise ValueError(f"{where} is missing required key 'type'.")
+        if step_type not in _STEP_TYPES:
+            raise ValueError(f"{where}: unknown step type {step_type!r}; available: {sorted(_STEP_TYPES)}.")
 
-        cuts[key] = CutSpec(type=cut_type, params=entry)
+        checkpoint = entry.pop("checkpoint", None)
+        if checkpoint is not None and not isinstance(checkpoint, (bool, str)):
+            raise ValueError(f"{where}: 'checkpoint' must be a bool or a str filename, got {checkpoint!r}.")
 
-    return cuts
+        if step_type == "cut":
+            cut_name = entry.pop("cut", None)
+            if cut_name is None:
+                raise ValueError(f"{where} is missing required key 'cut'.")
+            if cut_name not in available_cuts:
+                raise ValueError(f"{where}: unknown cut {cut_name!r}; available: {list(available_cuts)}.")
+
+            step_input = entry.pop("input", None)
+            if step_input is None:
+                raise ValueError(f"{where} is missing required key 'input'.")
+            if step_input not in seen_ids:
+                raise ValueError(f"{where}: input {step_input!r} is not 'baseline'/'exposure' or an earlier step id.")
+
+            transient_types = entry.pop("transient_types", None)
+            if transient_types is not None and not isinstance(transient_types, list):
+                raise ValueError(f"{where}: 'transient_types' must be a list, got {transient_types!r}.")
+
+            params = entry.pop("params", {}) or {}
+            reserved = _RESERVED_CUT_PARAMS & set(params)
+            if reserved:
+                raise ValueError(f"{where}: params cannot use reserved name(s) {sorted(reserved)}.")
+
+            if entry:
+                raise ValueError(f"{where} has unknown key(s) {sorted(entry)}.")
+
+            steps.append(
+                StepSpec(
+                    id=step_id,
+                    type="cut",
+                    checkpoint=checkpoint,
+                    cut=cut_name,
+                    input=step_input,
+                    transient_types=transient_types,
+                    params=params,
+                )
+            )
+
+        elif step_type == "logical_op":
+            op = entry.pop("op", None)
+            if op is None:
+                raise ValueError(f"{where} is missing required key 'op'.")
+            if op not in LOGICAL_OP_ARITY:
+                raise ValueError(f"{where}: unknown op {op!r}; available: {sorted(LOGICAL_OP_ARITY)}.")
+
+            step_inputs = entry.pop("inputs", None)
+            if not isinstance(step_inputs, list) or not step_inputs:
+                raise ValueError(f"{where}: 'inputs' must be a non-empty list of earlier step/baseline ids.")
+            unresolved = [name for name in step_inputs if name not in seen_ids]
+            if unresolved:
+                raise ValueError(f"{where}: input(s) {unresolved} are not 'baseline'/'exposure' or earlier step ids.")
+
+            lower, upper = LOGICAL_OP_ARITY[op]
+            if len(step_inputs) < lower or (upper is not None and len(step_inputs) > upper):
+                bound = f"exactly {lower}" if lower == upper else f"at least {lower}"
+                raise ValueError(f"{where}: op {op!r} requires {bound} input(s), got {len(step_inputs)}.")
+
+            if entry:
+                raise ValueError(f"{where} has unknown key(s) {sorted(entry)}.")
+
+            steps.append(StepSpec(id=step_id, type="logical_op", checkpoint=checkpoint, op=op, inputs=step_inputs))
+
+        else:  # action
+            action_name = entry.pop("action", None)
+            if action_name is None:
+                raise ValueError(f"{where} is missing required key 'action'.")
+            if action_name not in available_actions:
+                raise ValueError(f"{where}: unknown action {action_name!r}; available: {list(available_actions)}.")
+
+            step_inputs = entry.pop("inputs", None)
+            if not isinstance(step_inputs, dict) or not step_inputs:
+                raise ValueError(f"{where}: 'inputs' must be a non-empty mapping of {{param name: artifact id}}.")
+            unresolved = [name for name in step_inputs.values() if name not in seen_ids]
+            if unresolved:
+                raise ValueError(f"{where}: input(s) {unresolved} are not 'baseline'/'exposure' or earlier step ids.")
+
+            params = entry.pop("params", {}) or {}
+
+            if entry:
+                raise ValueError(f"{where} has unknown key(s) {sorted(entry)}.")
+
+            steps.append(
+                StepSpec(
+                    id=step_id,
+                    type="action",
+                    checkpoint=checkpoint,
+                    action=action_name,
+                    inputs=step_inputs,
+                    params=params,
+                )
+            )
+
+        seen_ids.add(step_id)
+
+    return steps
 
 
 @dataclass
@@ -291,34 +411,44 @@ class GenerateConfig:
 
 
 @dataclass
-class CutSpec:
-    """One resolved entry of a ``cuts:`` section -- a `SurveySimulator.available_cuts()` name plus its params."""
+class StepSpec:
+    """
+    One resolved entry of a ``steps:`` section.
 
+    Shared across all three ``type:`` values; only the fields relevant to a given
+    `type` are populated (see `uvex_transients.cli.steps.run_steps` for how each is
+    dispatched).
+    """
+
+    id: str
     type: str
+    """str: One of ``"cut"``, ``"logical_op"``, ``"action"``."""
+
+    checkpoint: bool | str | None = None
+    """bool, str, or None: Whether/where to persist this step's artifact.
+
+    `None` (the default) defers to the run's own ``keep_intermediate`` setting; `True`/
+    `False` overrides it for this step alone; a `str` gives an explicit filename
+    (relative to ``--out-dir``) instead of the default ``{i:02d}_{id}.<ext>``
+    convention, and also forces the step to be persisted regardless of
+    ``keep_intermediate``.
+    """
+
+    # cut
+    cut: str | None = None
+    input: str | None = None
+    transient_types: list[str] | None = None
+
+    # logical_op
+    op: str | None = None
+
+    # action
+    action: str | None = None
+
+    # logical_op: list[str]; action: dict[str, str] ({param name: artifact id})
+    inputs: list[str] | dict[str, str] | None = None
+
     params: dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class PhotometryConfig:
-    """Parsed ``photometry:`` section -- see `EventCatalog.simulate_photometry`."""
-
-    bands: list[str] | None = None
-    n_sigma: float | None = None
-
-
-@dataclass
-class YieldConfig:
-    """Parsed ``yield:`` section -- see `EventCatalog.compute_yield_summary`."""
-
-    confidence: float = 0.9
-
-
-@dataclass
-class DetectionCountsConfig:
-    """Parsed ``detection_counts:`` section -- see `PhotometryCatalog.compute_detection_count_table`."""
-
-    snr_threshold: float
-    confidence: float = 0.9
 
 
 class RunConfig:
@@ -327,9 +457,8 @@ class RunConfig:
 
     Every command reads the same config file; a command only touches the properties it
     actually needs (`generate` reads `.schedule`/`.transients`/`.mission`/`.generate`;
-    `cut` reads `.schedule`/`.transients`/`.mission`/`.cuts`; `photometry` reads
-    `.schedule`/`.transients`/`.mission`/`.photometry`), so a config missing an unrelated
-    section (e.g. no `photometry:` block, if you never run that command) still works.
+    `run` also reads `.steps`), so a config missing an unrelated section (e.g. no
+    `steps:` block, if you only ever run ``generate``) still works.
 
     Parameters
     ----------
@@ -358,10 +487,7 @@ class RunConfig:
         self._transients: dict[str, TransientBase] | None = None
         self._simulator: SurveySimulator | None = None
         self._generate: GenerateConfig | None = None
-        self._cuts: dict[str, CutSpec] | None = None
-        self._photometry: PhotometryConfig | None = None
-        self._yield: YieldConfig | None = None
-        self._detection_counts: DetectionCountsConfig | None = None
+        self._steps: list[StepSpec] | None = None
         self._keep_intermediate: bool | None = None
 
     @classmethod
@@ -507,68 +633,45 @@ class RunConfig:
         return self._generate
 
     @property
-    def cuts(self) -> dict[str, CutSpec]:
+    def steps(self) -> list[StepSpec]:
         """
-        The parsed ``cuts:`` section, in declared order (required by the ``cut`` command).
+        The parsed ``steps:`` section, in declared order.
+
+        Optional; an entirely absent ``steps:`` section resolves to an empty list, so a
+        config that only ever needs the raw generated catalog (``"baseline"``) is valid.
 
         Returns
         -------
-        dict of str to CutSpec
-            One resolved `CutSpec` per declared key, in declared order.
+        list of StepSpec
+            One resolved `StepSpec` per declared entry, in declared order.
         """
-        if self._cuts is None:
-            self._cuts = _resolve_cuts(self._require_section("cuts", "cut"))
-        return self._cuts
+        if self._steps is None:
+            self._steps = _resolve_steps(self._raw.get("steps") or [])
+        return self._steps
 
-    @property
-    def photometry(self) -> PhotometryConfig:
+    def step_by_id(self, step_id: str) -> StepSpec:
         """
-        The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default).
+        Look up one of `steps` by its own ``id`` (used by the ad hoc ``cut``/``photometry`` commands).
 
-        Returns
-        -------
-        PhotometryConfig
-            The parsed section.
-        """
-        if self._photometry is None:
-            section = self._raw.get("photometry") or {}
-            self._photometry = PhotometryConfig(bands=section.get("bands"), n_sigma=section.get("n_sigma"))
-        return self._photometry
-
-    @property
-    def yield_config(self) -> YieldConfig:
-        """
-        The parsed ``yield:`` section (optional; defaults to a ``0.9`` Clopper-Pearson confidence level).
+        Parameters
+        ----------
+        step_id : str
+            The step's own ``id``.
 
         Returns
         -------
-        YieldConfig
-            The parsed section.
-        """
-        if self._yield is None:
-            section = self._raw.get("yield") or {}
-            self._yield = YieldConfig(confidence=section.get("confidence", 0.9))
-        return self._yield
+        StepSpec
+            The matching step.
 
-    @property
-    def detection_counts(self) -> DetectionCountsConfig:
+        Raises
+        ------
+        ValueError
+            If no step in `steps` has that ``id``.
         """
-        The parsed ``detection_counts:`` section (required by the ``detection-counts`` command).
-
-        Returns
-        -------
-        DetectionCountsConfig
-            The parsed section.
-        """
-        if self._detection_counts is None:
-            section = self._require_section("detection_counts", "detection-counts")
-            if "snr_threshold" not in section:
-                raise ValueError("'detection_counts:' is missing required key 'snr_threshold'.")
-            self._detection_counts = DetectionCountsConfig(
-                snr_threshold=section["snr_threshold"],
-                confidence=section.get("confidence", 0.9),
-            )
-        return self._detection_counts
+        for step in self.steps:
+            if step.id == step_id:
+                return step
+        raise ValueError(f"No step with id {step_id!r}; available: {[step.id for step in self.steps]}.")
 
     @property
     def keep_intermediate(self) -> bool:

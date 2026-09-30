@@ -36,8 +36,21 @@ def _empty_catalog() -> EventCatalog:
 
 
 def test_available_cuts_includes_builtins():
-    """`SurveySimulator.available_cuts` lists the two built-in filter methods by their `@cut` name."""
-    assert SurveySimulator.available_cuts() == ("limiting_magnitude", "snr")
+    """`SurveySimulator.available_cuts` lists every built-in filter method by its `@cut` name."""
+    assert SurveySimulator.available_cuts() == (
+        "baseline",
+        "limiting_magnitude",
+        "peak_flux",
+        "peak_luminosity",
+        "peak_magnitude",
+        "query",
+        "redshift",
+        "region",
+        "sky_position",
+        "snr",
+        "time_to_first_detection",
+        "transient_type",
+    )
 
 
 def test_run_cut_dispatches_to_the_registered_method(make_schedule):
