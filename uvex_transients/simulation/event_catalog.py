@@ -645,3 +645,40 @@ class EventCatalog:
             seed=meta.pop("seed", None),
             downsample=meta.pop("downsample", None),
         )
+
+
+def _default_example_catalog_path() -> Path:
+    import uvex_transients
+
+    return Path(uvex_transients.__file__).parent.parent / "test_data" / "simulation" / "example_event_catalog.ecsv"
+
+
+def get_example_event_catalog(path: Union[str, Path, None] = None) -> EventCatalog:
+    """
+    Load the packaged example `EventCatalog`, so docs/examples don't have to resample one.
+
+    The packaged catalog (``test_data/simulation/example_event_catalog.ecsv``) is a raw
+    (pre-cut) catalog of 598 events -- 344 `~uvex_transients.transients.supernovae.MagnetarSLSNe`
+    ("slsn") and 254 `~uvex_transients.transients.TDEs.TidalDisruptionEvent` ("tde") -- generated
+    once against the default schedule (see `~uvex_transients.surveys.get_schedule`) with
+    ``simulation_seed=42``, ``time_bins=10``, ``nside=32``, ``downsample=500``. Sphinx gallery
+    examples that only need a representative catalog to demonstrate a cut/action on can load this
+    instead of re-running `SurveySimulator.generate_events` -- a nontrivial Monte Carlo draw --
+    on every doc build.
+
+    Parameters
+    ----------
+    path : str or ~pathlib.Path, optional
+        Path to the catalog file. If `None` (the default), uses the packaged
+        ``test_data/simulation/example_event_catalog.ecsv``.
+
+    Returns
+    -------
+    EventCatalog
+        The packaged example catalog.
+
+    See Also
+    --------
+    EventCatalog.from_disk : The general-purpose loader this delegates to.
+    """
+    return EventCatalog.from_disk(path if path is not None else _default_example_catalog_path())

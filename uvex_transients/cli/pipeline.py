@@ -1,19 +1,17 @@
 """
 Plain functions implementing each CLI stage, kept free of `click` so they're directly testable.
 
-`uvex_transients.cli.main`'s subcommands are thin wrappers around these -- each one parses
-arguments, calls one of these, and reports a short summary.
+`uvex_transients.cli.main`'s subcommands are thin wrappers around these (and around
+`uvex_transients.cli.steps.run_steps` for everything downstream of the raw generated
+catalog) -- each one parses arguments, calls one of these, and reports a short summary.
 """
 
 from collections.abc import Iterable
 from pathlib import Path
 
-from astropy.table import QTable
-
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.exposure_catalog import ExposureCatalog
-from ..simulation.photometry_catalog import PhotometryCatalog
-from ..simulation.yield_table import YieldTable
+from . import steps
 from .config import RunConfig
 
 
@@ -29,7 +27,8 @@ def run_generate(config: RunConfig) -> EventCatalog:
     Returns
     -------
     EventCatalog
-        The generated catalog.
+        The generated catalog -- the ``"baseline"`` artifact every ``steps:`` entry can
+        reference (see `uvex_transients.cli.config.RESERVED_ARTIFACT_IDS`).
     """
     settings = config.generate
     return config.simulator.generate_events(
@@ -55,7 +54,8 @@ def run_exposure(config: RunConfig) -> ExposureCatalog:
     Returns
     -------
     ExposureCatalog
-        The tabulated per-(transient type, time bin) exposure.
+        The tabulated per-(transient type, time bin) exposure -- the ``"exposure"``
+        artifact every ``steps:`` entry can reference.
     """
     settings = config.generate
     return config.simulator.compute_effective_exposure(
@@ -65,38 +65,13 @@ def run_exposure(config: RunConfig) -> ExposureCatalog:
     )
 
 
-def run_yield_summary(
-    config: RunConfig,
-    raw: EventCatalog,
-    detected: EventCatalog,
-    exposure: ExposureCatalog,
-) -> YieldTable:
+def run_cut_steps(config: RunConfig, catalog: EventCatalog, step_ids: list[str] | None = None) -> EventCatalog:
     """
-    Build a `YieldTable` per the config's ``yield:`` section (Clopper-Pearson confidence level).
+    Chain one or more of the config's declared ``cut``-type steps against an externally supplied catalog.
 
-    Parameters
-    ----------
-    config : RunConfig
-        The parsed run-config.
-    raw : EventCatalog
-        The feasible (pre-cut) catalog -- typically `run_generate`'s own output.
-    detected : EventCatalog
-        The detected (post-cut) catalog -- typically `run_cuts`'s own output.
-    exposure : ExposureCatalog
-        Typically `run_exposure`'s own output.
-
-    Returns
-    -------
-    YieldTable
-        One row per transient type in `config.transients`.
-    """
-    settings = config.yield_config
-    return raw.compute_yield_summary(detected, exposure, config.transients, confidence=settings.confidence)
-
-
-def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None = None) -> EventCatalog:
-    """
-    Run one or more of the config's declared ``cuts:`` against `catalog`, chained in order.
+    Ad hoc, single-catalog use (the ``cut`` CLI command) -- unlike `steps.run_steps`, this
+    ignores each step's own configured ``input:`` (which names a place in the full
+    ``steps:`` graph) and instead threads `catalog` through every selected step in turn.
 
     Parameters
     ----------
@@ -104,95 +79,105 @@ def run_cuts(config: RunConfig, catalog: EventCatalog, names: list[str] | None =
         The parsed run-config.
     catalog : EventCatalog
         The catalog to filter.
-    names : list of str, optional
-        Which of the config's `cuts:` keys to run, and in what order. If `None` (the
-        default), runs every declared cut, in the order it was declared in the config.
+    step_ids : list of str, optional
+        Which of `config.steps`' ``cut``-type step ids to run, and in what order. If
+        `None` (the default), runs every declared ``cut`` step, in declared order.
 
     Returns
     -------
     EventCatalog
         The filtered catalog.
+
+    Raises
+    ------
+    ValueError
+        If a name in `step_ids` isn't a declared step, or names a non-``cut`` step.
     """
-    cuts = config.cuts
+    selected = (
+        [config.step_by_id(step_id) for step_id in step_ids]
+        if step_ids
+        else [step for step in config.steps if step.type == "cut"]
+    )
+    wrong_type = [step.id for step in selected if step.type != "cut"]
+    if wrong_type:
+        raise ValueError(f"step(s) {wrong_type} are not 'cut' steps.")
 
-    if names is None:
-        selected = list(cuts)
-    else:
-        unknown = [name for name in names if name not in cuts]
-        if unknown:
-            raise ValueError(f"Unknown cut key(s) {unknown}; available: {list(cuts)}.")
-        selected = list(names)
-
-    for key in selected:
-        spec = cuts[key]
-        catalog = config.simulator.run_cut(spec.type, catalog, config.mission, **spec.params)
-
+    simulator = config.simulator
+    mission = config.mission
+    for step in selected:
+        catalog = steps.apply_cut_scoped(simulator, step.cut, catalog, mission, step.transient_types, **step.params)
     return catalog
 
 
-def run_photometry(config: RunConfig, catalog: EventCatalog) -> QTable:
+def run_photometry_step(config: RunConfig, step_id: str, catalog: EventCatalog):
     """
-    Run synthetic photometry over every event in `catalog` per the config's ``photometry:`` section.
+    Run one ``action``-type, ``action: photometry`` step against an externally supplied catalog.
 
     Parameters
     ----------
     config : RunConfig
         The parsed run-config.
+    step_id : str
+        The step's own id in `config.steps`; must be an ``action`` step with
+        ``action: photometry``.
     catalog : EventCatalog
         The catalog of events to simulate photometry for.
 
     Returns
     -------
     ~astropy.table.QTable
-        One row per (event, time, band) synthetic observation.
+        One row per (event, observation, band) synthetic observation.
+
+    Raises
+    ------
+    ValueError
+        If `step_id` isn't declared, or isn't a ``photometry`` action step.
     """
-    settings = config.photometry
-    return catalog.simulate_photometry(
-        config.mission,
-        config.transients,
-        config.schedule,
-        bands=settings.bands,
-        n_sigma=settings.n_sigma,
-    )
+    step = config.step_by_id(step_id)
+    if step.type != "action" or step.action != "photometry":
+        raise ValueError(f"step {step_id!r} is not a 'photometry' action step.")
+    return config.simulator.run_action("photometry", config.mission, catalog=catalog, **step.params)
 
 
-def run_detection_counts(
+def run_detection_counts_step(
     config: RunConfig,
+    step_id: str,
     catalog: EventCatalog,
     exposure: ExposureCatalog,
-    photometry: PhotometryCatalog | QTable,
-) -> QTable:
+    photometry,
+):
     """
-    Build the detection-count estimator table per the config's ``detection_counts:`` section.
+    Run one ``action``-type, ``action: detection_counts`` step against externally supplied inputs.
 
     Parameters
     ----------
     config : RunConfig
         The parsed run-config.
+    step_id : str
+        The step's own id in `config.steps`; must be an ``action`` step with
+        ``action: detection_counts``.
     catalog : EventCatalog
-        The full per-type event list `photometry` was computed over -- forwarded to
-        `PhotometryCatalog.compute_detection_count_table`.
+        The full per-type event list `photometry` was computed over.
     exposure : ExposureCatalog
         Typically `run_exposure`'s own output.
     photometry : PhotometryCatalog or ~astropy.table.QTable
-        Typically `run_photometry`'s own output, or a `PhotometryCatalog` wrapping it; a
-        bare `QTable` (the shape `run_photometry` itself returns) is wrapped automatically.
+        Typically `run_photometry_step`'s own output.
 
     Returns
     -------
-    astropy.table.QTable
-        One row per ``(transient_type, n_detections)`` pair; see
-        `PhotometryCatalog.compute_detection_count_table`'s own docstring for the column list.
+    ~astropy.table.QTable
+        One row per ``(transient_type, n_detections)`` pair.
+
+    Raises
+    ------
+    ValueError
+        If `step_id` isn't declared, or isn't a ``detection_counts`` action step.
     """
-    settings = config.detection_counts
-    if not isinstance(photometry, PhotometryCatalog):
-        photometry = PhotometryCatalog(table=photometry)
-    return photometry.compute_detection_count_table(
-        catalog,
-        exposure,
-        config.transients,
-        snr_threshold=settings.snr_threshold,
-        confidence=settings.confidence,
+    step = config.step_by_id(step_id)
+    if step.type != "action" or step.action != "detection_counts":
+        raise ValueError(f"step {step_id!r} is not a 'detection_counts' action step.")
+    return config.simulator.run_action(
+        "detection_counts", config.mission, catalog=catalog, exposure=exposure, photometry=photometry, **step.params
     )
 
 
@@ -201,15 +186,16 @@ def dry_run_report(
     command: str,
     outputs: Iterable[Path] = (),
     overwrite: bool = False,
-    cut_names: list[str] | None = None,
+    step_ids: list[str] | None = None,
 ) -> tuple[list[str], bool]:
     """
     Validate `config` for `command` and describe what it would do, without sampling or writing anything.
 
     Resolving each section the command needs is itself the validation: an unknown transient
-    class, a bad parameter override, an unknown cut type or cut name, an unknown mission, or an
-    unreadable schedule all raise exactly as they would in a real run. The (potentially large)
-    schedule *is* loaded, but no events are sampled and no output file is created.
+    class, a bad parameter override, an unknown cut/op/action name or a dangling step input, or
+    an unknown mission or unreadable schedule all raise exactly as they would in a real run. The
+    (potentially large) schedule *is* loaded, but no events are sampled and no output file is
+    created.
 
     Parameters
     ----------
@@ -217,14 +203,15 @@ def dry_run_report(
         The parsed run-config.
     command : {"generate", "cut", "photometry", "detection-counts", "run"}
         Which command is being dry-run; decides which config sections are validated. ``"run"``
-        validates ``generate:``, ``cuts:`` (if declared), ``photometry:``, and
-        ``detection_counts:`` (if declared).
+        validates ``generate:`` and the whole ``steps:`` list; ``"cut"``/``"photometry"``/
+        ``"detection-counts"`` validate `step_ids` against `config.steps`.
     outputs : iterable of pathlib.Path, optional
         The files the real command would write, checked for collisions.
     overwrite : bool, optional
         Whether the real command would be run with ``--overwrite``.
-    cut_names : list of str, optional
-        For ``"cut"``, which of the config's cuts would run (default: every declared cut).
+    step_ids : list of str, optional
+        For ``"cut"``/``"photometry"``/``"detection-counts"``, the ad hoc step id(s) that
+        would run (see `uvex_transients.cli.main`'s per-command semantics).
 
     Returns
     -------
@@ -232,6 +219,11 @@ def dry_run_report(
         The report, one line per entry.
     ok : bool
         `False` if the real command would fail on an output file that already exists.
+
+    Raises
+    ------
+    ValueError
+        If a name in `step_ids` isn't a declared step, or names a step of the wrong type.
     """
     source = f" (config: {config._source})" if config._source else ""
     lines = [f"dry run: {command}{source}"]
@@ -254,25 +246,20 @@ def dry_run_report(
             f"order={settings.order or 'default'}, downsample={settings.downsample or 'none'}, seed={seed}"
         )
 
-    if command == "cut" or (command == "run" and config.has_section("cuts")):
-        cuts = config.cuts
-        selected = list(cuts) if cut_names is None or command == "run" else list(cut_names)
-        unknown = [name for name in selected if name not in cuts]
-        if unknown:
-            raise ValueError(f"Unknown cut key(s) {unknown}; available: {list(cuts)}.")
-        lines.append(f"cuts ({len(selected)}, in order):")
-        lines.extend(f"  {key:<20s} {cuts[key].type:<20s} {cuts[key].params}" for key in selected)
-
-    if command in ("photometry", "run"):
-        settings = config.photometry
-        lines.append(f"photometry: bands={settings.bands or 'every band'}, n_sigma={settings.n_sigma or 'default'}")
-
     if command == "run":
-        lines.append(f"yield:     confidence={config.yield_config.confidence}")
+        step_lines = steps.describe_steps(config)
+        lines.append(f"steps ({len(step_lines)}, in order):")
+        lines.extend(step_lines)
 
-    if command == "detection-counts" or (command == "run" and config.has_section("detection_counts")):
-        settings = config.detection_counts
-        lines.append(f"detection_counts: snr_threshold={settings.snr_threshold}, confidence={settings.confidence}")
+    if command in ("cut", "photometry", "detection-counts"):
+        expected_type = "cut" if command == "cut" else "action"
+        selected = list(step_ids) if step_ids else [s.id for s in config.steps if s.type == expected_type]
+        resolved = [config.step_by_id(step_id) for step_id in selected]
+        wrong_type = [s.id for s in resolved if s.type != expected_type]
+        if wrong_type:
+            raise ValueError(f"step(s) {wrong_type} are not {expected_type!r} steps.")
+        lines.append(f"steps ({len(resolved)}, in order):")
+        lines.extend(steps.describe_step_specs(resolved))
 
     ok = True
     outputs = list(outputs)

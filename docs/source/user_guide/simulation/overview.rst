@@ -53,7 +53,7 @@ than downloading a real one, so the example below runs offline:
        np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
    )
    table["roll"] = np.zeros(n) * u.deg
-   table["field_id"] = np.arrange(n)
+   table["field_id"] = np.arange(n)
    table["block_id"] = np.zeros(n, dtype=int)
 
    fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
@@ -335,6 +335,18 @@ original ``event_id`` values preserved rather than renumbered:
        ax.text(i, count, f"{count:,}", ha="center", va="bottom")
    ax.set_ylabel("Number of TDEs")
    ax.set_title("TDE detection funnel")
+
+.. note::
+
+   ``limiting_magnitude``/``snr`` are the two schedule/detector-aware screens shown above, but not
+   the whole story -- :meth:`SurveySimulator.available_cuts()
+   <uvex_transients.simulation.core.SurveySimulator.available_cuts>` also includes cheaper or more
+   specialized cuts (redshift, transient type, peak apparent/intrinsic brightness, detection
+   timing, sky position, and an arbitrary boolean expression over the catalog's own columns), each
+   called the same way (``simulator.run_cut("<name>", catalog, mission, **params)``, or
+   ``simulator.filter_by_<name>(catalog, mission, **params)`` directly). See
+   :ref:`user_guide_cli`'s ``cut`` step parameter table for the full list and each one's
+   parameters.
 
 ----
 

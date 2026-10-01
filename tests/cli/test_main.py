@@ -22,13 +22,24 @@ generate:
   nside: 16
   seed: 1
 
-cuts:
-  cut_1:
-    type: limiting_magnitude
-    mag_limit: 25.0
-  cut_2:
-    type: snr
-    snr_threshold: 5.0
+steps:
+  - id: cut_1
+    type: cut
+    cut: limiting_magnitude
+    input: baseline
+    params:
+      mag_limit: 25.0
+  - id: cut_2
+    type: cut
+    cut: snr
+    input: cut_1
+    params:
+      snr_threshold: 5.0
+  - id: phot
+    type: action
+    action: photometry
+    inputs:
+      catalog: cut_2
 """
 
 
@@ -74,63 +85,65 @@ def test_generate_writes_a_catalog(tmp_path, make_schedule):
 
 
 def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
-    """`run` chains generate -> both cuts -> photometry, writing every stage's file to `--out-dir`."""
+    """`run` chains generate -> both cuts -> photometry, writing every checkpointed step's file to `--out-dir`."""
     config_path = _write_config(tmp_path, make_schedule)
     out_dir = tmp_path / "results"
 
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
 
     assert result.exit_code == 0, result.output
-    assert (out_dir / "00_generated.ecsv").exists()
+    assert (out_dir / "baseline.ecsv").exists()
+    assert (out_dir / "exposure.ecsv").exists()
     assert (out_dir / "01_cut_1.ecsv").exists()
     assert (out_dir / "02_cut_2.ecsv").exists()
-    phot_path = out_dir / "photometry.ecsv"
+    phot_path = out_dir / "03_phot.ecsv"
     assert phot_path.exists()
     phot = QTable.read(phot_path)
     assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}
-    # No 'detection_counts:' section in CONFIG_TEMPLATE -- that stage is skipped entirely.
-    assert not (out_dir / "detection_counts.ecsv").exists()
 
 
 def test_run_writes_detection_counts_when_configured(tmp_path, make_schedule):
-    """A config with a `detection_counts:` section makes `run` also write `detection_counts.ecsv`."""
+    """A config with a `detection_counts` action step makes `run` also write its checkpoint."""
     config_path = _write_config(tmp_path, make_schedule)
     Path(config_path).write_text(
-        Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n  confidence: 0.8\n"
+        Path(config_path).read_text()
+        + """
+  - id: dc
+    type: action
+    action: detection_counts
+    inputs:
+      catalog: cut_2
+      exposure: exposure
+      photometry: phot
+    params:
+      snr_threshold: 5.0
+"""
     )
     out_dir = tmp_path / "results"
 
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
 
     assert result.exit_code == 0, result.output
-    dc_path = out_dir / "detection_counts.ecsv"
+    dc_path = out_dir / "04_dc.ecsv"
     assert dc_path.exists()
     table = QTable.read(dc_path)
     assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
 
 
-def test_run_no_keep_intermediate_writes_only_the_final_catalog_and_photometry(tmp_path, make_schedule):
-    """`run --no-keep-intermediate` discards the intermediate stage catalogs but keeps the final catalog."""
+def test_run_no_keep_intermediate_writes_only_checkpointed_steps(tmp_path, make_schedule):
+    """`run --no-keep-intermediate` skips every step whose own `checkpoint:` is unset."""
     config_path = _write_config(tmp_path, make_schedule)
-    full_out_dir = tmp_path / "full"
     sparse_out_dir = tmp_path / "sparse"
-
-    full = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(full_out_dir)])
-    assert full.exit_code == 0, full.output
-    expected = EventCatalog.from_disk(full_out_dir / "02_cut_2.ecsv")
 
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(sparse_out_dir), "--no-keep-intermediate"])
 
     assert result.exit_code == 0, result.output
-    assert not (sparse_out_dir / "00_generated.ecsv").exists()
+    assert not (sparse_out_dir / "baseline.ecsv").exists()
     assert not (sparse_out_dir / "01_cut_1.ecsv").exists()
     assert not (sparse_out_dir / "02_cut_2.ecsv").exists()
-    final_path = sparse_out_dir / "final_catalog.ecsv"
-    assert final_path.exists()
-    assert (sparse_out_dir / "photometry.ecsv").exists()
-
-    final_catalog = EventCatalog.from_disk(final_path)
-    assert len(final_catalog) == len(expected)
+    assert not (sparse_out_dir / "03_phot.ecsv").exists()
+    # `exposure.ecsv` is always written, unconditionally.
+    assert (sparse_out_dir / "exposure.ecsv").exists()
 
 
 def test_run_keep_intermediate_config_key_is_honored_without_the_cli_flag(tmp_path, make_schedule):
@@ -142,8 +155,9 @@ def test_run_keep_intermediate_config_key_is_honored_without_the_cli_flag(tmp_pa
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
 
     assert result.exit_code == 0, result.output
-    assert not (out_dir / "00_generated.ecsv").exists()
-    assert (out_dir / "photometry.ecsv").exists()
+    assert not (out_dir / "baseline.ecsv").exists()
+    assert not (out_dir / "03_phot.ecsv").exists()
+    assert (out_dir / "exposure.ecsv").exists()
 
 
 def test_run_keep_intermediate_cli_flag_overrides_the_config_key(tmp_path, make_schedule):
@@ -155,7 +169,44 @@ def test_run_keep_intermediate_cli_flag_overrides_the_config_key(tmp_path, make_
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir), "--keep-intermediate"])
 
     assert result.exit_code == 0, result.output
-    assert (out_dir / "00_generated.ecsv").exists()
+    assert (out_dir / "baseline.ecsv").exists()
+
+
+def test_run_resumes_from_an_existing_checkpoint_without_overwrite(tmp_path, make_schedule):
+    """Rerunning `run` without `--overwrite` loads an already-checkpointed step instead of recomputing it."""
+    config_path = _write_config(tmp_path, make_schedule)
+    out_dir = tmp_path / "results"
+
+    first = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+    assert first.exit_code == 0, first.output
+    original_mag_limit = (out_dir / "01_cut_1.ecsv").read_text()
+
+    second = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+    assert second.exit_code == 0, second.output
+    assert "loaded from checkpoint" in second.output
+    assert (out_dir / "01_cut_1.ecsv").read_text() == original_mag_limit
+
+
+def test_a_step_specific_checkpoint_filename_is_honored(tmp_path, make_schedule):
+    """A step's own `checkpoint: "<name>"` overrides the default numbered filename."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(
+        Path(config_path)
+        .read_text()
+        .replace(
+            "  - id: cut_1\n    type: cut\n    cut: limiting_magnitude\n    input: baseline\n    params:\n"
+            "      mag_limit: 25.0\n",
+            "  - id: cut_1\n    type: cut\n    cut: limiting_magnitude\n    input: baseline\n"
+            "    checkpoint: mag_cut.ecsv\n    params:\n      mag_limit: 25.0\n",
+        )
+    )
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+
+    assert result.exit_code == 0, result.output
+    assert (out_dir / "mag_cut.ecsv").exists()
+    assert not (out_dir / "01_cut_1.ecsv").exists()
 
 
 # --------------------------------------------------------------------------- #
@@ -178,21 +229,21 @@ def test_generate_dry_run_reports_the_plan_and_writes_nothing(tmp_path, make_sch
 
 
 def test_run_dry_run_lists_every_stage_file_and_creates_no_directory(tmp_path, make_schedule):
-    """`run --dry-run` lists each cut and every stage file it would write, without even creating OUT_DIR."""
+    """`run --dry-run` lists each step and every stage file it would write, without even creating OUT_DIR."""
     config_path = _write_config(tmp_path, make_schedule)
     out_dir = tmp_path / "results"
 
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir), "--dry-run"])
 
     assert result.exit_code == 0, result.output
-    for name in ("00_generated.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv", "photometry.ecsv"):
+    for name in ("baseline.ecsv", "exposure.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv", "03_phot.ecsv"):
         assert f"would write  {out_dir / name}" in result.output
     assert "limiting_magnitude" in result.output
     assert not out_dir.exists()
 
 
-def test_run_dry_run_no_keep_intermediate_lists_only_final_catalog_and_photometry(tmp_path, make_schedule):
-    """`run --dry-run --no-keep-intermediate` lists only `final_catalog.ecsv` and `photometry.ecsv`."""
+def test_run_dry_run_no_keep_intermediate_lists_only_exposure(tmp_path, make_schedule):
+    """`run --dry-run --no-keep-intermediate` lists only the always-written `exposure.ecsv`."""
     config_path = _write_config(tmp_path, make_schedule)
     out_dir = tmp_path / "results"
 
@@ -201,9 +252,8 @@ def test_run_dry_run_no_keep_intermediate_lists_only_final_catalog_and_photometr
     )
 
     assert result.exit_code == 0, result.output
-    assert f"would write  {out_dir / 'final_catalog.ecsv'}" in result.output
-    assert f"would write  {out_dir / 'photometry.ecsv'}" in result.output
-    for name in ("00_generated.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv"):
+    assert f"would write  {out_dir / 'exposure.ecsv'}" in result.output
+    for name in ("baseline.ecsv", "01_cut_1.ecsv", "02_cut_2.ecsv", "03_phot.ecsv"):
         assert name not in result.output
 
 
@@ -238,7 +288,20 @@ def test_dry_run_reports_a_bad_config_as_a_clean_error(tmp_path, make_schedule):
 def test_detection_counts_writes_a_table(tmp_path, make_schedule):
     """`detection-counts` combines an already-computed catalog/photometry/exposure into a detection-count table."""
     config_path = _write_config(tmp_path, make_schedule)
-    Path(config_path).write_text(Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n")
+    Path(config_path).write_text(
+        Path(config_path).read_text()
+        + """
+  - id: dc
+    type: action
+    action: detection_counts
+    inputs:
+      catalog: cut_2
+      exposure: exposure
+      photometry: phot
+    params:
+      snr_threshold: 5.0
+"""
+    )
     out_dir = tmp_path / "results"
 
     run_result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
@@ -250,10 +313,11 @@ def test_detection_counts_writes_a_table(tmp_path, make_schedule):
         [
             "detection-counts",
             config_path,
+            "dc",
             "--catalog",
             str(out_dir / "02_cut_2.ecsv"),
             "--photometry",
-            str(out_dir / "photometry.ecsv"),
+            str(out_dir / "03_phot.ecsv"),
             "--exposure",
             str(out_dir / "exposure.ecsv"),
             "--out",
@@ -270,7 +334,20 @@ def test_detection_counts_writes_a_table(tmp_path, make_schedule):
 def test_detection_counts_dry_run_reports_the_plan_and_writes_nothing(tmp_path, make_schedule):
     """`detection-counts --dry-run` validates the config and writes nothing, without reading its inputs."""
     config_path = _write_config(tmp_path, make_schedule)
-    Path(config_path).write_text(Path(config_path).read_text() + "\ndetection_counts:\n  snr_threshold: 5.0\n")
+    Path(config_path).write_text(
+        Path(config_path).read_text()
+        + """
+  - id: dc
+    type: action
+    action: detection_counts
+    inputs:
+      catalog: cut_2
+      exposure: exposure
+      photometry: phot
+    params:
+      snr_threshold: 5.0
+"""
+    )
     out_path = tmp_path / "detection_counts.ecsv"
 
     # Only has to exist (click's `exists=True` path check) -- a dry run never reads its contents.
@@ -285,6 +362,7 @@ def test_detection_counts_dry_run_reports_the_plan_and_writes_nothing(tmp_path, 
         [
             "detection-counts",
             config_path,
+            "dc",
             "--catalog",
             str(catalog_path),
             "--photometry",
@@ -299,12 +377,12 @@ def test_detection_counts_dry_run_reports_the_plan_and_writes_nothing(tmp_path, 
 
     assert result.exit_code == 0, result.output
     assert "dry run: detection-counts" in result.output
-    assert "snr_threshold=5.0" in result.output
+    assert "snr_threshold" in result.output
     assert not out_path.exists()
 
 
-def test_cut_dry_run_rejects_an_unknown_cut_name(tmp_path, make_schedule):
-    """`cut --dry-run` validates the requested cut names against the config, without needing to read the catalog."""
+def test_cut_dry_run_rejects_an_unknown_step_id(tmp_path, make_schedule):
+    """`cut --dry-run` validates the requested step ids against the config, without needing to read the catalog."""
     config_path = _write_config(tmp_path, make_schedule)
     catalog_path = tmp_path / "in.ecsv"
     catalog_path.write_text("placeholder")  # only has to exist; a dry run never reads it
@@ -313,10 +391,10 @@ def test_cut_dry_run_rejects_an_unknown_cut_name(tmp_path, make_schedule):
         cli, ["cut", config_path, "cut_2", "--in", str(catalog_path), "--out", str(tmp_path / "o.ecsv"), "--dry-run"]
     )
     assert ok.exit_code == 0, ok.output
-    assert "cuts (1, in order)" in ok.output
+    assert "steps (1, in order)" in ok.output
 
     bad = CliRunner().invoke(
         cli, ["cut", config_path, "nope", "--in", str(catalog_path), "--out", str(tmp_path / "o.ecsv"), "--dry-run"]
     )
     assert bad.exit_code != 0
-    assert "Unknown cut key" in bad.output
+    assert "No step with id 'nope'" in bad.output

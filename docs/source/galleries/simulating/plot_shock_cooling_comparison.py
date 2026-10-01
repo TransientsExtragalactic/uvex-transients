@@ -84,7 +84,7 @@ events = [
 # Choosing the cadences
 # -------------------------
 #
-# We use the same cadences as :ref:`sphx_glr_auto_examples_simulating_plot_multiband_too_followup.py`:
+# We use the same cadences as :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py`:
 # Rubin's redder bands (``r``/``i``/``z``/``y``) every 5 days and its bluer bands (``u``/``g``) every
 # 10 days, at 30 s exposures, with Rubin's systematic calibration floor added in quadrature; and
 # UVEX's ``FUV``/``NUV`` every 20 days at 900 s. Each visit sequence starts at 0.1 days rather than
