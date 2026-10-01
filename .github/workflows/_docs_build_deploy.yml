@@ -53,18 +53,25 @@ jobs:
 
       # Cache Sphinx's own incremental-build state (the doctree pickle cache,
       # kept out of the published `docs/_build/html` tree via `-d` below) plus
-      # autosummary's generated stubs and sphinx-gallery's executed-example
-      # outputs -- both idempotent given unchanged source, and both
-      # expensive to regenerate from scratch. Keyed on doc source + package
-      # source content, so an exact-key miss still falls back (`restore-keys`)
-      # to the nearest prior cache and lets Sphinx/sphinx-gallery's own
-      # per-file hash checks do the real incremental work from there.
+      # sphinx-gallery's executed-example outputs -- both idempotent given
+      # unchanged source, and both expensive to regenerate from scratch.
+      # Keyed on doc source + package source content, so an exact-key miss
+      # still falls back (`restore-keys`) to the nearest prior cache and lets
+      # Sphinx/sphinx-gallery's own per-file hash checks do the real
+      # incremental work from there.
+      #
+      # Deliberately NOT caching `docs/source/_as_gen` (autosummary's
+      # generated stub .rst files): autosummary only ever adds/updates stubs
+      # for symbols it currently finds, it never prunes stubs left over from
+      # a since-renamed/removed symbol. On a `restore-keys` fallback that
+      # orphans stale stubs (e.g. referencing a class renamed away) in the
+      # generated tree, and Sphinx then fails trying to import them. Stub
+      # generation itself is cheap, so it's regenerated fresh every build.
       - name: Cache Sphinx build state
         uses: actions/cache@v6
         with:
           path: |
             docs/_build/doctrees
-            docs/source/_as_gen
             docs/source/auto_examples
           key: ${{ runner.os }}-sphinx-${{ hashFiles('docs/source/**', 'uvex_transients/**/*.py', 'pyproject.toml') }}
           restore-keys: |
