@@ -239,8 +239,8 @@ def test_first_visit_detected_drops_solo_first_visit_and_keeps_the_rest(monkeypa
     assert set(np.asarray(result.table["event_id"])) == {1, 2, 3}
 
 
-def test_filter_by_snr_exclude_first_visit_detections(monkeypatch):
-    """`exclude_first_visit_detections=True` additionally drops a solo detection on a first-ever field visit."""
+def test_filter_by_snr_exclude_first_visit_detections_defaults_to_true(monkeypatch):
+    """`exclude_first_visit_detections` is on by default, dropping a solo detection on a first-ever field visit."""
     sim = _revisit_schedule_sim()
     chunk = QTable(
         {
@@ -249,16 +249,23 @@ def test_filter_by_snr_exclude_first_visit_detections(monkeypatch):
             "snr": np.array([9.0, 9.0, 9.0, 9.0]),
         }
     )
-    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: iter([chunk]))
+    calls = []
+    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: (calls.append(1), iter([chunk]))[1])
 
-    without_flag = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0)
-    with_flag = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0, exclude_first_visit_detections=True)
+    with_default = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0)
+    assert len(calls) == 1
+    without_flag = sim.filter_by_snr(
+        _first_visit_catalog(), uvex, snr_threshold=5.0, exclude_first_visit_detections=False
+    )
+    # `exclude_first_visit_detections` piggybacks on the same pass rather than
+    # re-running the (expensive) SNR evaluation a second time.
+    assert len(calls) == 2
 
+    # By default, event 0's lone epoch on a first-ever visit is excluded; event 1's lone
+    # epoch on a revisit, and event 2's two epochs, both survive regardless.
+    assert set(np.asarray(with_default.table["event_id"])) == {1, 2}
     # Event 3 has no qualifying epoch either way, so `n_visits` alone already excludes it.
     assert set(np.asarray(without_flag.table["event_id"])) == {0, 1, 2}
-    # With the flag, event 0's lone epoch on a first-ever visit is excluded too; event 1's
-    # lone epoch on a revisit, and event 2's two epochs, both survive regardless.
-    assert set(np.asarray(with_flag.table["event_id"])) == {1, 2}
 
 
 # --------------------------------------------------------------------------- #

@@ -97,6 +97,9 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
         uvex,
         snr_threshold=snr_threshold,
         chunk_size=7,
+        # The ground truth below reduces to a plain "best SNR ever clears the
+        # threshold" test and doesn't model the first-visit exclusion.
+        exclude_first_visit_detections=False,
     )
     kept_ids = set(np.asarray(filtered.table["event_id"]))
 
@@ -326,9 +329,16 @@ def test_iter_epoch_snr_chunks_reproduces_filter_by_snr(make_schedule, hot_spot)
     for threshold, n_visits in [(5.0, 1), (3.0, 2)]:
         expected = set(
             np.asarray(
-                sim.filter_by_snr(catalog, uvex, snr_threshold=threshold, chunk_size=7, n_visits=n_visits).table[
-                    "event_id"
-                ]
+                sim.filter_by_snr(
+                    catalog,
+                    uvex,
+                    snr_threshold=threshold,
+                    chunk_size=7,
+                    n_visits=n_visits,
+                    # This test is purely about the `n_visits` reduction, not the
+                    # separate first-visit exclusion.
+                    exclude_first_visit_detections=False,
+                ).table["event_id"]
             )
         )
         above = epochs[epochs["snr"] > threshold]

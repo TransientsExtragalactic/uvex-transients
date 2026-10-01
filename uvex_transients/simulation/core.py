@@ -1395,7 +1395,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         bands: list[str] | None = None,
         chunk_size: int | None = None,
         n_visits: int = 1,
-        exclude_first_visit_detections: bool = False,
+        exclude_first_visit_detections: bool = True,
     ) -> EventCatalog:
         """
         Cut an `EventCatalog` down to events the schedule actually detects.
@@ -1432,11 +1432,12 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             best band) for an event to survive. The default is 1: an event survives if
             it is ever detected at all.
         exclude_first_visit_detections : bool, optional
-            If `True`, also drop an event whose *only* qualifying epoch anywhere in
-            `catalog` (regardless of `n_visits`) falls on its field's first-ever survey
-            visit -- see `filter_by_first_visit_detected` for why that detection has no
-            reference image to be judged against. The default, `False`, leaves that
-            decision to a separate `filter_by_first_visit_detected` call.
+            If `True` (the default), also drop an event whose *only* qualifying epoch
+            anywhere in `catalog` (regardless of `n_visits`) falls on its field's
+            first-ever survey visit -- see `filter_by_first_visit_detected` for why that
+            detection has no reference image to be judged against. Pass `False` to keep
+            such events here and leave that decision to a separate
+            `filter_by_first_visit_detected` call instead.
 
         Returns
         -------
@@ -1461,21 +1462,30 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         single observation bright enough in two bands at once still counts as one
         visit, not two, mirroring `filter_by_limiting_magnitude`'s own `n_visits`.
 
-        `exclude_first_visit_detections` re-runs `iter_epoch_snr_chunks` a second time
-        (via `_collect_solo_detection_observation_indices`), rather than being folded
-        into the loop above, since it needs each solo event's total qualifying epoch
-        count -- exactly 1, irrespective of `n_visits` -- not just whether `n_visits` of
-        them cleared the threshold.
+        `exclude_first_visit_detections` piggybacks on this same pass over
+        `epoch_chunks` -- rather than a second call to
+        `_collect_solo_detection_observation_indices`, which would re-run the whole
+        (expensive) SNR evaluation -- by additionally grouping each chunk's qualifying
+        rows by event (they arrive already event-grouped; see `iter_epoch_snr_chunks`)
+        and remembering the one observation an event's group ever has, for groups of
+        length exactly 1. Since one event's qualifying epochs never span two chunks, a
+        length-1 group is that event's entire qualifying-epoch count, not just this
+        chunk's share of it, so no cross-chunk merging is needed either.
 
         Examples
         --------
         .. code-block:: python
 
             detected = simulator.filter_by_snr(
+                catalog, mission, snr_threshold=5.0
+            )
+
+            # Keep first-visit solo detections too, e.g. to inspect them separately.
+            detected_all = simulator.filter_by_snr(
                 catalog,
                 mission,
                 snr_threshold=5.0,
-                exclude_first_visit_detections=True,
+                exclude_first_visit_detections=False,
             )
         """
         # Validate what only this cut cares about; the catalog, mission, bands and chunk size
@@ -1501,18 +1511,27 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         event_id = np.asarray(table["event_id"])
         visit_count = np.zeros(len(table), dtype=np.int64)
         row_of_event = np.argsort(event_id)
+        solo_observation_index: dict[int, int] = {}
 
         with logging_redirect_tqdm(loggers=[logger]):
             for chunk in epoch_chunks:
                 above = np.asarray(chunk["snr"]) > snr_threshold
-                ids, counts = np.unique(np.asarray(chunk["event_id"])[above], return_counts=True)
+                above_ids = np.asarray(chunk["event_id"])[above]
+
+                ids, counts = np.unique(above_ids, return_counts=True)
                 rows = row_of_event[np.searchsorted(event_id[row_of_event], ids)]
                 visit_count[rows] += counts
 
+                if exclude_first_visit_detections:
+                    above_obs = np.asarray(chunk["observation_index"])[above]
+                    boundaries = np.flatnonzero(np.diff(above_ids) != 0) + 1
+                    for group in np.split(np.arange(len(above_ids)), boundaries):
+                        if len(group) == 1:
+                            solo_observation_index[int(above_ids[group[0]])] = int(above_obs[group[0]])
+
         keep = visit_count >= n_visits
         if exclude_first_visit_detections:
-            solo = self._collect_solo_detection_observation_indices(catalog, mission, snr_threshold, bands, chunk_size)
-            self._mask_out_first_visit_solo_detections(catalog, solo, keep)
+            self._mask_out_first_visit_solo_detections(catalog, solo_observation_index, keep)
 
         return EventCatalog(
             table=table[keep],
