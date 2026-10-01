@@ -21,7 +21,7 @@ table["target_coord"] = SkyCoord(
     np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
 )
 table["roll"] = np.zeros(n) * u.deg
-table["field_id"] = np.arrange(n)
+table["field_id"] = np.arange(n)
 table["block_id"] = np.zeros(n, dtype=int)
 
 fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)

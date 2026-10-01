@@ -1131,6 +1131,46 @@
         <span class="p">)</span></div>
 </div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_example_catalog_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">uvex_transients</span>
+
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">uvex_transients</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"test_data"</span> <span class="o">/</span> <span class="s2">"simulation"</span> <span class="o">/</span> <span class="s2">"example_event_catalog.ecsv"</span>
+
+
+<div class="viewcode-block" id="get_example_event_catalog">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.get_example_event_catalog.html#uvex_transients.simulation.event_catalog.get_example_event_catalog">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_example_event_catalog</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Load the packaged example `EventCatalog`, so docs/examples don't have to resample one.</span>
+
+<span class="sd">    The packaged catalog (``test_data/simulation/example_event_catalog.ecsv``) is a raw</span>
+<span class="sd">    (pre-cut) catalog of 598 events -- 344 `~uvex_transients.transients.supernovae.MagnetarSLSNe`</span>
+<span class="sd">    ("slsn") and 254 `~uvex_transients.transients.TDEs.TidalDisruptionEvent` ("tde") -- generated</span>
+<span class="sd">    once against the default schedule (see `~uvex_transients.surveys.get_schedule`) with</span>
+<span class="sd">    ``simulation_seed=42``, ``time_bins=10``, ``nside=32``, ``downsample=500``. Sphinx gallery</span>
+<span class="sd">    examples that only need a representative catalog to demonstrate a cut/action on can load this</span>
+<span class="sd">    instead of re-running `SurveySimulator.generate_events` -- a nontrivial Monte Carlo draw --</span>
+<span class="sd">    on every doc build.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str or ~pathlib.Path, optional</span>
+<span class="sd">        Path to the catalog file. If `None` (the default), uses the packaged</span>
+<span class="sd">        ``test_data/simulation/example_event_catalog.ecsv``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EventCatalog</span>
+<span class="sd">        The packaged example catalog.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    EventCatalog.from_disk : The general-purpose loader this delegates to.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">EventCatalog</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_default_example_catalog_path</span><span class="p">())</span></div>
+
 </pre></div>
 
                 </article>

@@ -462,7 +462,7 @@
 
 <span class="sd">A single YAML file drives every CLI command (see `uvex_transients.cli.main`); each</span>
 <span class="sd">command only needs the section(s) relevant to it (`generate:` for ``generate``,</span>
-<span class="sd">`cuts:` for ``cut``, ...), so `RunConfig` resolves each section **lazily**, on first</span>
+<span class="sd">`steps:` for ``run``, ...), so `RunConfig` resolves each section **lazily**, on first</span>
 <span class="sd">access, rather than eagerly validating the whole file up front -- a config missing a</span>
 <span class="sd">section a given command doesn't need is perfectly valid.</span>
 <span class="sd">"""</span>
@@ -480,6 +480,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prior</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.logical_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOGICAL_OP_ARITY</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransientBase</span>
@@ -488,10 +489,15 @@
 
 <span class="n">_DEFAULT_MISSION</span> <span class="o">=</span> <span class="s2">"uvex"</span>
 
-<span class="c1"># `run_cut`'s own positional parameters -- a cut's `params:` block may not use these</span>
-<span class="c1"># names, since they'd otherwise collide with the call `SurveySimulator.run_cut(type, catalog,</span>
-<span class="c1"># mission, **params)` makes.</span>
+<span class="c1">#: Reserved ``steps:`` entry ids auto-registered before any user-declared step runs --</span>
+<span class="c1">#: see `uvex_transients.cli.steps.run_steps`. A step may not reuse either as its own id.</span>
+<span class="n">RESERVED_ARTIFACT_IDS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"baseline"</span><span class="p">,</span> <span class="s2">"exposure"</span><span class="p">})</span>
+
+<span class="c1"># A cut's `params:` block may not use these names, since they'd otherwise collide with</span>
+<span class="c1"># the call `SurveySimulator.run_cut(type, catalog, mission, **params)` makes.</span>
 <span class="n">_RESERVED_CUT_PARAMS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"catalog"</span><span class="p">,</span> <span class="s2">"mission"</span><span class="p">})</span>
+
+<span class="n">_STEP_TYPES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"cut"</span><span class="p">,</span> <span class="s2">"logical_op"</span><span class="p">,</span> <span class="s2">"action"</span><span class="p">})</span>
 
 <span class="c1"># Every `uvex_transients.transients` submodule that defines a concrete `TransientBase`</span>
 <span class="c1"># subclass. Nothing in `uvex_transients`'s own import chain imports these eagerly -- a</span>
@@ -698,45 +704,159 @@
     <span class="k">return</span> <span class="n">transients</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_cuts</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"CutSpec"</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_steps</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="s2">"StepSpec"</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Resolve a ``cuts:`` block into ``{key: CutSpec}``, validating each ``type:`` against `SurveySimulator`.</span>
+<span class="sd">    Resolve a ``steps:`` block into an ordered list of `StepSpec`.</span>
+
+<span class="sd">    Every step's ``id`` must be unique and distinct from `RESERVED_ARTIFACT_IDS`; every</span>
+<span class="sd">    input it references (``input:``/``inputs:``) must resolve to `RESERVED_ARTIFACT_IDS`</span>
+<span class="sd">    or an *earlier* step's own ``id`` (steps run strictly in declared order -- see</span>
+<span class="sd">    `uvex_transients.cli.steps.run_steps` -- so a forward reference is never valid);</span>
+<span class="sd">    ``cut:``/``op:``/``action:`` names are checked against `SurveySimulator`/</span>
+<span class="sd">    `~uvex_transients.simulation.logical_ops.LOGICAL_OPS`; a `logical_op` step's input</span>
+<span class="sd">    count is checked against `~uvex_transients.simulation.logical_ops.LOGICAL_OP_ARITY`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    section : Mapping</span>
-<span class="sd">        The parsed ``cuts:`` YAML block.</span>
+<span class="sd">    section : list</span>
+<span class="sd">        The parsed ``steps:`` YAML block -- a list of step mappings, in declared order.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    dict of str to CutSpec</span>
-<span class="sd">        One resolved `CutSpec` per declared key, in declared order.</span>
+<span class="sd">    list of StepSpec</span>
+<span class="sd">        One resolved `StepSpec` per declared entry, in declared order.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If an entry is missing its required ``type`` key, names an unknown</span>
-<span class="sd">        cut type, or uses a reserved parameter name.</span>
+<span class="sd">        If `section` isn't a list, an entry is missing a required key, uses an unknown</span>
+<span class="sd">        ``type:``/``cut:``/``op:``/``action:``, reuses an ``id``, references an</span>
+<span class="sd">        unresolvable input, or violates a `logical_op`'s arity.</span>
 <span class="sd">    """</span>
-    <span class="n">available</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'steps:' must be a list of step entries, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">section</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-    <span class="n">cuts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">raw_entry</span> <span class="ow">in</span> <span class="n">section</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">available_cuts</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span>
+    <span class="n">available_actions</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">available_actions</span><span class="p">()</span>
+
+    <span class="n">steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">RESERVED_ARTIFACT_IDS</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">raw_entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
         <span class="n">entry</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">raw_entry</span><span class="p">)</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"steps[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span>
 
-        <span class="n">cut_type</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cut_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuts.</span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> is missing required key 'type'."</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cut_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuts.</span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">: unknown cut type </span><span class="si">{</span><span class="n">cut_type</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">step_id</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'id'."</span><span class="p">)</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"steps.</span><span class="si">{</span><span class="n">step_id</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">step_id</span> <span class="ow">in</span> <span class="n">seen_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: duplicate step id (or reserved id </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">RESERVED_ARTIFACT_IDS</span><span class="p">)</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
 
-        <span class="n">reserved</span> <span class="o">=</span> <span class="n">_RESERVED_CUT_PARAMS</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">reserved</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuts.</span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">: params cannot use reserved name(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">reserved</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">step_type</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'type'."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_STEP_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unknown step type </span><span class="si">{</span><span class="n">step_type</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_STEP_TYPES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="n">cuts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">CutSpec</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">cut_type</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"checkpoint"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: 'checkpoint' must be a bool or a str filename, got </span><span class="si">{</span><span class="n">checkpoint</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">cuts</span>
+        <span class="k">if</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"cut"</span><span class="p">:</span>
+            <span class="n">cut_name</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"cut"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cut_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'cut'."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cut_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_cuts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unknown cut </span><span class="si">{</span><span class="n">cut_name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">available_cuts</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">step_input</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"input"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">step_input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'input'."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">step_input</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_ids</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: input </span><span class="si">{</span><span class="n">step_input</span><span class="si">!r}</span><span class="s2"> is not 'baseline'/'exposure' or an earlier step id."</span><span class="p">)</span>
+
+            <span class="n">transient_types</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"transient_types"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transient_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient_types</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: 'transient_types' must be a list, got </span><span class="si">{</span><span class="n">transient_types</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">params</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">reserved</span> <span class="o">=</span> <span class="n">_RESERVED_CUT_PARAMS</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">reserved</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: params cannot use reserved name(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">reserved</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> has unknown key(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">StepSpec</span><span class="p">(</span>
+                    <span class="nb">id</span><span class="o">=</span><span class="n">step_id</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">"cut"</span><span class="p">,</span>
+                    <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+                    <span class="n">cut</span><span class="o">=</span><span class="n">cut_name</span><span class="p">,</span>
+                    <span class="nb">input</span><span class="o">=</span><span class="n">step_input</span><span class="p">,</span>
+                    <span class="n">transient_types</span><span class="o">=</span><span class="n">transient_types</span><span class="p">,</span>
+                    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">step_type</span> <span class="o">==</span> <span class="s2">"logical_op"</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"op"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'op'."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">op</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">LOGICAL_OP_ARITY</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unknown op </span><span class="si">{</span><span class="n">op</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">LOGICAL_OP_ARITY</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">step_inputs</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"inputs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_inputs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">step_inputs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: 'inputs' must be a non-empty list of earlier step/baseline ids."</span><span class="p">)</span>
+            <span class="n">unresolved</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">step_inputs</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_ids</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">unresolved</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: input(s) </span><span class="si">{</span><span class="n">unresolved</span><span class="si">}</span><span class="s2"> are not 'baseline'/'exposure' or earlier step ids."</span><span class="p">)</span>
+
+            <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">LOGICAL_OP_ARITY</span><span class="p">[</span><span class="n">op</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_inputs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lower</span> <span class="ow">or</span> <span class="p">(</span><span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_inputs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">upper</span><span class="p">):</span>
+                <span class="n">bound</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"exactly </span><span class="si">{</span><span class="n">lower</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">lower</span> <span class="o">==</span> <span class="n">upper</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"at least </span><span class="si">{</span><span class="n">lower</span><span class="si">}</span><span class="s2">"</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: op </span><span class="si">{</span><span class="n">op</span><span class="si">!r}</span><span class="s2"> requires </span><span class="si">{</span><span class="n">bound</span><span class="si">}</span><span class="s2"> input(s), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">step_inputs</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> has unknown key(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">StepSpec</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">step_id</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"logical_op"</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">op</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">step_inputs</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># action</span>
+            <span class="n">action_name</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"action"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">action_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is missing required key 'action'."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">action_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_actions</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unknown action </span><span class="si">{</span><span class="n">action_name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">available_actions</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">step_inputs</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"inputs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step_inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">step_inputs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: 'inputs' must be a non-empty mapping of </span><span class="se">{{</span><span class="s2">param name: artifact id</span><span class="se">}}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="n">unresolved</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">step_inputs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_ids</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">unresolved</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: input(s) </span><span class="si">{</span><span class="n">unresolved</span><span class="si">}</span><span class="s2"> are not 'baseline'/'exposure' or earlier step ids."</span><span class="p">)</span>
+
+            <span class="n">params</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
+
+            <span class="k">if</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> has unknown key(s) </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+            <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">StepSpec</span><span class="p">(</span>
+                    <span class="nb">id</span><span class="o">=</span><span class="n">step_id</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">"action"</span><span class="p">,</span>
+                    <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="n">action_name</span><span class="p">,</span>
+                    <span class="n">inputs</span><span class="o">=</span><span class="n">step_inputs</span><span class="p">,</span>
+                    <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">seen_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">step_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">steps</span>
 
 
 <div class="viewcode-block" id="GenerateConfig">
@@ -752,46 +872,47 @@
 
 
 
-<div class="viewcode-block" id="CutSpec">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.CutSpec.html#uvex_transients.cli.config.CutSpec">[docs]</a>
+<div class="viewcode-block" id="StepSpec">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.StepSpec.html#uvex_transients.cli.config.StepSpec">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">CutSpec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""One resolved entry of a ``cuts:`` section -- a `SurveySimulator.available_cuts()` name plus its params."""</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StepSpec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    One resolved entry of a ``steps:`` section.</span>
 
+<span class="sd">    Shared across all three ``type:`` values; only the fields relevant to a given</span>
+<span class="sd">    `type` are populated (see `uvex_transients.cli.steps.run_steps` for how each is</span>
+<span class="sd">    dispatched).</span>
+<span class="sd">    """</span>
+
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""str: One of ``"cut"``, ``"logical_op"``, ``"action"``."""</span>
+
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""bool, str, or None: Whether/where to persist this step's artifact.</span>
+
+<span class="sd">    `None` (the default) defers to the run's own ``keep_intermediate`` setting; `True`/</span>
+<span class="sd">    `False` overrides it for this step alone; a `str` gives an explicit filename</span>
+<span class="sd">    (relative to ``--out-dir``) instead of the default ``{i:02d}_{id}.&lt;ext&gt;``</span>
+<span class="sd">    convention, and also forces the step to be persisted regardless of</span>
+<span class="sd">    ``keep_intermediate``.</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># cut</span>
+    <span class="n">cut</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">input</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">transient_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># logical_op</span>
+    <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># action</span>
+    <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># logical_op: list[str]; action: dict[str, str] ({param name: artifact id})</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="PhotometryConfig">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.PhotometryConfig.html#uvex_transients.cli.config.PhotometryConfig">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PhotometryConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parsed ``photometry:`` section -- see `EventCatalog.simulate_photometry`."""</span>
-
-    <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
-
-
-
-<div class="viewcode-block" id="YieldConfig">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.YieldConfig.html#uvex_transients.cli.config.YieldConfig">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">YieldConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parsed ``yield:`` section -- see `EventCatalog.compute_yield_summary`."""</span>
-
-    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span></div>
-
-
-
-<div class="viewcode-block" id="DetectionCountsConfig">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.DetectionCountsConfig.html#uvex_transients.cli.config.DetectionCountsConfig">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">DetectionCountsConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parsed ``detection_counts:`` section -- see `PhotometryCatalog.compute_detection_count_table`."""</span>
-
-    <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span></div>
 
 
 
@@ -803,9 +924,8 @@
 
 <span class="sd">    Every command reads the same config file; a command only touches the properties it</span>
 <span class="sd">    actually needs (`generate` reads `.schedule`/`.transients`/`.mission`/`.generate`;</span>
-<span class="sd">    `cut` reads `.schedule`/`.transients`/`.mission`/`.cuts`; `photometry` reads</span>
-<span class="sd">    `.schedule`/`.transients`/`.mission`/`.photometry`), so a config missing an unrelated</span>
-<span class="sd">    section (e.g. no `photometry:` block, if you never run that command) still works.</span>
+<span class="sd">    `run` also reads `.steps`), so a config missing an unrelated section (e.g. no</span>
+<span class="sd">    `steps:` block, if you only ever run ``generate``) still works.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -834,10 +954,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TransientBase</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span><span class="p">:</span> <span class="n">SurveySimulator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span><span class="p">:</span> <span class="n">GenerateConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span><span class="p">:</span> <span class="n">PhotometryConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span><span class="p">:</span> <span class="n">YieldConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span><span class="p">:</span> <span class="n">DetectionCountsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keep_intermediate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="RunConfig.from_yaml">
@@ -989,68 +1106,48 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">cuts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CutSpec</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The parsed ``cuts:`` section, in declared order (required by the ``cut`` command).</span>
+<span class="sd">        The parsed ``steps:`` section, in declared order.</span>
+
+<span class="sd">        Optional; an entirely absent ``steps:`` section resolves to an empty list, so a</span>
+<span class="sd">        config that only ever needs the raw generated catalog (``"baseline"``) is valid.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict of str to CutSpec</span>
-<span class="sd">            One resolved `CutSpec` per declared key, in declared order.</span>
+<span class="sd">        list of StepSpec</span>
+<span class="sd">            One resolved `StepSpec` per declared entry, in declared order.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span> <span class="o">=</span> <span class="n">_resolve_cuts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"cuts"</span><span class="p">,</span> <span class="s2">"cut"</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cuts</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span> <span class="o">=</span> <span class="n">_resolve_steps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"steps"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">photometry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhotometryConfig</span><span class="p">:</span>
+<div class="viewcode-block" id="RunConfig.step_by_id">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.config.RunConfig.step_by_id.html#uvex_transients.cli.config.RunConfig.step_by_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StepSpec</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The parsed ``photometry:`` section (optional; every field defaults to "every band"/the package default).</span>
+<span class="sd">        Look up one of `steps` by its own ``id`` (used by the ad hoc ``cut``/``photometry`` commands).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        step_id : str</span>
+<span class="sd">            The step's own ``id``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        PhotometryConfig</span>
-<span class="sd">            The parsed section.</span>
+<span class="sd">        StepSpec</span>
+<span class="sd">            The matching step.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no step in `steps` has that ``id``.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"photometry"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span> <span class="o">=</span> <span class="n">PhotometryConfig</span><span class="p">(</span><span class="n">bands</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bands"</span><span class="p">),</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"n_sigma"</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">step_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">step</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No step with id </span><span class="si">{</span><span class="n">step_id</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">step</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">]</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">yield_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YieldConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The parsed ``yield:`` section (optional; defaults to a ``0.9`` Clopper-Pearson confidence level).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        YieldConfig</span>
-<span class="sd">            The parsed section.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"yield"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span> <span class="o">=</span> <span class="n">YieldConfig</span><span class="p">(</span><span class="n">confidence</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yield</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">detection_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectionCountsConfig</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        The parsed ``detection_counts:`` section (required by the ``detection-counts`` command).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        DetectionCountsConfig</span>
-<span class="sd">            The parsed section.</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"detection_counts"</span><span class="p">,</span> <span class="s2">"detection-counts"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">"snr_threshold"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'detection_counts:' is missing required key 'snr_threshold'."</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span> <span class="o">=</span> <span class="n">DetectionCountsConfig</span><span class="p">(</span>
-                <span class="n">snr_threshold</span><span class="o">=</span><span class="n">section</span><span class="p">[</span><span class="s2">"snr_threshold"</span><span class="p">],</span>
-                <span class="n">confidence</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detection_counts</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">keep_intermediate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>

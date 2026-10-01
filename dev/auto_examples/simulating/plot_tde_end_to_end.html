@@ -66,8 +66,8 @@
     <link rel="icon" href="../../_static/trex_logo.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Multi-Band ToO Follow-up" href="plot_multiband_too_followup.html" />
-    <link rel="prev" title="Target-of-Opportunity Follow-up of a TDE" href="plot_too_followup.html" />
+    <link rel="next" title="Shock-Cooling Models: Blackbody vs. Full SED" href="plot_shock_cooling_comparison.html" />
+    <link rel="prev" title="Action: Synthetic Photometry" href="plot_action_photometry.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -426,11 +426,29 @@
 <li class="toctree-l2"><a class="reference internal" href="../schedules/plot_cadence.html">Cadence Diagnostics on the Default Schedule</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Simulating Transients</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="plot_too_followup.html">Target-of-Opportunity Follow-up of a TDE</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Survey Transient Simulations</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_peak_magnitude.html">Cut: Peak Magnitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_peak_flux.html">Cut: Peak Flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_peak_luminosity.html">Cut: Peak Luminosity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_query.html">Cut: Arbitrary Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_action_yield.html">Action: Yield Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_baseline.html">Cut: Baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_limiting_magnitude.html">Cut: Limiting Magnitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_sky_position.html">Cut: Sky Position Box</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_time_to_first_detection.html">Cut: Time to First Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_snr.html">Cut: Signal-to-Noise Ratio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_redshift.html">Cut: Redshift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_action_detection_counts.html">Action: Detection Counts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_region.html">Cut: Sky Region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_cut_transient_type.html">Cut: Transient Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_action_photometry.html">Action: Synthetic Photometry</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">TDE End-to-End Simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot_multiband_too_followup.html">Multi-Band ToO Follow-up</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_shock_cooling_comparison.html">Shock-Cooling Models: Blackbody vs. Full SED</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../too_simulations/index.html">Target of Opportunity Simulations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../too_simulations/plot_too_followup.html">Target-of-Opportunity Follow-up of a TDE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../too_simulations/plot_multiband_too_followup.html">Multi-Band ToO Follow-up</a></li>
 </ul>
 </details></li>
 </ul>
@@ -477,7 +495,7 @@
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Examples</a></li>
     
     
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Simulating Transients</a></li>
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Survey Transient Simulations</a></li>
     
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">TDE End-to-End Simulation</span></li>
   </ul>
@@ -523,7 +541,7 @@ We’ll also want to get the TDE class configured and load the simulator.</p>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="w">
-</span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span><span class="w">
 </span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">simulation</span><span class="nn">.</span><span class="nn">core</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.SurveySimulator"><span class="n">SurveySimulator</span></a><span class="w">
@@ -566,45 +584,45 @@ at a later point in the analysis.</p>
 </span></pre></div></div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Generating events:   0%|          | 0/20 [00:00&lt;?, ?bin/s]
 Generating events:   0%|          | 0/20 [00:00&lt;?, ?bin/s, bin=1/20, type=tde]
-Generating events:   5%|▌         | 1/20 [00:11&lt;03:42, 11.70s/bin, bin=1/20, type=tde]
-Generating events:   5%|▌         | 1/20 [00:11&lt;03:42, 11.70s/bin, bin=2/20, type=tde]
-Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.92s/bin, bin=2/20, type=tde]
-Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.92s/bin, bin=3/20, type=tde]
-Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.74s/bin, bin=3/20, type=tde]
-Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.74s/bin, bin=4/20, type=tde]
-Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.71s/bin, bin=4/20, type=tde]
-Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.71s/bin, bin=5/20, type=tde]
+Generating events:   5%|▌         | 1/20 [00:11&lt;03:43, 11.75s/bin, bin=1/20, type=tde]
+Generating events:   5%|▌         | 1/20 [00:11&lt;03:43, 11.75s/bin, bin=2/20, type=tde]
+Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.94s/bin, bin=2/20, type=tde]
+Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.94s/bin, bin=3/20, type=tde]
+Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.75s/bin, bin=3/20, type=tde]
+Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.75s/bin, bin=4/20, type=tde]
+Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.72s/bin, bin=4/20, type=tde]
+Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.72s/bin, bin=5/20, type=tde]
 Generating events:  25%|██▌       | 5/20 [00:12&lt;00:17,  1.15s/bin, bin=5/20, type=tde]
 Generating events:  25%|██▌       | 5/20 [00:12&lt;00:17,  1.15s/bin, bin=6/20, type=tde]
-Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.24bin/s, bin=6/20, type=tde]
-Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.24bin/s, bin=7/20, type=tde]
-Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.69bin/s, bin=7/20, type=tde]
-Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.69bin/s, bin=8/20, type=tde]
-Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.22bin/s, bin=8/20, type=tde]
-Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.22bin/s, bin=9/20, type=tde]
-Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.81bin/s, bin=9/20, type=tde]
-Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.81bin/s, bin=10/20, type=tde]
-Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.43bin/s, bin=10/20, type=tde]
-Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.43bin/s, bin=11/20, type=tde]
-Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  4.03bin/s, bin=11/20, type=tde]
-Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  4.03bin/s, bin=12/20, type=tde]
-Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.58bin/s, bin=12/20, type=tde]
-Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.58bin/s, bin=13/20, type=tde]
-Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  5.06bin/s, bin=13/20, type=tde]
-Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  5.06bin/s, bin=14/20, type=tde]
-Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.47bin/s, bin=14/20, type=tde]
-Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.47bin/s, bin=15/20, type=tde]
-Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.87bin/s, bin=15/20, type=tde]
-Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.87bin/s, bin=16/20, type=tde]
-Generating events:  80%|████████  | 16/20 [00:13&lt;00:00,  6.29bin/s, bin=16/20, type=tde]
-Generating events:  80%|████████  | 16/20 [00:13&lt;00:00,  6.29bin/s, bin=17/20, type=tde]
-Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.77bin/s, bin=17/20, type=tde]
-Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.77bin/s, bin=18/20, type=tde]
-Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.37bin/s, bin=18/20, type=tde]
-Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.37bin/s, bin=19/20, type=tde]
-Generating events:  95%|█████████▌| 19/20 [00:14&lt;00:00,  7.37bin/s, bin=20/20, type=tde]
-Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  8.83bin/s, bin=20/20, type=tde]
-Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  1.40bin/s, bin=20/20, type=tde]
+Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.23bin/s, bin=6/20, type=tde]
+Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.23bin/s, bin=7/20, type=tde]
+Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.68bin/s, bin=7/20, type=tde]
+Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.68bin/s, bin=8/20, type=tde]
+Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.21bin/s, bin=8/20, type=tde]
+Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.21bin/s, bin=9/20, type=tde]
+Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.79bin/s, bin=9/20, type=tde]
+Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.79bin/s, bin=10/20, type=tde]
+Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.40bin/s, bin=10/20, type=tde]
+Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.40bin/s, bin=11/20, type=tde]
+Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  3.99bin/s, bin=11/20, type=tde]
+Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  3.99bin/s, bin=12/20, type=tde]
+Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.50bin/s, bin=12/20, type=tde]
+Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.50bin/s, bin=13/20, type=tde]
+Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  4.97bin/s, bin=13/20, type=tde]
+Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  4.97bin/s, bin=14/20, type=tde]
+Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.38bin/s, bin=14/20, type=tde]
+Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.38bin/s, bin=15/20, type=tde]
+Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.77bin/s, bin=15/20, type=tde]
+Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.77bin/s, bin=16/20, type=tde]
+Generating events:  80%|████████  | 16/20 [00:14&lt;00:00,  6.20bin/s, bin=16/20, type=tde]
+Generating events:  80%|████████  | 16/20 [00:14&lt;00:00,  6.20bin/s, bin=17/20, type=tde]
+Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.66bin/s, bin=17/20, type=tde]
+Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.66bin/s, bin=18/20, type=tde]
+Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.28bin/s, bin=18/20, type=tde]
+Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.28bin/s, bin=19/20, type=tde]
+Generating events:  95%|█████████▌| 19/20 [00:14&lt;00:00,  7.28bin/s, bin=20/20, type=tde]
+Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  8.76bin/s, bin=20/20, type=tde]
+Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  1.39bin/s, bin=20/20, type=tde]
 Sampled 115360 TDEs across 20 time bin(s) at NSIDE=64.
 </pre></div>
 </div>
@@ -622,25 +640,25 @@ detected above a given SNR at an observation the schedule actually made?</p></li
 <div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a> <span class="o">=</span> <span class="mf">25.0</span><span class="w">
 </span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">SNR_THRESHOLD</span></a> <span class="o">=</span> <span class="mf">5.0</span><span class="w">
 </span><span class="w">
-</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">mag_filtered</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.SurveySimulator.filter_by_limiting_magnitude"><span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">catalog</span></a><span class="p">,</span> <span class="n">uvex</span><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">mag_filtered</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.SurveySimulator.filter_by_limiting_magnitude"><span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">catalog</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">)</span><span class="w">
 </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">mag_filtered</span></a><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">DOWNSAMPLE</span></a><span class="si">}</span><span class="s2"> could ever clear </span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="si">}</span><span class="s2"> AB mag.</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
 </span><span class="w">
-</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">detected</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_snr.html#uvex_transients.simulation.core.SurveySimulator.filter_by_snr" title="uvex_transients.SurveySimulator.filter_by_snr"><span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">mag_filtered</span></a><span class="p">,</span> <span class="n">uvex</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">SNR_THRESHOLD</span></a><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">detected</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_snr.html#uvex_transients.simulation.core.SurveySimulator.filter_by_snr" title="uvex_transients.SurveySimulator.filter_by_snr"><span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">mag_filtered</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">SNR_THRESHOLD</span></a><span class="p">)</span><span class="w">
 </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">detected</span></a><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">DOWNSAMPLE</span></a><span class="si">}</span><span class="s2"> were detected above SNR=</span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">SNR_THRESHOLD</span></a><span class="si">}</span><span class="s2">.</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Filtering by mag limit:   0%|          | 0/2 [00:00&lt;?, ?chunk/s]
 Filtering by mag limit:   0%|          | 0/2 [00:00&lt;?, ?chunk/s, chunk=1/2, type=tde]
-Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.43s/chunk, chunk=1/2, type=tde]
-Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.43s/chunk, chunk=2/2, type=tde]
-Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.48chunk/s, chunk=2/2, type=tde]
-Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.27chunk/s, chunk=2/2, type=tde]
+Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.49s/chunk, chunk=1/2, type=tde]
+Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.49s/chunk, chunk=2/2, type=tde]
+Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.42chunk/s, chunk=2/2, type=tde]
+Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.22chunk/s, chunk=2/2, type=tde]
 27140 could ever clear 25.0 AB mag.
 
-Filtering by SNR:   0%|          | 0/1 [00:00&lt;?, ?chunk/s]
-Filtering by SNR:   0%|          | 0/1 [00:00&lt;?, ?chunk/s, chunk=1/1, type=tde]
-Filtering by SNR: 100%|██████████| 1/1 [00:01&lt;00:00,  1.40s/chunk, chunk=1/1, type=tde]
-Filtering by SNR: 100%|██████████| 1/1 [00:01&lt;00:00,  1.41s/chunk, chunk=1/1, type=tde]
-13160 were detected above SNR=5.0.
+Computing epoch SNRs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s]
+Computing epoch SNRs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s, type=tde]
+Computing epoch SNRs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.22s/chunk, type=tde]
+Computing epoch SNRs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.23s/chunk, type=tde]
+12540 were detected above SNR=5.0.
 </pre></div>
 </div>
 </section>
@@ -720,7 +738,7 @@ against every observation the schedule actually made of it.</p>
 </span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.html#uvex_transients.simulation.event.Event" title="uvex_transients.Event"><span class="n">event</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.get_events.html#uvex_transients.simulation.event_catalog.EventCatalog.get_events" title="uvex_transients.EventCatalog.get_events"><span class="n">detected</span><span class="o">.</span><span class="n">get_events</span></a><span class="p">(</span><span class="nb">int</span><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64"><span class="n">example_id</span></a><span class="p">)</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;</span><span class="s2">tde</span><span class="s2">&quot;</span><span class="p">:</span> <a class="sphx-glr-backref-module-uvex_transients-transients-TDEs sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.html#uvex_transients.transients.TDEs.TidalDisruptionEvent" title="uvex_transients.transients.TDEs.TidalDisruptionEvent"><span class="n">tde</span></a><span class="p">}</span><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a><span class="p">)</span><span class="w">
 </span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.html#uvex_transients.simulation.event.Event" title="uvex_transients.Event"><span class="n">event</span></a><span class="p">)</span><span class="w">
 </span><span class="w">
-</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.Event.simulate_photometry"><span class="n">event</span><span class="o">.</span><span class="n">simulate_photometry</span></a><span class="p">(</span><span class="n">uvex</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.Event.simulate_photometry"><span class="n">event</span><span class="o">.</span><span class="n">simulate_photometry</span></a><span class="p">(</span><a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">)</span><span class="w">
 </span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_since_explosion</span></a> <span class="o">=</span> <span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">obs_time</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">-</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.t_explosion.html#uvex_transients.simulation.event.Event.t_explosion" title="uvex_transients.Event.t_explosion"><span class="n">event</span><span class="o">.</span><span class="n">t_explosion</span></a><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="w">
 </span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_theory</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace" title="numpy.linspace"><span class="n">np</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients-transients-TDEs sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.duration_limit.html#uvex_transients.transients.TDEs.TidalDisruptionEvent.duration_limit" title="uvex_transients.transients.TDEs.TidalDisruptionEvent.duration_limit"><span class="n">tde</span><span class="o">.</span><span class="n">duration_limit</span><span class="o">.</span><span class="n">to_value</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">)</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span> <span class="o">*</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="w">
 </span><span class="w">
@@ -732,7 +750,7 @@ against every observation the schedule actually made of it.</p>
 </span>        <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_since_explosion</span></a><span class="p">,</span><span class="w">
 </span>        <a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot</span></a><span class="p">,</span><span class="w">
 </span>        <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_theory</span></a><span class="o">=</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_theory</span></a><span class="p">,</span><span class="w">
-</span>        <span class="n">theory_mag</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.mag.html#uvex_transients.simulation.event.Event.mag" title="uvex_transients.Event.mag"><span class="n">event</span><span class="o">.</span><span class="n">mag</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_theory</span></a><span class="p">,</span> <span class="n">uvex</span><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="p">)</span><span class="p">,</span><span class="w">
+</span>        <span class="n">theory_mag</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.mag.html#uvex_transients.simulation.event.Event.mag" title="uvex_transients.Event.mag"><span class="n">event</span><span class="o">.</span><span class="n">mag</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="astropy.units.Quantity"><span class="n">t_theory</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="p">)</span><span class="p">,</span><span class="w">
 </span>        <span class="n">snr_threshold</span><span class="o">=</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">SNR_THRESHOLD</span></a><span class="p">,</span><span class="w">
 </span>        <span class="n">color</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.get_band_color.html#uvex_transients.utils.plotting.get_band_color" title="uvex_transients.utils.plotting.get_band_color"><span class="n">get_band_color</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="p">)</span><span class="p">,</span><span class="w">
 </span>        <span class="n">err_scale</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span><span class="w">
@@ -747,10 +765,10 @@ against every observation the schedule actually made of it.</p>
 </span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<img src="../../_images/sphx_glr_plot_tde_end_to_end_003.png" srcset="../../_images/sphx_glr_plot_tde_end_to_end_003.png" alt="Event 2844 (z=0.426, 4 observations)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Event id=2844 type='tde' z=0.426 n_observations=4&gt;
+<img src="../../_images/sphx_glr_plot_tde_end_to_end_003.png" srcset="../../_images/sphx_glr_plot_tde_end_to_end_003.png" alt="Event 3003 (z=0.204, 2 observations)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Event id=3003 type='tde' z=0.2036 n_observations=2&gt;
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 19.168 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 19.190 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-simulating-plot-tde-end-to-end-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c6d70304c39958c7c55962c7a281cac3/plot_tde_end_to_end.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_tde_end_to_end.ipynb</span></code></a></p>
@@ -777,20 +795,20 @@ against every observation the schedule actually made of it.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="plot_too_followup.html"
+       href="plot_action_photometry.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Target-of-Opportunity Follow-up of a TDE</p>
+        <p class="prev-next-title">Action: Synthetic Photometry</p>
       </div>
     </a>
     <a class="right-next"
-       href="plot_multiband_too_followup.html"
+       href="plot_shock_cooling_comparison.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Multi-Band ToO Follow-up</p>
+        <p class="prev-next-title">Shock-Cooling Models: Blackbody vs. Full SED</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

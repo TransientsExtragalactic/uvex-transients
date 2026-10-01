@@ -547,7 +547,7 @@ than downloading a real one, so the example below runs offline:</p>
     <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">table</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span>
-<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arrange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 <span class="n">table</span><span class="p">[</span><span class="s2">"block_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
 <span class="n">fov</span> <span class="o">=</span> <span class="n">RectangleSkyRegion</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">SkyCoord</span><span class="p">(</span><span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span>
@@ -566,7 +566,10 @@ than downloading a real one, so the example below runs offline:</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> sampled TDEs across the example schedule"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>(<a class="reference download internal" download="" href="../../_downloads/de0d5082e852655956e05fe36bf435a9/overview-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<p>(<a class="reference download internal" download="" href="../../_downloads/de0d5082e852655956e05fe36bf435a9/overview-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/a267df16bd017266d884d4d9e69505cc/overview-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/3de82999aa2617e2033443b0df6fa19f/overview-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/972a2c587e3378f4bfdca198c26e94e0/overview-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/overview-11.png" class="plot-directive" src="../../_images/overview-11.png" />
+</figure>
 <p>That’s the whole shape of it: pair a transient population with a schedule, hand both to a
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a> call, and get back
 every TDE that could plausibly have exploded somewhere the schedule looked. The rest of this page
@@ -650,7 +653,7 @@ schedule’s real footprint more closely, at the cost of more pixels to sample p
 <code class="docutils literal notranslate"><span class="pre">1/k</span></code> subset of each per-bin, per-type table (without replacement, seeded off
 <code class="docutils literal notranslate"><span class="pre">simulation_seed</span></code>) instead of sampling the full population. Multiply any downstream count
 by <code class="docutils literal notranslate"><span class="pre">k</span></code> to get back an estimate of the true yield; see the
-<a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Simulating Transients</span></a> example for this in practice. <code class="docutils literal notranslate"><span class="pre">downsample</span></code> can instead be a
+<a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> example for this in practice. <code class="docutils literal notranslate"><span class="pre">downsample</span></code> can instead be a
 <code class="docutils literal notranslate"><span class="pre">{transient</span> <span class="pre">key:</span> <span class="pre">k}</span></code> mapping to downsample types individually – a type left out of the
 mapping isn’t downsampled at all. Either form is stashed on the returned
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> as
@@ -762,8 +765,8 @@ agnostic to which SED any given row actually uses.</p>
 <p>A freshly-sampled catalog is dominated by events far too faint to ever matter – most of a
 transient’s redshift-limited volume is, by construction, near the limit where it’s essentially
 undetectable. Two progressively more expensive passes narrow it down to the events actually worth
-keeping, both taking an <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> and an <code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code> (for its
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code>’s bandpasses) and returning a new <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the
+keeping, both taking an <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> and an <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses) and returning a new <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the
 surviving rows – <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code>/<code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">downsample</span></code> unchanged, and
 original <code class="docutils literal notranslate"><span class="pre">event_id</span></code> values preserved rather than renumbered:</p>
 <div class="sd-tab-set docutils">
@@ -796,7 +799,7 @@ actually made of an event’s position while it was active, is it ever detected 
 <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>? Every surviving event’s observations are gathered with one batched
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a> call per
 chunk (see <a class="reference internal" href="../surveys/overview.html#user-guide-surveys"><span class="std std-ref">Surveys</span></a>), then evaluated together with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code>.</p>
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">detected</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span><span class="p">(</span>
     <span class="n">mag_filtered</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
 <span class="p">)</span>
@@ -826,6 +829,29 @@ cost on events the cheap pass would have rejected anyway.</p>
 </pre></div>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/d85392fa0ad8ff3b669951ba9959a218/overview-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<figure class="align-default" id="id1">
+<img alt="../../_images/overview-2_00.png" class="plot-directive" src="../../_images/overview-2_00.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/f1ab262b1a6c1f629348f868ac4ddb1c/overview-2_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c758dbc722d9278672222f270fe47a4c/overview-2_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b51ee49eeea49e436ca96ca45e897797/overview-2_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id2">
+<img alt="../../_images/overview-2_01.png" class="plot-directive" src="../../_images/overview-2_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/09dafadbae7212ec5bd67993473a37a9/overview-2_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/e61dff4d9aeba1c1f21f6a69abcc2102/overview-2_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2f52add35ce569a3d63469aa3f7a2a47/overview-2_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code>/<code class="docutils literal notranslate"><span class="pre">snr</span></code> are the two schedule/detector-aware screens shown above, but not
+the whole story – <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.available_cuts.html#uvex_transients.simulation.core.SurveySimulator.available_cuts" title="uvex_transients.simulation.core.SurveySimulator.available_cuts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SurveySimulator.available_cuts()</span></code></a> also includes cheaper or more
+specialized cuts (redshift, transient type, peak apparent/intrinsic brightness, detection
+timing, sky position, and an arbitrary boolean expression over the catalog’s own columns), each
+called the same way (<code class="docutils literal notranslate"><span class="pre">simulator.run_cut(&quot;&lt;name&gt;&quot;,</span> <span class="pre">catalog,</span> <span class="pre">mission,</span> <span class="pre">**params)</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">simulator.filter_by_&lt;name&gt;(catalog,</span> <span class="pre">mission,</span> <span class="pre">**params)</span></code> directly). See
+<a class="reference internal" href="../cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a>’s <code class="docutils literal notranslate"><span class="pre">cut</span></code> step parameter table for the full list and each one’s
+parameters.</p>
+</div>
 <hr class="docutils" />
 </section>
 <section id="exposure-and-yield">
@@ -933,7 +959,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> is the expensive step every
 earlier screening pass was designed to defer: real, per-observation, per-band synthetic photometry
 against every observation in <code class="docutils literal notranslate"><span class="pre">observations</span></code>, batched into one
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code> call per band regardless of how many observations there
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
 are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 
@@ -963,7 +989,7 @@ are:</p>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/a8d7ca9a682638f84e7d7c885194a7b8/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
 <p>This example schedule only ever visits a given field once, so most of its events – like this one
-– end up with just one or two associated observations; see the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Simulating Transients</span></a> for the
+– end up with just one or two associated observations; see the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> for the
 same workflow against a real, densely-cadenced UVEX schedule.</p>
 <p>Each returned row is a Gaussian realization of the true flux at that observation’s implied SNR,
 not the ground truth itself – <code class="docutils literal notranslate"><span class="pre">flux</span></code>/<code class="docutils literal notranslate"><span class="pre">ab_mag</span></code> and their symmetric-in-flux <code class="docutils literal notranslate"><span class="pre">n_sigma</span></code> bounds
@@ -973,7 +999,7 @@ above zero flux – the correct behavior at low SNR, not a bug. The whole event 
 given the same <code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code>, since every parameter draw and every band’s noise realization
 comes from one RNG seeded from it.</p>
 <hr class="docutils" />
-<p>See the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Simulating Transients</span></a> for a full worked example of this entire pipeline against a real
+<p>See the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> for a full worked example of this entire pipeline against a real
 UVEX schedule, and <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.html#module-uvex_transients.simulation" title="uvex_transients.simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.simulation</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a> reference for exhaustive
 method-by-method detail.</p>
 </section>
