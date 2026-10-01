@@ -18,11 +18,13 @@ nested dictionary with automatic loading and saving.
 """
 
 import os
+import tempfile
+import warnings
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Union
 
-from platformdirs import user_config_dir
+from platformdirs import user_cache_path, user_config_dir
 
 from .io_utils import config_yaml
 
@@ -235,3 +237,55 @@ def get_config() -> ConfigManager:
 
 config = get_config()
 """ConfigManager: The global uvex_transients configuration instance."""
+
+# =================================== #
+# Cache Management                    #
+# =================================== #
+_PKG_NAME = "uvex_transients"
+
+
+def get_cache_dir(configured: str | os.PathLike | None) -> Path:
+    """
+    Resolve, create, and verify the on-disk cache directory.
+
+    Precedence (highest first): the ``$UVEX_TRANSIENTS_CACHE`` environment variable,
+    `configured` (normally ``config["system.caching.cache_dir"]``), then the
+    platform-appropriate user cache directory (see `platformdirs.user_cache_path`). If
+    the resolved directory can't be created or isn't writable (e.g. a read-only
+    filesystem), falls back to a per-user directory under the system temp dir and warns
+    rather than raising, since a missing cache is recoverable but shouldn't be fatal.
+
+    Parameters
+    ----------
+    configured : str, os.PathLike, or None
+        The configured cache directory, or `None` to use the platform default.
+
+    Returns
+    -------
+    pathlib.Path
+        An existing, writable cache directory.
+    """
+    raw = os.environ.get(f"{_PKG_NAME.upper()}_CACHE") or configured
+    if raw:
+        path = Path(os.path.expandvars(os.path.expanduser(str(raw)))).resolve()
+    else:
+        path = user_cache_path(_PKG_NAME)
+
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=path):  # existing isn't enough -- must be writable
+            pass
+    except OSError as err:
+        fallback = Path(tempfile.gettempdir()) / f"{_PKG_NAME}-cache-{os.getuid()}"
+        fallback.mkdir(parents=True, exist_ok=True)
+        warnings.warn(
+            f"Cache dir {path} is not usable ({err}); using {fallback}. "
+            f"Set cache_dir in the config or ${_PKG_NAME.upper()}_CACHE to fix.",
+            stacklevel=2,
+        )
+        path = fallback
+    return path
+
+
+cache_dir = get_cache_dir(config["system.caching.cache_dir"])
+"""pathlib.Path: The resolved, existing, writable cache directory for this session."""
