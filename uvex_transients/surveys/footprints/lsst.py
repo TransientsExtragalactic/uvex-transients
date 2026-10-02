@@ -24,10 +24,10 @@ from mocpy import MOC
 
 from uvex_transients.utils import cache_dir, config, logger
 
-from .base import SurveyFootprint
+from .base import SurveyFootprint, combine_footprints
 from .utils import download_file_cached
 
-__all__ = ["lsst_regions_MOC", "lsst_ddf_MOC", "lsst_footprints", "lsst_ddf_footprint"]
+__all__ = ["lsst_regions_MOC", "lsst_ddf_MOC", "lsst_footprints", "lsst_ddf_footprint", "lsst_combined_footprint"]
 
 _cfg = config["observatories.lsst"]
 
@@ -186,3 +186,12 @@ lsst_ddf_footprint = SurveyFootprint(
     version=_cfg["version"],
     persist=True,
 )
+
+lsst_combined_footprint = combine_footprints(
+    name=_cfg["combined"]["name"],
+    operation="union",
+    footprints=[lsst_footprints["main"], lsst_ddf_footprint],
+    description=_cfg["combined"]["description"],
+    version=_cfg["version"],
+)
+"""SurveyFootprint: Everything LSST observes: the main survey plus the deep drilling fields."""

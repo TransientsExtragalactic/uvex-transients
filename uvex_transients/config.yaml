@@ -192,6 +192,9 @@ observatories:
       name: lsst:ddf
       radius: 1.75   # degrees; half of Rubin's ~3.5 deg field of view
       description: Rubin LSST deep drilling fields (single pointings expanded to the FOV circle).
+    combined:
+      name: lsst:combined
+      description: Rubin LSST everything observed, the main survey plus the deep drilling fields.
 
 
 # ------------------------------- #
@@ -207,6 +210,12 @@ plotting:
   use_tex: false            # Whether to render plot text with LaTeX. False so plotting works out of
                             # the box; enable if LaTeX is installed.
   latex_preamble: '\usepackage{amsmath,amssymb}'
+
+  # Categorical colors for unordered groups (e.g. survey footprints), assigned in this fixed
+  # order and never cycled (see uvex_transients.utils.plotting.get_categorical_colors). The
+  # first three stay distinguishable in any pairing, including under color-vision deficiency;
+  # beyond that, pair the colors with a legend or labels.
+  categorical_colors: ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 
   # Shared per-band colors, so a given photometric band reads as the same color everywhere it's
   # plotted across the docs gallery and reports (see

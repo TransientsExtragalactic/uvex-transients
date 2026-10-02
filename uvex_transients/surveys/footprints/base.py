@@ -4,8 +4,9 @@ import hashlib
 import json
 import os
 import tempfile
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
+from functools import reduce
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +16,7 @@ from mocpy import MOC
 
 from uvex_transients.utils import cache_dir
 
-__all__ = ["SurveyFootprint", "FootprintRegistry", "default_registry"]
+__all__ = ["SurveyFootprint", "FootprintRegistry", "default_registry", "combine_MOC", "combine_footprints"]
 
 _Generator = Callable[..., MOC]
 
@@ -317,3 +318,124 @@ class FootprintRegistry:
 
 default_registry = FootprintRegistry()
 """FootprintRegistry: The package-wide default footprint registry."""
+
+
+# ====================================== #
+# Footprint Combinations                 #
+# ====================================== #
+_OPERATIONS: dict[str, Callable[[MOC, MOC], MOC]] = {
+    "union": MOC.union,
+    "intersection": MOC.intersection,
+    "difference": MOC.difference,
+    "xor": MOC.symmetric_difference,
+}
+_OPERATION_ALIASES = {
+    "or": "union",
+    "and": "intersection",
+    "minus": "difference",
+    "subtract": "difference",
+    "symmetric_difference": "xor",
+}
+
+
+def _resolve_operation(operation: str) -> str:
+    key = operation.strip().lower()
+    key = _OPERATION_ALIASES.get(key, key)
+    if key not in _OPERATIONS:
+        raise ValueError(f"Unknown operation {operation!r}. Known: {', '.join(_OPERATIONS)}.")
+    return key
+
+
+def combine_MOC(*, max_order: int, operation: str, operands: Sequence[str], operand_keys: Sequence[str] = ()) -> MOC:
+    """
+    Registry-contract generator that combines the MOCs of registered footprints.
+
+    Parameters
+    ----------
+    max_order : int
+        Maximum order of the result. Operands finer than this are degraded first.
+    operation : {"union", "intersection", "difference", "xor"}
+        How to fold the operands together, left to right. For ``"difference"`` that
+        is the first operand minus each later one. Aliases ``"or"``, ``"and"``,
+        ``"minus"`` and ``"symmetric_difference"`` are accepted.
+    operands : sequence of str
+        Full names of footprints in `default_registry`.
+    operand_keys : sequence of str, optional
+        Unused; the operands' cache keys, carried in the params so the combined cache key
+        changes whenever an operand does.
+
+    Returns
+    -------
+    mocpy.MOC
+        The combined MOC.
+
+    Raises
+    ------
+    ValueError
+        If `operation` is unknown or `operands` is empty.
+    KeyError
+        If an operand is not registered.
+    """
+    func = _OPERATIONS[_resolve_operation(operation)]
+    if not operands:
+        raise ValueError("At least one operand footprint is required.")
+    mocs = []
+    for name in operands:
+        moc = default_registry.get(name).moc
+        mocs.append(moc.degrade_to_order(max_order) if moc.max_order > max_order else moc)
+    return reduce(func, mocs)
+
+
+def combine_footprints(
+    name: str,
+    operation: str,
+    footprints: Sequence["SurveyFootprint | str"],
+    description: str | None = None,
+    **kwargs,
+) -> SurveyFootprint:
+    """
+    Build and register a new footprint from set operations on existing ones.
+
+    The result is an ordinary `SurveyFootprint` whose generator is `combine_MOC`. It is
+    lazy and, by default, cached. Its :attr:`~SurveyFootprint.cache_key` includes the
+    operands' keys, so changing an operand invalidates the combined cache too.
+
+    Parameters
+    ----------
+    name : str
+        Name of the new footprint (``observatory:survey:region``).
+    operation : {"union", "intersection", "difference", "xor"}
+        See `combine_MOC`.
+    footprints : sequence of SurveyFootprint or str
+        Operands, or their names. They must be registered in `default_registry`.
+    description : str, optional
+        Description. Default: generated from the operation and operand names.
+    **kwargs
+        Passed to `SurveyFootprint` (e.g. ``persist``, ``version``, ``MOC_max_order``).
+        ``persist`` defaults to `True`.
+
+    Returns
+    -------
+    SurveyFootprint
+        The new, registered footprint.
+
+    Raises
+    ------
+    ValueError
+        If `operation` is unknown or `footprints` is empty.
+    KeyError
+        If an operand is not registered, or `name` already is.
+    """
+    op = _resolve_operation(operation)
+    if not footprints:
+        raise ValueError("At least one operand footprint is required.")
+    operands = [fp.name if isinstance(fp, SurveyFootprint) else fp for fp in footprints]
+    keys = [default_registry.get(n).cache_key for n in operands]  # also validates registration
+    kwargs.setdefault("persist", True)
+    return SurveyFootprint(
+        name=name,
+        generator=combine_MOC,
+        description=description or f"{op} of {', '.join(operands)}",
+        params={"operation": op, "operands": operands, "operand_keys": keys},
+        **kwargs,
+    )

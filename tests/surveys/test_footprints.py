@@ -7,7 +7,7 @@ from astropy.coordinates import SkyCoord
 from regions import PointSkyRegion, Regions
 
 from uvex_transients.surveys.footprints import base, lsst
-from uvex_transients.surveys.footprints.base import FootprintRegistry, SurveyFootprint
+from uvex_transients.surveys.footprints.base import FootprintRegistry, SurveyFootprint, combine_footprints
 from uvex_transients.surveys.footprints.utils import (
     convert_region_to_MOC,
     dec_band_MOC,
@@ -66,6 +66,50 @@ class TestRegistry:
         _counting_footprint()
         masks = registry.match([10.0, 10.0], [45.0, -45.0], ["test:band"])
         assert masks["test:band"].tolist() == [True, False]
+
+
+def _band(name, min_dec, max_dec):
+    return SurveyFootprint(
+        name=name, generator=dec_band_MOC, params={"min_dec": min_dec, "max_dec": max_dec}, MOC_max_order=6
+    )
+
+
+class TestCombine:
+    @pytest.fixture
+    def bands(self, registry):
+        return _band("t:a", 0.0, 40.0), _band("t:b", 20.0, 60.0)
+
+    @pytest.mark.parametrize(
+        "operation, inside, outside",
+        [
+            ("union", [10, 30, 50], [-10, 70]),
+            ("intersection", [30], [10, 50]),
+            ("difference", [10], [30, 50]),
+            ("xor", [10, 50], [30, -10]),
+        ],
+    )
+    def test_operations(self, bands, operation, inside, outside):
+        combined = combine_footprints("t:c", operation, bands, persist=False)
+        assert combined.contains(np.zeros(len(inside)) + 5, inside).all()
+        assert not combined.contains(np.zeros(len(outside)) + 5, outside).any()
+
+    def test_accepts_names_and_registers(self, bands, registry):
+        combined = combine_footprints("t:c", "or", ["t:a", "t:b"], persist=False)
+        assert registry["t:c"] is combined
+
+    def test_operand_change_invalidates_cache_key(self, bands, registry):
+        before = combine_footprints("t:c", "union", bands).cache_key
+        registry["t:a"].version = "v2"
+        registry._footprints.pop("t:c")
+        assert combine_footprints("t:c", "union", bands).cache_key != before
+
+    def test_bad_inputs_raise(self, bands):
+        with pytest.raises(ValueError, match="Unknown operation"):
+            combine_footprints("t:c", "nand", bands)
+        with pytest.raises(ValueError, match="At least one"):
+            combine_footprints("t:c", "union", [])
+        with pytest.raises(KeyError):
+            combine_footprints("t:c", "union", ["t:a", "t:missing"])
 
 
 class TestCaching:
@@ -131,7 +175,10 @@ class TestGenerators:
 class TestLSST:
     def test_footprints_are_registered_without_rubin_scheduler(self):
         names = base.default_registry.names("lsst:")
-        assert set(names) == {fp.name for fp in lsst.lsst_footprints.values()} | {lsst.lsst_ddf_footprint.name}
+        assert set(names) == {fp.name for fp in lsst.lsst_footprints.values()} | {
+            lsst.lsst_ddf_footprint.name,
+            lsst.lsst_combined_footprint.name,
+        }
 
     def test_generation_without_rubin_scheduler_explains_how_to_install(self, monkeypatch):
         monkeypatch.setitem(__import__("sys").modules, "rubin_scheduler", None)
