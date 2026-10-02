@@ -445,6 +445,14 @@
 <li class="toctree-l2"><a class="reference internal" href="simulating/plot_shock_cooling_comparison.html">Shock-Cooling Models: Blackbody vs. Full SED</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="surveys/index.html">Survey Footprints</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="surveys/plot_ztf_footprint.html">ZTF Survey Footprint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="surveys/plot_uvex_footprints.html">UVEX Survey Footprints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="surveys/plot_ls4_footprints.html">LS4 SOLE Survey Footprint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="surveys/plot_lsst_footprints.html">LSST Survey Footprints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="surveys/plot_tde_rubin_overlap.html">UVEX TDEs in the Rubin Footprint</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="too_simulations/index.html">Target of Opportunity Simulations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="too_simulations/plot_too_followup.html">Target-of-Opportunity Follow-up of a TDE</a></li>
 <li class="toctree-l2"><a class="reference internal" href="too_simulations/plot_multiband_too_followup.html">Multi-Band ToO Follow-up</a></li>
@@ -513,8 +521,9 @@
 <span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h1>
 <div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm gallery-banner docutils">
 <div class="sd-card-body docutils">
-<p class="sd-card-text">Runnable, self-contained examples: building and validating a survey schedule, simulating
-transient populations against it, and extending the code base with a new transient class.</p>
+<p class="sd-card-text">Runnable, self-contained examples: mapping survey footprints, building and validating a survey
+schedule, simulating transient populations against it, and extending the code base with a new
+transient class.</p>
 </div>
 </div>
 <div id='sg-tag-list' class='sphx-glr-tag-list'></div><div class="sphx-glr-thumbnails"></div></section>
@@ -603,6 +612,31 @@ with any of its registered cuts, generate synthetic photometry, and summarize th
 <p><a class="reference internal" href="simulating/plot_shock_cooling_comparison.html"><span class="doc">Shock-Cooling Models: Blackbody vs. Full SED</span></a></p>
   <div class="sphx-glr-thumbnail-title">Shock-Cooling Models: Blackbody vs. Full SED</div>
 </div></div></section>
+<section id="survey-footprints">
+<h1>Survey Footprints<a class="headerlink" href="#survey-footprints" title="Link to this heading">#</a></h1>
+<div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm gallery-banner docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><em>Module:</em> <a class="reference internal" href="../_as_gen/uvex_transients.surveys.footprints.html#module-uvex_transients.surveys.footprints" title="uvex_transients.surveys.footprints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">footprints</span></code></a></p>
+<p class="sd-card-text">Sky maps of each observatory’s survey footprints, from the named
+<a class="reference internal" href="../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.base.SurveyFootprint" title="uvex_transients.surveys.footprints.base.SurveyFootprint"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveyFootprint</span></code></a> registry.</p>
+</div>
+</div>
+<div id='sg-tag-list' class='sphx-glr-tag-list'></div><div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="ZTF has no published region file. Its coverage is the sky visible from Palomar, which a declination cut (``config[&quot;observatories.ztf.min_dec&quot;]``) describes well."><img alt="" src="../_images/sphx_glr_plot_ztf_footprint_thumb.png" />
+<p><a class="reference internal" href="surveys/plot_ztf_footprint.html"><span class="doc">ZTF Survey Footprint</span></a></p>
+  <div class="sphx-glr-thumbnail-title">ZTF Survey Footprint</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="UVEX&#x27;s footprints come from the DS9 region files in the uvex-scheduler repo. The first use of each downloads its file and caches the resulting MOC, so later runs read it from disk."><img alt="" src="../_images/sphx_glr_plot_uvex_footprints_thumb.png" />
+<p><a class="reference internal" href="surveys/plot_uvex_footprints.html"><span class="doc">UVEX Survey Footprints</span></a></p>
+  <div class="sphx-glr-thumbnail-title">UVEX Survey Footprints</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="LS4 (Bellm et al. 2025) has no published footprint file. Its SOLE survey (Stellar Oscillations, Lensing, and Eruptions) is defined in the paper as two boxes in Galactic coordinates, a plane strip and a bulge region, and the registered ls4:sole footprint is their union."><img alt="" src="../_images/sphx_glr_plot_ls4_footprints_thumb.png" />
+<p><a class="reference internal" href="surveys/plot_ls4_footprints.html"><span class="doc">LS4 SOLE Survey Footprint</span></a></p>
+  <div class="sphx-glr-thumbnail-title">LS4 SOLE Survey Footprint</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="The LSST footprints are built from the Rubin scheduler&#x27;s own labeled sky-area map and deep drilling field list, using the optional rubin_scheduler package (``pip install &quot;uvex-transients[rubin]&quot;``). Generating a MOC downloads the scheduler data once through astropy&#x27;s cache. Each finished MOC is then cached, so later runs need neither the package nor the download."><img alt="" src="../_images/sphx_glr_plot_lsst_footprints_thumb.png" />
+<p><a class="reference internal" href="surveys/plot_lsst_footprints.html"><span class="doc">LSST Survey Footprints</span></a></p>
+  <div class="sphx-glr-thumbnail-title">LSST Survey Footprints</div>
+</div><div class="sphx-glr-thumbcontainer" tooltip="How many of the TDEs UVEX detects also fall where Rubin LSST observes? Those are the ones that can have optical follow-up or pre-discovery data from LSST. We&#x27;ll:"><img alt="" src="../_images/sphx_glr_plot_tde_rubin_overlap_thumb.png" />
+<p><a class="reference internal" href="surveys/plot_tde_rubin_overlap.html"><span class="doc">UVEX TDEs in the Rubin Footprint</span></a></p>
+  <div class="sphx-glr-thumbnail-title">UVEX TDEs in the Rubin Footprint</div>
+</div></div></section>
 <section id="target-of-opportunity-simulations">
 <h1>Target of Opportunity Simulations<a class="headerlink" href="#target-of-opportunity-simulations" title="Link to this heading">#</a></h1>
 <div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm gallery-banner docutils">
@@ -683,6 +717,7 @@ chosen: no schedule, no windowed sampling, no
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-transients">Custom Transients</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-simulation-schedules">Working with Simulation Schedules</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-transient-simulations">Survey Transient Simulations</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#survey-footprints">Survey Footprints</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#target-of-opportunity-simulations">Target of Opportunity Simulations</a></li>
 </ul>
 

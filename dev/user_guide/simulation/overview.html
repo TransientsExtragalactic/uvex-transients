@@ -67,7 +67,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Yield Statistics" href="yield_statistics.html" />
-    <link rel="prev" title="Surveys" href="../surveys/overview.html" />
+    <link rel="prev" title="Survey Footprints" href="../surveys/footprints.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -436,6 +436,7 @@
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../surveys/overview.html">Surveys</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../surveys/footprints.html">Survey Footprints</a></li>
 </ul>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Simulation</a></li>
@@ -809,13 +810,24 @@ chunk (see <a class="reference internal" href="../surveys/overview.html#user-gui
 <code class="docutils literal notranslate"><span class="pre">filter_by_limiting_magnitude</span></code>, not the raw catalog – it’s the more expensive of the two
 (every remaining event costs at least one schedule query), so there’s no reason to pay that
 cost on events the cheap pass would have rejected anyway.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">filter_by_snr</span></code> also drops an event whose <em>only</em> qualifying epoch falls on
+its field’s first-ever visit (<code class="docutils literal notranslate"><span class="pre">exclude_first_visit_detections=True</span></code>), since that
+detection has no earlier reference image to be judged against. On a real schedule, which
+revisits fields, this removes a small fraction of events. The tiny synthetic schedule used
+in this guide visits almost every field exactly once, so the example below passes
+<code class="docutils literal notranslate"><span class="pre">exclude_first_visit_detections=False</span></code> to keep a population worth plotting.</p>
+</div>
 </div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex</span>
 
 <span class="n">mission</span> <span class="o">=</span> <span class="n">uvex</span>
 <span class="n">mag_filtered</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>
-<span class="n">detected</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span><span class="p">(</span><span class="n">mag_filtered</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="n">detected</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span><span class="p">(</span>
+    <span class="n">mag_filtered</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">exclude_first_visit_detections</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
 
 <span class="n">stages</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Sampled"</span><span class="p">,</span> <span class="s2">"Mag &lt; 25"</span><span class="p">,</span> <span class="s2">"SNR &gt; 5"</span><span class="p">]</span>
 <span class="n">counts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mag_filtered</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">detected</span><span class="p">)]</span>
@@ -988,6 +1000,24 @@ are:</p>
 </pre></div>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/a8d7ca9a682638f84e7d7c885194a7b8/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<figure class="align-default" id="id3">
+<img alt="../../_images/overview-3_00.png" class="plot-directive" src="../../_images/overview-3_00.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/30eae432d928ef8d373f6fe1438a3f21/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0990ba76e6f942efafcf6a1323447c9b/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b52214cade309f2c9c6dce953169a2be/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id4">
+<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/897326a1434b79ac6ceb9a36969f7d63/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c57be1163b8884254c52784c1e96a8aa/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bfac5e7bb0163ca2c08ba0583c3a7778/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id5">
+<img alt="../../_images/overview-3_02.png" class="plot-directive" src="../../_images/overview-3_02.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/c9a9da17499932f2649c17ea434677e0/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/04262613846f5f56177aede02e52b76f/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/08492c9b14e685e17e9fa477f43a96ce/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
 <p>This example schedule only ever visits a given field once, so most of its events – like this one
 – end up with just one or two associated observations; see the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> for the
 same workflow against a real, densely-cadenced UVEX schedule.</p>
@@ -1017,12 +1047,12 @@ method-by-method detail.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../surveys/overview.html"
+       href="../surveys/footprints.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Surveys</p>
+        <p class="prev-next-title">Survey Footprints</p>
       </div>
     </a>
     <a class="right-next"

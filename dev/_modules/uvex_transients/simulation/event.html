@@ -486,6 +486,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveyFootprint</span><span class="p">,</span> <span class="n">default_registry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransientBase</span>
 
 
@@ -760,6 +761,32 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">n_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""int: Number of candidate observations (``len(observations)``)."""</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Event.in_footprint">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.in_footprint.html#uvex_transients.simulation.event.Event.in_footprint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">footprint</span><span class="p">:</span> <span class="n">SurveyFootprint</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether this event's sky position lies inside a footprint.</span>
+
+<span class="sd">        For many events use `EventCatalog.in_footprint`, which does one vectorized lookup.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        footprint : SurveyFootprint or str</span>
+<span class="sd">            A footprint or its registered name (e.g. ``"lsst:combined"``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            `True` if the event is inside the footprint.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If `footprint` is a name that is not registered.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">default_registry</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span><span class="o">.</span><span class="n">contains_skycoord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coord</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
+
 
     <span class="c1"># ------------------------------ #</span>
     <span class="c1"># Parameters                     #</span>

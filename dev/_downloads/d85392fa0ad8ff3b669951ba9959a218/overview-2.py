@@ -2,7 +2,9 @@ from m4opt.missions import uvex
 
 mission = uvex
 mag_filtered = simulator.filter_by_limiting_magnitude(catalog, mission, mag_limit=25.0)
-detected = simulator.filter_by_snr(mag_filtered, mission, snr_threshold=5.0)
+detected = simulator.filter_by_snr(
+    mag_filtered, mission, snr_threshold=5.0, exclude_first_visit_detections=False
+)
 
 stages = ["Sampled", "Mag < 25", "SNR > 5"]
 counts = [len(catalog), len(mag_filtered), len(detected)]

@@ -316,6 +316,15 @@ original ``event_id`` values preserved rather than renumbered:
       (every remaining event costs at least one schedule query), so there's no reason to pay that
       cost on events the cheap pass would have rejected anyway.
 
+      .. note::
+
+         By default, ``filter_by_snr`` also drops an event whose *only* qualifying epoch falls on
+         its field's first-ever visit (``exclude_first_visit_detections=True``), since that
+         detection has no earlier reference image to be judged against. On a real schedule, which
+         revisits fields, this removes a small fraction of events. The tiny synthetic schedule used
+         in this guide visits almost every field exactly once, so the example below passes
+         ``exclude_first_visit_detections=False`` to keep a population worth plotting.
+
 .. plot::
    :context:
    :include-source: true
@@ -324,7 +333,9 @@ original ``event_id`` values preserved rather than renumbered:
 
    mission = uvex
    mag_filtered = simulator.filter_by_limiting_magnitude(catalog, mission, mag_limit=25.0)
-   detected = simulator.filter_by_snr(mag_filtered, mission, snr_threshold=5.0)
+   detected = simulator.filter_by_snr(
+       mag_filtered, mission, snr_threshold=5.0, exclude_first_visit_detections=False
+   )
 
    stages = ["Sampled", "Mag < 25", "SNR > 5"]
    counts = [len(catalog), len(mag_filtered), len(detected)]

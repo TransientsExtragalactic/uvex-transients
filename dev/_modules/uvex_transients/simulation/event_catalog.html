@@ -483,6 +483,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveyFootprint</span><span class="p">,</span> <span class="n">default_registry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span><span class="p">,</span> <span class="n">TransientBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">clopper_pearson_interval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
@@ -639,6 +640,33 @@
     <span class="c1"># ----------------------------------------- #</span>
     <span class="c1"># Event Reconstruction                      #</span>
     <span class="c1"># ----------------------------------------- #</span>
+<div class="viewcode-block" id="EventCatalog.in_footprint">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.in_footprint.html#uvex_transients.simulation.event_catalog.EventCatalog.in_footprint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">footprint</span><span class="p">:</span> <span class="n">SurveyFootprint</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Mask of events whose sky position lies inside a footprint.</span>
+
+<span class="sd">        One vectorized MOC lookup over every event, so no per-event loop is needed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        footprint : SurveyFootprint or str</span>
+<span class="sd">            A footprint or its registered name (e.g. ``"lsst:combined"``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Boolean mask, shape ``(n_events,)``, aligned with the catalog rows. Use it to</span>
+<span class="sd">            index :attr:`table` or any per-event array.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If `footprint` is a name that is not registered.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">default_registry</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span><span class="o">.</span><span class="n">contains_skycoord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coord</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="EventCatalog.get_events">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.get_events.html#uvex_transients.simulation.event_catalog.EventCatalog.get_events">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span>
@@ -903,7 +931,7 @@
 <span class="sd">        ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by</span>
 <span class="sd">        each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to</span>
 <span class="sd">        the point estimate when ``RATE_CI`` is unset, exactly like</span>
-<span class="sd">        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.</span>
+<span class="sd">        `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci` itself.</span>
 
 <span class="sd">        ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided</span>
 <span class="sd">        intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.</span>
