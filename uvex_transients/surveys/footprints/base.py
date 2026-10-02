@@ -179,6 +179,24 @@ class SurveyFootprint:
         coords = SkyCoord(ra=np.atleast_1d(ra) * u.deg, dec=np.atleast_1d(dec) * u.deg, frame="icrs")
         return self.moc.contains_skycoords(coords)
 
+    def contains_skycoord(self, coord: SkyCoord) -> np.ndarray:
+        """
+        Test which positions of a `~astropy.coordinates.SkyCoord` fall inside the footprint.
+
+        A vectorized MOC lookup, so large catalogs are cheap. Any frame is accepted.
+
+        Parameters
+        ----------
+        coord : ~astropy.coordinates.SkyCoord
+            Scalar or array of positions.
+
+        Returns
+        -------
+        numpy.ndarray
+            Boolean mask with the shape of `coord` (``(1,)`` for a scalar).
+        """
+        return np.asarray(self.moc.contains_skycoords(coord.reshape(-1) if coord.isscalar else coord))
+
     # ------------------- #
     # Registering         #
     # ------------------- #
@@ -267,6 +285,27 @@ class FootprintRegistry:
             return self._footprints[self._key(name)]
         except KeyError:
             raise KeyError(f"Unknown footprint {name!r}. Known: {', '.join(self.names())}") from None
+
+    def resolve(self, footprint: "SurveyFootprint | str") -> SurveyFootprint:
+        """
+        Return `footprint` itself if it is a `SurveyFootprint`, else look it up by name.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint, or its full name.
+
+        Returns
+        -------
+        SurveyFootprint
+            The footprint.
+
+        Raises
+        ------
+        KeyError
+            If a name is not registered.
+        """
+        return footprint if isinstance(footprint, SurveyFootprint) else self.get(footprint)
 
     def __getitem__(self, name: str) -> SurveyFootprint:
         """Alias for :meth:`get`."""

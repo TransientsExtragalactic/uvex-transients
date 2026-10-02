@@ -24,6 +24,7 @@ from tqdm.auto import tqdm
 from uvex_transients.utils import logger
 
 from ..surveys.base import SurveySchedule
+from ..surveys.footprints import SurveyFootprint, default_registry
 from ..transients.base import ExtragalacticTransient, TransientBase
 from ._stats import clopper_pearson_interval
 from .event import Event
@@ -175,6 +176,30 @@ class EventCatalog:
     # ----------------------------------------- #
     # Event Reconstruction                      #
     # ----------------------------------------- #
+    def in_footprint(self, footprint: SurveyFootprint | str) -> np.ndarray:
+        """
+        Mask of events whose sky position lies inside a footprint.
+
+        One vectorized MOC lookup over every event, so no per-event loop is needed.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint or its registered name (e.g. ``"lsst:combined"``).
+
+        Returns
+        -------
+        numpy.ndarray
+            Boolean mask, shape ``(n_events,)``, aligned with the catalog rows. Use it to
+            index :attr:`table` or any per-event array.
+
+        Raises
+        ------
+        KeyError
+            If `footprint` is a name that is not registered.
+        """
+        return default_registry.resolve(footprint).contains_skycoord(self.coord)
+
     def get_events(
         self,
         ids: int | np.ndarray | list,
