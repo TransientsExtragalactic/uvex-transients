@@ -733,6 +733,10 @@ a field revisited roughly nightly:
    pair-count/control-time calculations -- 128 (the default for most of these methods) is a
    reasonable starting point; drop to 32-64 while iterating on a large or fine timescale grid.
 
+A schedule describes what was observed and when. For the coarser question of where a survey
+looks at all (for instance, which simulated events fall inside Rubin LSST's area), see
+:ref:`user_guide_footprints`.
+
 See the :ref:`schedules_gallery` for a full worked example of building, validating, and
 inspecting a schedule end to end, and :mod:`uvex_transients.surveys` in the :ref:`api` reference
 for exhaustive method-by-method detail.
