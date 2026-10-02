@@ -450,7 +450,7 @@ class EventCatalog:
         ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by
         each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to
         the point estimate when ``RATE_CI`` is unset, exactly like
-        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.
+        `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci` itself.
 
         ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided
         intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.
