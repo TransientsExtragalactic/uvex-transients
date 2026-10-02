@@ -108,6 +108,93 @@ schedules:
 
 
 # ------------------------------- #
+# OBSERVATORY FOOTPRINTS          #
+# ------------------------------- #
+# URLs and parameters for the generators in uvex_transients.surveys.footprints, kept here
+# so a new mirror or footprint file is a config change, not a code change.
+observatories:
+  uvex:
+    # Base URL for the uvex-scheduler repo's survey-footprint region files. It tracks
+    # main, so an upstream fix is picked up automatically; to refresh an already cached
+    # MOC, clear it with SurveyFootprint.clear_from_cache.
+    repo_url: https://raw.githubusercontent.com/m4opt/uvex-scheduler/main
+    # Radius (degrees) that expands a DS9 point() target into a circle: UVEX's inscribed
+    # FOV circle (fov/inscribed-circle.ds9 in uvex-scheduler).
+    point_region_size: 1.83081195
+    footprints:
+      lmlz_wide:
+        name: uvex:lmlz:wide
+        file: survey-footprints/lmlz-wide.ds9
+        description: UVEX low-Milky-Way/low-zodi wide survey (NGC A-D, SGC A-B).
+      lmlz_deep:
+        name: uvex:lmlz:deep
+        file: survey-footprints/lmlz-deep.ds9
+        description: UVEX LMLZ deep fields (point targets expanded to the inscribed FOV circle).
+      magellanic_clouds:
+        name: uvex:mc
+        file: survey-footprints/magellanic-clouds.ds9
+        description: UVEX Magellanic Clouds survey (LMC + SMC).
+
+  ztf:
+    # ZTF has no published footprint file; its coverage is a declination cut
+    # (visibility from Palomar), see uvex_transients.surveys.footprints.utils.dec_band_MOC.
+    min_dec: -31.0
+
+  ls4:
+    # LS4 has no published footprint file. Only the SOLE survey is defined, from the two
+    # Galactic l/b boxes in Section 3.1.3 of Bellm et al. 2025 (arXiv:2503.14579); their union
+    # is ~1200 deg^2, matching the paper. See uvex_transients.surveys.footprints.ls4 for why
+    # LS4's other surveys are omitted.
+    sole:
+      name: ls4:sole
+      description: LS4 Stellar Oscillations, Lensing, and Eruptions survey (Galactic plane + bulge).
+      boxes:
+        - {l_min: -72, l_max: 36, b_min: -4, b_max: 4}    # Galactic plane strip
+        - {l_min: -20, l_max: 20, b_min: -8, b_max: 8}    # Galactic bulge
+
+  lsst:
+    # Built by uvex_transients.surveys.footprints.lsst from rubin_scheduler's sky-area map
+    # (optional dependency). `labels` are that map's region labels; an empty list selects every
+    # observed pixel. Bump `version` to invalidate cached MOCs after a rubin_scheduler upgrade
+    # changes the survey strategy.
+    version: v1
+    nside: 128
+    regions:
+      main:
+        name: lsst:main
+        labels: []
+        description: Rubin LSST main survey, every region of the scheduler sky-area map.
+      wfd:
+        name: lsst:wfd
+        labels: [lowdust]
+        description: Rubin LSST wide-fast-deep (low-dust extragalactic) area.
+      nes:
+        name: lsst:nes
+        labels: [nes]
+        description: Rubin LSST north ecliptic spur.
+      scp:
+        name: lsst:scp
+        labels: [scp]
+        description: Rubin LSST south celestial pole.
+      galactic_plane:
+        name: lsst:galplane
+        labels: [dusty_plane, bulge]
+        description: Rubin LSST Galactic plane and bulge.
+      magellanic_clouds:
+        name: lsst:mc
+        labels: [LMC_SMC]
+        description: Rubin LSST Magellanic Clouds.
+      virgo:
+        name: lsst:virgo
+        labels: [virgo]
+        description: Rubin LSST Virgo cluster.
+    ddf:
+      name: lsst:ddf
+      radius: 1.75   # degrees; half of Rubin's ~3.5 deg field of view
+      description: Rubin LSST deep drilling fields (single pointings expanded to the FOV circle).
+
+
+# ------------------------------- #
 # PLOTTING CONFIGURATION          #
 # ------------------------------- #
 # Default settings for uvex_transients.utils.plotting, used by every plotting function in the

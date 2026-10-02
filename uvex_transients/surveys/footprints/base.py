@@ -1,0 +1,319 @@
+"""Named survey sky footprints: lazy generation, disk caching, a name registry, and point queries."""
+
+import hashlib
+import json
+import os
+import tempfile
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from mocpy import MOC
+
+from uvex_transients.utils import cache_dir
+
+__all__ = ["SurveyFootprint", "FootprintRegistry", "default_registry"]
+
+_Generator = Callable[..., MOC]
+
+
+# ====================================== #
+# Footprint Type                         #
+# ====================================== #
+@dataclass
+class SurveyFootprint:
+    """
+    A named survey sky footprint, built lazily and optionally cached to disk.
+
+    The `~mocpy.MOC` is only generated when first needed (see :attr:`moc`). If
+    :attr:`persist` is set, it is then saved under a key covering everything that
+    can change it (see :attr:`cache_key`) and reloaded from there on later runs.
+    Constructing a footprint registers it in `default_registry`.
+    """
+
+    name: str
+    """str: Colon-separated name, ordered observatory, survey, region (e.g. ``uvex:lmlz:wide``).
+
+    `FootprintRegistry` looks footprints up by this full string.
+    """
+
+    generator: _Generator
+    """Callable[..., MOC]: Builds the `~mocpy.MOC`, called as ``generator(max_order=..., **params)``."""
+
+    version: str = "v1"
+    """str: Part of :attr:`cache_key`; bump it when the output changes without the inputs changing
+    (e.g. an upstream data fix)."""
+
+    description: str | None = None
+    """str or None: Short description of what the footprint covers."""
+
+    params: dict = field(default_factory=dict)
+    """dict: Keyword arguments passed to `generator`."""
+
+    persist: bool = False
+    """bool: Whether to cache the generated MOC at :attr:`cache_path` and reload it from there."""
+
+    MOC_max_order: int = 10
+    """int: Maximum HEALPix order of the MOC (order 10 is ~3.4 arcmin cells)."""
+
+    _moc: MOC | None = field(default=None, init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        """Register this footprint in `default_registry`."""
+        self.register()
+
+    # ------------------- #
+    # Caching             #
+    # ------------------- #
+    @property
+    def cache_key(self) -> str:
+        """
+        str: Hash of the name, version, generator, params, and max order.
+
+        Changing any of them invalidates the cached file.
+        """
+        ident = {
+            "name": self.name,
+            "version": self.version,
+            "generator": f"{self.generator.__module__}.{self.generator.__qualname__}",
+            "params": self.params,
+            "max_order": self.MOC_max_order,
+        }
+        blob = json.dumps(ident, sort_keys=True, default=str).encode()
+        return hashlib.sha256(blob).hexdigest()[:16]
+
+    @property
+    def cache_path(self) -> Path:
+        """
+        Path: Location of this footprint's cached MOC file.
+
+        Each ``:``-separated part of :attr:`name` becomes a directory (``:`` is not portable in paths).
+        """
+        return cache_dir / "footprints" / Path(*self.name.split(":")) / f"{self.cache_key}.fits"
+
+    @property
+    def is_cached(self) -> bool:
+        """bool: Whether a cached MOC matching the current :attr:`cache_key` exists."""
+        return self.cache_path.is_file()
+
+    def clear_from_cache(self) -> None:
+        """Delete the cached MOC file, if any, and drop the in-memory copy."""
+        self.cache_path.unlink(missing_ok=True)
+        self._moc = None
+
+    def _write_cache(self, moc: MOC) -> None:
+        # Write to a temp file, then rename, so a killed job never leaves a truncated cache file.
+        path = self.cache_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".fits.tmp")
+        os.close(fd)
+        try:
+            moc.save(tmp, format="fits", overwrite=True)
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+
+    # ------------------- #
+    # Generator Action    #
+    # ------------------- #
+    def generate_MOC(self) -> MOC:
+        """
+        Run `generator`, degrade to :attr:`MOC_max_order` if needed, and cache if :attr:`persist`.
+
+        Returns
+        -------
+        mocpy.MOC
+            The generated MOC, also kept in memory for :attr:`moc`.
+
+        Raises
+        ------
+        TypeError
+            If `generator` does not return a `~mocpy.MOC`.
+        """
+        moc = self.generator(max_order=self.MOC_max_order, **self.params)
+        if not isinstance(moc, MOC):
+            raise TypeError(f"Generator for {self.name!r} returned {type(moc).__name__}, not a MOC.")
+        if moc.max_order > self.MOC_max_order:
+            moc = moc.degrade_to_order(self.MOC_max_order)
+        if self.persist:
+            self._write_cache(moc)
+        self._moc = moc
+        return moc
+
+    # ------------------- #
+    # Loading             #
+    # ------------------- #
+    @property
+    def moc(self) -> MOC:
+        """MOC: The footprint, from memory, else the disk cache, else `generator`."""
+        if self._moc is None:
+            if self.persist and self.is_cached:
+                self._moc = MOC.from_fits(str(self.cache_path))
+            else:
+                self.generate_MOC()
+        return self._moc
+
+    # ------------------- #
+    # Querying            #
+    # ------------------- #
+    def contains(self, ra, dec) -> np.ndarray:
+        """
+        Test which sky positions fall inside the footprint.
+
+        Parameters
+        ----------
+        ra, dec : float or array-like
+            Positions in degrees (ICRS), broadcast against each other.
+
+        Returns
+        -------
+        numpy.ndarray
+            Boolean mask, one entry per position.
+        """
+        ra, dec = np.broadcast_arrays(np.asarray(ra, dtype=float), np.asarray(dec, dtype=float))
+        coords = SkyCoord(ra=np.atleast_1d(ra) * u.deg, dec=np.atleast_1d(dec) * u.deg, frame="icrs")
+        return self.moc.contains_skycoords(coords)
+
+    # ------------------- #
+    # Registering         #
+    # ------------------- #
+    def register(self, registry: "FootprintRegistry | None" = None, overwrite: bool = False) -> "SurveyFootprint":
+        """
+        Add this footprint to a registry.
+
+        Construction already registers in `default_registry`; call this to add it
+        to another registry or to replace an existing entry.
+
+        Parameters
+        ----------
+        registry : FootprintRegistry, optional
+            Target registry. Default `default_registry`.
+        overwrite : bool, optional
+            Replace an existing entry of the same name instead of raising. Default `False`.
+
+        Returns
+        -------
+        SurveyFootprint
+            This footprint, for chaining.
+
+        Raises
+        ------
+        KeyError
+            If the name is already registered and `overwrite` is `False`.
+        """
+        (registry if registry is not None else default_registry).register(self, overwrite=overwrite)
+        return self
+
+
+# ====================================== #
+# Footprint Registry                     #
+# ====================================== #
+class FootprintRegistry:
+    """Case-insensitive lookup of `SurveyFootprint` objects by :attr:`~SurveyFootprint.name`."""
+
+    def __init__(self):
+        self._footprints: dict[str, SurveyFootprint] = {}
+
+    @staticmethod
+    def _key(name: str) -> str:
+        return name.strip().lower()
+
+    def register(self, footprint: SurveyFootprint, overwrite: bool = False) -> None:
+        """
+        Add `footprint`, keyed on its name.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint
+            The footprint to register.
+        overwrite : bool, optional
+            Replace an existing entry of the same name instead of raising. Default `False`.
+
+        Raises
+        ------
+        KeyError
+            If the name is already registered and `overwrite` is `False`.
+        """
+        key = self._key(footprint.name)
+        if key in self._footprints and not overwrite:
+            raise KeyError(f"Footprint {footprint.name!r} is already registered.")
+        self._footprints[key] = footprint
+
+    def get(self, name: str) -> SurveyFootprint:
+        """
+        Look up a footprint by its full name, e.g. ``"uvex:lmlz:wide"``.
+
+        Parameters
+        ----------
+        name : str
+            Full name, matched case-insensitively.
+
+        Returns
+        -------
+        SurveyFootprint
+            The registered footprint.
+
+        Raises
+        ------
+        KeyError
+            If no footprint has that name.
+        """
+        try:
+            return self._footprints[self._key(name)]
+        except KeyError:
+            raise KeyError(f"Unknown footprint {name!r}. Known: {', '.join(self.names())}") from None
+
+    def __getitem__(self, name: str) -> SurveyFootprint:
+        """Alias for :meth:`get`."""
+        return self.get(name)
+
+    def __contains__(self, name: str) -> bool:
+        """Whether `name` is registered (case-insensitive)."""
+        return self._key(name) in self._footprints
+
+    def names(self, prefix: str = "") -> list[str]:
+        """
+        List registered names, optionally only those starting with `prefix`.
+
+        Parameters
+        ----------
+        prefix : str, optional
+            Name prefix to filter on, e.g. ``"uvex:lmlz"``. Default: every name.
+
+        Returns
+        -------
+        list of str
+            Matching names, sorted.
+        """
+        return sorted(fp.name for fp in self._footprints.values() if fp.name.startswith(prefix))
+
+    def match(self, ra, dec, names: Iterable[str]) -> dict[str, np.ndarray]:
+        """
+        Test sky positions against several footprints.
+
+        Parameters
+        ----------
+        ra, dec : float or array-like
+            Positions in degrees (ICRS); see `SurveyFootprint.contains`.
+        names : Iterable of str
+            Full names of the footprints to test.
+
+        Returns
+        -------
+        dict of str to numpy.ndarray
+            Each name mapped to its `SurveyFootprint.contains` mask.
+
+        Raises
+        ------
+        KeyError
+            If a name is not registered.
+        """
+        return {n: self.get(n).contains(ra, dec) for n in names}
+
+
+default_registry = FootprintRegistry()
+"""FootprintRegistry: The package-wide default footprint registry."""
