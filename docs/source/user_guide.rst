@@ -60,7 +60,8 @@ and :mod:`~uvex_transients.utils`, and a command-line interface that ties all fo
 
          *Module:* :mod:`~uvex_transients.surveys`
 
-         Represents and validates a :class:`~uvex_transients.surveys.base.SurveySchedule` of spacecraft actions.
+         Represents and validates a :class:`~uvex_transients.surveys.base.SurveySchedule` of spacecraft actions, and
+         names survey sky footprints.
 
       +++
 
@@ -68,6 +69,7 @@ and :mod:`~uvex_transients.utils`, and a command-line interface that ties all fo
          :maxdepth: 1
 
          user_guide/surveys/overview
+         user_guide/surveys/footprints
 
    .. grid-item-card:: Simulation
       :class-card: sd-shadow-sm sd-border-1 guide-card

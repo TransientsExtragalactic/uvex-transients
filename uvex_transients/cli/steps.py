@@ -93,7 +93,7 @@ def apply_cut_scoped(
     simulator, cut_name: str, catalog: EventCatalog, mission, transient_types: list[str] | None, **params
 ) -> EventCatalog:
     """
-    Run a `cut` step, optionally restricted to a subset of `transient_type`s.
+    Run a `cut` step, optionally restricted to a subset of ``transient_type`` values.
 
     Generic at the executor level (not inside any individual ``@cut`` method, per
     `SurveySimulator.run_cut`'s own docstring): with `transient_types` given, only rows

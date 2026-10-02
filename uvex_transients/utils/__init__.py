@@ -5,11 +5,13 @@ from typing import Union
 import numpy as np
 from numpy.typing import NDArray
 
-from .config import config
+from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
 
 __all__ = [
     "config",
+    "cache_dir",
+    "get_cache_dir",
     "logger",
     "configure_logging",
     "get_rng",

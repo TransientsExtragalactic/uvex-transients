@@ -24,6 +24,7 @@ from tqdm.auto import tqdm
 from uvex_transients.utils import logger
 
 from ..surveys.base import SurveySchedule
+from ..surveys.footprints import SurveyFootprint, default_registry
 from ..transients.base import ExtragalacticTransient, TransientBase
 from ._stats import clopper_pearson_interval
 from .event import Event
@@ -175,6 +176,30 @@ class EventCatalog:
     # ----------------------------------------- #
     # Event Reconstruction                      #
     # ----------------------------------------- #
+    def in_footprint(self, footprint: SurveyFootprint | str) -> np.ndarray:
+        """
+        Mask of events whose sky position lies inside a footprint.
+
+        One vectorized MOC lookup over every event, so no per-event loop is needed.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint or its registered name (e.g. ``"lsst:combined"``).
+
+        Returns
+        -------
+        numpy.ndarray
+            Boolean mask, shape ``(n_events,)``, aligned with the catalog rows. Use it to
+            index :attr:`table` or any per-event array.
+
+        Raises
+        ------
+        KeyError
+            If `footprint` is a name that is not registered.
+        """
+        return default_registry.resolve(footprint).contains_skycoord(self.coord)
+
     def get_events(
         self,
         ids: int | np.ndarray | list,
@@ -425,7 +450,7 @@ class EventCatalog:
         ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by
         each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to
         the point estimate when ``RATE_CI`` is unset, exactly like
-        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.
+        `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci` itself.
 
         ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided
         intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.

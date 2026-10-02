@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**01:29.381** total execution time for 20 files **from all galleries**:
+**00:12.072** total execution time for 25 files **from all galleries**:
 
 .. container::
 
@@ -32,17 +32,20 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_transient_type.py` (``galleries/simulating/plot_cut_transient_type.py``)
-     - 01:02.189
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py` (``galleries/surveys/plot_tde_rubin_overlap.py``)
+     - 00:11.524
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_too_followup.py` (``galleries/too_simulations/plot_too_followup.py``)
-     - 00:11.085
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_ztf_footprint.py` (``galleries/surveys/plot_ztf_footprint.py``)
+     - 00:00.185
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_time_to_first_detection.py` (``galleries/simulating/plot_cut_time_to_first_detection.py``)
-     - 00:09.403
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_ls4_footprints.py` (``galleries/surveys/plot_ls4_footprints.py``)
+     - 00:00.162
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_sky_position.py` (``galleries/simulating/plot_cut_sky_position.py``)
-     - 00:06.705
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_lsst_footprints.py` (``galleries/surveys/plot_lsst_footprints.py``)
+     - 00:00.123
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_uvex_footprints.py` (``galleries/surveys/plot_uvex_footprints.py``)
+     - 00:00.079
      - 0.0
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
      - 00:00.000
@@ -80,7 +83,16 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_region.py` (``galleries/simulating/plot_cut_region.py``)
      - 00:00.000
      - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_sky_position.py` (``galleries/simulating/plot_cut_sky_position.py``)
+     - 00:00.000
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_snr.py` (``galleries/simulating/plot_cut_snr.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_time_to_first_detection.py` (``galleries/simulating/plot_cut_time_to_first_detection.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_transient_type.py` (``galleries/simulating/plot_cut_transient_type.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
@@ -90,5 +102,8 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py` (``galleries/too_simulations/plot_multiband_too_followup.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_too_followup.py` (``galleries/too_simulations/plot_too_followup.py``)
      - 00:00.000
      - 0.0
