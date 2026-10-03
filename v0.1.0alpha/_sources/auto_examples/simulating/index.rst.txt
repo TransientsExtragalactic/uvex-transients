@@ -1,0 +1,347 @@
+
+
+.. _sphx_glr_auto_examples_simulating:
+
+.. _simulating_gallery:
+
+*******************************
+Survey Transient Simulations
+*******************************
+
+.. card::
+   :class-card: sd-shadow-sm gallery-banner
+
+   *Module:* :mod:`~uvex_transients.simulation`
+
+   Run a :class:`~uvex_transients.simulation.core.SurveySimulator` end to end: sample, screen
+   with any of its registered cuts, generate synthetic photometry, and summarize the yield.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_peak_magnitude cuts on each event&#x27;s own peak (brightest) apparent AB magnitude, ignoring Milky Way dust attenuation and the survey schedule entirely. It is a cheap, purely intrinsic-plus-distance screen, distinct from filter_by_limiting_magnitude (which folds dust in and checks a shared phase grid rather than each event&#x27;s own peak).">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_peak_magnitude_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_peak_magnitude`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Peak Magnitude</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_peak_flux is the same evaluation as filter_by_peak_magnitude, just compared in flux (erg/s/cm^2/Hz) rather than AB magnitude, for a threshold already in hand as a flux.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_peak_flux_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_peak_flux`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Peak Flux</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_peak_luminosity cuts on each event&#x27;s own peak bolometric luminosity (erg/s): purely intrinsic, with no bands, no distance, no dust, and no schedule involved at all. It is the distance-independent analog of filter_by_peak_magnitude/ filter_by_peak_flux.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_peak_luminosity_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_peak_luminosity`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Peak Luminosity</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_query cuts an EventCatalog by an arbitrary boolean expression over its own columns, each bound to its own native type (`~astropy.units.Quantity`, SkyCoord, Time, or a plain array), so comparisons stay unit- and frame-aware. It is the escape hatch for a cut none of the named ones cover.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_query_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_query`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Arbitrary Query</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="run_yield_action combines a raw (pre-cut) catalog, a detected (post-cut) catalog, and an ExposureCatalog into a per-transient-type YieldTable: expected detection counts, with both Monte Carlo and rate-normalization uncertainty kept separate.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_action_yield_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_action_yield`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Action: Yield Summary</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_baseline cuts on the spacing (days) between each event&#x27;s own SNR-qualifying detection epochs: min_baseline requires some pair of detections closer together than that; max_baseline requires the full detected span to exceed it. Together they pick out events with both a dense sub-cadence and a long overall baseline, e.g. for light-curve-shape science.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_baseline_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_baseline`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Baseline</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_limiting_magnitude is the cheapest of the cuts: no schedule, no noise model, just &quot;could this event, at its brightest sampled phase, ever clear a fixed magnitude limit?&quot; It is meant to run first, on a freshly sampled catalog, before anything schedule-aware.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_limiting_magnitude_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_limiting_magnitude`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Limiting Magnitude</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_sky_position keeps (or drops) events whose position falls in a longitude/latitude box, in any coordinate frame transform_to accepts. Unlike filter_by_region (arbitrary polygon/circle regions), this is a simple coordinate-box test, e.g. for Galactic-plane avoidance.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_sky_position_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_sky_position`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Sky Position Box</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_time_to_first_detection cuts on the time (days) from explosion to each event&#x27;s first SNR-qualifying detection. It is schedule-aware, like filter_by_snr, and is useful for selecting events caught early, e.g. while a rise is still being resolved.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_time_to_first_detection_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_time_to_first_detection`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Time to First Detection</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_snr asks the real question a magnitude-limit screen can only approximate: over every observation the schedule actually made of an event&#x27;s position while it was active, is it ever detected above a given SNR? It is schedule-aware, so it is run after the cheaper filter_by_limiting_magnitude, not instead of it.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_snr_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_snr`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Signal-to-Noise Ratio</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_redshift cuts on an EventCatalog&#x27;s own redshift column, no schedule or photometry involved. It is a cheap way to restrict a population to a redshift range of interest, e.g. a nearby subsample for individual light-curve follow-up.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_redshift_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_redshift`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Redshift</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="run_detection_counts_action estimates, per transient type, how many events show N_{\rm det}\ge k detected epochs, for every k. It generalizes filter_by_snr&#x27;s own detected-or-not split (its k=1 row) to the full distribution of visit counts.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_action_detection_counts_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_action_detection_counts`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Action: Detection Counts</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_region keeps only events inside an arbitrary sky region: a SkyRegion/`~regions.Regions` instance, or a path to a region file (e.g. a DS9 .reg). It uses the same regions/~m4opt.fov.contains convention SurveySchedule uses for its own instrument FOV, so no WCS is needed.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_region_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_region`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Sky Region</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="filter_by_transient_type keeps only rows whose transient_type is one of a given list, dropping every other type. It is useful once a SurveySimulator has more than one type registered (e.g. to compare their yields, or to run a further cut against only one), since every other cut screens whatever types are present without regard to type.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_cut_transient_type_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_cut_transient_type`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cut: Transient Type</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="run_photometry_action is a thin wrapper over simulate_photometry, supplying the simulator&#x27;s own transient_collection/`survey_schedule`. It runs real synthetic photometry, band by band and observation by observation, for every event in a catalog, and is normally run only after the cuts have already narrowed things down to the events worth the cost.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_action_photometry_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_action_photometry`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Action: Synthetic Photometry</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A minimal example of an end-to-end simulation of transient yields from a UVEX survey schedule. In this example, we&#x27;ll determine the anticipated yield of TDEs with the default UVEX schedule. To do this, we&#x27;ll take the following steps:">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_tde_end_to_end_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_tde_end_to_end`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">TDE End-to-End Simulation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The Morag+24 shock-cooling emission of Type IIb supernovae comes in two flavors that share the same physical parameters and the same bolometric-luminosity/color-temperature evolution, but differ in the shape of the spectrum: MoragShockCoolingBlackbodySED is a pure blackbody (Eq. A8), while MoragShockCoolingSED adds the UV line suppression and free-free correction of Eq. A7. Since UVEX observes precisely in the UV where those two disagree the most, it&#x27;s a useful test case for a follow-up campaign.">
+
+.. only:: html
+
+  .. image:: /auto_examples/simulating/images/thumb/sphx_glr_plot_shock_cooling_comparison_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/simulating/plot_shock_cooling_comparison`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Shock-Cooling Models: Blackbody vs. Full SED</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/simulating/plot_cut_peak_magnitude
+   /auto_examples/simulating/plot_cut_peak_flux
+   /auto_examples/simulating/plot_cut_peak_luminosity
+   /auto_examples/simulating/plot_cut_query
+   /auto_examples/simulating/plot_action_yield
+   /auto_examples/simulating/plot_cut_baseline
+   /auto_examples/simulating/plot_cut_limiting_magnitude
+   /auto_examples/simulating/plot_cut_sky_position
+   /auto_examples/simulating/plot_cut_time_to_first_detection
+   /auto_examples/simulating/plot_cut_snr
+   /auto_examples/simulating/plot_cut_redshift
+   /auto_examples/simulating/plot_action_detection_counts
+   /auto_examples/simulating/plot_cut_region
+   /auto_examples/simulating/plot_cut_transient_type
+   /auto_examples/simulating/plot_action_photometry
+   /auto_examples/simulating/plot_tde_end_to_end
+   /auto_examples/simulating/plot_shock_cooling_comparison
+
