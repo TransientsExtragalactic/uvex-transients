@@ -274,7 +274,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           from astropy import units as u
           from scipy.stats import gaussian_kde
 
-          from m4opt.missions import uvex
+          from uvex_transients.missions import uvex_fast as uvex
           from uvex_transients.transients.supernovae import TypeIIPSNe
           from uvex_transients.models.supernovae import TypeIIPSED
 
@@ -340,7 +340,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           import matplotlib.pyplot as plt
           from astropy import units as u
 
-          from m4opt.missions import uvex
+          from uvex_transients.missions import uvex_fast as uvex
           from uvex_transients.transients.supernovae import TypeIIPSNe
           from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
@@ -607,7 +607,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           from astropy import units as u
           from scipy.stats import gaussian_kde
 
-          from m4opt.missions import uvex
+          from uvex_transients.missions import uvex_fast as uvex
           from uvex_transients.transients.supernovae import TypeIIPExcessSNe
           from uvex_transients.models.supernovae import TypeIIPExcessSED
 
@@ -673,7 +673,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
           import matplotlib.pyplot as plt
           from astropy import units as u
 
-          from m4opt.missions import uvex
+          from uvex_transients.missions import uvex_fast as uvex
           from uvex_transients.transients.supernovae import TypeIIPExcessSNe
           from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
@@ -1006,7 +1006,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIIbSNe
          from uvex_transients.models.supernovae import TypeIIbSED
 
@@ -1060,7 +1060,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIIbSNe
          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 

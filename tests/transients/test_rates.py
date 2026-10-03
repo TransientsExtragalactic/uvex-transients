@@ -6,7 +6,8 @@ from astropy import units as u
 from astropy.units import Quantity
 
 from uvex_transients.models.tdes import VanVelzenTDESED
-from uvex_transients.transients.base import ExtragalacticTransient
+from uvex_transients.transients.base import ExtragalacticTransient, TransientBase
+from uvex_transients.transients.supernovae import TypeIcBLSNe
 
 
 class _ConstantRateTransient(ExtragalacticTransient):
@@ -121,3 +122,22 @@ def test_event_rate_is_rate_times_rate_shape():
     z = np.array([0.0, 0.5, 1.0])
     expected = t.rate.to_value(u.Mpc**-3 * u.yr**-1) * np.asarray(t.rate_shape(z))
     np.testing.assert_allclose(t.event_rate(z), expected)
+
+
+def test_builtin_rate_ci_lower_bounds_are_never_negative():
+    """No shipped transient class declares a negative lower `RATE_CI` bound (a rate cannot be negative)."""
+    shipped = {
+        name: cls
+        for name, cls in TransientBase.registry().items()
+        if cls.__module__.startswith("uvex_transients.") and getattr(cls, "RATE_CI", None) is not None
+    }
+    assert shipped, "expected at least one shipped transient class with a RATE_CI"
+    for name, cls in shipped.items():
+        assert cls.RATE_CI[0] >= 0, f"{name}.RATE_CI lower bound is negative: {cls.RATE_CI}"
+
+
+def test_icbl_rate_ci_lower_bound_is_floored_at_zero():
+    """Ic-BL's published fraction has a lower bound of exactly zero, so its `RATE_CI` lower bound is zero."""
+    lower, upper = TypeIcBLSNe.RATE_CI
+    assert lower == 0.0
+    assert upper > 1.0

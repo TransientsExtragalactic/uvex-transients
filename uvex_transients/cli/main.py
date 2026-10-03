@@ -7,7 +7,7 @@ import click
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.exposure_catalog import ExposureCatalog
 from ..simulation.photometry_catalog import PhotometryCatalog
-from . import pipeline
+from . import pipeline, steps
 from .config import RunConfig
 
 _LOGO_PATH = Path(__file__).resolve().parents[1] / "_logo.txt"
@@ -61,7 +61,7 @@ DRY_RUN_OPTION = click.option(
 )
 
 
-def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, cut_names=None) -> None:
+def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, step_ids=None) -> None:
     """
     Print `pipeline.dry_run_report` and exit non-zero if the real command would fail on an existing output.
 
@@ -75,11 +75,11 @@ def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, cut_name
         The output path(s) the real command would write.
     overwrite : bool
         Whether the real command would be allowed to overwrite existing outputs.
-    cut_names : list of str, optional
-        For the ``"cut"`` command, the cut names that would run.
+    step_ids : list of str, optional
+        For ``"cut"``/``"photometry"``/``"detection-counts"``, the step id(s) that would run.
     """
     try:
-        lines, ok = pipeline.dry_run_report(config, command, outputs=outputs, overwrite=overwrite, cut_names=cut_names)
+        lines, ok = pipeline.dry_run_report(config, command, outputs=outputs, overwrite=overwrite, step_ids=step_ids)
     except (ValueError, KeyError, OSError) as error:
         raise click.ClickException(f"dry run failed: {error}") from error
     for line in lines:
@@ -128,27 +128,29 @@ def generate_command(config_path: Path, out_path: Path, overwrite: bool, dry_run
 
 @cli.command("cut")
 @CONFIG_ARGUMENT
-@click.argument("names", nargs=-1)
+@click.argument("step_ids", metavar="[STEP_ID]...", nargs=-1)
 @click.option("--in", "in_path", required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
 @OVERWRITE_OPTION
 @DRY_RUN_OPTION
 def cut_command(
-    config_path: Path, names: tuple[str, ...], in_path: Path, out_path: Path, overwrite: bool, dry_run: bool
+    config_path: Path, step_ids: tuple[str, ...], in_path: Path, out_path: Path, overwrite: bool, dry_run: bool
 ) -> None:
     """
-    Run one or more of CONFIG's declared cuts against a catalog, chained in order.
+    Run one or more of CONFIG's declared ``cut``-type steps against a catalog, chained in order.
 
-    NAMES are keys from CONFIG's ``cuts:`` section; with none given, every declared cut
-    runs, in declared order.
+    STEP_ID names are ids from CONFIG's ``steps:`` list (each must be a ``type: cut`` step);
+    with none given, every declared ``cut`` step runs, in declared order. Unlike the full
+    ``run``/``steps:`` graph, this ignores each step's own configured ``input:`` and instead
+    threads ``--in`` through every selected step.
 
     Parameters
     ----------
     config_path : Path
         Path to the run-config YAML file (``CONFIG``).
-    names : tuple of str
-        Cut names to run, from CONFIG's ``cuts:`` section (``NAMES``); empty runs every
-        declared cut.
+    step_ids : tuple of str
+        Cut step ids to run, from CONFIG's ``steps:`` list (``STEP_ID``); empty runs every
+        declared ``cut`` step.
     in_path : Path
         Path to the input event catalog.
     out_path : Path
@@ -165,27 +167,35 @@ def cut_command(
     """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
-        return _dry_run(config, "cut", [out_path], overwrite, cut_names=list(names) or None)
+        return _dry_run(config, "cut", [out_path], overwrite, step_ids=list(step_ids) or None)
     catalog = EventCatalog.from_disk(in_path)
-    result = pipeline.run_cuts(config, catalog, names=list(names) or None)
+    result = pipeline.run_cut_steps(config, catalog, step_ids=list(step_ids) or None)
     result.to_disk(out_path, overwrite=overwrite)
     click.echo(f"cut: {len(result)}/{len(catalog)} events survived -> {out_path}")
 
 
 @cli.command("photometry")
 @CONFIG_ARGUMENT
+@click.argument("step_id", metavar="STEP_ID")
 @click.option("--in", "in_path", required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
 @OVERWRITE_OPTION
 @DRY_RUN_OPTION
-def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwrite: bool, dry_run: bool) -> None:
+def photometry_command(
+    config_path: Path, step_id: str, in_path: Path, out_path: Path, overwrite: bool, dry_run: bool
+) -> None:
     """
-    Run synthetic photometry over every event in a catalog.
+    Run synthetic photometry over every event in a catalog, per one of CONFIG's declared steps.
+
+    STEP_ID is an id from CONFIG's ``steps:`` list, naming a ``type: action``,
+    ``action: photometry`` step (for its ``bands``/``n_sigma`` params).
 
     Parameters
     ----------
     config_path : Path
         Path to the run-config YAML file (``CONFIG``).
+    step_id : str
+        The photometry step's own id in CONFIG's ``steps:`` list.
     in_path : Path
         Path to the input event catalog.
     out_path : Path
@@ -202,21 +212,22 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
     """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
-        return _dry_run(config, "photometry", [out_path], overwrite)
+        return _dry_run(config, "photometry", [out_path], overwrite, step_ids=[step_id])
     catalog = EventCatalog.from_disk(in_path)
-    phot = pipeline.run_photometry(config, catalog)
+    phot = pipeline.run_photometry_step(config, step_id, catalog)
     phot.write(out_path, overwrite=overwrite)
     click.echo(f"photometry: {len(phot)} rows -> {out_path}")
 
 
 @cli.command("detection-counts")
 @CONFIG_ARGUMENT
+@click.argument("step_id", metavar="STEP_ID")
 @click.option(
     "--catalog",
     "catalog_path",
     required=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="The full, pre-cut event catalog from 'generate' (e.g. 00_generated.ecsv from 'run' with "
+    help="The full, pre-cut event catalog from 'generate' (e.g. baseline.ecsv from 'run' with "
     "intermediates kept), NOT the post-cut catalog --photometry was computed over: n_total must "
     "count every sampled event, including ones later cut or never observed, or 'fraction' is "
     "computed against the wrong denominator.",
@@ -240,6 +251,7 @@ def photometry_command(config_path: Path, in_path: Path, out_path: Path, overwri
 @DRY_RUN_OPTION
 def detection_counts_command(
     config_path: Path,
+    step_id: str,
     catalog_path: Path,
     photometry_path: Path,
     exposure_path: Path,
@@ -250,20 +262,24 @@ def detection_counts_command(
     """
     Estimate, per transient type, how many events show N_det >= k detected epochs.
 
-    Combines CATALOG, PHOTOMETRY, and EXPOSURE per the config's 'detection_counts:' section
-    (see `PhotometryCatalog.compute_detection_count_table`); the output table carries both
-    Clopper-Pearson confidence bounds and exposure-scaled expected event counts, not just raw
-    Monte Carlo catalog counts.
+    STEP_ID is an id from CONFIG's ``steps:`` list, naming a ``type: action``,
+    ``action: detection_counts`` step (for its ``snr_threshold``/``confidence`` params).
+    Combines CATALOG, PHOTOMETRY, and EXPOSURE (see
+    `~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`);
+    the output table carries both Clopper-Pearson confidence bounds and exposure-scaled expected
+    event counts, not just raw Monte Carlo catalog counts.
 
     Parameters
     ----------
     config_path : Path
         Path to the run-config YAML file (``CONFIG``).
+    step_id : str
+        The detection-counts step's own id in CONFIG's ``steps:`` list.
     catalog_path : Path
         Path to the full, pre-cut event catalog from the 'generate' stage (e.g.
-        ``00_generated.ecsv`` from 'run' with intermediates kept) -- *not* the post-cut catalog
-        `photometry_path` was computed over. `PhotometryCatalog.compute_detection_count_table`
-        needs every sampled event, including ones later cut or never observed, to compute
+        ``baseline.ecsv`` from 'run' with intermediates kept) -- *not* the post-cut catalog
+        `photometry_path` was computed over. `compute_detection_count_table` needs every
+        sampled event, including ones later cut or never observed, to compute
         `n_total`/`fraction` correctly; passing the post-cut catalog silently inflates
         `expected_events` by roughly ``1/efficiency``.
     photometry_path : Path
@@ -284,11 +300,11 @@ def detection_counts_command(
     """
     config = RunConfig.from_yaml(config_path)
     if dry_run:
-        return _dry_run(config, "detection-counts", [out_path], overwrite)
+        return _dry_run(config, "detection-counts", [out_path], overwrite, step_ids=[step_id])
     catalog = EventCatalog.from_disk(catalog_path)
     photometry = PhotometryCatalog.from_disk(photometry_path)
     exposure = ExposureCatalog.from_disk(exposure_path)
-    table = pipeline.run_detection_counts(config, catalog, exposure, photometry)
+    table = pipeline.run_detection_counts_step(config, step_id, catalog, exposure, photometry)
     table.write(out_path, overwrite=overwrite)
     click.echo(f"detection-counts: {len(table)} (type, k) row(s) -> {out_path}")
 
@@ -296,9 +312,9 @@ def detection_counts_command(
 KEEP_INTERMEDIATE_OPTION = click.option(
     "--keep-intermediate/--no-keep-intermediate",
     default=None,
-    help="Keep (or discard) each stage's catalog under OUT_DIR; defaults to the config's "
-    "'keep_intermediate:' (itself defaulting to keeping everything). With --no-keep-intermediate, "
-    "only the final event catalog (final_catalog.ecsv) and the photometry table are written.",
+    help="Keep (or discard) each step's artifact under OUT_DIR, per its own 'checkpoint:' (falling back to "
+    "this run's 'keep_intermediate:', itself defaulting to keeping everything). With "
+    "--no-keep-intermediate, only steps that explicitly set 'checkpoint: true' (or a filename) are written.",
 )
 
 
@@ -312,22 +328,25 @@ def run_command(
     config_path: Path, out_dir: Path, overwrite: bool, keep_intermediate: bool | None, dry_run: bool
 ) -> None:
     """
-    Chain generate -> every declared cut -> photometry in one process, writing each stage's catalog to OUT_DIR.
+    Sample a baseline catalog, tabulate exposure, then run every declared step in CONFIG's ``steps:`` list.
+
+    Writes each checkpointed artifact to OUT_DIR as it goes.
 
     Parameters
     ----------
     config_path : Path
         Path to the run-config YAML file (``CONFIG``).
     out_dir : Path
-        Directory to write each stage's catalog into.
+        Directory to write each checkpointed step's artifact into.
     overwrite : bool
-        Whether to overwrite existing files in `out_dir`.
+        Whether to overwrite existing files in `out_dir` (and, symmetrically, whether an
+        existing checkpoint file is trusted and loaded instead of its step being rerun).
     keep_intermediate : bool, optional
-        Whether to write each *intermediate* stage's catalog to `out_dir`. If `None` (the
-        default), falls back to the config's ``keep_intermediate:`` (itself defaulting to
-        `True`). The final event catalog and the photometry table are always written either way.
+        The default "should this step be checkpointed" answer for a step whose own
+        ``checkpoint:`` is unset. If `None` (the default), falls back to the config's
+        ``keep_intermediate:`` (itself defaulting to `True`).
     dry_run : bool
-        If True, validate and report without running any stage or writing anything.
+        If True, validate and report without running any step or writing anything.
 
     Returns
     -------
@@ -342,62 +361,39 @@ def run_command(
     keep = config.keep_intermediate if keep_intermediate is None else keep_intermediate
 
     if dry_run:
-        stage_files = []
+        stage_files = ["exposure.ecsv"]
         if keep:
-            stage_files.append("00_generated.ecsv")
-            if config.has_section("cuts"):
-                stage_files += [f"{i:02d}_{key}.ecsv" for i, key in enumerate(config.cuts, start=1)]
-        else:
-            stage_files.append("final_catalog.ecsv")
-        stage_files.append("photometry.ecsv")
-        stage_files += ["exposure.ecsv", "yield_summary.ecsv", "yield_summary.txt"]
-        if config.has_section("detection_counts"):
-            stage_files.append("detection_counts.ecsv")
+            stage_files.append("baseline.ecsv")
+        for _step, path in steps.checkpoint_targets(config, keep):
+            if path is not None:
+                stage_files.append(str(path))
         return _dry_run(config, "run", [out_dir / name for name in stage_files], overwrite)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    catalog = pipeline.run_generate(config)
-    raw_catalog = catalog
-    if keep:
-        catalog.to_disk(out_dir / "00_generated.ecsv", overwrite=overwrite)
-        click.echo(f"generate: {len(catalog)} events -> 00_generated.ecsv")
+    baseline_path = out_dir / "baseline.ecsv"
+    if baseline_path.exists() and not overwrite:
+        catalog = EventCatalog.from_disk(baseline_path)
+        click.echo(f"generate: {len(catalog)} events -> {baseline_path.name} (loaded from checkpoint)")
     else:
-        click.echo(f"generate: {len(catalog)} events")
+        catalog = pipeline.run_generate(config)
+        if keep:
+            catalog.to_disk(baseline_path, overwrite=overwrite)
+            click.echo(f"generate: {len(catalog)} events -> {baseline_path.name}")
+        else:
+            click.echo(f"generate: {len(catalog)} events")
 
-    exposure = pipeline.run_exposure(config)
     exposure_path = out_dir / "exposure.ecsv"
-    exposure.to_disk(exposure_path, overwrite=overwrite)
-    click.echo(f"exposure: {len(exposure)} (type, bin) rows -> {exposure_path.name}")
+    if exposure_path.exists() and not overwrite:
+        exposure = ExposureCatalog.from_disk(exposure_path)
+        click.echo(f"exposure: {len(exposure)} (type, bin) rows -> {exposure_path.name} (loaded from checkpoint)")
+    else:
+        exposure = pipeline.run_exposure(config)
+        exposure.to_disk(exposure_path, overwrite=overwrite)
+        click.echo(f"exposure: {len(exposure)} (type, bin) rows -> {exposure_path.name}")
 
-    if config.has_section("cuts"):
-        for i, key in enumerate(config.cuts, start=1):
-            catalog = pipeline.run_cuts(config, catalog, names=[key])
-            if keep:
-                stage_path = out_dir / f"{i:02d}_{key}.ecsv"
-                catalog.to_disk(stage_path, overwrite=overwrite)
-                click.echo(f"cut {key}: {len(catalog)} events -> {stage_path.name}")
-            else:
-                click.echo(f"cut {key}: {len(catalog)} events")
-
-    if not keep:
-        final_path = out_dir / "final_catalog.ecsv"
-        catalog.to_disk(final_path, overwrite=overwrite)
-        click.echo(f"catalog: {len(catalog)} events -> {final_path.name}")
-
-    yield_table = pipeline.run_yield_summary(config, raw_catalog, catalog, exposure)
-    yield_ecsv_path = out_dir / "yield_summary.ecsv"
-    yield_table.to_disk(yield_ecsv_path, overwrite=overwrite)
-    yield_ascii_path = out_dir / "yield_summary.txt"
-    yield_table.to_ascii(yield_ascii_path, overwrite=overwrite)
-    click.echo(f"yield: {len(yield_table)} transient type(s) -> {yield_ecsv_path.name}, {yield_ascii_path.name}")
-
-    phot = pipeline.run_photometry(config, catalog)
-    phot_path = out_dir / "photometry.ecsv"
-    phot.write(phot_path, overwrite=overwrite)
-    click.echo(f"photometry: {len(phot)} rows -> {phot_path.name}")
-
-    if config.has_section("detection_counts"):
-        detection_counts = pipeline.run_detection_counts(config, raw_catalog, exposure, phot)
-        detection_counts_path = out_dir / "detection_counts.ecsv"
-        detection_counts.write(detection_counts_path, overwrite=overwrite)
-        click.echo(f"detection-counts: {len(detection_counts)} (type, k) row(s) -> {detection_counts_path.name}")
+    store = {"baseline": catalog, "exposure": exposure}
+    step_runner = steps.run_steps(config, store, out_dir=out_dir, overwrite=overwrite, keep_intermediate=keep)
+    for step, artifact, path in step_runner:
+        size = f"{len(artifact)} rows" if hasattr(artifact, "__len__") else "1 artifact"
+        where = f" -> {path.name}" if path is not None else ""
+        click.echo(f"{step.type} {step.id}: {size}{where}")

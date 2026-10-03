@@ -7,10 +7,12 @@ Everything covered in :ref:`user_guide_simulation` (sampling an
 :class:`~uvex_transients.simulation.event_catalog.EventCatalog`, screening it down with one or
 more cuts, and running synthetic photometry) is also available without writing any Python, via
 the ``uvex-transients`` console script (:mod:`uvex_transients.cli`). One YAML **run-config** file
-describes *what* to simulate (which transients, what schedule, what screening); the CLI's four
-subcommands (``generate``, ``cut``, ``photometry``, and ``run``) describe *when* to do each step,
-reading and writing plain :class:`~uvex_transients.simulation.event_catalog.EventCatalog` files
-between stages.
+describes *what* to simulate (which transients, what schedule) and, via its ``steps:`` list, *how*
+to process the baseline catalog once it's sampled -- screening cuts, set operations between named
+catalogs, and post-processing actions like synthetic photometry, chained in one declared order,
+GitHub-Actions style. The CLI's five subcommands (``generate``, ``cut``, ``photometry``,
+``detection-counts``, and ``run``) drive that same pipeline, reading and writing plain catalog/table
+files between stages.
 
 This page is a hands-on tour of the run-config format and the commands themselves. See
 :ref:`user_guide_simulation` for what each stage actually does under the hood; this page is about
@@ -20,32 +22,30 @@ Quick Look
 ----------
 
 The repository ships a ready-to-run example, `quickstart_tde.yaml
-<https://github.com/TransientsExtragalactic/uvex-transients/blob/main/quickstart_tde.yaml>`__, at
-the top of the source tree. Once the package is installed (``pip install -e .`` from a source
-checkout registers the ``uvex-transients`` command), running the whole pipeline is one line:
+<https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/quickstart_tde.yaml>`__,
+under ``configs/``. Once the package is installed (``pip install -e .`` from a source checkout
+registers the ``uvex-transients`` command), running the whole pipeline is one line:
 
 .. code-block:: bash
 
-    uvex-transients run quickstart_tde.yaml --out-dir quickstart_results/
+    uvex-transients run configs/quickstart_tde.yaml --out-dir quickstart_results/
 
 That samples tidal disruption events against the default UVEX schedule, tabulates the survey's
-effective exposure to them, screens them by magnitude and then by SNR, summarizes the resulting
-yield, and runs synthetic photometry on whatever survives -- leaving every intermediate catalog in
-``quickstart_results/``: ``00_generated.ecsv``, ``exposure.ecsv``, one numbered file per cut,
-``yield_summary.ecsv``/``yield_summary.txt``, and a final ``photometry.ecsv``. The rest of this
-page explains the config file that made that happen and the commands it works with, so you can
-build your own.
+effective exposure to them, screens them by magnitude and then by SNR, and runs synthetic
+photometry on whatever survives -- leaving every checkpointed artifact in
+``quickstart_results/``: ``baseline.ecsv``, ``exposure.ecsv``, one numbered file per declared step
+(``01_mag_screen.ecsv``, ``02_snr_screen.ecsv``, ``03_phot.ecsv``). The rest of this page explains
+the config file that made that happen and the commands it works with, so you can build your own.
 
 ----
 
 The Run-Config File
 ----------------------
 
-A run-config is a single YAML file with up to seven top-level sections. Every CLI command reads the
+A run-config is a single YAML file with up to six top-level sections. Every CLI command reads the
 *same* file (there's no separate config per command), but each command only needs the section(s)
 it actually touches, resolved lazily by :class:`~uvex_transients.cli.config.RunConfig`: a config
-with no ``photometry:`` block is perfectly valid as long as you never run
-``uvex-transients photometry`` against it.
+with no ``steps:`` block is perfectly valid as long as you only ever run ``generate``.
 
 .. list-table:: Top-level sections
    :header-rows: 1
@@ -69,30 +69,19 @@ with no ``photometry:`` block is perfectly valid as long as you never run
    * - ``generate:``
      - ``generate``, ``run``
      - :meth:`~uvex_transients.simulation.core.SurveySimulator.generate_events`'s own arguments.
-   * - ``cuts:``
-     - ``cut``, ``run``
-     - Named screening passes, run in the order they're declared.
-   * - ``photometry:``
-     - ``photometry``, ``run``
-     - :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`'s
-       optional ``bands``/``n_sigma`` arguments. Optional; omit entirely to use every band at the
-       package's default detection significance.
-   * - ``yield:``
-     - ``run``
-     - :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`'s
-       optional ``confidence`` argument. Optional; defaults to a ``0.9`` Clopper-Pearson
-       confidence level.
-   * - ``detection_counts:``
-     - ``detection-counts``, ``run`` (if declared)
-     - :meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`'s
-       ``snr_threshold``/``confidence`` arguments. Optional; ``run`` skips this stage entirely if
-       the section is omitted.
+       Its output is the ``"baseline"`` artifact every ``steps:`` entry can reference; a
+       tabulated :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` over the
+       same footprint is always available too, under ``"exposure"``.
+   * - ``steps:``
+     - ``run`` (and, ad hoc, ``cut``/``photometry``/``detection-counts``)
+     - An ordered list of ``cut``/``logical_op``/``action`` steps -- see below. Optional; an
+       entirely absent ``steps:`` list is fine if you only ever want the raw baseline catalog.
    * - ``keep_intermediate:``
      - ``run``
-     - Whether ``run`` writes each *intermediate* stage's catalog to ``--out-dir``, in addition to
-       the final event catalog and photometry table (always written). Optional bool; defaults to
-       ``true``. Overridden either way by ``run``'s own ``--keep-intermediate``/
-       ``--no-keep-intermediate`` flag.
+     - Whether ``run`` checkpoints each step's artifact to ``--out-dir`` by default (a step's own
+       ``checkpoint:`` overrides this individually). Optional bool; defaults to ``true``.
+       Overridden either way by ``run``'s own ``--keep-intermediate``/``--no-keep-intermediate``
+       flag. ``exposure.ecsv`` is always written regardless.
 
 .. important::
 
@@ -254,6 +243,20 @@ model's parameters actually are.
      - str or number
      - Overrides :attr:`~uvex_transients.transients.base.TransientBase.duration_limit` (a unit
        string like ``"200 day"``, or a bare number of days). Optional.
+   * - ``photometry_pre_window``
+     - str or number
+     - Overrides :attr:`~uvex_transients.transients.base.TransientBase.photometry_pre_window` --
+       how far before explosion :meth:`Event.simulate_photometry
+       <uvex_transients.simulation.event.Event.simulate_photometry>` still generates
+       background/non-detection photometry (a unit string or a bare number of days). Optional;
+       defaults to no pre-explosion photometry.
+   * - ``photometry_post_window``
+     - str or number
+     - Overrides :attr:`~uvex_transients.transients.base.TransientBase.photometry_post_window` --
+       how far after explosion :meth:`Event.simulate_photometry
+       <uvex_transients.simulation.event.Event.simulate_photometry>` evaluates the transient's SED
+       before falling back to background/non-detection photometry (a unit string or a bare number
+       of days). Optional; defaults to ``duration_limit``.
    * - ``cosmology``
      - ``!astropy_cosmology``
      - Overrides the transient's cosmology. Optional; defaults to the package's own default
@@ -278,7 +281,10 @@ Generating Events
 
 A direct pass-through to
 :meth:`~uvex_transients.simulation.core.SurveySimulator.generate_events`; see
-:ref:`user_guide_simulation` for what each field means.
+:ref:`user_guide_simulation` for what each field means. Its output is the reserved ``"baseline"``
+artifact -- the starting point every ``steps:`` entry ultimately traces back to (see below) -- and
+an :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` over the same
+``time_bins``/``nside``/``order`` is always available too, under the reserved id ``"exposure"``.
 
 ``downsample:`` can also give a different factor per transient type instead of one number for
 every type -- keys are the ``transients:`` section's own keys, and a type left out isn't
@@ -295,7 +301,7 @@ downsampled at all:
 
 .. code-block:: bash
 
-    uvex-transients generate quickstart_tde.yaml --out catalog.ecsv
+    uvex-transients generate quickstart_tde.yaml --out baseline.ecsv
 
 .. list-table:: ``generate:`` parameters
    :header-rows: 1
@@ -326,47 +332,87 @@ downsampled at all:
 
 ----
 
-Screening With Cuts
------------------------
+The Steps Pipeline
+----------------------
+
+``steps:`` is an ordered list, run strictly top-to-bottom -- like a GitHub Actions job. Every
+entry needs a unique ``id:`` and a ``type:`` of ``cut``, ``logical_op``, or ``action``. Whatever
+artifact a step produces (an :class:`~uvex_transients.simulation.event_catalog.EventCatalog`, a
+photometry table, ...) is stored under its own ``id``, so a *later* step can reference it as an
+input by name -- alongside the two reserved ids ``"baseline"``/``"exposure"`` that ``generate:``
+always seeds the pipeline with. A step may only reference ``"baseline"``/``"exposure"`` or an
+*earlier* step's ``id`` -- there's no forward reference, and the whole list is validated (unique
+ids, resolvable inputs, known cut/op/action names, correct arity) the moment ``steps:`` is
+accessed, before anything actually runs.
 
 .. code-block:: yaml
 
-    cuts:
-      mag_screen:
-        type: limiting_magnitude
-        mag_limit: 25.0
-      snr_screen:
-        type: snr
-        snr_threshold: 5.0
+    steps:
+      - id: mag_screen
+        type: cut
+        cut: limiting_magnitude
+        input: baseline
+        params:
+          mag_limit: 25.0
 
-Every entry needs a ``type:`` naming one of
-:meth:`SurveySimulator.available_cuts() <uvex_transients.simulation.core.SurveySimulator.available_cuts>`:
-the two screening methods from :ref:`user_guide_simulation`, ``limiting_magnitude``
-(:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude`) and
-``snr`` (:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`), registered via
-the :func:`~uvex_transients.simulation.core.cut` decorator. Everything else under a cut is
-forwarded straight through as keyword arguments to that method.
+      - id: snr_screen
+        type: cut
+        cut: snr
+        input: mag_screen
+        params:
+          snr_threshold: 5.0
 
-.. code-block:: bash
+      - id: phot
+        type: action
+        action: photometry
+        inputs:
+          catalog: snr_screen
+        params:
+          bands: [FUV, NUV]
 
-    # Run every cut declared above, in order, chained into one output catalog:
-    uvex-transients cut quickstart_tde.yaml --in catalog.ecsv --out screened.ecsv
+``cut`` steps
+^^^^^^^^^^^^^^^
 
-    # Or run just one, useful for debugging a single stage:
-    uvex-transients cut quickstart_tde.yaml mag_screen --in catalog.ecsv --out mag_only.ecsv
+A single-catalog predicate filter -- narrows one :class:`EventCatalog
+<uvex_transients.simulation.event_catalog.EventCatalog>` down to another. ``cut:`` must name one
+of :meth:`SurveySimulator.available_cuts()
+<uvex_transients.simulation.core.SurveySimulator.available_cuts>`, registered via the
+:func:`~uvex_transients.simulation.core.cut` decorator -- the schedule/detector-aware
+``limiting_magnitude``/``snr`` pair walked through in :ref:`user_guide_simulation`, plus a further
+set of cheaper or more specialized screens (redshift, type, peak brightness, detection timing,
+sky position, and an arbitrary boolean expression), listed in full below. ``input:`` names the
+artifact to filter; everything under ``params:`` is forwarded as keyword arguments to that cut's
+underlying method.
+
+An optional ``transient_types:`` list restricts the cut to rows whose ``transient_type`` matches
+one of those names -- every other row passes through untouched, regardless of what the cut would
+otherwise have done to it. This is handled generically by the step executor itself, not by any
+individual cut, so it works retroactively for every registered cut, including ones a project adds
+later:
+
+.. code-block:: yaml
+
+    steps:
+      - id: tde_only_screen
+        type: cut
+        cut: limiting_magnitude
+        input: baseline
+        transient_types: [tde]
+        params:
+          mag_limit: 26.0
 
 .. hint::
 
    Cuts are ordinary :class:`~uvex_transients.simulation.core.SurveySimulator` methods, not a
    separate plugin class: decorating a new method on a
    :class:`~uvex_transients.simulation.core.SurveySimulator` subclass with ``@cut("my_cut")``
-   registers it automatically, immediately usable from a ``type:`` in any run-config.
+   registers it automatically, immediately usable from a ``cut:`` in any run-config.
 
-.. list-table:: ``cuts:`` entry parameters, by ``type:``
+.. list-table:: ``cut`` step parameters, by ``cut:``
    :header-rows: 1
    :widths: 22 24 54
 
-   * - ``type:``
+   * - ``cut:``
      - Required params
      - Optional params
    * - ``limiting_magnitude``
@@ -375,157 +421,213 @@ forwarded straight through as keyword arguments to that method.
    * - ``snr``
      - ``snr_threshold``
      - ``bands``, ``chunk_size``, ``n_visits``
+   * - ``redshift``
+     - --
+     - ``min_redshift``, ``max_redshift`` (at least one required)
+   * - ``transient_type``
+     - ``types``
+     - --
+   * - ``peak_magnitude``
+     - --
+     - ``min_mag``, ``max_mag`` (at least one required), ``bands``, ``n_phase``, ``chunk_size``
+   * - ``peak_flux``
+     - --
+     - ``min_flux``, ``max_flux`` (at least one required), ``bands``, ``n_phase``, ``chunk_size``
+   * - ``peak_luminosity``
+     - --
+     - ``min_luminosity``, ``max_luminosity`` (at least one required), ``n_phase``, ``chunk_size``
+   * - ``time_to_first_detection``
+     - ``snr_threshold``
+     - ``min_delay``, ``max_delay`` (at least one required), ``bands``, ``chunk_size``
+   * - ``baseline``
+     - ``snr_threshold``
+     - ``min_baseline``, ``max_baseline`` (at least one required), ``bands``, ``chunk_size``
+   * - ``region``
+     - ``region``
+     - --
+   * - ``sky_position``
+     - ``frame``
+     - ``phi_min``, ``phi_max``, ``theta_min``, ``theta_max``, ``mode``
+   * - ``query``
+     - ``expr``
+     - --
 
-----
+``peak_magnitude``/``peak_flux``/``peak_luminosity`` are purely intrinsic-plus-distance screens
+(no Milky Way dust attenuation, no detector background, no schedule) on the brightest a modeled
+event ever gets -- see
+:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_peak_magnitude` for the exact
+evaluation. ``time_to_first_detection``/``baseline`` are schedule-aware, like ``snr``, reusing its
+own qualifying-epoch definition (see
+:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_baseline` for the two-sided
+"at least one close pair *and* a long overall span" semantics). ``region`` takes a
+:class:`~regions.SkyRegion`/:class:`~regions.Regions` object or a ``.reg`` file path (the same
+convention the instrument FOV uses); ``sky_position`` is a simpler longitude/latitude box in any
+coordinate frame, with ``mode: include`` (default) or ``mode: exclude`` (e.g. Galactic-plane
+avoidance: ``frame: galactic, theta_min: -10, theta_max: 10, mode: exclude``). ``query`` evaluates
+an arbitrary boolean expression string directly against the catalog's own columns (each bound to
+its native :class:`~astropy.units.Quantity`/:class:`~astropy.coordinates.SkyCoord`/
+:class:`~astropy.time.Time` type, so comparisons stay unit- and frame-aware) -- see
+:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_query` for the exact evaluation
+scope and its "trusted author, not a sandbox" caveat.
 
-Synthetic Photometry
-------------------------
+``logical_op`` steps
+^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: yaml
-
-    photometry:
-      bands: [FUV, NUV]
-      n_sigma: 5.0
-
-Both fields are optional; omit the section entirely to evaluate every band the mission's detector
-has, at the package's default detection significance (``simulation.detection_n_sigma`` in the
-package config; see :ref:`user_guide_simulation`).
-
-.. code-block:: bash
-
-    uvex-transients photometry quickstart_tde.yaml --in screened.ecsv --out photometry.ecsv
-
-The output is one row per (event, observation, band): exactly
-:meth:`Event.simulate_photometry <uvex_transients.simulation.event.Event.simulate_photometry>`'s
-own column schema, stacked across every event in the input catalog via
-:meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`.
-
-.. list-table:: ``photometry:`` parameters
-   :header-rows: 1
-   :widths: 18 20 62
-
-   * - Key
-     - Type
-     - Description
-   * - ``bands``
-     - list of str
-     - Which of the mission detector's bandpasses to evaluate. Optional; defaults to every band.
-   * - ``n_sigma``
-     - float
-     - Width, in multiples of the flux error, of the reported detection interval. Optional;
-       defaults to the package's ``simulation.detection_n_sigma``.
-
-----
-
-Yield and Exposure
-----------------------
-
-.. code-block:: yaml
-
-    yield:
-      confidence: 0.9
-
-Optional; the one field defaults to a ``0.9`` Clopper-Pearson confidence level if the whole
-section is omitted. Unlike the other sections, there's no standalone ``yield`` subcommand -- a
-yield summary needs a raw (pre-cut) catalog, a detected (post-cut) catalog, *and* an exposure
-tabulation all at once (see :ref:`user_guide_simulation_yield`), so it's only ever produced as
-part of ``run``, which already has all three in hand.
-
-.. list-table:: ``yield:`` parameters
-   :header-rows: 1
-   :widths: 18 15 67
-
-   * - Key
-     - Type
-     - Description
-   * - ``confidence``
-     - float
-     - Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to ``0.9``.
-
-``run`` (see below) always computes an
-:class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` and a
-:class:`~uvex_transients.simulation.yield_table.YieldTable` alongside the event catalog and
-photometry, writing ``exposure.ecsv``, ``yield_summary.ecsv``, and a human-readable
-``yield_summary.txt`` into ``--out-dir``.
-
-----
-
-Estimating Detection Counts
---------------------------------
+Combines two or more already-produced :class:`EventCatalog
+<uvex_transients.simulation.event_catalog.EventCatalog>` artifacts by ``event_id`` --
+useful for comparing independent cut branches (e.g. which events *both* a magnitude screen and an
+SNR screen agree on, or which ones only one branch caught). ``op:`` is one of
+``union``/``intersection``/``difference`` (see
+:mod:`uvex_transients.simulation.logical_ops`); ``inputs:`` is a list of earlier
+``id:``\ s/``"baseline"``/``"exposure"``. ``union``/``intersection`` accept two or more inputs
+(both are associative/commutative); ``difference`` requires exactly two (``a - b``, order
+matters, so there's no n-ary form).
 
 .. code-block:: yaml
 
-    detection_counts:
-      snr_threshold: 5.0
-      confidence: 0.9
+    steps:
+      - id: bright_branch
+        type: cut
+        cut: limiting_magnitude
+        input: baseline
+        params: {mag_limit: 25.0}
 
-Estimates, per transient type, how many events would show :math:`N_{\rm det}\geq k` detected
-epochs, for every :math:`k` at once -- see
-:meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`
-and :ref:`user_guide_simulation_yield`. Unlike ``yield:``, this section is entirely optional even
-for ``run``: leaving it out of the config skips this stage everywhere, including ``run``.
+      - id: detected_branch
+        type: cut
+        cut: snr
+        input: baseline
+        params: {snr_threshold: 5.0}
 
-.. code-block:: bash
+      - id: agreement
+        type: logical_op
+        op: intersection
+        inputs: [bright_branch, detected_branch]
 
-    uvex-transients detection-counts quickstart_tde.yaml \
-        --catalog catalog.ecsv --photometry photometry.ecsv --exposure exposure.ecsv \
-        --out detection_counts.ecsv
+``action`` steps
+^^^^^^^^^^^^^^^^^^
 
-.. list-table:: ``detection_counts:`` parameters
+Post-processing that doesn't fit ``cut``'s "one ``EventCatalog`` in, one ``EventCatalog`` out"
+shape -- synthetic photometry, a yield summary, or a detection-count table. ``action:`` must name
+one of :meth:`SurveySimulator.available_actions()
+<uvex_transients.simulation.core.SurveySimulator.available_actions>`, registered the same way cuts
+are, via :func:`~uvex_transients.simulation.core.action`. ``inputs:`` is a mapping from that
+action's own parameter name(s) to artifact ids (so an action needing several inputs at once, like
+``yield`` or ``detection_counts``, can name each one); ``params:`` are its remaining keyword
+arguments.
+
+.. list-table:: ``action`` step parameters, by ``action:``
    :header-rows: 1
-   :widths: 18 15 67
+   :widths: 18 20 20 42
 
-   * - Key
-     - Type
-     - Description
-   * - ``snr_threshold``
-     - float
-     - An observation epoch counts as detected if at least one band's SNR exceeds this value.
-       Required.
-   * - ``confidence``
-     - float
-     - Confidence level for the Clopper-Pearson binomial bounds. Optional; defaults to ``0.9``.
+   * - ``action:``
+     - ``inputs:`` keys
+     - Required params
+     - Optional params
+   * - ``photometry``
+     - ``catalog``
+     - --
+     - ``bands``, ``n_sigma``
+   * - ``yield``
+     - ``raw``, ``detected``, ``exposure``
+     - --
+     - ``confidence`` (default ``0.9``)
+   * - ``detection_counts``
+     - ``catalog``, ``exposure``, ``photometry``
+     - ``snr_threshold``
+     - ``confidence`` (default ``0.9``)
 
-``--catalog`` is the event catalog ``--photometry`` was computed over (typically the same catalog
-``photometry`` ran against, i.e. whatever survived every declared cut) -- it's needed alongside
-the photometry table itself so that events with zero qualifying epochs (including ones the
-schedule never observed at all) are still counted at :math:`N_{\rm det}=0`. ``--exposure`` is an
-exposure catalog as written by ``run`` (or
-:meth:`~uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure` directly).
+A ``photometry`` action's output (a plain :class:`~astropy.table.QTable`, one row per (event,
+observation, band)) can itself feed a later ``detection_counts`` action by ``id``, exactly like
+any other artifact:
 
-If ``detection_counts:`` is declared, ``run`` runs this stage automatically too, writing
-``detection_counts.ecsv`` into ``--out-dir``.
+.. code-block:: yaml
+
+    steps:
+      - id: phot
+        type: action
+        action: photometry
+        inputs: {catalog: snr_screen}
+
+      - id: counts
+        type: action
+        action: detection_counts
+        inputs: {catalog: snr_screen, exposure: exposure, photometry: phot}
+        params: {snr_threshold: 5.0}
+
+Checkpointing
+^^^^^^^^^^^^^^^
+
+Any step's own ``checkpoint:`` controls whether (and where) ``run`` writes its artifact to
+``--out-dir``:
+
+.. list-table:: ``checkpoint:`` values
+   :header-rows: 1
+   :widths: 18 82
+
+   * - Value
+     - Behavior
+   * - *(unset, default)*
+     - Falls back to the run's own ``keep_intermediate:`` (itself defaulting to ``true``).
+   * - ``true`` / ``false``
+     - Forces this step to be (or not be) checkpointed, overriding ``keep_intermediate:``.
+   * - a string, e.g. ``"my_name.ecsv"``
+     - Writes to that explicit filename (relative to ``--out-dir``) instead of the default
+       ``{NN}_{id}.ecsv`` numbering convention, and forces the step to be checkpointed regardless
+       of ``keep_intermediate:``.
+
+Rerunning ``run`` against the same ``--out-dir`` without ``--overwrite`` **resumes**: any step
+whose checkpoint file already exists is loaded from disk instead of being recomputed (and every
+step downstream of it then runs against that loaded artifact). ``--overwrite`` disables this --
+every step always reruns, replacing any existing checkpoint file.
 
 ----
 
-Running the Whole Pipeline
-------------------------------
+Running Steps From the CLI
+-------------------------------
 
 .. code-block:: bash
 
     uvex-transients run quickstart_tde.yaml --out-dir results/
 
-Chains ``generate``, an :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog`
-tabulation, every declared cut (in order), a
-:class:`~uvex_transients.simulation.yield_table.YieldTable` summary, ``photometry``, and (if
-``detection_counts:`` is declared) a detection-count table, all in one process, writing each
-stage's output to ``results/`` as it goes: ``00_generated.ecsv``, ``exposure.ecsv``, then one
-``NN_<cut key>.ecsv`` per cut, then ``yield_summary.ecsv``/``yield_summary.txt``,
-``photometry.ecsv``, and (if declared) ``detection_counts.ecsv``. A config with no ``cuts:``
-section at all is fine here too; ``run`` goes straight from ``generate`` to the yield summary and
-``photometry``.
+Samples ``generate:``, tabulates exposure, then runs every declared ``steps:`` entry in order, all
+in one process, writing each checkpointed artifact to ``results/`` as it goes: ``baseline.ecsv``
+(if checkpointed), ``exposure.ecsv`` (always), then one ``NN_<step id>.ecsv`` per checkpointed
+step (or its own explicit ``checkpoint:`` filename). A config with an empty/absent ``steps:`` list
+is fine too; ``run`` then does nothing beyond ``generate``/exposure.
 
-Every stage's catalog stays in memory and feeds the next stage regardless, so writing the
-*intermediate* event catalogs (everything up to, but not including, the catalog that photometry
-actually runs against -- ``exposure.ecsv``/``yield_summary.*``/``photometry.ecsv``/
-``detection_counts.ecsv`` are always written regardless) is purely for inspection/debugging -- set
-the config's top-level ``keep_intermediate: false`` (or pass ``--no-keep-intermediate``, which
-overrides the config either way) to have ``run`` skip those and write only ``final_catalog.ecsv``
-(the catalog photometry ran against) instead of ``00_generated.ecsv``/``NN_<cut key>.ecsv``:
+Set the config's top-level ``keep_intermediate: false`` (or pass ``--no-keep-intermediate``,
+which overrides the config either way) to checkpoint only the steps that explicitly opt in via
+their own ``checkpoint:``:
 
 .. code-block:: bash
 
     uvex-transients run quickstart_tde.yaml --out-dir results/ --no-keep-intermediate
+
+For ad hoc, single-step use (useful for inspecting/debugging one stage without rerunning the
+whole pipeline), three more subcommands each pick one declared step by its ``id:`` and run it
+against externally supplied file(s), ignoring that step's own configured ``input:``/``inputs:``:
+
+.. code-block:: bash
+
+    # Every declared `cut` step, chained in order, against an explicit input catalog:
+    uvex-transients cut quickstart_tde.yaml --in baseline.ecsv --out screened.ecsv
+
+    # Or just one, by id:
+    uvex-transients cut quickstart_tde.yaml mag_screen --in baseline.ecsv --out mag_only.ecsv
+
+    # A declared `action: photometry` step, by id:
+    uvex-transients photometry quickstart_tde.yaml phot --in screened.ecsv --out photometry.ecsv
+
+    # A declared `action: detection_counts` step, by id:
+    uvex-transients detection-counts quickstart_tde.yaml counts \
+        --catalog baseline.ecsv --photometry photometry.ecsv --exposure exposure.ecsv \
+        --out detection_counts.ecsv
+
+``--catalog`` for ``detection-counts`` is the event catalog ``--photometry`` was computed over
+(typically the same catalog ``photometry`` ran against, i.e. whatever survived every declared
+cut) -- it's needed alongside the photometry table itself so that events with zero qualifying
+epochs (including ones the schedule never observed at all) are still counted at
+:math:`N_{\rm det}=0`.
 
 Every command accepts ``--overwrite`` to replace an existing output file/directory contents
 instead of raising.
@@ -538,14 +640,15 @@ command would do without sampling, computing photometry, or writing anything:
     uvex-transients run configs/full_run.yaml --out-dir results/ --dry-run
 
 It resolves every section the command needs, so an unknown transient ``class:``, a bad
-``parameters:`` override, an unknown cut type or cut name, an unknown mission, or an unreadable
-schedule fails here exactly as it would in the real run (as a short ``dry run failed: ...``
-message). On success it reports the mission, the size of the schedule, each transient population
-(class, SED, redshift limit, duration window), the ``generate:``, ``cuts:``, ``photometry:``,
-``yield:`` (for ``run``), and ``detection_counts:`` (if declared) settings, and each output file it
-would write. If a real run would refuse to overwrite one that already exists, the dry run flags it
-as ``WOULD FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded
-(and downloaded on first use), but the command never reads the ``--in``/``--catalog``/
+``parameters:`` override, an unknown cut/op/action name, a dangling step input, an unknown
+mission, or an unreadable schedule fails here exactly as it would in the real run (as a short
+``dry run failed: ...`` message). On success it reports the mission, the size of the schedule,
+each transient population (class, SED, redshift limit, duration window), the ``generate:``
+settings (for ``generate``/``run``), the resolved ``steps:`` list (for ``run``, or the selected
+step(s) for ``cut``/``photometry``/``detection-counts``), and each output file it would write. If
+a real run would refuse to overwrite one that already exists, the dry run flags it as ``WOULD
+FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded (and
+downloaded on first use), but the command never reads the ``--in``/``--catalog``/
 ``--photometry``/``--exposure`` inputs of ``cut``/``photometry``/``detection-counts``, only checks
 that they exist.
 
@@ -554,38 +657,38 @@ that they exist.
 Using It From Python
 ------------------------
 
-Every command is a thin wrapper: :mod:`uvex_transients.cli.pipeline`'s
-:func:`~uvex_transients.cli.pipeline.run_generate`,
-:func:`~uvex_transients.cli.pipeline.run_exposure`,
-:func:`~uvex_transients.cli.pipeline.run_cuts`,
-:func:`~uvex_transients.cli.pipeline.run_yield_summary`,
-:func:`~uvex_transients.cli.pipeline.run_photometry`, and
-:func:`~uvex_transients.cli.pipeline.run_detection_counts` take a parsed
-:class:`~uvex_transients.cli.config.RunConfig` and do the real work, with no ``click``
+Every command is a thin wrapper. :mod:`uvex_transients.cli.pipeline`'s
+:func:`~uvex_transients.cli.pipeline.run_generate`/:func:`~uvex_transients.cli.pipeline.run_exposure`
+sample the two reserved artifacts, and :func:`uvex_transients.cli.steps.run_steps` executes the
+rest of ``steps:`` against a plain ``{id: artifact}`` dict you seed yourself -- no ``click``
 dependency, useful if you want the same config-driven setup inside a notebook or a larger script
 instead of a fresh subprocess per stage:
 
 .. code-block:: python
 
     from uvex_transients.cli.config import RunConfig
-    from uvex_transients.cli.pipeline import (
-        run_cuts, run_detection_counts, run_exposure, run_generate, run_photometry, run_yield_summary,
-    )
+    from uvex_transients.cli.pipeline import run_exposure, run_generate
+    from uvex_transients.cli.steps import run_steps
 
     config = RunConfig.from_yaml("quickstart_tde.yaml")
 
-    catalog = run_generate(config)
+    baseline = run_generate(config)
     exposure = run_exposure(config)
-    screened = run_cuts(config, catalog)                          # every declared cut, in order
-    yields = run_yield_summary(config, catalog, screened, exposure)
-    phot = run_photometry(config, screened)
-    counts = run_detection_counts(config, screened, exposure, phot)   # only if config has 'detection_counts:'
+
+    store = {"baseline": baseline, "exposure": exposure}
+    for step, artifact, checkpoint_path in run_steps(config, store):
+        print(step.id, type(artifact).__name__)
+
+    screened = store["snr_screen"]     # any step's own artifact, by id
+    phot = store["phot"]
 
 ``config.simulator``, ``config.schedule``, ``config.mission``, and ``config.transients`` are each
-resolved once and cached, so building a ``RunConfig`` and calling every function above costs one
-schedule fetch and one round of transient construction, no matter how many stages you run.
+resolved once and cached, so building a ``RunConfig`` and calling the above costs one schedule
+fetch and one round of transient construction, no matter how many steps run. Pass ``out_dir=`` to
+`run_steps` to also checkpoint (and resume from) files on disk, exactly like the ``run`` command
+does.
 
 ----
 
 See :mod:`uvex_transients.cli` in the :ref:`api` reference for exhaustive, method-by-method
-detail, and :ref:`user_guide_simulation` for the pipeline these commands are driving.
+documentation of every function/class mentioned above.

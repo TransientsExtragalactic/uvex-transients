@@ -4,8 +4,8 @@ Shared plotting infrastructure for uvex_transients.
 Two layers live here:
 
 - **General infrastructure** (`resolve_fig_axes`, `set_plot_style`, `get_default_cmap`, `get_cmap`,
-  `get_band_color`) that every plotting function in the package and docs gallery is expected to go
-  through, so that figure size, style, and color choices come from one place --
+  `get_band_color`, `get_categorical_colors`) that every plotting function in the package and docs gallery is
+  expected to go through, so that figure size, style, and color choices come from one place --
   ``config["plotting.*"]`` -- rather than being repeated (and drifting) at each call site.
 - **Reusable generators** for the plot shapes that recur throughout the docs gallery: a full-sky
   HEALPix map plus its pooled histogram (`plot_healpix_map`/`plot_histogram`, both driven by
@@ -34,7 +34,8 @@ themselves, as two visually distinct error layers on the same `matplotlib.axes.A
 """
 
 import zlib
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 
 import astropy.units as u
 import numpy as np
@@ -42,11 +43,15 @@ from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, to_rgba
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
+from mocpy import MOC
 from numpy.typing import NDArray
 
 from ..simulation._stats import clopper_pearson_interval
 from . import resolve_healpix_resolution
 from .config import config
+
+if TYPE_CHECKING:
+    from ..surveys.footprints.base import SurveyFootprint
 
 __all__ = [
     "resolve_fig_axes",
@@ -54,7 +59,9 @@ __all__ = [
     "get_default_cmap",
     "get_cmap",
     "get_band_color",
+    "get_categorical_colors",
     "plot_healpix_map",
+    "plot_footprints",
     "plot_histogram",
     "plot_band_light_curve",
     "compute_funnel_bounds",
@@ -234,6 +241,36 @@ def get_band_color(band: str) -> str:
     return to_rgba(cmap(digest % 997 / 997))
 
 
+def get_categorical_colors(n: int) -> list[str]:
+    """
+    Return the first `n` colors of ``config["plotting.categorical_colors"]``.
+
+    Colors are assigned in fixed order and never cycled, so a given group keeps its color as long as
+    it keeps its position. The first three are distinguishable in any pairing, including under
+    color-vision deficiency; past that, pair the colors with a legend or labels.
+
+    Parameters
+    ----------
+    n : int
+        Number of colors needed.
+
+    Returns
+    -------
+    list of str
+        Hex color strings.
+
+    Raises
+    ------
+    ValueError
+        If `n` exceeds the number of configured colors; fold the extra groups into an "other" group
+        or split them across several plots instead.
+    """
+    colors = config["plotting.categorical_colors"]
+    if n > len(colors):
+        raise ValueError(f"Only {len(colors)} categorical colors are defined, but {n} were requested.")
+    return list(colors[:n])
+
+
 # ============================================================================== #
 # Reusable Generators                                                            #
 # ============================================================================== #
@@ -312,6 +349,75 @@ def plot_healpix_map(
     )
     ax.grid(True)
     fig.colorbar(sc, label=cbar_label, pad=0.05, shrink=0.7)
+    if title is not None:
+        ax.set_title(title)
+    return fig, ax
+
+
+def plot_footprints(
+    footprints: Mapping[str, "SurveyFootprint | MOC"],
+    *,
+    nside: int = 128,
+    title: str | None = None,
+    colors: Sequence | None = None,
+    fig: Figure | None = None,
+    ax: Axes | None = None,
+    fig_size: tuple = (10, 6.5),
+    s: float = 4,
+) -> tuple[Figure, Axes]:
+    """
+    Aitoff map of several survey footprints, each in its own color with its area in the legend.
+
+    Footprints are drawn in the order given, so later ones sit on top of earlier ones. Each is
+    sampled on a HEALPix grid, so regions much smaller than a pixel will not show.
+
+    Parameters
+    ----------
+    footprints : mapping of str to SurveyFootprint or mocpy.MOC
+        Legend label for each footprint.
+    nside : int, optional
+        HEALPix resolution of the sampling grid. Default 128 (~0.46 degree pixels).
+    title : str, optional
+        Axes title.
+    colors : sequence of color, optional
+        One color per footprint. Defaults to `get_categorical_colors`.
+    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes, optional
+        Existing figure/axes to draw onto, via `resolve_fig_axes`; `ax`, if given, must already carry
+        an ``"aitoff"`` projection.
+    fig_size : tuple, optional
+        Passed to `resolve_fig_axes` when creating a new figure.
+    s : float, optional
+        Marker size, forwarded to `~matplotlib.axes.Axes.scatter`.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The resolved figure.
+    ax : matplotlib.axes.Axes
+        The aitoff-projected axes the footprints were drawn onto.
+    """
+    import astropy_healpix as ah
+
+    set_plot_style()
+    if colors is None:
+        colors = get_categorical_colors(len(footprints))
+
+    hpx = ah.HEALPix(nside=nside, order="nested", frame="icrs")
+    lon, lat = hpx.healpix_to_lonlat(np.arange(hpx.npix))
+    x, y = lon.wrap_at(180 * u.deg).radian, lat.radian
+    full_sky = (4 * np.pi * u.sr).to_value(u.deg**2)
+
+    fig, ax = resolve_fig_axes(fig, ax, fig_size, subplot_kw={"projection": "aitoff"})
+    handles = []
+    for (label, footprint), color in zip(footprints.items(), colors, strict=False):
+        moc = getattr(footprint, "moc", footprint)
+        inside = moc.contains_lonlat(lon, lat)
+        ax.scatter(x[inside], y[inside], color=color, s=s, rasterized=True)
+        handles.append(Patch(color=color, label=f"{label} ({moc.sky_fraction * full_sky:,.0f} deg$^2$)"))
+
+    ax.grid(True, color="0.8", linewidth=0.5, zorder=0)
+    ax.tick_params(colors="0.35")
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.08), ncol=2, frameon=False)
     if title is not None:
         ax.set_title(title)
     return fig, ax
@@ -414,7 +520,12 @@ def plot_band_light_curve(
     phot : astropy.table.Table
         A `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`-style table with
         ``"band"``, ``"ab_mag"``, ``"snr"``, and ``"mag_err"`` columns; ``"mag_lower"``/``"mag_upper"``
-        are used for upper limits when present, and upper limits are skipped otherwise.
+        are used for upper limits when present, and upper limits are skipped otherwise. A row whose
+        ``"mag_upper"`` isn't finite -- always true of a background/non-detection row, from an
+        ``"in_model"`` column (see `~uvex_transients.simulation.event.Event.simulate_photometry`)
+        being ``False`` -- is drawn as a one-sided limit anchored at ``"mag_lower"`` instead of the
+        usual ``"ab_mag"``-centered asymmetric error bar, since neither ``"ab_mag"`` nor
+        ``"mag_upper"`` is a secure number there.
     t_theory : astropy.units.Quantity, optional
         Time grid for the noiseless theory curve. Both `t_theory` and `theory_mag` must be given to
         draw it; the curve is omitted otherwise.
@@ -441,16 +552,23 @@ def plot_band_light_curve(
         theory_values = theory_mag.value if hasattr(theory_mag, "value") else np.asarray(theory_mag)
         ax.plot(u.Quantity(t_theory).to_value(u.day), theory_values, color=color, lw=1.5, alpha=0.6)
 
-    in_band = np.isfinite(phot["ab_mag"]) & (np.asarray(phot["band"]) == band)
-    detected = in_band & (phot["snr"] > snr_threshold)
-    upper_limits = in_band & (phot["snr"] <= snr_threshold)
+    band_mask = np.asarray(phot["band"]) == band
+    ab_mag = np.asarray(phot["ab_mag"])
+    snr = np.asarray(phot["snr"])
+
+    # Rows outside a transient's `photometry_pre_window`/`photometry_post_window` (see
+    # `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real
+    # source to detect -- their `snr` is pure noise around a true flux of zero.
+    is_background = ~np.asarray(phot["in_model"]) if "in_model" in phot.colnames else np.zeros(len(phot), dtype=bool)
+
+    detected = band_mask & ~is_background & np.isfinite(ab_mag) & (snr > snr_threshold)
 
     t_days = u.Quantity(t_obs).to_value(u.day)
 
     if np.any(detected):
         ax.errorbar(
             t_days[detected],
-            phot["ab_mag"][detected],
+            ab_mag[detected],
             yerr=err_scale * phot["mag_err"][detected],
             marker=marker,
             mfc=color,
@@ -461,20 +579,56 @@ def plot_band_light_curve(
         )
 
     has_bounds = "mag_lower" in phot.colnames and "mag_upper" in phot.colnames
-    if np.any(upper_limits) and has_bounds:
-        ax.errorbar(
-            t_days[upper_limits],
-            phot["ab_mag"][upper_limits],
-            yerr=[
-                phot["mag_upper"][upper_limits] - phot["ab_mag"][upper_limits],
-                np.abs(phot["mag_lower"][upper_limits] - phot["ab_mag"][upper_limits]),
-            ],
-            marker="v",
-            mfc="w",
-            mec=color,
-            ecolor=color,
-            linestyle="none",
-        )
+    if has_bounds:
+        mag_lower = np.asarray(phot["mag_lower"])
+        mag_upper = np.asarray(phot["mag_upper"])
+
+        # `mag_upper` (from `flux_lower = flux - n_sigma*flux_err`) is only finite when a
+        # row's own noisy flux draw cleared `n_sigma` toward the faint side too -- true for
+        # a real, still-somewhat-informative sub-threshold detection often enough, but
+        # essentially never for a background/non-detection row (`is_background`): its true
+        # flux is ~0, so `flux` is itself only ~`flux_err` in size, and `flux - n_sigma *
+        # flux_err` needs a >n_sigma-sigma downward fluctuation to ever land positive.
+        # `ab_mag` fails the same way (`nan` whenever the noisy `flux` draw is <= 0, which
+        # for a ~zero-true-flux row is about half the time) -- so neither is usable as this
+        # row's anchor. `mag_lower` (from `flux_upper = flux + n_sigma*flux_err`) has the
+        # opposite asymmetry and is essentially always finite here, so it's the one secure
+        # number these rows have: the n_sigma detection depth reached by that observation,
+        # i.e. a one-sided "the source, if any, is fainter than this" limit.
+        hard_limit = band_mask & np.isfinite(mag_lower) & (is_background | ~np.isfinite(mag_upper))
+        soft_limit = band_mask & ~hard_limit & np.isfinite(ab_mag) & np.isfinite(mag_upper) & (snr <= snr_threshold)
+
+        if np.any(soft_limit):
+            ax.errorbar(
+                t_days[soft_limit],
+                ab_mag[soft_limit],
+                yerr=[
+                    mag_upper[soft_limit] - ab_mag[soft_limit],
+                    np.abs(mag_lower[soft_limit] - ab_mag[soft_limit]),
+                ],
+                marker="v",
+                mfc="w",
+                mec=color,
+                ecolor=color,
+                linestyle="none",
+            )
+
+        if np.any(hard_limit):
+            # Drawn as a bare open marker at `mag_lower`, not `errorbar`'s `lolims=True`
+            # (the natural match for a one-sided "true value is at least this faint"
+            # limit): that draws its caret's direction from the axes' *current*
+            # inversion state at call time (`Axes.errorbar` requires `invert_yaxis()` to
+            # already have been called for a correctly-oriented arrow), a call-order
+            # dependency this function has no way to guarantee its caller respects --
+            # every gallery example inverts the axis *after* plotting, not before.
+            ax.plot(
+                t_days[hard_limit],
+                mag_lower[hard_limit],
+                marker="v",
+                mfc="none",
+                mec=color,
+                linestyle="none",
+            )
 
 
 def compute_funnel_bounds(

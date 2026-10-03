@@ -8,7 +8,6 @@ from astropy.coordinates import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
-from m4opt.synphot import observing
 
 from uvex_transients.simulation.core import (
     SurveySimulator,
@@ -16,6 +15,7 @@ from uvex_transients.simulation.core import (
 )
 from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
+from uvex_transients.utils.keyed_noise import time_key
 
 CATALOG_NSIDE = 128
 CATALOG_ORDER = "nested"
@@ -97,12 +97,14 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
         uvex,
         snr_threshold=snr_threshold,
         chunk_size=7,
+        # The ground truth below reduces to a plain "best SNR ever clears the
+        # threshold" test and doesn't model the first-visit exclusion.
+        exclude_first_visit_detections=False,
     )
     kept_ids = set(np.asarray(filtered.table["event_id"]))
 
-    # Ground truth: each event's own `parameter_seed` (exactly matching
-    # `_sample_parameters_from_seeds`, which `filter_by_snr` uses internally), then
-    # per event, per observation, per band -- all unbatched.
+    # Ground truth: each event's own `parameter_seed`, then per event, all unbatched across events:
+    # the schedule's observations of it, measured with the SED class's own photometry.
     sed_params_all = _sample_parameters_from_seeds(transient.sed, np.asarray(catalog.table["parameter_seed"]))
 
     expected_kept = set()
@@ -115,28 +117,25 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
             end_time=t_explosion[i] + transient.duration_limit,
         )
         obs_i = schedule.observe_rows[row_index_i]
-        obs_i = obs_i[np.argsort(obs_i["start_time"])]
         if len(obs_i) == 0:
             continue
 
-        sed_params_i = {name: value[i] for name, value in sed_params_all.items()}
-        best_snr = None
-        for j in range(len(obs_i)):
-            t_obs = (obs_i["start_time"][j] - t_explosion[i]).to(u.day)
-            spectrum = transient.sed.as_source_spectrum(
-                t_obs,
-                redshift=redshift[i],
-                luminosity_distance=catalog.table["luminosity_distance"][i],
-                ebv=0.05,
-                **sed_params_i,
-            )
-            with observing(obs_i["observer_location"][j], coord[i], obs_i["start_time"][j]):
-                snr = max(
-                    uvex.detector.get_snr(obs_i["duration"][j], spectrum, band) for band in uvex.detector.bandpasses
-                )
-            best_snr = snr if best_snr is None else max(best_snr, snr)
-
-        if best_snr is not None and best_snr > snr_threshold:
+        phot = transient.sed.simulate_photometry(
+            (obs_i["start_time"] - t_explosion[i]).to(u.day),
+            obs_i["duration"],
+            uvex.detector,
+            coord[i],
+            observer_location=obs_i["observer_location"],
+            obstime=obs_i["start_time"],
+            redshift=redshift[i],
+            luminosity_distance=catalog.table["luminosity_distance"][i],
+            ebv=0.05,
+            noise_seed=int(catalog.table["parameter_seed"][i]),
+            noise_observation_keys=time_key(obs_i["start_time"]),
+            **{name: value[i] for name, value in sed_params_all.items()},
+        )
+        phot = phot[phot["in_model"]]  # an exposure straddling the explosion is background, never a detection
+        if len(phot) > 0 and np.nanmax(phot["snr"]) > snr_threshold:
             expected_kept.add(i)
 
     assert kept_ids == expected_kept
@@ -301,3 +300,143 @@ def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
 
     with pytest.raises(ValueError, match="unknown transient key"):
         sim.generate_events(time_bins=1, nside=16, downsample={"not-a-real-key": 5})
+
+
+# --------------------------------------------------------------------------- #
+# iter_epochs                                                                 #
+# --------------------------------------------------------------------------- #
+def _collect_epochs(sim, catalog, **kwargs):
+    from astropy.table import vstack
+
+    chunks = list(sim.iter_epochs(catalog, uvex, progress=False, **kwargs))
+    return vstack(chunks) if chunks else None
+
+
+def test_iter_epochs_reproduces_filter_by_snr(make_schedule, hot_spot):
+    """Thresholding / counting the yielded epochs gives exactly `filter_by_snr`'s survivors."""
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    epochs = _collect_epochs(sim, catalog, chunk_size=7)
+    assert epochs is not None
+
+    for threshold, n_visits in [(5.0, 1), (3.0, 2)]:
+        expected = set(
+            np.asarray(
+                sim.filter_by_snr(
+                    catalog,
+                    uvex,
+                    snr_threshold=threshold,
+                    chunk_size=7,
+                    n_visits=n_visits,
+                    # This test is purely about the `n_visits` reduction, not the
+                    # separate first-visit exclusion.
+                    exclude_first_visit_detections=False,
+                ).table["event_id"]
+            )
+        )
+        above = epochs[epochs["snr"] > threshold]
+        ids, counts = np.unique(np.asarray(above["event_id"]), return_counts=True)
+        assert set(ids[counts >= n_visits]) == expected
+
+    # Rows are grouped by event and time-ordered within each event.
+    order = np.lexsort((epochs["t_obs"].jd, epochs["event_id"]))
+    assert np.array_equal(order, np.arange(len(epochs)))
+
+
+def test_iter_epochs_chunk_size_independent(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    small = _collect_epochs(sim, catalog, chunk_size=4)
+    large = _collect_epochs(sim, catalog, chunk_size=1000)
+    small = small[np.lexsort((small["t_obs"].jd, small["event_id"]))]
+    large = large[np.lexsort((large["t_obs"].jd, large["event_id"]))]
+
+    assert np.array_equal(small["event_id"], large["event_id"])
+    assert np.array_equal(small["observation_index"], large["observation_index"])
+    # Noise is keyed on (seed, start time, band), not drawn from a stream, so the measured
+    # SNR (and the flux behind it) cannot depend on how events are chunked.
+    np.testing.assert_allclose(small["snr"], large["snr"], rtol=1e-10)
+    np.testing.assert_allclose(small["flux"].value, large["flux"].value, rtol=1e-10)
+
+
+def test_iter_epochs_floor_and_mask(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=40)
+    catalog, *_ = _make_catalog(transient, hot_spot)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    everything = _collect_epochs(sim, catalog, chunk_size=7)
+
+    floored = _collect_epochs(sim, catalog, chunk_size=7, detection_floor=3.0)
+    assert np.all(floored["snr"] >= 3.0)
+    assert len(floored) == np.count_nonzero(everything["snr"] >= 3.0)
+
+    wanted = np.arange(len(catalog)) % 2 == 0
+    masked = _collect_epochs(sim, catalog, chunk_size=7, mask=wanted)
+    assert set(np.asarray(masked["event_id"])) <= set(np.asarray(catalog.table["event_id"])[wanted])
+    assert len(masked) == np.isin(everything["event_id"], np.asarray(catalog.table["event_id"])[wanted]).sum()
+
+    # An integer index mask selects the same events as the equivalent boolean mask.
+    by_index = _collect_epochs(sim, catalog, chunk_size=7, mask=np.flatnonzero(wanted))
+    assert len(by_index) == len(masked)
+
+
+def test_available_actions_includes_builtins(make_schedule):
+    """`SurveySimulator.available_actions` lists the four built-in `@action`-registered methods."""
+    assert SurveySimulator.available_actions() == ("alert", "detection_counts", "photometry", "yield")
+
+
+def test_run_action_photometry_matches_direct_call(make_schedule, hot_spot):
+    """`run_action("photometry", ...)` matches calling `EventCatalog.simulate_photometry` directly."""
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=10)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=6)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=1)
+
+    phot = sim.run_action("photometry", uvex, catalog=catalog)
+    expected = catalog.simulate_photometry(uvex, {"tde": transient}, schedule)
+
+    assert len(phot) == len(expected)
+
+
+def test_run_action_unknown_name_raises(make_schedule):
+    """An unregistered action name raises a `ValueError` naming the ones that do exist."""
+    sim = SurveySimulator(make_schedule(), transients={"tde": TidalDisruptionEvent()})
+    with pytest.raises(ValueError, match="Unknown action 'bogus'"):
+        sim.run_action("bogus", uvex)
+
+
+def test_subclass_extends_the_action_registry_independently_of_cuts():
+    """A subclass adding a new `@action`-decorated method registers it without touching `@cut`'s registry."""
+    from uvex_transients.simulation.core import action
+
+    class _ExtraActionSimulator(SurveySimulator):
+        @action("noop")
+        def run_noop_action(self, mission, **kwargs):
+            return kwargs
+
+    assert "noop" in _ExtraActionSimulator.available_actions()
+    assert "noop" not in SurveySimulator.available_actions()
+    # The two registries stay independent -- adding an action never pollutes `available_cuts`.
+    assert _ExtraActionSimulator.available_cuts() == SurveySimulator.available_cuts()
+
+
+def test_iter_epochs_validates_eagerly(make_schedule, hot_spot):
+    transient = TidalDisruptionEvent()
+    schedule = make_schedule(n_sched=5)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=5)
+    sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=7)
+
+    # Errors surface at call time, without needing to start iterating.
+    with pytest.raises(ValueError, match="Unknown bandpass"):
+        sim.iter_epochs(catalog, uvex, bands=["nope"])
+    with pytest.raises(ValueError, match="chunk_size"):
+        sim.iter_epochs(catalog, uvex, chunk_size=0)
+    with pytest.raises(ValueError, match="mask"):
+        sim.iter_epochs(catalog, uvex, mask=np.ones(3, dtype=bool))

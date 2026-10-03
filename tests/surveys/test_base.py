@@ -5,7 +5,11 @@ import numpy as np
 import pytest
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from astropy.table import QTable, vstack
 from astropy.time import Time
+from m4opt.missions._uvex import uvex
+
+from uvex_transients.surveys.base import SurveySchedule
 
 
 def test_get_observation_indices_of_matches_exact_well_inside_fov(make_schedule, hot_spot):
@@ -231,3 +235,110 @@ def test_compute_pair_count_curve_consecutive_vs_all_differ(make_schedule_from_p
     # underlying pair counts do not.
     assert all_area == consecutive_area
     assert all_area.to_value(u.sr) > 0
+
+
+# --------------------------------------------------------------------------- #
+# next_action_time                                                            #
+# --------------------------------------------------------------------------- #
+def _add_downlinks(schedule, downlink_starts: Time, duration: u.Quantity):
+    """Append one ``"downlink"`` row per `downlink_starts` entry to `schedule`."""
+    table = schedule.table.copy()
+
+    rows = QTable()
+    rows["start_time"] = downlink_starts
+    rows["duration"] = u.Quantity(np.full(len(downlink_starts), duration.to_value(u.s)), u.s)
+    rows["observer_location"] = uvex.observer_location(downlink_starts)
+    rows["action"] = np.full(len(downlink_starts), "downlink")
+    rows["target_coord"] = table["target_coord"][: len(downlink_starts)]
+    rows["roll"] = table["roll"][: len(downlink_starts)]
+    rows["field_id"] = np.full(len(downlink_starts), -1, dtype=table["field_id"].dtype)
+    rows["block_id"] = table["block_id"][: len(downlink_starts)]
+
+    return SurveySchedule(vstack([table, rows], metadata_conflicts="silent"), schedule.fov)
+
+
+def test_next_action_time_picks_earliest_at_or_after_query(make_schedule):
+    """The earliest downlink whose start is >= each query time is returned, exactly at the boundary too."""
+    base = make_schedule(n_sched=5)
+    downlink_starts = base.start_time + np.array([1, 5, 10]) * u.hour
+    schedule = _add_downlinks(base, downlink_starts, duration=10 * u.min)
+
+    query = base.start_time + np.array([0, 1, 6, 20]) * u.hour  # before all, exactly on one, between two, after all
+    result = schedule.next_action_time(query, "downlink")
+
+    assert list(result.mask) == [False, False, False, True]
+    assert abs((result[0] - downlink_starts[0]).sec) < 1e-3
+    assert abs((result[1] - downlink_starts[0]).sec) < 1e-3  # exact match at the boundary counts
+    assert abs((result[2] - downlink_starts[2]).sec) < 1e-3
+
+
+def test_next_action_time_completion_adds_duration(make_schedule):
+    base = make_schedule(n_sched=5)
+    downlink_starts = base.start_time + np.array([1]) * u.hour
+    duration = 15 * u.min
+    schedule = _add_downlinks(base, downlink_starts, duration=duration)
+
+    query = base.start_time
+    start = schedule.next_action_time(query, "downlink", completion=False)
+    completion = schedule.next_action_time(query, "downlink", completion=True)
+
+    assert abs((completion - start - duration).sec) < 1e-3
+
+
+def test_next_action_time_fully_masked_when_action_never_scheduled(make_schedule):
+    """`make_schedule` never schedules a `"downlink"`, so every query comes back masked."""
+    schedule = make_schedule(n_sched=5)
+    query = schedule.start_time + np.array([0, 1, 2]) * u.hour
+
+    result = schedule.next_action_time(query, "downlink")
+
+    assert np.all(result.mask)
+
+
+def test_next_action_time_accepts_scalar_time(make_schedule):
+    base = make_schedule(n_sched=5)
+    downlink_starts = base.start_time + np.array([1]) * u.hour
+    schedule = _add_downlinks(base, downlink_starts, duration=10 * u.min)
+
+    result = schedule.next_action_time(base.start_time, "downlink")
+
+    assert result.isscalar
+    assert not result.mask
+    assert abs((result - downlink_starts[0]).sec) < 1e-3
+
+
+def test_next_action_time_rejects_unknown_action(make_schedule):
+    schedule = make_schedule(n_sched=5)
+
+    with pytest.raises(ValueError, match="Unknown action"):
+        schedule.next_action_time(schedule.start_time, "bogus")
+
+
+# --------------------------------------------------------------------------- #
+# first_visit_mask                                                            #
+# --------------------------------------------------------------------------- #
+def test_first_visit_mask_all_true_when_fields_never_repeat(make_schedule):
+    """`make_schedule` gives every row its own `field_id`, so every row is its field's first visit."""
+    schedule = make_schedule(n_sched=5)
+
+    assert np.all(schedule.first_visit_mask)
+
+
+def test_first_visit_mask_flags_only_each_fields_earliest_row(make_schedule):
+    """A revisited field is flagged only on its earliest (not any later) chronological row."""
+    base = make_schedule(n_sched=6)
+    table = base.table.copy()
+    table["field_id"] = [0, 1, 0, 1, 2, 0]  # `make_schedule`'s rows are already time-sorted
+    schedule = SurveySchedule(table, base.fov)
+
+    assert list(schedule.first_visit_mask) == [True, True, False, False, True, False]
+
+
+def test_first_visit_mask_empty_when_no_observe_rows(make_schedule):
+    """A schedule with no `"observe"` rows has an empty mask, not an error."""
+    base = make_schedule(n_sched=3)
+    table = base.table.copy()
+    table["action"] = np.full(len(table), "slew")
+    schedule = SurveySchedule(table, base.fov)
+
+    assert schedule.first_visit_mask.shape == (0,)

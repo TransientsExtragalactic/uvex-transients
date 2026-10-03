@@ -13,7 +13,7 @@ is chosen -- no schedule, no windowed sampling, no
 :meth:`~uvex_transients.models.core.base.SpectralModel.simulate_photometry` is built
 for exactly this: given a sky position and whatever time grid and exposure time the
 caller wants evaluated, it runs the same noise model a real survey simulation uses
-(a batched :class:`~synphot.SourceSpectrum` plus
+(a batched :class:`~synphot.spectrum.SourceSpectrum` plus
 :meth:`~m4opt.synphot.Detector.get_snr`), with no schedule in the loop. This example
 follows one TDE weekly across its whole ~200-day duration and builds its UV light
 curves.
@@ -37,10 +37,10 @@ import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
-from m4opt.missions import uvex
 from m4opt.synphot.background import GalacticBackground
 
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 from uvex_transients.utils.plotting import get_band_color, plot_band_light_curve, resolve_fig_axes, set_plot_style
 
@@ -82,7 +82,7 @@ print(f"{len(t)} visits, one every {CADENCE}.")
 # folded into the source flux itself, via ``ebv``) plus the Milky Way's
 # diffuse UV glow only, and leaves ``observer_location``/``obstime`` at their
 # placeholder defaults -- both irrelevant to
-# :class:`~m4opt.synphot.background.GalacticBackground`, so there is nothing else to
+# :func:`~m4opt.synphot.background.GalacticBackground`, so there is nothing else to
 # supply. See :meth:`~uvex_transients.models.core.base.SpectralModel.simulate_photometry`'s
 # own docstring for exactly when that placeholder default is (and isn't) safe.
 
@@ -154,7 +154,7 @@ fig.tight_layout()
 # ``background=None`` (the default) uses :data:`~m4opt.missions.uvex`'s own detector
 # background, Galactic *and* zodiacal light together, and now real
 # ``observer_location``/``obstime`` values (from
-# :meth:`~m4opt.missions.uvex.observer_location`) are needed too, since zodiacal
+# :attr:`~m4opt.missions.Mission.observer_location`) are needed too, since zodiacal
 # light actually depends on both.
 
 hypothetical_trigger = Time("2031-03-01T00:00:00", scale="utc")

@@ -118,6 +118,9 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "regions": ("https://astropy-regions.readthedocs.io/en/stable/", None),
+    "synphot": ("https://synphot.readthedocs.io/en/latest/", None),
+    "m4opt": ("https://m4opt.readthedocs.io/en/latest/", None),
 }
 
 napoleon_use_param = True

@@ -909,6 +909,95 @@ class SurveySchedule:
 
         return candidates[mask]
 
+    def get_next_action_id(self, times: Time, action: str) -> np.ma.MaskedArray:
+        """
+        For each of `times`, the row index of the earliest `action` row starting at or after it.
+
+        Parameters
+        ----------
+        times : ~astropy.time.Time
+            Query times, scalar or array-valued (e.g. one per event).
+        action : str
+            One of the registered action types (see :attr:`actions`), e.g. ``"downlink"``.
+
+        Returns
+        -------
+        ~numpy.ma.MaskedArray
+            Integer row indices into :attr:`table`, same shape as `times`, masked
+            wherever no `action` row starts at or after the corresponding query time
+            (e.g. the schedule ends before the next downlink).
+
+        Raises
+        ------
+        ValueError
+            If `action` is not one of :attr:`table`'s registered action types.
+        """
+        if action not in self._ACTION_SCHEMA:
+            raise ValueError(f"Unknown action {action!r}; must be one of {tuple(self._ACTION_SCHEMA)}.")
+
+        action_indices = np.flatnonzero(self.actions == action)
+        scale = self._start_time_scale
+        query_jd = getattr(times, scale).jd
+
+        if len(action_indices) == 0:
+            return np.ma.MaskedArray(np.zeros_like(query_jd, dtype=np.int64), mask=True)
+
+        # `self._start_time_jd` is `self._schedule_table`'s own chronological order (see
+        # `_ensure_chronological`), so indexing it down to just the `action` rows preserves
+        # that ordering -- exactly what `searchsorted` requires.
+        start_jd = self._start_time_jd[action_indices]
+        idx = np.searchsorted(start_jd, query_jd, side="left")
+        found = idx < len(start_jd)
+        clipped_idx = np.minimum(idx, len(start_jd) - 1)
+
+        return np.ma.MaskedArray(action_indices[clipped_idx], mask=~found)
+
+    def next_action_time(self, times: Time, action: str, completion: bool = False) -> Time:
+        """
+        For each of `times`, the time of the earliest `action` row starting at or after it.
+
+        A thin wrapper around `get_next_action_id` that reads the matched row's time back
+        out of :attr:`table`.
+
+        Parameters
+        ----------
+        times : ~astropy.time.Time
+            Query times, scalar or array-valued (e.g. one per event).
+        action : str
+            One of the registered action types (see :attr:`actions`), e.g. ``"downlink"``.
+        completion : bool, optional
+            If `True`, return each match's completion time (``start_time + duration``)
+            instead of its start time. The default is `False`.
+
+        Returns
+        -------
+        ~astropy.time.Time
+            Same shape as `times`, masked (``.masked``/``.mask``) wherever no `action` row
+            starts at or after the corresponding query time (e.g. the schedule ends before
+            the next downlink).
+
+        Raises
+        ------
+        ValueError
+            If `action` is not one of :attr:`table`'s registered action types.
+        """
+        idx = self.get_next_action_id(times, action)
+        scale = self._start_time_scale
+
+        found = ~np.ma.getmaskarray(idx)
+        rows = self._schedule_table[np.where(found, np.ma.getdata(idx), 0)]
+
+        result_jd = np.asarray(rows["start_time"].jd, dtype=np.float64)
+        if completion:
+            result_jd = result_jd + rows["duration"].to_value(u.day)
+
+        # `Time` natively supports a masked `numpy.ma.MaskedArray` internal representation
+        # (unlike `~astropy.utils.masked.Masked`, which doesn't specialize for `Time`), so
+        # masking is applied here rather than via `Masked`.
+        result = Time(np.ma.MaskedArray(result_jd, mask=~found), format="jd", scale=scale)
+        result.format = times.format
+        return result
+
     @property
     def observe_rows(self) -> QTable:
         """
@@ -920,6 +1009,30 @@ class SurveySchedule:
         relative to.
         """
         return self._schedule_table[self.actions == "observe"]
+
+    @property
+    def first_visit_mask(self) -> np.ndarray:
+        """
+        ~numpy.ndarray: A boolean mask marking the first visit to each field.
+
+        Notes
+        -----
+        In practice, the need for a reference / template image in order to get difference imaging and
+        transient detection means that an event which would be "detected" relative to the baseline in
+        the first observation of a given field is, realistically, not actually detectable. This mask allows us to
+        determine such cases.
+        """
+        field_id = np.asarray(self.observe_rows["field_id"])
+        mask = np.zeros(len(field_id), dtype=bool)
+        if len(field_id) == 0:
+            return mask
+
+        # `observe_rows` preserves `self._schedule_table`'s own chronological order (see
+        # `_ensure_chronological`), so `numpy.unique`'s first-occurrence index per field
+        # is exactly that field's earliest visit.
+        _, first_index = np.unique(field_id, return_index=True)
+        mask[first_index] = True
+        return mask
 
     def get_observed_regions(
         self,

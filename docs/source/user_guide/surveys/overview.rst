@@ -59,7 +59,7 @@ full under :ref:`user_guide_surveys_cadence`:
        np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
    )
    table["roll"] = np.zeros(n) * u.deg
-   table["field_id"] = np.arrange(n)
+   table["field_id"] = np.arange(n)
    table["block_id"] = np.zeros(n, dtype=int)
 
    fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
@@ -114,7 +114,7 @@ Building a schedule from scratch means building the required table -- typically 
         np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
     )
     table["roll"] = np.zeros(n) * u.deg
-    table["field_id"] = np.arrange(n)
+    table["field_id"] = np.arange(n)
     table["block_id"] = np.zeros(n, dtype=int)
 
     fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
@@ -466,7 +466,7 @@ one batched call rather than one call per event.
        np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
    )
    table["roll"] = np.zeros(n) * u.deg
-   table["field_id"] = np.arrange(n)
+   table["field_id"] = np.arange(n)
    table["block_id"] = np.zeros(n, dtype=int)
 
    fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
@@ -701,7 +701,7 @@ a field revisited roughly nightly:
    # case `compute_control_time_curve` is designed to characterize.
    n = 60
    rng = np.random.default_rng(0)
-   elapsed_days = np.sort(rng.choice(np.arrange(90), size=n, replace=False)) + rng.uniform(0, 0.3, n)
+   elapsed_days = np.sort(rng.choice(np.arange(90), size=n, replace=False)) + rng.uniform(0, 0.3, n)
 
    table = QTable()
    table["start_time"] = Time("2025-01-01T00:00:00") + elapsed_days * u.day
@@ -711,7 +711,7 @@ a field revisited roughly nightly:
    table["target_coord"] = SkyCoord(np.full(n, 150.0) * u.deg, np.full(n, 20.0) * u.deg)
    table["roll"] = np.zeros(n) * u.deg
    table["field_id"] = np.zeros(n, dtype=int)
-   table["block_id"] = np.arrange(n)
+   table["block_id"] = np.arange(n)
 
    fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
    schedule = SurveySchedule(table, fov)
@@ -732,6 +732,10 @@ a field revisited roughly nightly:
    Higher ``nside`` gives finer spatial resolution at the cost of more pixels to loop over in the
    pair-count/control-time calculations -- 128 (the default for most of these methods) is a
    reasonable starting point; drop to 32-64 while iterating on a large or fine timescale grid.
+
+A schedule describes what was observed and when. For the coarser question of where a survey
+looks at all (for instance, which simulated events fall inside Rubin LSST's area), see
+:ref:`user_guide_footprints`.
 
 See the :ref:`schedules_gallery` for a full worked example of building, validating, and
 inspecting a schedule end to end, and :mod:`uvex_transients.surveys` in the :ref:`api` reference

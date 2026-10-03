@@ -53,7 +53,7 @@ than downloading a real one, so the example below runs offline:
        np.degrees(np.arcsin(rng.uniform(-1, 1, n))) * u.deg,
    )
    table["roll"] = np.zeros(n) * u.deg
-   table["field_id"] = np.arrange(n)
+   table["field_id"] = np.arange(n)
    table["block_id"] = np.zeros(n, dtype=int)
 
    fov = RectangleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), width=3 * u.deg, height=3 * u.deg)
@@ -316,15 +316,28 @@ original ``event_id`` values preserved rather than renumbered:
       (every remaining event costs at least one schedule query), so there's no reason to pay that
       cost on events the cheap pass would have rejected anyway.
 
+      .. note::
+
+         By default, ``filter_by_snr`` also drops an event whose *only* qualifying epoch falls on
+         its field's first-ever visit (``exclude_first_visit_detections=True``), since that
+         detection has no earlier reference image to be judged against. On a real schedule, which
+         revisits fields, this removes a small fraction of events. The tiny synthetic schedule used
+         in this guide visits almost every field exactly once, so the example below passes
+         ``exclude_first_visit_detections=False`` to keep a population worth plotting.
+
 .. plot::
    :context:
    :include-source: true
 
-   from m4opt.missions import uvex
+   # ``uvex_fast`` is ``m4opt.missions.uvex`` with its dense bandpass tables downsampled (see
+   # ``uvex_transients.missions``); band integrals agree to about 1e-3 mag for thermal spectra.
+   from uvex_transients.missions import uvex_fast as uvex
 
    mission = uvex
    mag_filtered = simulator.filter_by_limiting_magnitude(catalog, mission, mag_limit=25.0)
-   detected = simulator.filter_by_snr(mag_filtered, mission, snr_threshold=5.0)
+   detected = simulator.filter_by_snr(
+       mag_filtered, mission, snr_threshold=5.0, exclude_first_visit_detections=False
+   )
 
    stages = ["Sampled", "Mag < 25", "SNR > 5"]
    counts = [len(catalog), len(mag_filtered), len(detected)]
@@ -335,6 +348,18 @@ original ``event_id`` values preserved rather than renumbered:
        ax.text(i, count, f"{count:,}", ha="center", va="bottom")
    ax.set_ylabel("Number of TDEs")
    ax.set_title("TDE detection funnel")
+
+.. note::
+
+   ``limiting_magnitude``/``snr`` are the two schedule/detector-aware screens shown above, but not
+   the whole story -- :meth:`SurveySimulator.available_cuts()
+   <uvex_transients.simulation.core.SurveySimulator.available_cuts>` also includes cheaper or more
+   specialized cuts (redshift, transient type, peak apparent/intrinsic brightness, detection
+   timing, sky position, and an arbitrary boolean expression over the catalog's own columns), each
+   called the same way (``simulator.run_cut("<name>", catalog, mission, **params)``, or
+   ``simulator.filter_by_<name>(catalog, mission, **params)`` directly). See
+   :ref:`user_guide_cli`'s ``cut`` step parameter table for the full list and each one's
+   parameters.
 
 ----
 

@@ -13,6 +13,7 @@ __all__ = [
     "simulation",
     "utils",
     "transients",
+    "missions",
 ]
 
 from . import models
@@ -35,7 +36,7 @@ from .transients import *
 
 __all__.extend(transients.__all__)
 
-from . import utils
+from . import missions, utils
 from .utils import *
 
 __all__.extend(utils.__all__)

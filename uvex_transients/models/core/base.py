@@ -56,16 +56,16 @@ from astropy import units as u
 from astropy.coordinates import EarthLocation, SkyCoord
 from astropy.cosmology import FLRW
 from astropy.modeling import Model
-from astropy.table import QTable, vstack
+from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
-from m4opt.synphot import Detector, observing
+from m4opt.synphot import Detector
 from scipy.integrate import quad_vec
 from synphot import SourceSpectrum, SpectralElement
 from synphot import units as synphot_units
 
 from uvex_transients.dust import attenuation_callable
-from uvex_transients.utils import config, get_rng, logger
+from uvex_transients.utils import get_rng, logger
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
 from .._constants import AB_MAG_ZERO_POINT, H_CGS
@@ -83,25 +83,24 @@ from .._typing import (
 from .._utils import (
     _BOL_FLUX_UNIT,
     _BOL_LUM_UNIT,
+    _NEGLIGIBLE_FLUX_JY,
+    _PLACEHOLDER_OBSERVER_LOCATION,
+    _PLACEHOLDER_OBSTIME,
     _SED_SHAPE_UNIT,
     _SPEC_FLUX_UNIT,
     _SPEC_LUM_UNIT,
+    _flat_flux_source_spectrum,
     hz_per_unit,
+    measure_bands,
     model_class_from_kernel,
+    normalize_times,
+    photometry_table,
+    resolve_bands,
     to_cgs_value,
 )
 from .parameters import Parameter
 
 __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
-
-# `SpectralModel.simulate_photometry`'s defaults for `observer_location`/`obstime` when
-# the caller doesn't supply real ones -- correct as long as `background` doesn't
-# actually depend on either (true of `m4opt.synphot.background.GalacticBackground`,
-# false of `ZodiacalBackground`/`EarthshineBackground`; see that method's docstring).
-# `m4opt.synphot.observing`'s own state only requires these to be broadcastable
-# against `coord`, not physically meaningful.
-_PLACEHOLDER_OBSERVER_LOCATION = EarthLocation(0 * u.m, 0 * u.m, 0 * u.m)
-_PLACEHOLDER_OBSTIME = Time("2000-01-01T00:00:00", scale="utc")
 
 # Loose enough that it only fires on genuine `quad_vec` non-convergence (its own default
 # `epsrel` is 1e-8), not routine floating-point noise -- see `_warn_if_not_converged`.
@@ -3119,6 +3118,186 @@ class SpectralModel(_ModelBase):
     # -------------------------------------- #
     # Detector-Aware (Noisy) Photometry       #
     # -------------------------------------- #
+    def measure_photometry(
+        self,
+        t: PhysicalInput,
+        exptime: Quantity,
+        detector: Detector,
+        coord: SkyCoord,
+        *,
+        background: SourceSpectrum | None = None,
+        bands: list | None = None,
+        observer_location: EarthLocation | None = None,
+        obstime: Time | None = None,
+        redshift: PhysicalInput | None = None,
+        luminosity_distance: Quantity | None = None,
+        angular_diameter_distance: Quantity | None = None,
+        proper_distance: Quantity | None = None,
+        cosmology: FLRW | None = None,
+        ebv: float | Quantity | FloatArray | None = None,
+        dust_law: str | None = None,
+        in_model: np.ndarray | None = None,
+        sys_err: float | Mapping[str, float] | None = None,
+        rng: RNGInput = None,
+        noise_seed: int | FloatArray | None = None,
+        noise_observation_keys: FloatArray | None = None,
+        **parameters: ParameterValue,
+    ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray]:
+        """
+        Measure this model with a real detector at given times: one noisy measurement per epoch and band.
+
+        The array form of :meth:`simulate_photometry`, with no table around it. Every epoch can
+        belong to a different event: `coord`, `observer_location`, `obstime`, `redshift`, the
+        distances, `ebv`, `noise_seed`, and the model parameters can each be a scalar (shared by
+        every epoch) or an array with one entry per epoch. That makes it the one measurement
+        routine for a single event's photometry and for a survey-wide screening of many events.
+
+        The model is only valid from the explosion onward (some light curve shapes diverge at
+        negative times). Epochs not `in_model`, by default those with ``t < 0``, are therefore
+        never evaluated against this model: they are measured against a flat, effectively
+        zero-flux spectrum instead, i.e. pure background at that observation's own depth.
+
+        Parameters
+        ----------
+        t : array-like or Quantity
+            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape ``(1,)``),
+            one entry per epoch.
+        exptime : ~astropy.units.Quantity
+            Exposure duration(s), scalar or shape matching `t`.
+        detector : ~m4opt.synphot.Detector
+            Supplies bandpasses, collecting area, plate scale, and noise terms (dark/read
+            noise, gain, ...). Its own ``background`` is used unless `background` is given.
+        coord : ~astropy.coordinates.SkyCoord
+            Sky position of the target, scalar or shape ``(N,)``.
+        background : ~synphot.SourceSpectrum, optional
+            Sky background to simulate against for this call, replacing `detector`'s own
+            (which is never mutated), e.g. `~m4opt.synphot.background.GalacticBackground()`
+            alone or combined with others via ``+``.
+        bands : list, optional
+            Which of `detector`'s bandpasses to evaluate. Defaults to every bandpass.
+        observer_location : ~astropy.coordinates.EarthLocation, optional
+            Observer location, scalar or shape ``(N,)``. Matters only insofar as `background`
+            depends on it (for example `~m4opt.synphot.background.EarthshineBackground`);
+            defaults to a fixed placeholder.
+        obstime : ~astropy.time.Time, optional
+            Observation time, scalar or shape ``(N,)``. Matters only insofar as `background`
+            depends on it (for example `~m4opt.synphot.background.ZodiacalBackground`);
+            defaults to a fixed placeholder.
+        redshift : array-like or ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        luminosity_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        angular_diameter_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        proper_distance : ~astropy.units.Quantity, optional
+            See :meth:`as_source_spectrum`.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            See :meth:`as_source_spectrum`.
+        ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional
+            See :meth:`as_source_spectrum`.
+        in_model : numpy.ndarray, optional
+            Boolean, shape ``(N,)``: which epochs are evaluated against this model. By default
+            ``t >= 0``. A caller can mark more epochs as background, e.g. an exposure that runs
+            past the end of the window it cares about.
+        sys_err : float or Mapping[str, float], optional
+            See `~uvex_transients.models._utils.measure_bands`.
+        rng : numpy.random.Generator, int, or None
+            See `~uvex_transients.models._utils.measure_bands`.
+        noise_seed, noise_observation_keys : optional
+            See `~uvex_transients.models._utils.measure_bands`.
+        **parameters
+            This model's parameter values. See :meth:`eval_log_cgs`.
+
+        Returns
+        -------
+        flux : numpy.ndarray
+            Measured flux density in Jy, shape ``(n_bands, N)``.
+        flux_err : numpy.ndarray
+            One-sigma uncertainty in Jy, same shape.
+        snr : numpy.ndarray
+            Measured SNR, ``flux / flux_err``, same shape.
+        snr_expected : numpy.ndarray
+            Noiseless SNR, the true flux over ``flux_err``, same shape.
+
+        Raises
+        ------
+        ValueError
+            If `bands` or `sys_err` doesn't match `detector`, `exptime`, `in_model`, `coord`,
+            `observer_location` or `obstime` is neither scalar nor shaped like `t`, or
+            `noise_seed` is given without matching `noise_observation_keys`.
+        """
+        if background is not None:
+            detector = replace(detector, background=background)
+        band_names = resolve_bands(detector, bands, sys_err)
+        t, exptime = normalize_times(t, exptime)
+        if in_model is None:
+            in_model = t.to_value(u.day) >= 0
+        in_model = np.asarray(in_model, dtype=bool)
+        if in_model.shape != t.shape:
+            raise ValueError(f"'in_model' must have shape {t.shape}, got {in_model.shape}.")
+        if observer_location is None:
+            observer_location = _PLACEHOLDER_OBSERVER_LOCATION
+        if obstime is None:
+            obstime = _PLACEHOLDER_OBSTIME
+        for name, value in (("coord", coord), ("observer_location", observer_location), ("obstime", obstime)):
+            if not value.isscalar and value.shape != t.shape:
+                raise ValueError(f"'{name}' must be scalar or match 't' shape {t.shape}, got {value.shape}.")
+
+        # Give every per-epoch input one entry per epoch, so that selecting an epoch's rows is the
+        # same indexing whether the caller passed a scalar (shared by every epoch) or an array.
+        broadcast = lambda value: np.broadcast_to(value, t.shape, subok=True)  # noqa: E731
+
+        coord, observer_location, obstime = broadcast(coord), broadcast(observer_location), broadcast(obstime)
+        sed_inputs = {
+            name: broadcast(value)
+            for name, value in dict(
+                redshift=redshift,
+                luminosity_distance=luminosity_distance,
+                angular_diameter_distance=angular_diameter_distance,
+                proper_distance=proper_distance,
+                ebv=ebv,
+                **parameters,
+            ).items()
+            if value is not None
+        }
+        if noise_seed is not None:
+            noise_seed = broadcast(np.asarray(noise_seed, dtype=np.uint64))
+
+        rng = get_rng(rng)
+        measurements = [np.full((len(band_names), len(t)), np.nan) for _ in range(4)]
+        for evaluate_model in (True, False):
+            rows = np.flatnonzero(in_model == evaluate_model)
+            if len(rows) == 0:
+                continue
+            if evaluate_model:
+                # Everything per-epoch gets a reserved trailing axis for wavelength, except `ebv`,
+                # which `attenuation_callable` reserves itself.
+                inputs = {
+                    name: value[rows] if name == "ebv" else value[rows][:, np.newaxis]
+                    for name, value in sed_inputs.items()
+                }
+                spectra = self.as_source_spectrum(
+                    t[rows][:, np.newaxis], cosmology=cosmology, dust_law=dust_law, **inputs
+                )
+            else:
+                spectra = _flat_flux_source_spectrum(np.full(len(rows), _NEGLIGIBLE_FLUX_JY) * u.Jy)
+            measured = measure_bands(
+                detector,
+                band_names,
+                exptime[rows],
+                spectra,
+                coord[rows],
+                observer_location[rows],
+                obstime[rows],
+                sys_err=sys_err,
+                rng=rng,
+                noise_seed=None if noise_seed is None else noise_seed[rows],
+                noise_observation_keys=None if noise_observation_keys is None else noise_observation_keys[rows],
+            )
+            for out, values in zip(measurements, measured):
+                out[:, rows] = values
+        return tuple(measurements)
+
     def simulate_photometry(
         self,
         t: PhysicalInput,
@@ -3137,77 +3316,46 @@ class SpectralModel(_ModelBase):
         cosmology: FLRW | None = None,
         ebv: float | Quantity | FloatArray | None = None,
         dust_law: str | None = None,
+        in_model: np.ndarray | None = None,
         n_sigma: float | None = None,
         sys_err: float | Mapping[str, float] | None = None,
         rng: RNGInput = None,
+        noise_seed: int | FloatArray | None = None,
+        noise_observation_keys: FloatArray | None = None,
         **parameters: ParameterValue,
     ) -> QTable:
-        r"""
-        Simulate noisy synthetic photometry of this model at given time(s), against a real detector.
+        """
+        Simulate noisy synthetic photometry of this model at given times, against a real detector.
 
         The noise-aware counterpart to :meth:`mag`/:meth:`flux`/:meth:`as_source_spectrum`:
-        those give the noiseless truth; this adds the detector's own noise model
-        (:meth:`~m4opt.synphot.Detector.get_snr`, the same OIR CCD equation
-        :class:`~astropy.stats.signal_to_noise_oir_ccd` implements) and reports a
-        synthetic *measurement* -- one Gaussian realization of the true flux at each
-        requested time and band, at that time/band's own implied uncertainty.
+        those give the noiseless truth; this reports a synthetic *measurement*, one Gaussian
+        realization of the true flux at each requested time and band at that time and band's
+        own implied uncertainty, with the magnitudes and bounds worked out from it. The
+        measurement itself is :meth:`measure_photometry`; this lays it out as a table.
 
         Deliberately independent of any :class:`~uvex_transients.surveys.base.SurveySchedule`
         or :class:`~uvex_transients.simulation.event.Event`: `t`/`exptime` are whatever
-        times/exposures the caller wants evaluated (e.g. a target-of-opportunity's own
-        chosen observing cadence), not ones a schedule was queried for. `background` is
-        a required, explicit choice for the same reason -- rather than an implicit
-        default read off `detector`. This lets a caller decide what physics to include
-        (dust, via `ebv`, is always folded into the source flux itself; the
-        Milky Way's diffuse UV glow via
-        `~m4opt.synphot.background.GalacticBackground`; zodiacal light via
-        `~m4opt.synphot.background.ZodiacalBackground`; ...) without needing to know, let
-        alone undo, whatever combination a particular `detector` happens to ship with
-        (e.g. :data:`m4opt.missions.uvex`'s own detector defaults to
-        ``GalacticBackground() + ZodiacalBackground()``). If `background` is given, it
-        replaces `detector`'s own ``background`` for this call only (`detector` itself is
-        never mutated); if omitted, `detector`'s own ``background`` is used unchanged.
-
-        `observer_location`/`obstime` matter only insofar as `background` actually
-        depends on them: `GalacticBackground` reads only sky position (`coord`, by way of
-        `m4opt.synphot.observing`'s target coordinate), so for a dust-and-Galactic-only
-        call -- e.g. a target of opportunity whose real observing time isn't known yet --
-        neither needs to be real, and both default to fixed placeholders. Pass real values
-        (e.g. a mission's own ``observer_location(obstime)``) only when `background`
-        includes a term that actually varies with them, such as `ZodiacalBackground`
-        (sun-relative sky position, from `obstime`) or `EarthshineBackground`
-        (spacecraft position, from `observer_location`).
+        times and exposures the caller wants evaluated (for example a target of opportunity's
+        own cadence), not ones a schedule was queried for.
 
         Parameters
         ----------
         t : array-like or Quantity
-            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape
-            ``(1,)``) -- one entry per requested observation. Unlike
-            :meth:`as_source_spectrum`, no manual trailing batch axis is needed; this
-            method inserts and removes it internally.
+            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape ``(1,)``).
         exptime : ~astropy.units.Quantity
-            Exposure duration(s), scalar (applied to every entry of `t`) or shape
-            matching `t`.
+            Exposure duration(s), scalar or shape matching `t`.
         detector : ~m4opt.synphot.Detector
-            Supplies bandpasses, collecting area, plate scale, and detector noise terms
-            (dark/read noise, gain, ...). Its own ``background`` is used only if
-            `background` isn't given -- see above.
+            See :meth:`measure_photometry`.
         coord : ~astropy.coordinates.SkyCoord
-            Scalar sky position of the target.
+            Sky position of the target, scalar or shape ``(N,)``.
         background : ~synphot.SourceSpectrum, optional
-            Sky background surface brightness to simulate against for this call --
-            e.g. `~m4opt.synphot.background.GalacticBackground()` alone, or combined
-            with others via ``+``. If `None` (the default), `detector`'s own
-            ``background`` is used.
+            See :meth:`measure_photometry`.
         bands : list, optional
-            Which of `detector`'s bandpasses to evaluate. Defaults to every bandpass
-            `detector` has.
+            See :meth:`measure_photometry`.
         observer_location : ~astropy.coordinates.EarthLocation, optional
-            See above; defaults to a fixed placeholder location, correct whenever
-            `background` doesn't depend on it.
+            See :meth:`measure_photometry`.
         obstime : ~astropy.time.Time, optional
-            See above; defaults to a fixed placeholder epoch, correct whenever
-            `background` doesn't depend on it.
+            See :meth:`measure_photometry`.
         redshift : array-like or ~astropy.units.Quantity, optional
             See :meth:`as_source_spectrum`.
         luminosity_distance : ~astropy.units.Quantity, optional
@@ -3220,87 +3368,53 @@ class SpectralModel(_ModelBase):
             See :meth:`as_source_spectrum`.
         ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional
             See :meth:`as_source_spectrum`.
+        in_model : numpy.ndarray, optional
+            See :meth:`measure_photometry`. By default ``t >= 0``.
         n_sigma : float, optional
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
             ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses
             ``config["simulation.detection_n_sigma"]`` (5 out of the box).
         sys_err : float or Mapping[str, float], optional
-            A per-band systematic calibration error floor, in magnitudes, combined in
-            quadrature with the shot-noise uncertainty `detector` itself computes (via
-            :meth:`~m4opt.synphot.Detector.get_snr`, the OIR CCD equation -- source and
-            sky Poisson noise plus detector read/dark noise only, with no notion of
-            flat-fielding, PSF-fit, or zeropoint calibration systematics). Folded into
-            the noise realization itself, not just reported as a wider `flux_err` around
-            an unchanged draw -- otherwise the scatter of simulated points across
-            repeated visits would be narrower than what their own error bars claim.
-            A bare `float` applies the same floor to every band in `bands`; a mapping
-            must have an entry for every band in `bands`. If `None` (the default, and
-            the prior behavior), no systematic floor is added.
+            See :meth:`measure_photometry`.
         rng : numpy.random.Generator, int, or None
-            Random-number source for the noise realization; see :func:`~uvex_transients.utils.get_rng`.
+            See :meth:`measure_photometry`.
+        noise_seed, noise_observation_keys : optional
+            See :meth:`measure_photometry`.
         **parameters
             This model's parameter values. See :meth:`eval_log_cgs`.
 
         Returns
         -------
         astropy.table.QTable
-            One row per (time, band), sorted by ``t`` then ``band``, with columns
-            ``t``, ``exptime``, ``band``, ``snr``, ``flux``/``flux_err`` (Jy),
-            ``flux_upper``/``flux_lower`` (Jy, ``flux ± n_sigma*flux_err``),
-            ``ab_mag``/``mag_err``, and ``mag_upper``/``mag_lower`` -- the ``n_sigma``
-            interval transformed to magnitude, brighter bound first. See
-            :meth:`~uvex_transients.simulation.event.Event.simulate_photometry` for the
-            exact semantics of every column (this method implements the same math).
-            If `sys_err` is given, ``snr``/``flux_err``/``mag_err`` (and everything
-            derived from them) reflect the combined shot-noise-plus-systematic
-            uncertainty.
+            One row per (time, band), sorted by ``t`` then ``band``, with columns ``t``,
+            ``exptime``, ``band``, ``snr`` (the measured SNR, ``flux / flux_err``),
+            ``flux``/``flux_err`` (Jy), ``flux_upper``/``flux_lower`` (Jy, ``flux ±
+            n_sigma*flux_err``), ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower`` -- the
+            ``n_sigma`` interval transformed to magnitude, brighter bound first -- and
+            ``in_model``. See :meth:`~uvex_transients.simulation.event.Event.simulate_photometry`
+            for the exact semantics of every column. If `sys_err` is given,
+            ``snr``/``flux_err``/``mag_err`` (and everything derived from them) reflect the
+            combined shot-noise-plus-systematic uncertainty.
 
         Raises
         ------
         ValueError
-            If `coord` is not scalar, if `bands` contains a name `detector` doesn't
-            have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`
-            is a mapping missing an entry for one of `bands`.
+            As for :meth:`measure_photometry`.
         """
-        if n_sigma is None:
-            n_sigma = config["simulation.detection_n_sigma"]
+        t, exptime = normalize_times(t, exptime)
+        if in_model is None:
+            in_model = t.to_value(u.day) >= 0
+        in_model = np.asarray(in_model, dtype=bool)
 
-        if background is not None:
-            detector = replace(detector, background=background)
-
-        band_names = list(detector.bandpasses) if bands is None else list(bands)
-        unknown = [band for band in band_names if band not in detector.bandpasses]
-        if unknown:
-            raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
-
-        if isinstance(sys_err, Mapping):
-            missing_sys_err = [band for band in band_names if band not in sys_err]
-            if missing_sys_err:
-                raise ValueError(f"'sys_err' is missing entries for band(s) {missing_sys_err}.")
-
-        if not coord.isscalar:
-            raise ValueError("Parameter 'coord' must be a scalar SkyCoord.")
-
-        t = np.atleast_1d(u.Quantity(t))
-        exptime = u.Quantity(exptime)
-        if exptime.isscalar:
-            exptime = np.broadcast_to(exptime, t.shape, subok=True)
-        elif exptime.shape != t.shape:
-            raise ValueError(f"'exptime' must be scalar or match 't' shape {t.shape}, got {exptime.shape}.")
-        n_obs = t.shape[0]
-
-        if observer_location is None:
-            observer_location = _PLACEHOLDER_OBSERVER_LOCATION
-        if obstime is None:
-            obstime = _PLACEHOLDER_OBSTIME
-
-        rng = get_rng(rng)
-
-        # Trailing batch axis reserved for `t`, as in `Event.simulate_photometry` --
-        # keeps this batch from colliding with whatever wavelength grid the spectrum
-        # is later called with (e.g. a bandpass's `waveset`).
-        spectra = self.as_source_spectrum(
-            t[:, np.newaxis],
+        measurements = self.measure_photometry(
+            t,
+            exptime,
+            detector,
+            coord,
+            background=background,
+            bands=bands,
+            observer_location=observer_location,
+            obstime=obstime,
             redshift=redshift,
             luminosity_distance=luminosity_distance,
             angular_diameter_distance=angular_diameter_distance,
@@ -3308,62 +3422,15 @@ class SpectralModel(_ModelBase):
             cosmology=cosmology,
             ebv=ebv,
             dust_law=dust_law,
+            in_model=in_model,
+            sys_err=sys_err,
+            rng=rng,
+            noise_seed=noise_seed,
+            noise_observation_keys=noise_observation_keys,
             **parameters,
         )
-
-        tables = []
-
-        with observing(observer_location, coord, obstime):
-            for band in band_names:
-                snr = detector.get_snr(exptime, spectra, band)
-                band_sys_err = sys_err[band] if isinstance(sys_err, Mapping) else sys_err
-
-                pivot = detector.bandpasses[band].pivot()
-                with np.errstate(invalid="ignore", divide="ignore"):
-                    true_flux = np.squeeze(spectra(pivot, flux_unit=u.Jy).to_value(u.Jy), axis=-1)
-
-                    valid = np.isfinite(snr) & (snr > 0)
-                    safe_snr = np.where(valid, snr, np.nan)
-                    flux_err = true_flux / safe_snr
-                    reported_snr = snr
-                    if band_sys_err:
-                        # `sys_err` is a fixed fractional-magnitude floor; convert to a
-                        # fractional flux error (exact for the same small-error limit
-                        # `mag_err = 2.5 / (ln(10) * snr)` already assumes) and combine
-                        # in quadrature with the shot-noise flux error above, before
-                        # anything is drawn from it -- so the noise realization itself
-                        # carries the systematic scatter, not just a wider reported bar
-                        # around an unchanged draw.
-                        flux_err = np.hypot(flux_err, np.abs(true_flux) * band_sys_err * np.log(10) / 2.5)
-                        reported_snr = np.where(valid, true_flux / flux_err, snr)
-                    flux = rng.normal(true_flux, np.where(valid, np.abs(flux_err), 1.0))
-                    flux = np.where(valid, flux, np.nan)
-                    mag_err = np.where(valid, 2.5 / (np.log(10) * np.abs(reported_snr)), np.nan)
-                    mag = np.where(flux > 0, (flux * u.Jy).to_value(u.ABmag), np.nan)
-
-                    flux_upper = flux + n_sigma * flux_err
-                    flux_lower = flux - n_sigma * flux_err
-                    mag_lower = np.where(flux_upper > 0, (flux_upper * u.Jy).to_value(u.ABmag), np.nan)
-                    mag_upper = np.where(flux_lower > 0, (flux_lower * u.Jy).to_value(u.ABmag), np.nan)
-
-                band_table = QTable()
-                band_table["t"] = t
-                band_table["exptime"] = exptime
-                band_table["band"] = np.full(n_obs, band)
-                band_table["snr"] = reported_snr
-                band_table["flux"] = flux * u.Jy
-                band_table["flux_err"] = flux_err * u.Jy
-                band_table["flux_upper"] = flux_upper * u.Jy
-                band_table["flux_lower"] = flux_lower * u.Jy
-                band_table["ab_mag"] = mag
-                band_table["mag_err"] = mag_err
-                band_table["mag_upper"] = mag_upper
-                band_table["mag_lower"] = mag_lower
-                tables.append(band_table)
-
-        table = vstack(tables)
-        order = np.lexsort((table["band"], table["t"].to_value(t.unit)))
-        return table[order]
+        band_names = resolve_bands(detector, bands, sys_err)
+        return photometry_table(t, exptime, band_names, *measurements, n_sigma=n_sigma, in_model=in_model)
 
     # -------------------------------------- #
     # Simulation                              #

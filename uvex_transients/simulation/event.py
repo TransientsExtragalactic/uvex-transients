@@ -24,8 +24,10 @@ from m4opt.missions import Mission
 
 from uvex_transients.dust import log_attenuation
 from uvex_transients.utils import get_rng
+from uvex_transients.utils.keyed_noise import time_key
 
 from ..surveys.base import SurveySchedule
+from ..surveys.footprints import SurveyFootprint, default_registry
 from ..transients.base import TransientBase
 
 
@@ -62,6 +64,10 @@ class Event:
         See :meth:`__init__`.
     transient_type : str, optional
         See :meth:`__init__`.
+    photometry_pre_window : ~astropy.units.Quantity, optional
+        See :meth:`__init__`.
+    photometry_post_window : ~astropy.units.Quantity, optional
+        See :meth:`__init__`.
     """
 
     def __init__(
@@ -77,6 +83,8 @@ class Event:
         luminosity_distance: Quantity | None = None,
         ebv: float | None = None,
         transient_type: str | None = None,
+        photometry_pre_window: Quantity | None = 0 * u.day,
+        photometry_post_window: Quantity | None = None,
     ):
         """
         Construct an `Event` and query `schedule` for its covering observations.
@@ -109,6 +117,15 @@ class Event:
             `EventCatalog`). If not given, reddening is treated as zero.
         transient_type : str, optional
             This event's transient-type name, for `__repr__` only.
+        photometry_pre_window : ~astropy.units.Quantity, optional
+            The duration (with units of time) prior to the true explosion time to include in the
+            synthetic photometry. By default, this is ``0 * u.day``, meaning that the detections
+            all occur after the explosion epoch. This setting should be used to generate pre-explosion
+            reference data equivalent to drawing forced photometry from a pre-explosion template image.
+        photometry_post_window : ~astropy.units.Quantity, optional
+            The duration (with units of time) following the explosion time to include in the synthetic
+            photometry. By default, ``photometry_post_window=transient_type.duration_limit``; however,
+            this can be modified as needed by the user.
         """
         if not isinstance(schedule, SurveySchedule):
             raise TypeError(f"'schedule' must be a SurveySchedule, got {type(schedule)}.")
@@ -135,8 +152,49 @@ class Event:
         # include a row that *started* slightly before `t_explosion` but overlaps into it
         # (e.g. a long downlink); that row is dropped here since only observations that
         # began at or after the explosion are ever useful for this event's lightcurve.
-        candidate = schedule.get_observations_of(coord, t_explosion, t_explosion + transient.duration_limit)
-        self._observations = candidate[candidate["start_time"] >= t_explosion]
+        if photometry_post_window is None:
+            photometry_post_window = transient.duration_limit
+
+        if not isinstance(photometry_post_window, u.Quantity):
+            raise TypeError(f"'photometry_post_window' must be a Quantity, got {type(photometry_post_window)}.")
+        if not isinstance(photometry_pre_window, u.Quantity):
+            raise TypeError(f"'photometry_pre_window' must be a Quantity, got {type(photometry_pre_window)}.")
+
+        for name, window, allow_zero in (
+            ("photometry_pre_window", photometry_pre_window, True),
+            ("photometry_post_window", photometry_post_window, False),
+        ):
+            try:
+                value = window.to_value(u.day)
+            except u.UnitConversionError as err:
+                raise u.UnitConversionError(f"'{name}' must be convertible to time units, got {window.unit}.") from err
+            if not np.isfinite(value) or (value < 0 if allow_zero else value <= 0):
+                bound = "non-negative" if allow_zero else "positive"
+                raise ValueError(f"'{name}' must be finite and {bound}, got {window!r}.")
+
+        self._photometry_post_window = photometry_post_window
+        self._photometry_pre_window = photometry_pre_window
+        candidate = schedule.get_observations_of(
+            coord, t_explosion - photometry_pre_window, t_explosion + photometry_post_window
+        )
+
+        # Determine the set of candidates that are actually observed.
+        self._window_observations = candidate
+        in_model = np.logical_and(
+            candidate["start_time"] >= t_explosion,
+            candidate["start_time"] + candidate["duration"] <= t_explosion + photometry_post_window,
+        )
+        self._in_model = np.asarray(in_model)
+        self._observations = candidate[in_model]
+
+        # Everything else in the query window -- pre-explosion rows from
+        # `photometry_pre_window`, plus any row whose exposure runs past
+        # `photometry_post_window` -- falls outside the transient SED's valid
+        # domain (`t >= 0`). These are never evaluated against `transient.sed`
+        # (see `simulate_photometry`): some light curve shapes are only smoothly
+        # *wrong* there, but others (e.g. an early-time `1/t` singularity) diverge
+        # outright, so this window is masked out rather than merely deprioritized.
+        self._background_observations = candidate[~in_model]
 
     def __repr__(self) -> str:
         """
@@ -213,9 +271,59 @@ class Event:
         return self._observations
 
     @property
+    def window_observations(self) -> QTable:
+        """
+        QTable: The schedule's ``"observe"`` rows covering the full query window.
+
+        `observations` plus `background_observations`, one row per candidate
+        observation, chronological, over
+        ``[t_explosion - photometry_pre_window, t_explosion + photometry_post_window]`` --
+        i.e. `observations` before it's narrowed to rows the transient's SED is actually
+        valid for. See `observations`/`background_observations` for the split.
+        """
+        return self._window_observations
+
+    @property
+    def background_observations(self) -> QTable:
+        """
+        QTable: The schedule's ``"observe"`` rows in `window_observations` outside `observations`.
+
+        Pre-explosion rows (from `photometry_pre_window`) plus any row whose exposure
+        runs past `photometry_post_window` -- i.e. every candidate observation
+        `simulate_photometry` gives background-only (non-detection) photometry rather
+        than evaluating `transient.sed` for, since `t < 0` isn't in the SED's valid
+        domain. Empty whenever `photometry_pre_window` is the default ``0 * u.day`` and
+        no candidate observation overruns `photometry_post_window`.
+        """
+        return self._background_observations
+
+    @property
     def n_observations(self) -> int:
         """int: Number of candidate observations (``len(observations)``)."""
         return len(self._observations)
+
+    def in_footprint(self, footprint: SurveyFootprint | str) -> bool:
+        """
+        Whether this event's sky position lies inside a footprint.
+
+        For many events use `EventCatalog.in_footprint`, which does one vectorized lookup.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint or its registered name (e.g. ``"lsst:combined"``).
+
+        Returns
+        -------
+        bool
+            `True` if the event is inside the footprint.
+
+        Raises
+        ------
+        KeyError
+            If `footprint` is a name that is not registered.
+        """
+        return bool(default_registry.resolve(footprint).contains_skycoord(self.coord)[0])
 
     # ------------------------------ #
     # Parameters                     #
@@ -416,6 +524,7 @@ class Event:
         table = QTable()
         table["event_id"] = np.array([], dtype=np.int64)
         table["obs_time"] = Time([], format="jd")
+        table["rel_time"] = u.Quantity([], u.day)
         table["exptime"] = u.Quantity([], u.s)
         # A wide, explicit itemsize -- `dtype=str` alone infers itemsize 1 from
         # an empty array (silently truncating any band name to one character
@@ -430,6 +539,7 @@ class Event:
         table["mag_err"] = np.array([], dtype=np.float64)
         table["mag_upper"] = np.array([], dtype=np.float64)
         table["mag_lower"] = np.array([], dtype=np.float64)
+        table["in_model"] = np.array([], dtype=bool)
         return table
 
     def simulate_photometry(
@@ -439,31 +549,29 @@ class Event:
         n_sigma: float | None = None,
     ) -> QTable:
         """
-        Evaluate this event's detectability at every observation in `observations`.
+        Evaluate this event's detectability at every observation in `window_observations`.
 
-        Builds one `~synphot.SourceSpectrum` for this whole event -- batched over
-        every candidate observation's own time since explosion, via
-        `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`
-        (dust folded in through its ``log_attenuation``, from this event's own cached
-        `ebv`) -- and reuses it, unmodified, for every requested band:
-        a `~synphot.SourceSpectrum` is purely a function of wavelength/time, so
-        "band" only enters once it's integrated against a bandpass, via
-        `~m4opt.synphot.Detector.get_snr`. That turns what used to be a Python loop
-        over every (observation, band) pair, each doing its own scalar
-        `SpectralModel.flux`/`astropy.stats.signal_to_noise_oir_ccd` call, into one
-        vectorized `get_snr` call per band, regardless of how many observations
-        there are.
+        Every observation in `window_observations` is measured in one call to
+        `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`, vectorized over
+        observations and bands. Observations in `observations` are evaluated against
+        `transient.sed` (dust folded in from this event's own cached `ebv`). Those in
+        `background_observations` -- pre-explosion (from `photometry_pre_window`), plus any
+        exposure running past `photometry_post_window` -- never reach `transient.sed`: ``t < 0``
+        isn't in a `SpectralModel`'s valid domain (some light curve shapes are only smoothly
+        *wrong* there, but others, e.g. an early-time ``1/t`` singularity, diverge outright). They
+        are measured against a true source flux of zero instead: pure background, at that
+        observation's own real exposure and observing geometry, flagged ``in_model=False``.
 
-        The reported flux/magnitude at each (observation, band) is then a Gaussian
-        realization of the true (noiseless) flux -- evaluated from that same
-        `SourceSpectrum` at the band's pivot wavelength -- at that SNR's implied
-        uncertainty; a synthetic measurement, not the ground truth. Physical SED
-        parameters are sampled once, from `seed`; every band's noise draws are one
-        vectorized call over all observations at once, in `bands` order, on the
-        same stream that draw consumed -- so the whole event still replays
-        identically given the same `seed`, but *not* row-for-row identically to an
-        older, unbatched implementation, since the draws are now grouped per band
-        across every observation rather than interleaved observation-by-observation.
+        The reported flux/magnitude at each (observation, band) is a Gaussian realization of the
+        true (noiseless) flux, with the uncertainty the detector's noise model
+        (`~m4opt.synphot.Detector.get_snr`) implies for it: a synthetic measurement, not the
+        ground truth. Physical SED parameters are sampled once, from `seed`. Each noise draw is a
+        pure function of ``(seed, the observation's start time, the band's position in
+        mission.detector.bandpasses)`` (see
+        `~uvex_transients.utils.keyed_noise.keyed_standard_normal`), so the same measurement gets
+        the same noise whatever other observations or bands are simulated alongside it, and
+        exactly matches the noise `~uvex_transients.simulation.core.SurveySimulator`'s detection
+        cuts apply to it.
 
         ``mag_err`` is the usual linearized (first-order) propagation of ``flux_err``
         through the magnitude log transform -- a good description of the uncertainty
@@ -477,7 +585,11 @@ class Event:
         actual ``n_sigma`` interval, built the correct way around: bound `flux`
         symmetrically first (where the noise is actually Gaussian), then transform
         each bound to magnitude separately, rather than propagating one linearized
-        width through the transform.
+        width through the transform. For a `background_observations` row this interval
+        is exactly the pure-noise upper limit expected of a non-detection: ``mag_upper``
+        is ``nan`` (no faint bound -- the "source" is, by construction, never securely
+        distinguished from zero flux) and ``mag_lower`` is the ``n_sigma`` detection
+        depth reached by that observation's own real exposure/background.
 
         Parameters
         ----------
@@ -496,79 +608,81 @@ class Event:
         -------
         astropy.table.QTable
             One row per (observation, band), sorted by ``obs_time`` then ``band``,
-            with columns ``event_id``, ``obs_time``, ``exptime``, ``band``, ``snr``,
-            ``flux``/``flux_err`` (Jy), ``flux_upper``/``flux_lower`` (Jy, ``flux ±
-            n_sigma*flux_err``), ``ab_mag``/``mag_err``, and ``mag_upper``/``mag_lower``
+            with columns ``event_id``, ``obs_time``, ``rel_time`` (``obs_time -
+            t_explosion``, in days -- negative for a `background_observations` row),
+            ``exptime``, ``band``, ``snr``, ``flux``/``flux_err`` (Jy),
+            ``flux_upper``/``flux_lower`` (Jy, ``flux ±
+            n_sigma*flux_err``), ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower``
             -- the ``n_sigma`` interval transformed to magnitude, brighter bound first:
             ``mag_lower`` (from ``flux_upper``) is always finite when ``flux_upper>0``;
             ``mag_upper`` (from ``flux_lower``) is ``nan`` whenever ``flux_lower<=0``,
             i.e. whenever the source isn't securely distinguished from zero flux at
             ``n_sigma`` -- the correct behavior is a one-sided (no faint bound) result
-            there, not a spuriously finite one. ``flux``/``flux_err``/``ab_mag``/
-            ``mag_err`` are ``nan`` wherever ``snr`` is non-positive or non-finite
-            (``ab_mag``/``mag_err`` are also ``nan`` wherever the noisy ``flux``
+            there, not a spuriously finite one -- and ``in_model``, ``True`` for a row
+            from `observations` (a real evaluation of `transient.sed`) and ``False``
+            for one from `background_observations` (pure background/non-detection,
+            `transient.sed` never evaluated). ``snr`` is the measured SNR,
+            ``flux / flux_err`` of the noisy ``flux`` realization: the quantity a detection
+            threshold applies to. ``flux``/``flux_err``/``snr``/``ab_mag``/``mag_err`` are
+            ``nan`` wherever the detector's noiseless SNR for the true flux is non-positive or
+            non-finite (``ab_mag``/``mag_err`` are also ``nan`` wherever the noisy ``flux``
             realization itself came out non-positive). Empty (but correctly typed) if
-            `observations` is empty.
+            `window_observations` is empty.
         """
         detector = mission.detector
         if detector is None:
             raise ValueError(f"Mission {mission.name!r} has no detector configured.")
 
-        # Validated up front (rather than left to `SpectralModel.simulate_photometry`)
-        # so an unknown band raises even when `n_obs == 0` below short-circuits before
-        # ever reaching that call.
+        # Validated up front (rather than left to `SpectralModel.simulate_photometry`/
+        # `simulate_flat_photometry`) so an unknown band raises even when both sets of
+        # observations below are empty.
         band_names = list(detector.bandpasses) if bands is None else list(bands)
         unknown = [band for band in band_names if band not in detector.bandpasses]
         if unknown:
             raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
 
-        n_obs = len(self._observations)
-        if n_obs == 0:
+        window = self._window_observations
+        if len(window) == 0:
             return self._empty_photometry_table()
 
-        # One RNG, seeded from this event's own stored `seed`, drives both the parameter
-        # draw and every band's noise realization below (inside
-        # `SpectralModel.simulate_photometry`, in `band_names` order) -- so the whole
-        # event replays identically from `seed` alone. Deliberately *not*
-        # `self.sample_parameters()` (which reseeds fresh every call): the noise draws
-        # must continue on the same stream the parameter draw already consumed.
+        # `rng`, seeded from this event's own stored `seed`, drives only the SED parameter draw.
+        # The noise is instead keyed on (`seed`, the observation's start time, the band), so a
+        # given measurement gets the same noise here as in the survey-wide detection cuts
+        # (`SurveySimulator.iter_epochs`), whichever other observations are simulated alongside it.
         rng = get_rng(self._seed)
         sed_params = {name: value[0] for name, value in self._transient.sed.sample_parameters(size=1, rng=rng).items()}
 
-        t_obs = (self._observations["start_time"] - self._t_explosion).to(u.day)
-
-        # The actual noise simulation -- batched `as_source_spectrum` plus `get_snr`,
-        # the Gaussian flux realization, and the `n_sigma` bound math -- lives on
-        # `SpectralModel.simulate_photometry` now, schedule-independent, so it's shared
-        # with callers that have no `SurveySchedule`/`Event` at all (e.g. a target of
-        # opportunity). This event's own `observer_location`/`start_time` are passed
-        # through as real `observer_location`/`obstime`, so `detector`'s own
-        # `background` (left unmodified -- `background` isn't overridden here) sees the
-        # same real observing geometry it always did.
+        # One call for the whole window. Observations that are not `in_model` (before the
+        # explosion, or running past `photometry_post_window`) are measured as pure background
+        # at that observation's own depth, never against `transient.sed`; see
+        # `SpectralModel.measure_photometry`. This event's own observer location and start time
+        # are passed through, so `detector`'s `background` sees the real observing geometry.
         phot = self._transient.sed.simulate_photometry(
-            t_obs,
-            self._observations["duration"],
+            (window["start_time"] - self._t_explosion).to(u.day),
+            window["duration"],
             detector,
             self._coord,
             bands=band_names,
-            observer_location=self._observations["observer_location"],
-            obstime=self._observations["start_time"],
+            observer_location=window["observer_location"],
+            obstime=window["start_time"],
             redshift=self._redshift,
             luminosity_distance=self._luminosity_distance,
             ebv=self._ebv,
+            in_model=self._in_model,
             n_sigma=n_sigma,
-            rng=rng,
+            noise_seed=self._seed,
+            noise_observation_keys=time_key(window["start_time"]),
             **sed_params,
         )
-
-        phot["event_id"] = np.full(len(phot), self._event_id, dtype=np.int64)
         phot["obs_time"] = self._t_explosion + phot["t"]
-        del phot["t"]
+        phot["rel_time"] = phot["t"]
+        phot["event_id"] = np.full(len(phot), self._event_id, dtype=np.int64)
 
         return phot[
             [
                 "event_id",
                 "obs_time",
+                "rel_time",
                 "exptime",
                 "band",
                 "snr",
@@ -580,5 +694,6 @@ class Event:
                 "mag_err",
                 "mag_upper",
                 "mag_lower",
+                "in_model",
             ]
         ]

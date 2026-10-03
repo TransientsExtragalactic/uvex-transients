@@ -164,6 +164,12 @@ class TransientBase(ABC):
         self._sed = self.__class__.DEFAULT_MODEL()
         self._duration_limit = self.__class__.DEFAULT_DURATION
 
+        # `Event.simulate_photometry`'s windowing defaults: no pre-explosion photometry,
+        # and a post-explosion window that tracks `duration_limit` (via the
+        # `photometry_post_window` getter) until explicitly overridden.
+        self._photometry_pre_window: Quantity = 0 * u.day
+        self._photometry_post_window: Quantity | None = None
+
     # ------------------------------ #
     # Properties                     #
     # ------------------------------ #
@@ -270,6 +276,102 @@ class TransientBase(ABC):
             raise ValueError(f"`duration_limit` must be finite and positive, got {duration_limit!r}.")
 
         return duration_limit
+
+    @property
+    def photometry_pre_window(self) -> Quantity:
+        """
+        ~astropy.units.Quantity: How far before explosion `Event.simulate_photometry` still generates photometry.
+
+        Passed straight through to
+        `~uvex_transients.simulation.event.Event.__init__`'s `photometry_pre_window`:
+        observations in this window never reach `sed` (outside its valid domain,
+        ``t >= 0``) and instead get pure background/non-detection photometry. Defaults
+        to ``0 * u.day`` -- no pre-explosion photometry -- since that's a strict
+        addition to how much of the schedule an event's photometry covers, unlike
+        `duration_limit`/`photometry_post_window`, which bound something that must
+        already be supplied.
+        """
+        return self._photometry_pre_window
+
+    @photometry_pre_window.setter
+    def photometry_pre_window(self, photometry_pre_window: Quantity) -> None:
+        """
+        Set how far before explosion `Event.simulate_photometry` still generates photometry.
+
+        Parameters
+        ----------
+        photometry_pre_window : ~astropy.units.Quantity
+            The new pre-explosion window; see :attr:`photometry_pre_window`.
+        """
+        self._photometry_pre_window = self._validate_photometry_window(
+            photometry_pre_window, name="photometry_pre_window", allow_zero=True
+        )
+
+    @property
+    def photometry_post_window(self) -> Quantity:
+        """
+        ~astropy.units.Quantity: How far after explosion `Event.simulate_photometry` evaluates `sed`.
+
+        Passed straight through to
+        `~uvex_transients.simulation.event.Event.__init__`'s `photometry_post_window`;
+        observations past it get background/non-detection photometry instead of `sed`
+        evaluation, the same as before `t=0`. Tracks `duration_limit` (including any
+        later change to it) until set explicitly here, at which point it's decoupled --
+        the same relationship `Event.__init__` itself has between the two parameters.
+        """
+        return self._duration_limit if self._photometry_post_window is None else self._photometry_post_window
+
+    @photometry_post_window.setter
+    def photometry_post_window(self, photometry_post_window: Quantity) -> None:
+        """
+        Set how far after explosion `Event.simulate_photometry` evaluates `sed`.
+
+        Parameters
+        ----------
+        photometry_post_window : ~astropy.units.Quantity
+            The new post-explosion window; see :attr:`photometry_post_window`.
+        """
+        self._photometry_post_window = self._validate_photometry_window(
+            photometry_post_window, name="photometry_post_window", allow_zero=False
+        )
+
+    @staticmethod
+    def _validate_photometry_window(window: Quantity, *, name: str, allow_zero: bool) -> Quantity:
+        """
+        Validate a candidate `photometry_pre_window`/`photometry_post_window`, shared by both setters.
+
+        Parameters
+        ----------
+        window : ~astropy.units.Quantity
+            The candidate value to validate.
+        name : str
+            Which property this is for, used only to phrase the error message.
+        allow_zero : bool
+            Whether ``0`` is an acceptable value (true for `photometry_pre_window`,
+            since "no pre-explosion window" is its own default; false for
+            `photometry_post_window`, which -- like `duration_limit` -- must bound a
+            strictly positive span).
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            `window`, unchanged.
+
+        Raises
+        ------
+        TypeError
+            If `window` is not a Quantity with time units.
+        ValueError
+            If `window` is not finite, or isn't within the bound `allow_zero` implies.
+        """
+        if not isinstance(window, Quantity) or window.unit.physical_type != "time":
+            raise TypeError(f"`{name}` must be an astropy Quantity with time units, not {type(window)!r}.")
+
+        if not np.isfinite(window) or (window < 0 if allow_zero else window <= 0):
+            bound = "non-negative" if allow_zero else "positive"
+            raise ValueError(f"`{name}` must be finite and {bound}, got {window!r}.")
+
+        return window
 
 
 # =========================================================================== #

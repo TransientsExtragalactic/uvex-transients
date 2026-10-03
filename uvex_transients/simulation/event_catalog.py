@@ -24,6 +24,7 @@ from tqdm.auto import tqdm
 from uvex_transients.utils import logger
 
 from ..surveys.base import SurveySchedule
+from ..surveys.footprints import SurveyFootprint, default_registry
 from ..transients.base import ExtragalacticTransient, TransientBase
 from ._stats import clopper_pearson_interval
 from .event import Event
@@ -175,6 +176,30 @@ class EventCatalog:
     # ----------------------------------------- #
     # Event Reconstruction                      #
     # ----------------------------------------- #
+    def in_footprint(self, footprint: SurveyFootprint | str) -> np.ndarray:
+        """
+        Mask of events whose sky position lies inside a footprint.
+
+        One vectorized MOC lookup over every event, so no per-event loop is needed.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint or its registered name (e.g. ``"lsst:combined"``).
+
+        Returns
+        -------
+        numpy.ndarray
+            Boolean mask, shape ``(n_events,)``, aligned with the catalog rows. Use it to
+            index :attr:`table` or any per-event array.
+
+        Raises
+        ------
+        KeyError
+            If `footprint` is a name that is not registered.
+        """
+        return default_registry.resolve(footprint).contains_skycoord(self.coord)
+
     def get_events(
         self,
         ids: int | np.ndarray | list,
@@ -229,11 +254,12 @@ class EventCatalog:
             if name not in transients:
                 raise KeyError(f"No transient type {name!r} in 'transients'; available: {list(transients)}.")
 
+            transient = transients[name]
             events.append(
                 Event(
                     event_id=int(row["event_id"]),
                     schedule=schedule,
-                    transient=transients[name],
+                    transient=transient,
                     coord=row["coord"],
                     redshift=float(row["redshift"]),
                     t_explosion=row["t_explosion"],
@@ -241,6 +267,12 @@ class EventCatalog:
                     luminosity_distance=row["luminosity_distance"] if has_distance else None,
                     ebv=float(row["ebv"]) if has_ebv else None,
                     transient_type=name,
+                    # Each transient type's own settings (see
+                    # `TransientBase.photometry_pre_window`/`photometry_post_window`) --
+                    # not a fixed default -- so a config's per-class override actually
+                    # reaches `Event.simulate_photometry`.
+                    photometry_pre_window=transient.photometry_pre_window,
+                    photometry_post_window=transient.photometry_post_window,
                 )
             )
 
@@ -418,7 +450,7 @@ class EventCatalog:
         ``uvex_intrinsic_rate``, ``uvex_intrinsic_events``) carries the rate-only bounds implied by
         each transient's own ``RATE_CI`` as ``..._lower``/``..._upper`` columns -- these collapse to
         the point estimate when ``RATE_CI`` is unset, exactly like
-        `~uvex_transients.transients.base.ExtragalacticTransient.rate_ci` itself.
+        `~uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_ci` itself.
 
         ``detection_probability`` and ``expected_detections`` each carry *two* separate two-sided
         intervals rather than one combined box (:ref:`yield-statistics`'s "simulation-only" vs.
@@ -638,3 +670,40 @@ class EventCatalog:
             seed=meta.pop("seed", None),
             downsample=meta.pop("downsample", None),
         )
+
+
+def _default_example_catalog_path() -> Path:
+    import uvex_transients
+
+    return Path(uvex_transients.__file__).parent.parent / "test_data" / "simulation" / "example_event_catalog.ecsv"
+
+
+def get_example_event_catalog(path: Union[str, Path, None] = None) -> EventCatalog:
+    """
+    Load the packaged example `EventCatalog`, so docs/examples don't have to resample one.
+
+    The packaged catalog (``test_data/simulation/example_event_catalog.ecsv``) is a raw
+    (pre-cut) catalog of 598 events -- 344 `~uvex_transients.transients.supernovae.MagnetarSLSNe`
+    ("slsn") and 254 `~uvex_transients.transients.TDEs.TidalDisruptionEvent` ("tde") -- generated
+    once against the default schedule (see `~uvex_transients.surveys.get_schedule`) with
+    ``simulation_seed=42``, ``time_bins=10``, ``nside=32``, ``downsample=500``. Sphinx gallery
+    examples that only need a representative catalog to demonstrate a cut/action on can load this
+    instead of re-running `SurveySimulator.generate_events` -- a nontrivial Monte Carlo draw --
+    on every doc build.
+
+    Parameters
+    ----------
+    path : str or ~pathlib.Path, optional
+        Path to the catalog file. If `None` (the default), uses the packaged
+        ``test_data/simulation/example_event_catalog.ecsv``.
+
+    Returns
+    -------
+    EventCatalog
+        The packaged example catalog.
+
+    See Also
+    --------
+    EventCatalog.from_disk : The general-purpose loader this delegates to.
+    """
+    return EventCatalog.from_disk(path if path is not None else _default_example_catalog_path())

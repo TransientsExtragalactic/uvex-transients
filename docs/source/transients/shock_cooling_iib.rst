@@ -225,7 +225,7 @@ other transient pages in this section for that kind of analysis.
    fig, axes = plt.subplots(1, len(param_draws), figsize=(11, 5), sharey=True)
 
    for ax, params in zip(axes, param_draws):
-       t_rubin = np.arrange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+       t_rubin = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
        phot_rubin = sed.simulate_photometry(
            t_rubin, RUBIN_EXPTIME, rubin.detector, coord,
            bands=RUBIN_BANDS, background=SkyBackground.medium(),
@@ -233,7 +233,7 @@ other transient pages in this section for that kind of analysis.
            sys_err=RUBIN_SIGMA_SYS, rng=0, **params,
        )
 
-       t_uvex = np.arrange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+       t_uvex = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
        phot_uvex = sed.simulate_photometry(
            t_uvex, UVEX_EXPTIME, uvex.detector, coord,
            background=GalacticBackground(),

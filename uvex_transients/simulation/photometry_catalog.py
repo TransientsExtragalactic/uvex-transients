@@ -36,9 +36,9 @@ class PhotometryCatalog:
     """QTable: One row per ``(event, observation, band)``.
 
     Columns are exactly `~uvex_transients.simulation.event.Event.simulate_photometry`'s own
-    schema: ``event_id``, ``obs_time``, ``exptime``, ``band``, ``snr``, ``flux``/``flux_err``
-    (Jy), ``flux_upper``/``flux_lower`` (Jy), ``ab_mag``/``mag_err``, and
-    ``mag_upper``/``mag_lower``.
+    schema: ``event_id``, ``obs_time``, ``rel_time``, ``exptime``, ``band``, ``snr`` (the
+    measured SNR), ``flux``/``flux_err`` (Jy), ``flux_upper``/``flux_lower`` (Jy),
+    ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower``, and ``in_model``.
     """
 
     # ----------------------------------------- #
@@ -93,7 +93,7 @@ class PhotometryCatalog:
 
     @property
     def snr(self) -> np.ndarray:
-        """numpy.ndarray: Each row's signal-to-noise ratio."""
+        """numpy.ndarray: Each row's measured signal-to-noise ratio, ``flux / flux_err``."""
         return self.column("snr")
 
     @property
@@ -232,7 +232,7 @@ class PhotometryCatalog:
             Transient-type instances, keyed the same way as `event_catalog.transient_type` and
             `exposure.transient_type`; supplies each type's `RATE_CI`.
         snr_threshold : float
-            An epoch counts as detected if at least one band's ``snr`` exceeds this value.
+            An epoch counts as detected if at least one band's measured ``snr`` exceeds this value.
         confidence : float, optional
             Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.
 
@@ -276,7 +276,15 @@ class PhotometryCatalog:
         n_detections = np.zeros(len(all_ids), dtype=np.int64)
         id_to_index = {int(eid): i for i, eid in enumerate(all_ids)}
 
+        # Background/non-detection rows (`in_model == False`, from a transient's
+        # `photometry_pre_window`/`photometry_post_window` -- see
+        # `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real
+        # source to detect; their measured `snr` is pure noise around a true flux of zero, and
+        # excluding them here is the only thing standing between that noise and this
+        # table's detection counts/yields.
         phot = self.table
+        if "in_model" in phot.colnames:
+            phot = phot[np.asarray(phot["in_model"])]
         if len(phot) > 0:
             event_ids = np.asarray(phot["event_id"], dtype=np.int64)
             obs_jd = np.asarray(phot["obs_time"].jd, dtype=np.float64)
