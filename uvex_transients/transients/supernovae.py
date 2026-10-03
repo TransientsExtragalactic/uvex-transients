@@ -70,9 +70,15 @@ def _combine_fractional_errors(*errors: tuple[float, float]) -> tuple[float, flo
 
 
 def _fractional_error_to_rate_ci(error: tuple[float, float]) -> tuple[float, float]:
-    """Convert a ``(lower, upper)`` fractional error into `RATE_CI`-style multiplicative bounds."""
+    """
+    Convert a ``(lower, upper)`` fractional error into `RATE_CI`-style multiplicative bounds.
+
+    The lower bound is floored at zero: a rate cannot be negative, but a fractional lower error of
+    100% or more (e.g. a measured fraction whose published lower bound is itself zero, once combined
+    in quadrature with any other term) would otherwise give a negative multiplicative bound.
+    """
     lower, upper = error
-    return 1.0 - lower, 1.0 + upper
+    return max(0.0, 1.0 - lower), 1.0 + upper
 
 
 # ------------------------------------------------------------------------------------------- #
