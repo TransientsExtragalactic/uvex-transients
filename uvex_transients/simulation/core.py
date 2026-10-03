@@ -2786,7 +2786,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         Parameters
         ----------
         catalog : EventCatalog
-            The full per-type event list `photometry` was computed over.
+            The full, freshly-sampled per-type event list (`generate_events`'s own output), *not* a
+            cut catalog: its per-type row count is the detection efficiency's denominator, so
+            passing a post-cut catalog inflates `expected_events` by roughly ``1/efficiency``.
+            `photometry` may cover only a subset of it; the rest count as ``N_det = 0``.
         exposure : ExposureCatalog
             Typically `compute_effective_exposure`'s own output.
         photometry : PhotometryCatalog or ~astropy.table.QTable
@@ -2814,7 +2817,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         .. code-block:: python
 
             counts = simulator.run_detection_counts_action(
-                catalog=detected,
+                catalog=sampled,
                 exposure=exposure,
                 photometry=photometry,
                 mission=mission,

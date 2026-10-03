@@ -75,7 +75,10 @@ generate:
 # `PhotometryCatalog.compute_detection_count_table`): per transient type, the
 # expected number of UVEX events detected in >= k SNR-qualifying epochs.
 # `snr_threshold` matches `snr_screen` above so this table's k=1 row
-# reproduces `yield`'s own `detected_events`/`expected_detections`. `yield`'s
+# reproduces `yield`'s own `detected_events`/`expected_detections`.
+# `detection_counts` takes the full, pre-cut `baseline` catalog (like `yield`'s
+# `raw:`), NOT `snr_screen`: its `n_total` is the efficiency's denominator, so
+# a post-cut catalog would inflate every `expected_events` by ~1/efficiency. `yield`'s
 # and `detection_counts`' explicit `checkpoint:` filenames
 # (`yield_summary.ecsv`/`detection_counts.ecsv`) are load-bearing: they feed
 # the website's automated report page (see `docs/source/_report_gen.py`),
@@ -124,7 +127,7 @@ steps:
     type: action
     action: detection_counts
     inputs:
-      catalog: snr_screen
+      catalog: baseline
       exposure: exposure
       photometry: phot
     params:

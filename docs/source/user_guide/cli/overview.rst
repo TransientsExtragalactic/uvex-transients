@@ -551,7 +551,7 @@ any other artifact:
       - id: counts
         type: action
         action: detection_counts
-        inputs: {catalog: snr_screen, exposure: exposure, photometry: phot}
+        inputs: {catalog: baseline, exposure: exposure, photometry: phot}
         params: {snr_threshold: 5.0}
 
 Checkpointing

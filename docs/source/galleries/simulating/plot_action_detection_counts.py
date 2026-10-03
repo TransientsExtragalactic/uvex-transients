@@ -49,8 +49,9 @@ photometry = simulator.run_photometry_action(catalog=mag_filtered, mission=uvex)
 # The detection-count table
 # -------------------------------
 
+# `catalog` is the full sampled catalog, not `mag_filtered`: its size is the efficiency's denominator.
 counts = simulator.run_detection_counts_action(
-    catalog=mag_filtered,
+    catalog=catalog,
     exposure=exposure,
     photometry=photometry,
     mission=uvex,
