@@ -4,8 +4,8 @@ Shared plotting infrastructure for uvex_transients.
 Two layers live here:
 
 - **General infrastructure** (`resolve_fig_axes`, `set_plot_style`, `get_default_cmap`, `get_cmap`,
-  `get_band_color`) that every plotting function in the package and docs gallery is expected to go
-  through, so that figure size, style, and color choices come from one place --
+  `get_band_color`, `get_categorical_colors`) that every plotting function in the package and docs gallery is
+  expected to go through, so that figure size, style, and color choices come from one place --
   ``config["plotting.*"]`` -- rather than being repeated (and drifting) at each call site.
 - **Reusable generators** for the plot shapes that recur throughout the docs gallery: a full-sky
   HEALPix map plus its pooled histogram (`plot_healpix_map`/`plot_histogram`, both driven by
@@ -34,7 +34,8 @@ themselves, as two visually distinct error layers on the same `matplotlib.axes.A
 """
 
 import zlib
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 
 import astropy.units as u
 import numpy as np
@@ -42,11 +43,15 @@ from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, to_rgba
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
+from mocpy import MOC
 from numpy.typing import NDArray
 
 from ..simulation._stats import clopper_pearson_interval
 from . import resolve_healpix_resolution
 from .config import config
+
+if TYPE_CHECKING:
+    from ..surveys.footprints.base import SurveyFootprint
 
 __all__ = [
     "resolve_fig_axes",
@@ -54,7 +59,9 @@ __all__ = [
     "get_default_cmap",
     "get_cmap",
     "get_band_color",
+    "get_categorical_colors",
     "plot_healpix_map",
+    "plot_footprints",
     "plot_histogram",
     "plot_band_light_curve",
     "compute_funnel_bounds",
@@ -234,6 +241,36 @@ def get_band_color(band: str) -> str:
     return to_rgba(cmap(digest % 997 / 997))
 
 
+def get_categorical_colors(n: int) -> list[str]:
+    """
+    Return the first `n` colors of ``config["plotting.categorical_colors"]``.
+
+    Colors are assigned in fixed order and never cycled, so a given group keeps its color as long as
+    it keeps its position. The first three are distinguishable in any pairing, including under
+    color-vision deficiency; past that, pair the colors with a legend or labels.
+
+    Parameters
+    ----------
+    n : int
+        Number of colors needed.
+
+    Returns
+    -------
+    list of str
+        Hex color strings.
+
+    Raises
+    ------
+    ValueError
+        If `n` exceeds the number of configured colors; fold the extra groups into an "other" group
+        or split them across several plots instead.
+    """
+    colors = config["plotting.categorical_colors"]
+    if n > len(colors):
+        raise ValueError(f"Only {len(colors)} categorical colors are defined, but {n} were requested.")
+    return list(colors[:n])
+
+
 # ============================================================================== #
 # Reusable Generators                                                            #
 # ============================================================================== #
@@ -312,6 +349,75 @@ def plot_healpix_map(
     )
     ax.grid(True)
     fig.colorbar(sc, label=cbar_label, pad=0.05, shrink=0.7)
+    if title is not None:
+        ax.set_title(title)
+    return fig, ax
+
+
+def plot_footprints(
+    footprints: Mapping[str, "SurveyFootprint | MOC"],
+    *,
+    nside: int = 128,
+    title: str | None = None,
+    colors: Sequence | None = None,
+    fig: Figure | None = None,
+    ax: Axes | None = None,
+    fig_size: tuple = (10, 6.5),
+    s: float = 4,
+) -> tuple[Figure, Axes]:
+    """
+    Aitoff map of several survey footprints, each in its own color with its area in the legend.
+
+    Footprints are drawn in the order given, so later ones sit on top of earlier ones. Each is
+    sampled on a HEALPix grid, so regions much smaller than a pixel will not show.
+
+    Parameters
+    ----------
+    footprints : mapping of str to SurveyFootprint or mocpy.MOC
+        Legend label for each footprint.
+    nside : int, optional
+        HEALPix resolution of the sampling grid. Default 128 (~0.46 degree pixels).
+    title : str, optional
+        Axes title.
+    colors : sequence of color, optional
+        One color per footprint. Defaults to `get_categorical_colors`.
+    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes, optional
+        Existing figure/axes to draw onto, via `resolve_fig_axes`; `ax`, if given, must already carry
+        an ``"aitoff"`` projection.
+    fig_size : tuple, optional
+        Passed to `resolve_fig_axes` when creating a new figure.
+    s : float, optional
+        Marker size, forwarded to `~matplotlib.axes.Axes.scatter`.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The resolved figure.
+    ax : matplotlib.axes.Axes
+        The aitoff-projected axes the footprints were drawn onto.
+    """
+    import astropy_healpix as ah
+
+    set_plot_style()
+    if colors is None:
+        colors = get_categorical_colors(len(footprints))
+
+    hpx = ah.HEALPix(nside=nside, order="nested", frame="icrs")
+    lon, lat = hpx.healpix_to_lonlat(np.arange(hpx.npix))
+    x, y = lon.wrap_at(180 * u.deg).radian, lat.radian
+    full_sky = (4 * np.pi * u.sr).to_value(u.deg**2)
+
+    fig, ax = resolve_fig_axes(fig, ax, fig_size, subplot_kw={"projection": "aitoff"})
+    handles = []
+    for (label, footprint), color in zip(footprints.items(), colors, strict=False):
+        moc = getattr(footprint, "moc", footprint)
+        inside = moc.contains_lonlat(lon, lat)
+        ax.scatter(x[inside], y[inside], color=color, s=s, rasterized=True)
+        handles.append(Patch(color=color, label=f"{label} ({moc.sky_fraction * full_sky:,.0f} deg$^2$)"))
+
+    ax.grid(True, color="0.8", linewidth=0.5, zorder=0)
+    ax.tick_params(colors="0.35")
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.08), ncol=2, frameon=False)
     if title is not None:
         ax.set_title(title)
     return fig, ax

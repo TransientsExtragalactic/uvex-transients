@@ -12,6 +12,7 @@ import astropy.units as u
 import numpy as np
 import pytest
 from astropy.table import QTable
+from mocpy import MOC
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
@@ -22,10 +23,12 @@ from uvex_transients.utils.plotting import (
     add_funnel_legend,
     compute_funnel_bounds,
     get_band_color,
+    get_categorical_colors,
     get_cmap,
     get_default_cmap,
     plot_band_light_curve,
     plot_detection_funnel,
+    plot_footprints,
     plot_healpix_map,
     plot_histogram,
     plot_rate_bars,
@@ -160,6 +163,19 @@ class TestGetBandColor:
         assert len(colors) > 1
 
 
+class TestGetCategoricalColors:
+    """Tests for `get_categorical_colors`."""
+
+    def test_returns_a_stable_prefix_of_the_configured_colors(self):
+        """Colors are assigned in fixed order, so asking for fewer is a prefix of asking for more."""
+        assert get_categorical_colors(5)[:3] == get_categorical_colors(3)
+
+    def test_refuses_to_cycle(self):
+        """Asking for more colors than are configured raises rather than repeating colors."""
+        with pytest.raises(ValueError, match="categorical colors"):
+            get_categorical_colors(len(config["plotting.categorical_colors"]) + 1)
+
+
 class TestPlotHealpixMap:
     """Tests for `plot_healpix_map`."""
 
@@ -180,6 +196,21 @@ class TestPlotHealpixMap:
         values[0] = 1.0
         values[1] = 10.0
         fig, ax = plot_healpix_map(values, nside=nside)
+        plt.close(fig)
+
+
+class TestPlotFootprints:
+    """Tests for `plot_footprints`."""
+
+    def test_legend_lists_each_footprint_with_its_area(self):
+        """Each footprint (a MOC, or anything with a ``.moc``) gets a legend entry carrying its area."""
+        north = MOC.from_cone(lon=0 * u.deg, lat=90 * u.deg, radius=10 * u.deg, max_depth=6)
+        wrapper = type("Footprint", (), {"moc": north})()
+        fig, ax = plot_footprints({"a": north, "b": wrapper}, nside=16, title="t")
+        labels = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert ax.name == "aitoff"
+        assert len(labels) == 2
+        assert labels[0].startswith("a (") and labels[1].startswith("b (")
         plt.close(fig)
 
 

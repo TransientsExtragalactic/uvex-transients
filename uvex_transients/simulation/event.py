@@ -27,6 +27,7 @@ from uvex_transients.utils import get_rng
 from uvex_transients.utils.keyed_noise import time_key
 
 from ..surveys.base import SurveySchedule
+from ..surveys.footprints import SurveyFootprint, default_registry
 from ..transients.base import TransientBase
 
 
@@ -300,6 +301,29 @@ class Event:
     def n_observations(self) -> int:
         """int: Number of candidate observations (``len(observations)``)."""
         return len(self._observations)
+
+    def in_footprint(self, footprint: SurveyFootprint | str) -> bool:
+        """
+        Whether this event's sky position lies inside a footprint.
+
+        For many events use `EventCatalog.in_footprint`, which does one vectorized lookup.
+
+        Parameters
+        ----------
+        footprint : SurveyFootprint or str
+            A footprint or its registered name (e.g. ``"lsst:combined"``).
+
+        Returns
+        -------
+        bool
+            `True` if the event is inside the footprint.
+
+        Raises
+        ------
+        KeyError
+            If `footprint` is a name that is not registered.
+        """
+        return bool(default_registry.resolve(footprint).contains_skycoord(self.coord)[0])
 
     # ------------------------------ #
     # Parameters                     #
