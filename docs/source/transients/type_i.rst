@@ -216,7 +216,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIaSNe
 
          rng = np.random.default_rng(20260923)
@@ -268,7 +268,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIaSNe
          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
@@ -521,7 +521,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIbSNe
 
          rng = np.random.default_rng(20260918)
@@ -572,7 +572,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIbSNe
          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
@@ -814,7 +814,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIcSNe
 
          rng = np.random.default_rng(20260918)
@@ -865,7 +865,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIcSNe
          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
@@ -1112,7 +1112,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIcBLSNe
 
          rng = np.random.default_rng(20260924)
@@ -1163,7 +1163,7 @@ are implemented as sibling transient classes below.
          import matplotlib.pyplot as plt
          from astropy import units as u
 
-         from m4opt.missions import uvex
+         from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIcBLSNe
          from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 

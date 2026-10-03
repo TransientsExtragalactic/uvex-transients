@@ -14,11 +14,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import m4opt.missions
 from astropy import units as u
 from astropy.units import Quantity
 from m4opt.missions import Mission
 
+from uvex_transients.missions import get_mission
 from uvex_transients.models.core.priors import Prior
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.simulation.logical_ops import LOGICAL_OP_ARITY
@@ -81,12 +81,15 @@ def _parse_quantity(value: Any, default_unit: u.UnitBase) -> Quantity:
 
 def _resolve_mission(name: str) -> Mission:
     """
-    Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance.
+    Resolve a mission name (e.g. ``"uvex"`` or ``"uvex_fast"``) to its `m4opt.missions.Mission`.
+
+    Defers to `uvex_transients.missions.get_mission`, so the registered downsampled missions
+    resolve and the ``missions.downsample`` configuration applies.
 
     Parameters
     ----------
     name : str
-        The mission's attribute name in `m4opt.missions`.
+        A mission attribute name in `m4opt.missions`, or a registered fast mission name.
 
     Returns
     -------
@@ -96,13 +99,9 @@ def _resolve_mission(name: str) -> Mission:
     Raises
     ------
     ValueError
-        If `name` is not a known `m4opt.missions.Mission` attribute.
+        If `name` is not a known mission.
     """
-    mission = getattr(m4opt.missions, name, None)
-    if not isinstance(mission, Mission):
-        available = sorted(attr for attr, value in vars(m4opt.missions).items() if isinstance(value, Mission))
-        raise ValueError(f"Unknown mission {name!r}; available: {available}.")
-    return mission
+    return get_mission(name)
 
 
 def _resolve_schedule(section: Mapping) -> SurveySchedule:

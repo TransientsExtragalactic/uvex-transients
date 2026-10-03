@@ -35,8 +35,11 @@ schedule:
   name: uvex_initial_main
 
 # Which m4opt mission (bandpasses, detector, background) to simulate against.
-# Defaults to "uvex" if omitted entirely.
-mission: uvex
+# Defaults to "uvex" if omitted entirely. "uvex_fast" is uvex with its bandpass
+# tables downsampled to match thermal band integrals to within a set magnitude
+# tolerance (see the `missions.downsample` section of the package config); it is
+# far cheaper than the dense tables m4opt 3.1 ships.
+mission: uvex_fast
 
 # At least one transient type is required. Each entry needs a `class:` naming a
 # registered `TransientBase` subclass; everything else is optional. Uncomment

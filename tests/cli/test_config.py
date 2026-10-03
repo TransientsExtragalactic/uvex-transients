@@ -62,6 +62,14 @@ def test_mission_unknown_name_raises():
         _ = config.mission
 
 
+def test_mission_resolves_the_registered_fast_mission():
+    """`mission: uvex_fast` resolves to the bandpass-downsampled copy of `uvex`, not `uvex` itself."""
+    config = _config_from("mission: uvex_fast\n")
+    assert config.mission is not uvex
+    assert config.mission.name == "uvex_fast"
+    assert list(config.mission.detector.bandpasses) == list(uvex.detector.bandpasses)
+
+
 def test_transients_section_required():
     """A config with no `transients:` section raises when `.transients` is accessed."""
     config = _config_from("x: 1\n")

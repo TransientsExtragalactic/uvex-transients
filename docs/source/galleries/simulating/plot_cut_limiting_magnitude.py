@@ -8,9 +8,9 @@ sampled phase, ever clear a fixed magnitude limit?" It is meant to run first, on
 sampled catalog, before anything schedule-aware.
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe

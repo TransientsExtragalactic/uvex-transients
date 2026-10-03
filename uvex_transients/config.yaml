@@ -237,6 +237,27 @@ plotting:
 
 
 # ------------------------------- #
+# MISSION CONFIGURATION           #
+# ------------------------------- #
+missions:
+  # Bandpass downsampling (see uvex_transients.missions). Dense m4opt bandpass tables make every
+  # band-integrated quantity slow and memory hungry; a downsampled copy matches blackbody band
+  # integrals between t_min and t_max to within tol_mag. The registered "uvex_fast" mission is
+  # always downsampled with these settings.
+  downsample:
+    # Downsample every mission resolved by name (e.g. "uvex"), not only the registered fast ones.
+    enabled: false
+    # Largest tolerated band magnitude error over the verification temperatures.
+    tol_mag: 1.0e-3
+    # Temperature range (K) the downsampled bandpass must be accurate for. A cooler t_min or a
+    # smaller tol_mag keeps more points.
+    t_min: 1500.0
+    t_max: 50000.0
+    # Number of log-uniform blackbodies the downsampling is optimized on.
+    n_spec: 12
+
+
+# ------------------------------- #
 # SIMULATION CONFIGURATION        #
 # ------------------------------- #
 simulation:

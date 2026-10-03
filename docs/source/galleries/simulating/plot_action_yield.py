@@ -9,8 +9,7 @@ Action: Yield Summary
 both Monte Carlo and rate-normalization uncertainty kept separate.
 """
 
-from m4opt.missions import uvex
-
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe

@@ -329,7 +329,9 @@ original ``event_id`` values preserved rather than renumbered:
    :context:
    :include-source: true
 
-   from m4opt.missions import uvex
+   # ``uvex_fast`` is ``m4opt.missions.uvex`` with its dense bandpass tables downsampled (see
+   # ``uvex_transients.missions``); band integrals agree to about 1e-3 mag for thermal spectra.
+   from uvex_transients.missions import uvex_fast as uvex
 
    mission = uvex
    mag_filtered = simulator.filter_by_limiting_magnitude(catalog, mission, mag_limit=25.0)

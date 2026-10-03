@@ -56,6 +56,18 @@ Representation and validation of survey schedules.
 
     uvex_transients.surveys
 
+Missions
+--------
+Mission lookup, including ``uvex_fast``: the UVEX mission with its bandpass tables downsampled so
+band-integrated quantities are much cheaper, to within a stated magnitude tolerance for thermal
+spectra. Controlled by the ``missions.downsample`` section of the configuration.
+
+.. autosummary::
+    :toctree: _as_gen
+    :template: module.rst
+
+    uvex_transients.missions
+
 Command-Line Interface
 -----------------------
 The ``uvex-transients`` console script: a YAML-driven wrapper around

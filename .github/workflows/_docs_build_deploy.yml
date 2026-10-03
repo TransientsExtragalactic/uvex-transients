@@ -83,19 +83,17 @@ jobs:
           pip install --upgrade pip
           pip install -e .[docs]
 
-      # Actually build the documentation. We build serially (`-j 1`): the
-      # `.. plot::` blocks run the real simulator (and load the Planck dust map)
-      # inside Sphinx's read phase, and with `-j auto` several workers did that
-      # at once, which killed the runner mid-build ("received a shutdown
-      # signal"). An explicit `-d` keeps the doctree cache above outside the
-      # published HTML tree.
+      # Actually build the documentation. We use the `-j auto` flag to
+      # allow Sphinx to use all available CPU cores for faster builds, and an
+      # explicit `-d` so the doctree cache above lands outside the published
+      # HTML tree.
       - name: Build documentation with Sphinx
         env:
           SPHINX_VERSION_MATCH: ${{ inputs.version_match || inputs.destination_dir }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p docs/_build/html
-          sphinx-build -b html -j 1 -d docs/_build/doctrees docs/source docs/_build/html
+          sphinx-build -b html -j auto -d docs/_build/doctrees docs/source docs/_build/html
 
       # ---------------------------------------------------------
       # 1️⃣ Deploy this build (dev or vX.Y.Z)

@@ -9,9 +9,9 @@ type registered (e.g. to compare their yields, or to run a further cut against o
 one), since every other cut screens whatever types are present without regard to type.
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe, TypeIaSNe

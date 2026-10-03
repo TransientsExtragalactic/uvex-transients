@@ -9,9 +9,9 @@ epochs, for every :math:`k`. It generalizes
 detected-or-not split (its :math:`k=1` row) to the full distribution of visit counts.
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe

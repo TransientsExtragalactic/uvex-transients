@@ -10,9 +10,9 @@ intrinsic-plus-distance screen, distinct from
 (which folds dust in and checks a shared phase grid rather than each event's own peak).
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe
