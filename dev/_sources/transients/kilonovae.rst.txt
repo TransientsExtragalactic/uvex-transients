@@ -199,7 +199,7 @@ the UVEX 1 Dwell limit of :math:`m<24.5` overplotted. Findings here justify our 
     from astropy import units as u
     from scipy.stats import gaussian_kde
 
-    from m4opt.missions import uvex
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.transients.kilonovae import Kilonova
     from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED as SEDClass
 
@@ -258,7 +258,7 @@ in comoving volume out to :math:`z=0.2`:
     import matplotlib.pyplot as plt
     from astropy import units as u
 
-    from m4opt.missions import uvex
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.transients.kilonovae import Kilonova
     from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 

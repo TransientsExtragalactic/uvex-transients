@@ -27,13 +27,12 @@ Action: Yield Summary
 `~uvex_transients.simulation.yield_table.YieldTable`: expected detection counts, with
 both Monte Carlo and rate-normalization uncertainty kept separate.
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-31
+.. GENERATED FROM PYTHON SOURCE LINES 11-30
 
 .. code-block:: Python
 
 
-    from m4opt.missions import uvex
-
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.simulation.core import SurveySimulator
     from uvex_transients.surveys import get_schedule
     from uvex_transients.transients.supernovae import MagnetarSLSNe
@@ -58,7 +57,7 @@ both Monte Carlo and rate-normalization uncertainty kept separate.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-39
+.. GENERATED FROM PYTHON SOURCE LINES 31-38
 
 Building the three inputs
 -------------------------------
@@ -68,7 +67,7 @@ Building the three inputs
 from :meth:`~uvex_transients.simulation.core.SurveySimulator.compute_effective_exposure`,
 not from either catalog.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-45
+.. GENERATED FROM PYTHON SOURCE LINES 38-44
 
 .. code-block:: Python
 
@@ -86,22 +85,22 @@ not from either catalog.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.66s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.66s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.61s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.61s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.31bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.36s/bin, bin=10/10, type=slsn]
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2603: RuntimeWarning: divide by zero encountered in log
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.56s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.56s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.57s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.57s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.65s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.65s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.69bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
       return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.71s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.71s/chunk, chunk=1/1, type=slsn]
-    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.04s/chunk, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.04s/chunk, type=slsn]
-    Tabulating effective exposure:   0%|          | 0/10 [00:00<?, ?bin/s]    Tabulating effective exposure:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Tabulating effective exposure:  10%|█         | 1/10 [00:00<00:00, 26.66bin/s, bin=2/10, type=slsn]    Tabulating effective exposure:  20%|██        | 2/10 [00:00<00:00, 26.64bin/s, bin=3/10, type=slsn]    Tabulating effective exposure:  30%|███       | 3/10 [00:00<00:00, 26.59bin/s, bin=3/10, type=slsn]    Tabulating effective exposure:  30%|███       | 3/10 [00:00<00:00, 26.59bin/s, bin=4/10, type=slsn]    Tabulating effective exposure:  40%|████      | 4/10 [00:00<00:00, 26.59bin/s, bin=5/10, type=slsn]    Tabulating effective exposure:  50%|█████     | 5/10 [00:00<00:00, 26.59bin/s, bin=6/10, type=slsn]    Tabulating effective exposure:  60%|██████    | 6/10 [00:00<00:00, 26.49bin/s, bin=6/10, type=slsn]    Tabulating effective exposure:  60%|██████    | 6/10 [00:00<00:00, 26.49bin/s, bin=7/10, type=slsn]    Tabulating effective exposure:  70%|███████   | 7/10 [00:00<00:00, 26.49bin/s, bin=8/10, type=slsn]    Tabulating effective exposure:  80%|████████  | 8/10 [00:00<00:00, 26.49bin/s, bin=9/10, type=slsn]    Tabulating effective exposure:  90%|█████████ | 9/10 [00:00<00:00, 26.77bin/s, bin=9/10, type=slsn]    Tabulating effective exposure:  90%|█████████ | 9/10 [00:00<00:00, 26.77bin/s, bin=10/10, type=slsn]    Tabulating effective exposure: 100%|██████████| 10/10 [00:00<00:00, 26.74bin/s, bin=10/10, type=slsn]
+    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.24s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.24s/chunk, chunk=1/1, type=slsn]
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.33s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.33s/chunk, type=slsn]
+    Tabulating effective exposure:   0%|          | 0/10 [00:00<?, ?bin/s]    Tabulating effective exposure:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Tabulating effective exposure:  10%|█         | 1/10 [00:00<00:00, 27.56bin/s, bin=2/10, type=slsn]    Tabulating effective exposure:  20%|██        | 2/10 [00:00<00:00, 27.68bin/s, bin=3/10, type=slsn]    Tabulating effective exposure:  30%|███       | 3/10 [00:00<00:00, 27.72bin/s, bin=3/10, type=slsn]    Tabulating effective exposure:  30%|███       | 3/10 [00:00<00:00, 27.72bin/s, bin=4/10, type=slsn]    Tabulating effective exposure:  40%|████      | 4/10 [00:00<00:00, 27.72bin/s, bin=5/10, type=slsn]    Tabulating effective exposure:  50%|█████     | 5/10 [00:00<00:00, 27.72bin/s, bin=6/10, type=slsn]    Tabulating effective exposure:  60%|██████    | 6/10 [00:00<00:00, 27.72bin/s, bin=6/10, type=slsn]    Tabulating effective exposure:  60%|██████    | 6/10 [00:00<00:00, 27.72bin/s, bin=7/10, type=slsn]    Tabulating effective exposure:  70%|███████   | 7/10 [00:00<00:00, 27.72bin/s, bin=8/10, type=slsn]    Tabulating effective exposure:  80%|████████  | 8/10 [00:00<00:00, 27.72bin/s, bin=9/10, type=slsn]    Tabulating effective exposure:  90%|█████████ | 9/10 [00:00<00:00, 27.76bin/s, bin=9/10, type=slsn]    Tabulating effective exposure:  90%|█████████ | 9/10 [00:00<00:00, 27.76bin/s, bin=10/10, type=slsn]    Tabulating effective exposure: 100%|██████████| 10/10 [00:00<00:00, 27.75bin/s, bin=10/10, type=slsn]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-48
+.. GENERATED FROM PYTHON SOURCE LINES 45-47
 
 The yield table
 --------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-59
+.. GENERATED FROM PYTHON SOURCE LINES 47-58
 
 .. code-block:: Python
 
@@ -126,8 +125,8 @@ The yield table
 
     transient_type uvex_intrinsic_events detected_events expected_detections
     -------------- --------------------- --------------- -------------------
-              slsn    168524.60050291868             223  11115.346321251367
-    slsn: expected 11115 (+1256/-1161) detections over the whole survey.
+              slsn    168524.60050291868             222  11065.501718913914
+    slsn: expected 11066 (+1253/-1158) detections over the whole survey.
 
 
 
@@ -135,7 +134,7 @@ The yield table
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 18.979 seconds)
+   **Total running time of the script:** (0 minutes 22.468 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_action_yield.py:

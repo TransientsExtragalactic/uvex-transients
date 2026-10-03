@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from astropy import units as u
 from scipy.stats import gaussian_kde
 
-from m4opt.missions import uvex
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.supernovae import TypeIIPExcessSNe
 from uvex_transients.models.supernovae import TypeIIPExcessSED
 

@@ -9,9 +9,9 @@ analog of :meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_peak
 :meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_peak_flux`.
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe

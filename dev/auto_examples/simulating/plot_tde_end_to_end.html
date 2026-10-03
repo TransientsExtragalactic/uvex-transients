@@ -549,9 +549,9 @@ We’ll also want to get the TDE class configured and load the simulator.</p>
 </div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="w">
-</span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span><span class="w">
 </span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex_fast</span> <span class="k">as</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">simulation</span><span class="nn">.</span><span class="nn">core</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.SurveySimulator"><span class="n">SurveySimulator</span></a><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">transients</span><span class="nn">.</span><span class="nn">TDEs</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-transients-TDEs sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.html#uvex_transients.transients.TDEs.TidalDisruptionEvent" title="uvex_transients.transients.TDEs.TidalDisruptionEvent"><span class="n">TidalDisruptionEvent</span></a><span class="w">
@@ -592,45 +592,45 @@ at a later point in the analysis.</p>
 </span></pre></div></div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Generating events:   0%|          | 0/20 [00:00&lt;?, ?bin/s]
 Generating events:   0%|          | 0/20 [00:00&lt;?, ?bin/s, bin=1/20, type=tde]
-Generating events:   5%|▌         | 1/20 [00:11&lt;03:43, 11.75s/bin, bin=1/20, type=tde]
-Generating events:   5%|▌         | 1/20 [00:11&lt;03:43, 11.75s/bin, bin=2/20, type=tde]
-Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.94s/bin, bin=2/20, type=tde]
-Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.94s/bin, bin=3/20, type=tde]
-Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.75s/bin, bin=3/20, type=tde]
-Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.75s/bin, bin=4/20, type=tde]
+Generating events:   5%|▌         | 1/20 [00:11&lt;03:42, 11.72s/bin, bin=1/20, type=tde]
+Generating events:   5%|▌         | 1/20 [00:11&lt;03:42, 11.72s/bin, bin=2/20, type=tde]
+Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.92s/bin, bin=2/20, type=tde]
+Generating events:  10%|█         | 2/20 [00:11&lt;01:28,  4.92s/bin, bin=3/20, type=tde]
+Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.74s/bin, bin=3/20, type=tde]
+Generating events:  15%|█▌        | 3/20 [00:12&lt;00:46,  2.74s/bin, bin=4/20, type=tde]
 Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.72s/bin, bin=4/20, type=tde]
 Generating events:  20%|██        | 4/20 [00:12&lt;00:27,  1.72s/bin, bin=5/20, type=tde]
 Generating events:  25%|██▌       | 5/20 [00:12&lt;00:17,  1.15s/bin, bin=5/20, type=tde]
 Generating events:  25%|██▌       | 5/20 [00:12&lt;00:17,  1.15s/bin, bin=6/20, type=tde]
-Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.23bin/s, bin=6/20, type=tde]
-Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.23bin/s, bin=7/20, type=tde]
-Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.68bin/s, bin=7/20, type=tde]
-Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.68bin/s, bin=8/20, type=tde]
-Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.21bin/s, bin=8/20, type=tde]
-Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.21bin/s, bin=9/20, type=tde]
-Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.79bin/s, bin=9/20, type=tde]
-Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.79bin/s, bin=10/20, type=tde]
-Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.40bin/s, bin=10/20, type=tde]
-Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.40bin/s, bin=11/20, type=tde]
-Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  3.99bin/s, bin=11/20, type=tde]
-Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  3.99bin/s, bin=12/20, type=tde]
-Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.50bin/s, bin=12/20, type=tde]
-Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.50bin/s, bin=13/20, type=tde]
-Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  4.97bin/s, bin=13/20, type=tde]
-Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  4.97bin/s, bin=14/20, type=tde]
-Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.38bin/s, bin=14/20, type=tde]
-Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.38bin/s, bin=15/20, type=tde]
-Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.77bin/s, bin=15/20, type=tde]
-Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.77bin/s, bin=16/20, type=tde]
-Generating events:  80%|████████  | 16/20 [00:14&lt;00:00,  6.20bin/s, bin=16/20, type=tde]
-Generating events:  80%|████████  | 16/20 [00:14&lt;00:00,  6.20bin/s, bin=17/20, type=tde]
-Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.66bin/s, bin=17/20, type=tde]
-Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.66bin/s, bin=18/20, type=tde]
-Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.28bin/s, bin=18/20, type=tde]
-Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.28bin/s, bin=19/20, type=tde]
-Generating events:  95%|█████████▌| 19/20 [00:14&lt;00:00,  7.28bin/s, bin=20/20, type=tde]
-Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  8.76bin/s, bin=20/20, type=tde]
-Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  1.39bin/s, bin=20/20, type=tde]
+Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.24bin/s, bin=6/20, type=tde]
+Generating events:  30%|███       | 6/20 [00:12&lt;00:11,  1.24bin/s, bin=7/20, type=tde]
+Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.69bin/s, bin=7/20, type=tde]
+Generating events:  35%|███▌      | 7/20 [00:12&lt;00:07,  1.69bin/s, bin=8/20, type=tde]
+Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.22bin/s, bin=8/20, type=tde]
+Generating events:  40%|████      | 8/20 [00:12&lt;00:05,  2.22bin/s, bin=9/20, type=tde]
+Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.81bin/s, bin=9/20, type=tde]
+Generating events:  45%|████▌     | 9/20 [00:12&lt;00:03,  2.81bin/s, bin=10/20, type=tde]
+Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.43bin/s, bin=10/20, type=tde]
+Generating events:  50%|█████     | 10/20 [00:13&lt;00:02,  3.43bin/s, bin=11/20, type=tde]
+Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  4.05bin/s, bin=11/20, type=tde]
+Generating events:  55%|█████▌    | 11/20 [00:13&lt;00:02,  4.05bin/s, bin=12/20, type=tde]
+Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.59bin/s, bin=12/20, type=tde]
+Generating events:  60%|██████    | 12/20 [00:13&lt;00:01,  4.59bin/s, bin=13/20, type=tde]
+Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  5.07bin/s, bin=13/20, type=tde]
+Generating events:  65%|██████▌   | 13/20 [00:13&lt;00:01,  5.07bin/s, bin=14/20, type=tde]
+Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.51bin/s, bin=14/20, type=tde]
+Generating events:  70%|███████   | 14/20 [00:13&lt;00:01,  5.51bin/s, bin=15/20, type=tde]
+Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.91bin/s, bin=15/20, type=tde]
+Generating events:  75%|███████▌  | 15/20 [00:13&lt;00:00,  5.91bin/s, bin=16/20, type=tde]
+Generating events:  80%|████████  | 16/20 [00:13&lt;00:00,  6.34bin/s, bin=16/20, type=tde]
+Generating events:  80%|████████  | 16/20 [00:13&lt;00:00,  6.34bin/s, bin=17/20, type=tde]
+Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.83bin/s, bin=17/20, type=tde]
+Generating events:  85%|████████▌ | 17/20 [00:14&lt;00:00,  6.83bin/s, bin=18/20, type=tde]
+Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.44bin/s, bin=18/20, type=tde]
+Generating events:  90%|█████████ | 18/20 [00:14&lt;00:00,  7.44bin/s, bin=19/20, type=tde]
+Generating events:  95%|█████████▌| 19/20 [00:14&lt;00:00,  7.44bin/s, bin=20/20, type=tde]
+Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  8.91bin/s, bin=20/20, type=tde]
+Generating events: 100%|██████████| 20/20 [00:14&lt;00:00,  1.40bin/s, bin=20/20, type=tde]
 Sampled 115360 TDEs across 20 time bin(s) at NSIDE=64.
 </pre></div>
 </div>
@@ -656,17 +656,17 @@ detected above a given SNR at an observation the schedule actually made?</p></li
 </span></pre></div></div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Filtering by mag limit:   0%|          | 0/2 [00:00&lt;?, ?chunk/s]
 Filtering by mag limit:   0%|          | 0/2 [00:00&lt;?, ?chunk/s, chunk=1/2, type=tde]
-Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.49s/chunk, chunk=1/2, type=tde]
-Filtering by mag limit:  50%|█████     | 1/2 [00:01&lt;00:01,  1.49s/chunk, chunk=2/2, type=tde]
-Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.42chunk/s, chunk=2/2, type=tde]
-Filtering by mag limit: 100%|██████████| 2/2 [00:01&lt;00:00,  1.22chunk/s, chunk=2/2, type=tde]
-27140 could ever clear 25.0 AB mag.
+Filtering by mag limit:  50%|█████     | 1/2 [00:03&lt;00:03,  3.56s/chunk, chunk=1/2, type=tde]
+Filtering by mag limit:  50%|█████     | 1/2 [00:03&lt;00:03,  3.56s/chunk, chunk=2/2, type=tde]
+Filtering by mag limit: 100%|██████████| 2/2 [00:04&lt;00:00,  1.79s/chunk, chunk=2/2, type=tde]
+Filtering by mag limit: 100%|██████████| 2/2 [00:04&lt;00:00,  2.05s/chunk, chunk=2/2, type=tde]
+28180 could ever clear 25.0 AB mag.
 
-Computing epoch SNRs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s]
-Computing epoch SNRs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s, type=tde]
-Computing epoch SNRs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.22s/chunk, type=tde]
-Computing epoch SNRs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.23s/chunk, type=tde]
-12540 were detected above SNR=5.0.
+Computing epochs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s]
+Computing epochs:   0%|          | 0/1 [00:00&lt;?, ?chunk/s, type=tde]
+Computing epochs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.55s/chunk, type=tde]
+Computing epochs: 100%|██████████| 1/1 [00:01&lt;00:00,  1.55s/chunk, type=tde]
+12460 were detected above SNR=5.0.
 </pre></div>
 </div>
 </section>
@@ -773,10 +773,10 @@ against every observation the schedule actually made of it.</p>
 </span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<img src="../../_images/sphx_glr_plot_tde_end_to_end_003.png" srcset="../../_images/sphx_glr_plot_tde_end_to_end_003.png" alt="Event 3003 (z=0.204, 2 observations)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Event id=3003 type='tde' z=0.2036 n_observations=2&gt;
+<img src="../../_images/sphx_glr_plot_tde_end_to_end_003.png" srcset="../../_images/sphx_glr_plot_tde_end_to_end_003.png" alt="Event 2965 (z=0.213, 2 observations)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;Event id=2965 type='tde' z=0.2133 n_observations=2&gt;
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 19.190 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 21.808 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-simulating-plot-tde-end-to-end-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/c6d70304c39958c7c55962c7a281cac3/plot_tde_end_to_end.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_tde_end_to_end.ipynb</span></code></a></p>

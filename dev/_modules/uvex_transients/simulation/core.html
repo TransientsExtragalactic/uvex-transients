@@ -466,14 +466,13 @@
 <span class="sd">photometry is deferred to `~uvex_transients.simulation.event.Event`</span>
 <span class="sd">(:meth:`~uvex_transients.simulation.event.Event.simulate_photometry`), since it is</span>
 <span class="sd">too expensive to run over a freshly sampled population dominated by events too faint</span>
-<span class="sd">to ever matter. Two progressively more expensive cuts narrow the catalog first:</span>
-<span class="sd">`filter_by_limiting_magnitude` (schedule-independent) and `filter_by_snr`</span>
-<span class="sd">(schedule-aware).</span>
+<span class="sd">to ever matter. The schedule-aware cuts (`SurveySimulator.filter_by_snr` and friends) are</span>
+<span class="sd">built on `SurveySimulator.iter_epochs`, which yields every observation of every event.</span>
 <span class="sd">"""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">astropy_healpix</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ah</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -483,13 +482,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.fov</span><span class="w"> </span><span class="kn">import</span> <span class="n">contains</span> <span class="k">as</span> <span class="n">fov_contains</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">observing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Regions</span><span class="p">,</span> <span class="n">SkyRegion</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.contrib.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_redirect_tqdm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">dust_map</span><span class="p">,</span> <span class="n">log_attenuation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">resolve_healpix_resolution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.keyed_noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">time_key</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
@@ -503,7 +502,21 @@
 
 <span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
+<span class="c1"># ================================== #</span>
+<span class="c1"># Registry Configuration             #</span>
+<span class="c1"># ================================== #</span>
+<span class="c1"># The SurveySimulator class has "cuts" and "actions" which can be registered to it.</span>
+<span class="c1"># These require a custom metaclass for registration, which is automatically generated here.</span>
+<span class="n">cut</span><span class="p">,</span> <span class="n">_CutRegistryMeta</span> <span class="o">=</span> <span class="n">make_tagged_registry</span><span class="p">(</span><span class="s2">"_cut_name"</span><span class="p">,</span> <span class="s2">"_CUT_REGISTRY"</span><span class="p">)</span>
+<span class="n">action</span><span class="p">,</span> <span class="n">_ActionRegistryMeta</span> <span class="o">=</span> <span class="n">make_tagged_registry</span><span class="p">(</span><span class="s2">"_action_name"</span><span class="p">,</span> <span class="s2">"_ACTION_REGISTRY"</span><span class="p">)</span>
 
+<span class="c1"># We now combine these classes into a single pipeline registry metaclass.</span>
+<span class="n">_PipelineRegistryMeta</span> <span class="o">=</span> <span class="n">combine_metaclasses</span><span class="p">(</span><span class="n">_CutRegistryMeta</span><span class="p">,</span> <span class="n">_ActionRegistryMeta</span><span class="p">)</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Utility Functions                            #</span>
+<span class="c1"># ============================================ #</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_sample_parameters_from_seeds</span><span class="p">(</span><span class="n">sed</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Regenerate each event's own physical SED parameters from its stored `parameter_seed`.</span>
@@ -533,18 +546,113 @@
     <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">sample</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">per_event</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">per_event</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
 
 
-<span class="c1"># ================================== #</span>
-<span class="c1"># Registry Configuration             #</span>
-<span class="c1"># ================================== #</span>
-<span class="c1"># The SurveySimulator class has "cuts" and "actions" which can be registered to it.</span>
-<span class="c1"># These require a custom metaclass for registration, which is automatically generated here.</span>
-<span class="n">cut</span><span class="p">,</span> <span class="n">_CutRegistryMeta</span> <span class="o">=</span> <span class="n">make_tagged_registry</span><span class="p">(</span><span class="s2">"_cut_name"</span><span class="p">,</span> <span class="s2">"_CUT_REGISTRY"</span><span class="p">)</span>
-<span class="n">action</span><span class="p">,</span> <span class="n">_ActionRegistryMeta</span> <span class="o">=</span> <span class="n">make_tagged_registry</span><span class="p">(</span><span class="s2">"_action_name"</span><span class="p">,</span> <span class="s2">"_ACTION_REGISTRY"</span><span class="p">)</span>
+<div class="viewcode-block" id="event_boundaries">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.event_boundaries.html#uvex_transients.simulation.core.event_boundaries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">event_boundaries</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Locate each event's block of rows in an array grouped by event.</span>
 
-<span class="c1"># We now combine these classes into a single pipeline registry metaclass.</span>
-<span class="n">_PipelineRegistryMeta</span> <span class="o">=</span> <span class="n">combine_metaclasses</span><span class="p">(</span><span class="n">_CutRegistryMeta</span><span class="p">,</span> <span class="n">_ActionRegistryMeta</span><span class="p">)</span>
+<span class="sd">    `SurveySimulator.iter_epochs` sorts every chunk by ``(event_id, t_obs)``, so each</span>
+<span class="sd">    event's rows are contiguous. The offsets returned here turn that into per-event</span>
+<span class="sd">    reductions without a Python loop over rows, for example with</span>
+<span class="sd">    ``numpy.minimum.reduceat(values, starts)``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event_id : array-like of int</span>
+<span class="sd">        A chunk's ``event_id`` column, or any array whose equal values are contiguous.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    starts : numpy.ndarray</span>
+<span class="sd">        Index of each event's first row, in order of appearance. Empty for empty input.</span>
+<span class="sd">    stops : numpy.ndarray</span>
+<span class="sd">        One past the index of each event's last row, so that event's rows are</span>
+<span class="sd">        ``chunk[starts[i]:stops[i]]``.</span>
+<span class="sd">    """</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ids</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">intp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">intp</span><span class="p">)</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">ids</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">stops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">starts</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">ids</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">starts</span><span class="p">,</span> <span class="n">stops</span></div>
 
 
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Reducer Functions                            #</span>
+<span class="c1"># ============================================ #</span>
+<span class="c1"># A reducer takes one chunk of epochs and the slice of rows belonging to a single event, and returns</span>
+<span class="c1"># that event's value (or `None` to leave the event out). `SurveySimulator._reduce_events` applies one</span>
+<span class="c1"># to every event; the cuts then act on the resulting values. The chunk has the columns of</span>
+<span class="c1"># `SurveySimulator.iter_epochs` plus `detected` and `non_detected` (see</span>
+<span class="c1"># `SurveySimulator._iter_detection_epochs`).</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_detection_timing</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return ``(t_first, min_gap, span)`` in days over an event's detection epochs.</span>
+
+<span class="sd">    `t_first` is the earliest detection's time since explosion, `span` is the latest minus</span>
+<span class="sd">    the earliest, and `min_gap` is the smallest gap between consecutive detections (`None`</span>
+<span class="sd">    for a single detection). The smallest gap between any two detections is always one</span>
+<span class="sd">    between consecutive ones, and the largest is always the span.</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_since_explosion"</span><span class="p">][</span><span class="n">rows</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+    <span class="n">min_gap</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">min_gap</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_first_detection</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Time</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return ``(t_obs, band, snr, observation_index)`` of an event's earliest detection.</span>
+
+<span class="sd">    Unlike `_reduce_detection_timing` it keeps the absolute observation time and which</span>
+<span class="sd">    schedule row it came from, which `SurveySimulator.run_alert_action` needs to find the</span>
+<span class="sd">    next downlink.</span>
+<span class="sd">    """</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">start</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">][</span><span class="n">first</span><span class="p">],</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"band"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_solo_detection</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the schedule row of an event's only detection, or `None` if it has several.</span>
+
+<span class="sd">    This is what `SurveySimulator.filter_by_first_visit_detected` needs: whether a</span>
+<span class="sd">    reference image exists only matters for an event that cannot otherwise be confirmed</span>
+<span class="sd">    across two or more epochs.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">rows</span><span class="o">.</span><span class="n">start</span><span class="p">])</span> <span class="k">if</span> <span class="n">rows</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">rows</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_nondetection_gap</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return days from an event's last non-detection to its first detection.</span>
+
+<span class="sd">    The chunk must keep every epoch (not only detections). The result is ``nan`` if no</span>
+<span class="sd">    non-detection precedes the first detection, and `None` (leave the event out) if the</span>
+<span class="sd">    event is never detected.</span>
+<span class="sd">    """</span>
+    <span class="n">detected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"detected"</span><span class="p">][</span><span class="n">rows</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">detected</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">detected</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">earlier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"non_detected"</span><span class="p">][</span><span class="n">rows</span><span class="o">.</span><span class="n">start</span> <span class="p">:</span> <span class="n">first</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">earlier</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_since_explosion"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">((</span><span class="n">t</span><span class="p">[</span><span class="n">first</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">rows</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">earlier</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+
+
+<span class="c1"># ===================================== #</span>
+<span class="c1"># Survey Simulation Base Class          #</span>
+<span class="c1"># ===================================== #</span>
 <div class="viewcode-block" id="SurveySimulator">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SurveySimulator</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">_PipelineRegistryMeta</span><span class="p">):</span>
@@ -994,10 +1102,20 @@
     <span class="c1"># -------------------------------------------------- #</span>
     <span class="c1"># Filtering                                          #</span>
     <span class="c1"># -------------------------------------------------- #</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_iter_epoch_snr_chunks</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">band_names</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">detection_floor</span><span class="p">,</span> <span class="n">selected</span><span class="p">,</span> <span class="n">transient_type</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">detector</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_iter_epochs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">catalog</span><span class="p">,</span>
+        <span class="n">band_names</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">,</span>
+        <span class="n">detection_floor</span><span class="p">,</span>
+        <span class="n">selected</span><span class="p">,</span>
+        <span class="n">transient_type</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="n">detector</span><span class="p">,</span>
+        <span class="n">include_snr</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">QTable</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Yield the chunks for `iter_epoch_snr_chunks`, which does all the argument validation."""</span>
+<span class="w">        </span><span class="sd">"""Yield the chunks for `iter_epochs`, which does all the argument validation."""</span>
         <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
         <span class="n">schedule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_schedule</span>
 
@@ -1006,229 +1124,210 @@
         <span class="p">}</span>
         <span class="n">total_chunks</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">chunk_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">type_idx</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-        <span class="n">coord_all</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]</span>
-        <span class="n">t_explosion_all</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">]</span>
-        <span class="n">event_id_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-
-        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_chunks</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing epoch SNRs"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"chunk"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">progress</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_chunks</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing epochs"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"chunk"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">progress</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">type_idx</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">event_id_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">coord_type</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">t_explosion_type</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
 
-                <span class="n">redshift_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">])[</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">luminosity_distance_all</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"luminosity_distance"</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">ebv_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"ebv"</span><span class="p">])[</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">coord_type</span> <span class="o">=</span> <span class="n">coord_all</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">t_explosion_type</span> <span class="o">=</span> <span class="n">t_explosion_all</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">event_id_type</span> <span class="o">=</span> <span class="n">event_id_all</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">include_snr</span><span class="p">:</span>
+                    <span class="c1"># Each event's own `parameter_seed`, exactly as `Event` uses it, so these SNRs</span>
+                    <span class="c1"># agree with `Event.simulate_photometry`: it seeds the SED parameters and the</span>
+                    <span class="c1"># noise of every measurement.</span>
+                    <span class="n">seed_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"parameter_seed"</span><span class="p">])[</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="n">sed_inputs_type</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">"redshift"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">])[</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="s2">"luminosity_distance"</span><span class="p">:</span> <span class="n">table</span><span class="p">[</span><span class="s2">"luminosity_distance"</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="s2">"ebv"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"ebv"</span><span class="p">])[</span><span class="n">idx</span><span class="p">],</span>
+                        <span class="o">**</span><span class="n">_sample_parameters_from_seeds</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">sed</span><span class="p">,</span> <span class="n">seed_type</span><span class="p">),</span>
+                    <span class="p">}</span>
 
-                <span class="c1"># Each event's own `parameter_seed`, exactly as `filter_by_snr` does, so</span>
-                <span class="c1"># these SNRs agree with the cut and with `Event.simulate_photometry`.</span>
-                <span class="n">sed_params_all</span> <span class="o">=</span> <span class="n">_sample_parameters_from_seeds</span><span class="p">(</span><span class="n">transient</span><span class="o">.</span><span class="n">sed</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"parameter_seed"</span><span class="p">])[</span><span class="n">idx</span><span class="p">])</span>
-
-                <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
-                    <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">idx</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
                     <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">chunk_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">)</span>
+                    <span class="n">coord_chunk</span> <span class="o">=</span> <span class="n">coord_type</span><span class="p">[</span><span class="n">chunk_slice</span><span class="p">]</span>
+                    <span class="n">t_explosion_chunk</span> <span class="o">=</span> <span class="n">t_explosion_type</span><span class="p">[</span><span class="n">chunk_slice</span><span class="p">]</span>
 
-                    <span class="n">coord_chunk</span> <span class="o">=</span> <span class="n">coord_type</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
-                    <span class="n">t_explosion_chunk</span> <span class="o">=</span> <span class="n">t_explosion_type</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
-
+                    <span class="c1"># Which observations covered each event, from `lookback` before its</span>
+                    <span class="c1"># explosion (or the start of the schedule) to the end of its active window.</span>
+                    <span class="k">if</span> <span class="n">lookback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">window_start</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">start_time</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coord_chunk</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">window_start</span> <span class="o">=</span> <span class="n">t_explosion_chunk</span> <span class="o">-</span> <span class="n">lookback</span>
                     <span class="n">event_index</span><span class="p">,</span> <span class="n">row_index</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_observation_indices_of</span><span class="p">(</span>
                         <span class="n">coord_chunk</span><span class="p">,</span>
                         <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
                         <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                        <span class="n">start_time</span><span class="o">=</span><span class="n">t_explosion_chunk</span><span class="p">,</span>
+                        <span class="n">start_time</span><span class="o">=</span><span class="n">window_start</span><span class="p">,</span>
                         <span class="n">end_time</span><span class="o">=</span><span class="n">t_explosion_chunk</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                         <span class="k">continue</span>
 
-                    <span class="n">flat</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">observe_rows</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
-                    <span class="n">t_since_explosion</span> <span class="o">=</span> <span class="p">(</span><span class="n">flat</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_explosion_chunk</span><span class="p">[</span><span class="n">event_index</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+                    <span class="c1"># One entry per (event, observation) pair, for every column below.</span>
+                    <span class="n">observed</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">observe_rows</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
+                    <span class="n">t_since_explosion</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_explosion_chunk</span><span class="p">[</span><span class="n">event_index</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+                    <span class="n">columns</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">"event_id"</span><span class="p">:</span> <span class="n">event_id_type</span><span class="p">[</span><span class="n">chunk_slice</span><span class="p">][</span><span class="n">event_index</span><span class="p">],</span>
+                        <span class="s2">"observation_index"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row_index</span><span class="p">),</span>
+                        <span class="s2">"t_obs"</span><span class="p">:</span> <span class="n">observed</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">],</span>
+                        <span class="s2">"t_since_explosion"</span><span class="p">:</span> <span class="n">t_since_explosion</span><span class="p">,</span>
+                        <span class="s2">"pre_explosion"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_since_explosion</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="p">}</span>
 
-                    <span class="c1"># Trailing-axis conventions here are the same as (and are explained</span>
-                    <span class="c1"># in) `filter_by_snr`: everything on the flat row axis gets a</span>
-                    <span class="c1"># reserved trailing axis except `ebv`, which `log_attenuation` reserves itself.</span>
-                    <span class="n">spectra</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">as_source_spectrum</span><span class="p">(</span>
-                        <span class="n">t_since_explosion</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-                        <span class="n">redshift</span><span class="o">=</span><span class="n">redshift_all</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">event_index</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-                        <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance_all</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">event_index</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-                        <span class="n">ebv</span><span class="o">=</span><span class="n">ebv_all</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">event_index</span><span class="p">],</span>
-                        <span class="o">**</span><span class="p">{</span>
-                            <span class="n">param_name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">event_index</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-                            <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sed_params_all</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                        <span class="p">},</span>
-                    <span class="p">)</span>
+                    <span class="c1"># Without an SNR there is no floor to apply, so every epoch is kept.</span>
+                    <span class="n">meets_floor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row_index</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
-                    <span class="n">snr_by_band</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">with</span> <span class="n">observing</span><span class="p">(</span><span class="n">flat</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">],</span> <span class="n">coord_chunk</span><span class="p">[</span><span class="n">event_index</span><span class="p">],</span> <span class="n">flat</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]):</span>
-                        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span><span class="p">:</span>
-                            <span class="n">snr</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_snr</span><span class="p">(</span><span class="n">flat</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">],</span> <span class="n">spectra</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-                            <span class="n">snr_by_band</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">snr</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">))</span>
-                    <span class="n">snr_by_band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">snr_by_band</span><span class="p">)</span>
-                    <span class="n">best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">snr_by_band</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                    <span class="n">best_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take_along_axis</span><span class="p">(</span><span class="n">snr_by_band</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">include_snr</span><span class="p">:</span>
+                        <span class="c1"># The same measurement `Event.simulate_photometry` makes, for every epoch of</span>
+                        <span class="c1"># every event in the chunk at once. The noise is keyed on (event seed,</span>
+                        <span class="c1"># observation start time, band), so each measurement matches the event's</span>
+                        <span class="c1"># own photometry exactly.</span>
+                        <span class="n">flux</span><span class="p">,</span> <span class="n">flux_err</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">measure_photometry</span><span class="p">(</span>
+                            <span class="n">t_since_explosion</span><span class="p">,</span>
+                            <span class="n">observed</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">],</span>
+                            <span class="n">detector</span><span class="p">,</span>
+                            <span class="n">coord_chunk</span><span class="p">[</span><span class="n">event_index</span><span class="p">],</span>
+                            <span class="n">bands</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+                            <span class="n">observer_location</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">],</span>
+                            <span class="n">obstime</span><span class="o">=</span><span class="n">observed</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">],</span>
+                            <span class="n">noise_seed</span><span class="o">=</span><span class="n">seed_type</span><span class="p">[</span><span class="n">chunk_slice</span><span class="p">][</span><span class="n">event_index</span><span class="p">],</span>
+                            <span class="n">noise_observation_keys</span><span class="o">=</span><span class="n">time_key</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]),</span>
+                            <span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">values</span><span class="p">[</span><span class="n">chunk_slice</span><span class="p">][</span><span class="n">event_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">sed_inputs_type</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                        <span class="p">)</span>
 
-                    <span class="n">above</span> <span class="o">=</span> <span class="n">best_snr</span> <span class="o">&gt;=</span> <span class="n">detection_floor</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">above</span><span class="p">):</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                        <span class="k">continue</span>
-
-                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">(</span>
-                        <span class="p">{</span>
-                            <span class="s2">"event_id"</span><span class="p">:</span> <span class="n">event_id_type</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">event_index</span><span class="p">],</span>
-                            <span class="s2">"observation_index"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">row_index</span><span class="p">),</span>
-                            <span class="s2">"t_obs"</span><span class="p">:</span> <span class="n">flat</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">],</span>
-                            <span class="s2">"t_since_explosion"</span><span class="p">:</span> <span class="n">t_since_explosion</span><span class="p">,</span>
-                            <span class="s2">"band"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">band_names</span><span class="p">)[</span><span class="n">best</span><span class="p">],</span>
-                            <span class="s2">"snr"</span><span class="p">:</span> <span class="n">best_snr</span><span class="p">,</span>
-                        <span class="p">}</span>
-                    <span class="p">)[</span><span class="n">above</span><span class="p">]</span>
-                    <span class="c1"># Guarantee each event's rows are contiguous and time-ordered, so</span>
-                    <span class="c1"># per-event reductions (reduceat, groupby) can rely on it.</span>
-                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]))]</span>
+                        <span class="c1"># Keep each epoch's best band, so an observation is never counted once per</span>
+                        <span class="c1"># band. A band that could not be measured (NaN) never wins.</span>
+                        <span class="n">best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">snr</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">snr</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">epochs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row_index</span><span class="p">))</span>
+                        <span class="n">columns</span><span class="p">[</span><span class="s2">"band"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">band_names</span><span class="p">)[</span><span class="n">best</span><span class="p">]</span>
+                        <span class="n">columns</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">snr</span><span class="p">[</span><span class="n">best</span><span class="p">,</span> <span class="n">epochs</span><span class="p">]</span>
+                        <span class="n">columns</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux</span><span class="p">[</span><span class="n">best</span><span class="p">,</span> <span class="n">epochs</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
+                        <span class="n">columns</span><span class="p">[</span><span class="s2">"flux_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flux_err</span><span class="p">[</span><span class="n">best</span><span class="p">,</span> <span class="n">epochs</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span>
+                        <span class="n">meets_floor</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">detection_floor</span>
 
                     <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                    <span class="k">yield</span> <span class="n">chunk</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">meets_floor</span><span class="p">):</span>
+                        <span class="k">continue</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_collect_detection_epoch_stats</span><span class="p">(</span>
+                    <span class="c1"># Each event's rows are contiguous and time-ordered, so per-event reductions</span>
+                    <span class="c1"># (see `event_boundaries`) can rely on it.</span>
+                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">(</span><span class="n">columns</span><span class="p">)[</span><span class="n">meets_floor</span><span class="p">]</span>
+                    <span class="k">yield</span> <span class="n">chunk</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]))]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_iter_detection_epochs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
         <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
         <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">keep_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">QTable</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Per-event detection-timing stats, shared by `filter_by_time_to_first_detection`/`filter_by_baseline`.</span>
+<span class="sd">        Yield `iter_epochs` chunks with each epoch marked as a detection or not.</span>
 
-<span class="sd">        Built on `iter_epoch_snr_chunks` (see its own docstring for what "qualifying"</span>
-<span class="sd">        means here), reduced per event to exactly what each of those two cuts needs,</span>
-<span class="sd">        without either re-running the schedule-aware SNR evaluation itself. The smallest</span>
-<span class="sd">        gap between any two qualifying epochs is always the smallest gap between two</span>
-<span class="sd">        consecutive ones once sorted by time, and the largest gap is always the full</span>
-<span class="sd">        first-to-last span, so only those two reductions are computed, not every</span>
-<span class="sd">        pairwise difference.</span>
+<span class="sd">        Each chunk gains two columns: ``detected`` (``snr`` above `snr_threshold`, and not before</span>
+<span class="sd">        the explosion, since a pre-explosion epoch has no source) and ``non_detected`` (``snr`` at</span>
+<span class="sd">        or below it).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An epoch counts as a qualifying detection if its best-band SNR exceeds this</span>
-<span class="sd">            value (same definition `filter_by_snr` uses).</span>
+<span class="sd">            The detection threshold.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        keep_all : bool, optional</span>
+<span class="sd">            If `False` (the default), epochs below `snr_threshold` are dropped by the</span>
+<span class="sd">            iterator before they are yielded, since they cannot be detections. If `True`,</span>
+<span class="sd">            every epoch is kept, e.g. to find non-detections.</span>
+<span class="sd">        lookback : ~astropy.units.Quantity or None, optional</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict of int to (float, float or None, float)</span>
-<span class="sd">            ``{event_id: (t_first, min_gap, span)}`` in days, for every event with &gt;= 1</span>
-<span class="sd">            qualifying epoch. `t_first` is the earliest qualifying epoch's</span>
-<span class="sd">            `t_since_explosion`; `span` is the latest minus the earliest (``0.0`` for a</span>
-<span class="sd">            single epoch); `min_gap` is the smallest gap between consecutive qualifying</span>
-<span class="sd">            epochs, or `None` if the event has only one.</span>
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        ~astropy.table.QTable</span>
+<span class="sd">            One chunk of epochs, with the columns above added.</span>
 <span class="sd">        """</span>
-        <span class="n">stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">epoch_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_epoch_snr_chunks</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">detection_floor</span><span class="o">=</span><span class="n">snr_threshold</span>
+        <span class="n">epochs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_epochs</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span>
+            <span class="n">mission</span><span class="p">,</span>
+            <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span>
+            <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+            <span class="n">detection_floor</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">keep_all</span> <span class="k">else</span> <span class="n">snr_threshold</span><span class="p">,</span>
+            <span class="n">lookback</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">with</span> <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">epoch_chunks</span><span class="p">:</span>
-                <span class="n">above</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span>
-                <span class="n">sub</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">above</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">epochs</span><span class="p">:</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="s2">"detected"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"pre_explosion"</span><span class="p">]</span>
+                <span class="n">chunk</span><span class="p">[</span><span class="s2">"non_detected"</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">snr_threshold</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
 
-                <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-                <span class="n">times</span> <span class="o">=</span> <span class="n">sub</span><span class="p">[</span><span class="s2">"t_since_explosion"</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
-
-                <span class="c1"># Each yielded chunk is already grouped by event and time-ordered within</span>
-                <span class="c1"># each event (see `iter_epoch_snr_chunks`'s docstring), and one event's</span>
-                <span class="c1"># rows never span two chunks (chunking splits events, not observations),</span>
-                <span class="c1"># so no cross-chunk merging is needed here.</span>
-                <span class="n">boundaries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">):</span>
-                    <span class="n">eid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-                    <span class="n">t</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
-                    <span class="n">gap</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
-                    <span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">gap</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-
-        <span class="k">return</span> <span class="n">stats</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_collect_first_detection_epochs</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_events</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
         <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
         <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Time</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="n">reducer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">QTable</span><span class="p">,</span> <span class="nb">slice</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">keep_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Per-event first qualifying detection epoch, shared by `run_alert_action`.</span>
+<span class="sd">        Reduce each event's epochs to a single value in one pass over `iter_epochs`.</span>
 
-<span class="sd">        Built on `iter_epoch_snr_chunks`, like `_collect_detection_epoch_stats`, but keeps</span>
-<span class="sd">        the epoch's *absolute* `t_obs` (and which schedule row it came from) rather than</span>
-<span class="sd">        `t_since_explosion` -- what `run_alert_action` needs to look up the next downlink.</span>
+<span class="sd">        One event's epochs never span two chunks (chunking splits events, not</span>
+<span class="sd">        observations), so no merging across chunks is needed.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `_iter_detection_epochs`.</span>
 <span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `_iter_detection_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An epoch counts as a qualifying detection if its best-band SNR exceeds this</span>
-<span class="sd">            value (same definition `filter_by_snr` uses).</span>
+<span class="sd">            The detection threshold.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `_iter_detection_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `_iter_detection_epochs`.</span>
+<span class="sd">        reducer : callable</span>
+<span class="sd">            ``reducer(chunk, rows)``, given a chunk (see `_iter_detection_epochs` for its</span>
+<span class="sd">            columns) and the slice of rows belonging to one event, returns that event's</span>
+<span class="sd">            value, or `None` to leave the event out.</span>
+<span class="sd">        keep_all : bool, optional</span>
+<span class="sd">            If `False` (the default), `reducer` sees only each event's detection epochs, and</span>
+<span class="sd">            an event with none is never passed to it. If `True` it sees every epoch.</span>
+<span class="sd">        lookback : ~astropy.units.Quantity or None, optional</span>
+<span class="sd">            Forwarded to `_iter_detection_epochs`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict of int to (Time, str, float, int)</span>
-<span class="sd">            ``{event_id: (t_obs, band, snr, observation_index)}`` for every event with</span>
-<span class="sd">            &gt;= 1 qualifying epoch, giving the *earliest* one. `t_obs` is absolute;</span>
-<span class="sd">            `observation_index` indexes into `self.survey_schedule.observe_rows`,</span>
-<span class="sd">            letting a caller look up that observation's own `duration`.</span>
+<span class="sd">        dict of int to Any</span>
+<span class="sd">            ``{event_id: value}`` for every event `reducer` returned a value for.</span>
 <span class="sd">        """</span>
-        <span class="n">stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Time</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">epoch_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_epoch_snr_chunks</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">detection_floor</span><span class="o">=</span><span class="n">snr_threshold</span>
-        <span class="p">)</span>
-        <span class="k">with</span> <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">epoch_chunks</span><span class="p">:</span>
-                <span class="n">above</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span>
-                <span class="n">sub</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">above</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-
-                <span class="c1"># Each yielded chunk is already grouped by event and time-ordered within</span>
-                <span class="c1"># each event (see `iter_epoch_snr_chunks`'s docstring), and one event's</span>
-                <span class="c1"># rows never span two chunks (chunking splits events, not observations),</span>
-                <span class="c1"># so the first row of each group is that event's earliest qualifying epoch.</span>
-                <span class="n">boundaries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">):</span>
-                    <span class="n">eid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-                    <span class="n">first</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">sub</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">][</span><span class="n">first</span><span class="p">],</span>
-                        <span class="nb">str</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"band"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-                        <span class="nb">float</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-                        <span class="nb">int</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-                    <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">stats</span>
+        <span class="n">reduced</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_detection_epochs</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">keep_all</span><span class="p">,</span> <span class="n">lookback</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_all</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"detected"</span><span class="p">]]</span>
+            <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">event_boundaries</span><span class="p">(</span><span class="n">event_id</span><span class="p">)):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">reducer</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">reduced</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">event_id</span><span class="p">[</span><span class="n">start</span><span class="p">])]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">reduced</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_mask_out_first_visit_solo_detections</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">solo</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">keep</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -1245,8 +1344,8 @@
 <span class="sd">        catalog : EventCatalog</span>
 <span class="sd">            Supplies the ``event_id`` column `keep` is indexed against.</span>
 <span class="sd">        solo : dict of int to int</span>
-<span class="sd">            ``{event_id: observation_index}``, as returned by</span>
-<span class="sd">            `_collect_solo_detection_observation_indices`.</span>
+<span class="sd">            ``{event_id: observation_index}``, as produced by `_reduce_events` with</span>
+<span class="sd">            `_reduce_solo_detection`.</span>
 <span class="sd">        keep : numpy.ndarray</span>
 <span class="sd">            Boolean array, same length as `catalog`, indexed the same way as</span>
 <span class="sd">            `catalog.table`; modified in place.</span>
@@ -1260,71 +1359,6 @@
             <span class="n">obs_index</span> <span class="o">=</span> <span class="n">solo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">eid</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">obs_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">first_visit</span><span class="p">[</span><span class="n">obs_index</span><span class="p">]:</span>
                 <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_collect_solo_detection_observation_indices</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
-        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
-        <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Per-event schedule row, restricted to events with exactly one qualifying detection epoch.</span>
-
-<span class="sd">        Built on `iter_epoch_snr_chunks`, like `_collect_first_detection_epochs`, but</span>
-<span class="sd">        keeps an event only when it has a single qualifying epoch total -- what</span>
-<span class="sd">        `filter_by_first_visit_detected` needs, since whether a reference image exists</span>
-<span class="sd">        only matters for an event that can't otherwise be confirmed across two or more</span>
-<span class="sd">        epochs.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
-<span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
-<span class="sd">        snr_threshold : float</span>
-<span class="sd">            An epoch counts as a qualifying detection if its best-band SNR exceeds this</span>
-<span class="sd">            value (same definition `filter_by_snr` uses).</span>
-<span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
-<span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict of int to int</span>
-<span class="sd">            ``{event_id: observation_index}``, one entry per event with exactly one</span>
-<span class="sd">            qualifying epoch; `observation_index` indexes into</span>
-<span class="sd">            `self.survey_schedule.observe_rows`. Events with zero or two-or-more</span>
-<span class="sd">            qualifying epochs are absent.</span>
-<span class="sd">        """</span>
-        <span class="n">stats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="n">epoch_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_epoch_snr_chunks</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">detection_floor</span><span class="o">=</span><span class="n">snr_threshold</span>
-        <span class="p">)</span>
-        <span class="k">with</span> <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">epoch_chunks</span><span class="p">:</span>
-                <span class="n">above</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span>
-                <span class="n">sub</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">above</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-
-                <span class="c1"># Each yielded chunk is already grouped by event (see</span>
-                <span class="c1"># `iter_epoch_snr_chunks`'s docstring), and one event's rows never span</span>
-                <span class="c1"># two chunks, so a group's length here is that event's total qualifying</span>
-                <span class="c1"># epoch count.</span>
-                <span class="n">boundaries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">eid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-                        <span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-
-        <span class="k">return</span> <span class="n">stats</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_filtered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">keep</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return a new `EventCatalog` over `catalog.table[keep]`, carrying every other field unchanged."""</span>
@@ -1480,39 +1514,52 @@
 
         <span class="k">return</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">peak_flux</span><span class="p">,</span> <span class="n">flux_unit</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SurveySimulator.iter_epoch_snr_chunks">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.iter_epoch_snr_chunks.html#uvex_transients.simulation.core.SurveySimulator.iter_epoch_snr_chunks">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">iter_epoch_snr_chunks</span><span class="p">(</span>
+<div class="viewcode-block" id="SurveySimulator.iter_epochs">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.iter_epochs.html#uvex_transients.simulation.core.SurveySimulator.iter_epochs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_epochs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
-        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
+        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">detection_floor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_snr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">QTable</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Lazily yield the per-epoch SNRs of an `EventCatalog`'s events, one chunk of events at a time.</span>
+<span class="sd">        Lazily yield every observation of every event, one chunk of events at a time.</span>
 
-<span class="sd">        Same evaluation `filter_by_snr` does (schedule lookup, per-event parameter</span>
-<span class="sd">        regeneration from ``parameter_seed``, one vectorized ``get_snr`` per band over</span>
-<span class="sd">        every (event, observation) pair of a chunk), except it yields the underlying</span>
-<span class="sd">        (event, observation) table itself instead of collapsing each chunk to a</span>
-<span class="sd">        keep/discard decision. Any threshold-, visit-count-, or cadence-style cut can</span>
-<span class="sd">        then be computed from those tables without re-evaluating a single SNR.</span>
+<span class="sd">        The core iterator the schedule-aware cuts are built on: any threshold-, visit-count-,</span>
+<span class="sd">        or cadence-style reduction can be computed from these tables without re-measuring</span>
+<span class="sd">        anything. For every (event, observation) pair of a chunk it makes the same measurement</span>
+<span class="sd">        `~uvex_transients.simulation.event.Event.simulate_photometry` makes, with the same noise.</span>
 
 <span class="sd">        Each yielded `~astropy.table.QTable` has one row per (event, observation) pair</span>
 <span class="sd">        for up to `chunk_size` events of a single transient type, sorted by</span>
-<span class="sd">        ``(event_id, t_obs)``, with columns:</span>
+<span class="sd">        ``(event_id, t_obs)`` so each event's rows are contiguous (see `event_boundaries`), with columns:</span>
 
 <span class="sd">        - ``event_id``: the event's own ``event_id`` in `catalog`.</span>
 <span class="sd">        - ``observation_index``: row index into ``survey_schedule.observe_rows``.</span>
 <span class="sd">        - ``t_obs``: `~astropy.time.Time` the observation started.</span>
-<span class="sd">        - ``t_since_explosion``: `~astropy.units.Quantity` (day), ``t_obs - t_explosion``.</span>
-<span class="sd">        - ``band``: str, the band with the highest SNR at this observation.</span>
-<span class="sd">        - ``snr``: float, the SNR in that best band (bands are collapsed to the best</span>
-<span class="sd">          one, as in `filter_by_snr`, so an observation is never counted once per band).</span>
+<span class="sd">        - ``t_since_explosion``: `~astropy.units.Quantity` (day), ``t_obs - t_explosion``;</span>
+<span class="sd">          negative before the explosion.</span>
+<span class="sd">        - ``pre_explosion``: bool, ``t_since_explosion &lt; 0``. Such a row has no source, so</span>
+<span class="sd">          it is measured as pure background and can never be a detection.</span>
+<span class="sd">        - ``snr``, ``band``, ``flux``, ``flux_err`` (if `include_snr`): the measured SNR of the</span>
+<span class="sd">          observation in its best band (bands are collapsed to the best one, so an observation</span>
+<span class="sd">          is never counted once per band), that band, its measured flux density</span>
+<span class="sd">          (`~astropy.units.Quantity` in Jy), and the one-sigma uncertainty on it.</span>
+<span class="sd">          ``snr`` is ``flux / flux_err``. The measurement is a Gaussian draw around the true</span>
+<span class="sd">          flux, keyed on the event's ``parameter_seed``, the observation's start time and the</span>
+<span class="sd">          band (see `~uvex_transients.utils.keyed_noise.keyed_standard_normal`), so it is the</span>
+<span class="sd">          same draw `~uvex_transients.simulation.event.Event.simulate_photometry` makes for</span>
+<span class="sd">          that measurement, whatever else is evaluated alongside it. For a pre-explosion row it</span>
+<span class="sd">          is a draw from the background noise alone, at that observation's real depth.</span>
+
+<span class="sd">        With `include_snr` `False` only the geometry columns are produced, and neither</span>
+<span class="sd">        `mission` nor the SED is touched.</span>
 
 <span class="sd">        A chunk in which no event was observed, or in which every row falls below</span>
 <span class="sd">        `detection_floor`, yields nothing. An event with no rows at or above</span>
@@ -1521,33 +1568,60 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            The events to evaluate; see `filter_by_snr` for the columns required.</span>
-<span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from.</span>
+<span class="sd">            The events to evaluate. Needs ``event_id``, ``coord``, ``t_explosion``,</span>
+<span class="sd">            ``transient_type`` and ``healpix_id``, plus ``redshift``, ``luminosity_distance``,</span>
+<span class="sd">            ``ebv`` and ``parameter_seed`` (all filled in by `generate_events`) when</span>
+<span class="sd">            `include_snr`.</span>
+<span class="sd">        mission : m4opt.missions.Mission, optional</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from. Required unless</span>
+<span class="sd">            `include_snr` is `False`.</span>
 <span class="sd">        bands : list of str, optional</span>
 <span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Defaults to all of them.</span>
 <span class="sd">        chunk_size : int, optional</span>
 <span class="sd">            Number of events (per transient type) evaluated together. If `None`, uses</span>
 <span class="sd">            ``config["simulation.filter_by_snr.chunk_size"]``.</span>
 <span class="sd">        detection_floor : float, optional</span>
-<span class="sd">            Rows with ``snr &lt; detection_floor`` are dropped before being yielded. This</span>
-<span class="sd">            bounds the size of the output, but also means a later cut can't use a</span>
+<span class="sd">            Rows with a measured ``snr`` below this are dropped before being yielded. This</span>
+<span class="sd">            bounds the size of the output, but also means a later reduction can't use a</span>
 <span class="sd">            threshold below it. The default, 0, keeps every row with a non-negative SNR.</span>
+<span class="sd">            Ignored when `include_snr` is `False`. Use ``-numpy.inf`` to keep every row,</span>
+<span class="sd">            e.g. to see non-detections.</span>
 <span class="sd">        mask : numpy.ndarray, optional</span>
 <span class="sd">            Restricts evaluation to a subset of `catalog`'s events: either a boolean</span>
 <span class="sd">            array of length ``len(catalog)`` or an integer index array into</span>
 <span class="sd">            ``catalog.table``. Masked-out events cost nothing. `None` evaluates them all.</span>
 <span class="sd">        progress : bool, optional</span>
 <span class="sd">            Whether to show a progress bar over chunks.</span>
+<span class="sd">        include_snr : bool, optional</span>
+<span class="sd">            Whether to measure each observation and yield the ``snr``/``band``/``flux``/</span>
+<span class="sd">            ``flux_err`` columns. If `False`, only the geometry of which observations covered</span>
+<span class="sd">            which events is returned, which is much cheaper.</span>
+<span class="sd">        lookback : ~astropy.units.Quantity or None, optional</span>
+<span class="sd">            How far before each event's explosion to include observations. The default,</span>
+<span class="sd">            0 days, keeps only observations that overlap the post-explosion window (this</span>
+<span class="sd">            can include an exposure that starts just before the explosion, flagged</span>
+<span class="sd">            ``pre_explosion``). A positive duration also yields the earlier observations of</span>
+<span class="sd">            the event's position, e.g. to find the last pre-explosion non-detection. `None`</span>
+<span class="sd">            looks back to the start of the schedule.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        ~astropy.table.QTable</span>
-<span class="sd">            One chunk's epoch table, as described above.</span>
+<span class="sd">        collections.abc.Iterator of ~astropy.table.QTable</span>
+<span class="sd">            One epoch table per chunk of events, as described above.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `catalog` is not an `EventCatalog`, or an SNR is requested without a</span>
+<span class="sd">            `~m4opt.missions.Mission`.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `chunk_size`, `bands`, `mask`, or `lookback` is invalid, or `catalog` lacks</span>
+<span class="sd">            a required column.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">EventCatalog</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' must be an EventCatalog, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead."</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">Mission</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">include_snr</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">Mission</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'mission' must be an m4opt.missions.Mission, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">mission</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">chunk_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1555,23 +1629,33 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">chunk_size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'chunk_size' must be a positive int, got </span><span class="si">{</span><span class="n">chunk_size</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="n">detector</span> <span class="o">=</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span>
-        <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no detector configured."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lookback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lookback_days</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">lookback</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">UnitConversionError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'lookback' must be a duration or None, got </span><span class="si">{</span><span class="n">lookback</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">lookback_days</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lookback_days</span><span class="p">)</span> <span class="ow">or</span> <span class="n">lookback_days</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'lookback' must be a finite, non-negative scalar duration, got </span><span class="si">{</span><span class="n">lookback</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="n">lookback</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">lookback</span><span class="p">)</span>
 
-        <span class="n">band_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span> <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">band_names</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'bands' must contain at least one band."</span><span class="p">)</span>
-        <span class="n">unknown_bands</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">unknown_bands</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown_bands</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">detector</span><span class="p">,</span> <span class="n">band_names</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">include_snr</span><span class="p">:</span>
+            <span class="n">detector</span> <span class="o">=</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span>
+            <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no detector configured."</span><span class="p">)</span>
+
+            <span class="n">band_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span> <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">band_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'bands' must contain at least one band."</span><span class="p">)</span>
+            <span class="n">unknown_bands</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">unknown_bands</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown_bands</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
         <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
-        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">col</span>
-            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"event_id"</span><span class="p">,</span> <span class="s2">"luminosity_distance"</span><span class="p">,</span> <span class="s2">"ebv"</span><span class="p">,</span> <span class="s2">"healpix_id"</span><span class="p">,</span> <span class="s2">"parameter_seed"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span>
-        <span class="p">]</span>
+        <span class="n">required</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"event_id"</span><span class="p">,</span> <span class="s2">"healpix_id"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">include_snr</span><span class="p">:</span>
+            <span class="n">required</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"luminosity_distance"</span><span class="p">,</span> <span class="s2">"ebv"</span><span class="p">,</span> <span class="s2">"parameter_seed"</span><span class="p">]</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">required</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' is missing column(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; regenerate it via `generate_events`."</span><span class="p">)</span>
 
@@ -1585,15 +1669,23 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
                 <span class="n">selected</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-
         <span class="n">transient_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
         <span class="n">unknown_types</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">transient_type</span><span class="p">[</span><span class="n">selected</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">unknown_types</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' contains transient type(s) </span><span class="si">{</span><span class="n">unknown_types</span><span class="si">}</span><span class="s2"> not in `transient_collection`."</span><span class="p">)</span>
 
         <span class="c1"># Validation above runs eagerly, at call time; only the evaluation itself is lazy.</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_epoch_snr_chunks</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span> <span class="n">band_names</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">detection_floor</span><span class="p">,</span> <span class="n">selected</span><span class="p">,</span> <span class="n">transient_type</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">detector</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_epochs</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span>
+            <span class="n">band_names</span><span class="p">,</span>
+            <span class="n">chunk_size</span><span class="p">,</span>
+            <span class="n">detection_floor</span><span class="p">,</span>
+            <span class="n">selected</span><span class="p">,</span>
+            <span class="n">transient_type</span><span class="p">,</span>
+            <span class="n">progress</span><span class="p">,</span>
+            <span class="n">detector</span><span class="p">,</span>
+            <span class="n">include_snr</span><span class="p">,</span>
+            <span class="n">lookback</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -1757,14 +1849,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' is missing column(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; regenerate it via `generate_events`."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-                <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
-                <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-                <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-                <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-                <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
 
         <span class="c1"># Bandpass wavelength/throughput/frequency grids are the same for every transient</span>
         <span class="c1"># type and event; sampled once here, not per type.</span>
@@ -1855,14 +1940,7 @@
 
                     <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-            <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-            <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-            <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-            <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-            <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-            <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SurveySimulator.filter_by_snr">
@@ -1885,7 +1963,10 @@
 <span class="sd">        this asks the real question: over every observation the schedule actually</span>
 <span class="sd">        made of an event's position while it was active, is it ever detected above</span>
 <span class="sd">        `snr_threshold`? An event survives if at least `n_visits` observations clear</span>
-<span class="sd">        it, in their best band.</span>
+<span class="sd">        it, in their best band. Each observation is judged on its measured SNR: a simulated</span>
+<span class="sd">        measurement of the true flux with the detector's noise, the same measurement</span>
+<span class="sd">        `~uvex_transients.simulation.event.Event.simulate_photometry` makes. Epochs before</span>
+<span class="sd">        the explosion never count as detections.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1897,7 +1978,7 @@
 <span class="sd">        mission : m4opt.missions.Mission</span>
 <span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An event survives if at least `n_visits` observations clear this SNR, in</span>
+<span class="sd">            An event survives if at least `n_visits` observations exceed this SNR, in</span>
 <span class="sd">            their best band.</span>
 <span class="sd">        bands : list of str, optional</span>
 <span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every</span>
@@ -1926,16 +2007,23 @@
 <span class="sd">            A new catalog over the surviving rows only (same `nside`/`order`/`time_bins`/</span>
 <span class="sd">            `seed` as `catalog`; original `event_id` values are preserved, not renumbered).</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `catalog` is not an `EventCatalog`.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `n_visits` is not a positive int.</span>
+
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        filter_by_limiting_magnitude : The cheaper, schedule-independent cut to run first.</span>
 <span class="sd">        filter_by_first_visit_detected : The standalone cut `exclude_first_visit_detections` wraps.</span>
-<span class="sd">        iter_epoch_snr_chunks : Reuse the underlying per-epoch SNRs for other cuts.</span>
+<span class="sd">        iter_epochs : Reuse the underlying per-epoch SNRs for other cuts.</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        For each transient type present in `catalog`, events are processed `chunk_size`</span>
-<span class="sd">        at a time via `iter_epoch_snr_chunks` (see its own docstring for the full</span>
+<span class="sd">        at a time via `iter_epochs` (see its own docstring for the full</span>
 <span class="sd">        pipeline: schedule lookup, per-event parameter regeneration, and the vectorized</span>
 <span class="sd">        `get_snr` evaluation), whose per-epoch SNR table this cut then reduces to a</span>
 <span class="sd">        keep/discard decision by counting, per event, how many rows clear</span>
@@ -1943,15 +2031,13 @@
 <span class="sd">        single observation bright enough in two bands at once still counts as one</span>
 <span class="sd">        visit, not two, mirroring `filter_by_limiting_magnitude`'s own `n_visits`.</span>
 
-<span class="sd">        `exclude_first_visit_detections` piggybacks on this same pass over</span>
-<span class="sd">        `epoch_chunks` -- rather than a second call to</span>
-<span class="sd">        `_collect_solo_detection_observation_indices`, which would re-run the whole</span>
-<span class="sd">        (expensive) SNR evaluation -- by additionally grouping each chunk's qualifying</span>
-<span class="sd">        rows by event (they arrive already event-grouped; see `iter_epoch_snr_chunks`)</span>
-<span class="sd">        and remembering the one observation an event's group ever has, for groups of</span>
-<span class="sd">        length exactly 1. Since one event's qualifying epochs never span two chunks, a</span>
-<span class="sd">        length-1 group is that event's entire qualifying-epoch count, not just this</span>
-<span class="sd">        chunk's share of it, so no cross-chunk merging is needed either.</span>
+<span class="sd">        `exclude_first_visit_detections` reuses this same pass over the epochs rather than</span>
+<span class="sd">        a second one for `filter_by_first_visit_detected`, which would re-run the whole</span>
+<span class="sd">        (expensive) SNR evaluation. Each event's detections arrive grouped together (see</span>
+<span class="sd">        `iter_epochs`), so a group of length 1 is an event with a single detection, and</span>
+<span class="sd">        its one observation is remembered. One event's detections never span two chunks,</span>
+<span class="sd">        so that length is the event's entire detection count, not just this chunk's share</span>
+<span class="sd">        of it, and no merging across chunks is needed.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1970,58 +2056,40 @@
 <span class="sd">            )</span>
 <span class="sd">        """</span>
         <span class="c1"># Validate what only this cut cares about; the catalog, mission, bands and chunk size</span>
-        <span class="c1"># are validated by `iter_epoch_snr_chunks` itself, eagerly, when it is called below.</span>
+        <span class="c1"># are validated by `iter_epochs` itself, eagerly, when it is called below.</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_visits</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_visits</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">n_visits</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'n_visits' must be a positive int, got </span><span class="si">{</span><span class="n">n_visits</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">EventCatalog</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' must be an EventCatalog, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead."</span><span class="p">)</span>
 
-        <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
-
-        <span class="c1"># Rows at or below the threshold can never count as a visit, so let the iterator</span>
-        <span class="c1"># drop everything under it up front (it keeps ``snr &gt;= floor``; the strict ``&gt;``</span>
-        <span class="c1"># below then reproduces this cut's original comparison exactly).</span>
-        <span class="n">epoch_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_epoch_snr_chunks</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span>
-            <span class="n">mission</span><span class="p">,</span>
-            <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span>
-            <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
-            <span class="n">detection_floor</span><span class="o">=</span><span class="n">snr_threshold</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-        <span class="n">visit_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
+        <span class="n">visit_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="n">row_of_event</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span>
         <span class="n">solo_observation_index</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">with</span> <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">epoch_chunks</span><span class="p">:</span>
-                <span class="n">above</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">snr_threshold</span>
-                <span class="n">above_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])[</span><span class="n">above</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_detection_epochs</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
+            <span class="n">detections</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"detected"</span><span class="p">]]</span>
+            <span class="n">detected_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">detections</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
 
-                <span class="n">ids</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">above_ids</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">rows</span> <span class="o">=</span> <span class="n">row_of_event</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">event_id</span><span class="p">[</span><span class="n">row_of_event</span><span class="p">],</span> <span class="n">ids</span><span class="p">)]</span>
-                <span class="n">visit_count</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span> <span class="o">+=</span> <span class="n">counts</span>
+            <span class="c1"># An event's detections are contiguous, so each block's length is its visit count.</span>
+            <span class="n">starts</span><span class="p">,</span> <span class="n">stops</span> <span class="o">=</span> <span class="n">event_boundaries</span><span class="p">(</span><span class="n">detected_id</span><span class="p">)</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">stops</span> <span class="o">-</span> <span class="n">starts</span>
+            <span class="n">visit_count</span><span class="p">[</span><span class="n">row_of_event</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">event_id</span><span class="p">[</span><span class="n">row_of_event</span><span class="p">],</span> <span class="n">detected_id</span><span class="p">[</span><span class="n">starts</span><span class="p">])]]</span> <span class="o">+=</span> <span class="n">counts</span>
 
-                <span class="k">if</span> <span class="n">exclude_first_visit_detections</span><span class="p">:</span>
-                    <span class="n">above_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">])[</span><span class="n">above</span><span class="p">]</span>
-                    <span class="n">boundaries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">above_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">above_ids</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">solo_observation_index</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">above_ids</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">above_obs</span><span class="p">[</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="n">exclude_first_visit_detections</span><span class="p">:</span>
+                <span class="n">solo</span> <span class="o">=</span> <span class="n">counts</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="n">solo_observation_index</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span>
+                        <span class="n">detected_id</span><span class="p">[</span><span class="n">starts</span><span class="p">[</span><span class="n">solo</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">detections</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">])[</span><span class="n">starts</span><span class="p">[</span><span class="n">solo</span><span class="p">]]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
 
         <span class="n">keep</span> <span class="o">=</span> <span class="n">visit_count</span> <span class="o">&gt;=</span> <span class="n">n_visits</span>
         <span class="k">if</span> <span class="n">exclude_first_visit_detections</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mask_out_first_visit_solo_detections</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">solo_observation_index</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-            <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-            <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-            <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-            <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-            <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-            <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SurveySimulator.filter_by_redshift">
@@ -2471,12 +2539,12 @@
 <span class="sd">        mission : m4opt.missions.Mission</span>
 <span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            Same definition as `filter_by_snr`: an epoch qualifies if its best-band SNR</span>
+<span class="sd">            Same definition as `filter_by_snr`: an epoch qualifies if its measured SNR</span>
 <span class="sd">            exceeds this value.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2506,7 +2574,7 @@
 <span class="sd">                )</span>
 <span class="sd">            )</span>
 <span class="sd">        """</span>
-        <span class="n">solo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_solo_detection_observation_indices</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+        <span class="n">solo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">_reduce_solo_detection</span><span class="p">)</span>
 
         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mask_out_first_visit_solo_detections</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">solo</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
@@ -2530,16 +2598,17 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cut on the time (days) from explosion to each event's first SNR-qualifying detection.</span>
 
-<span class="sd">        Schedule-aware, like `filter_by_snr`: reuses `iter_epoch_snr_chunks`'s own</span>
-<span class="sd">        per-epoch SNR evaluation (see `_collect_detection_epoch_stats`). An event with</span>
+<span class="sd">        Schedule-aware, like `filter_by_snr`: reuses `iter_epochs`'s own</span>
+<span class="sd">        per-epoch SNR evaluation (see `_reduce_detection_timing`). An event with</span>
 <span class="sd">        zero qualifying epochs never survives, regardless of `min_delay`/`max_delay`.</span>
+<span class="sd">        Epochs before the explosion never qualify.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
 <span class="sd">            Same definition as `filter_by_snr`.</span>
 <span class="sd">        min_delay : float, optional</span>
@@ -2549,9 +2618,9 @@
 <span class="sd">            Maximum time (days) from `t_explosion` to the first qualifying epoch. `None`</span>
 <span class="sd">            (the default) leaves the upper end unconstrained.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2584,7 +2653,7 @@
         <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of 'min_delay'/'max_delay' must be given."</span><span class="p">)</span>
 
-        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_detection_epoch_stats</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">_reduce_detection_timing</span><span class="p">)</span>
 
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -2627,9 +2696,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
 <span class="sd">            Same definition as `filter_by_snr`/`filter_by_time_to_first_detection`.</span>
 <span class="sd">        min_baseline : float, optional</span>
@@ -2639,9 +2708,9 @@
 <span class="sd">            Require the full first-to-last qualifying-epoch span to exceed this many</span>
 <span class="sd">            days. `None` (the default) skips this requirement.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2662,7 +2731,7 @@
 <span class="sd">        -----</span>
 <span class="sd">        An event with fewer than 2 qualifying epochs never satisfies a `min_baseline`</span>
 <span class="sd">        requirement (there is no gap to compare); one with 0 or 1 never satisfies a</span>
-<span class="sd">        `max_baseline` requirement (there is no span). See `_collect_detection_epoch_stats`</span>
+<span class="sd">        `max_baseline` requirement (there is no span). See `_reduce_detection_timing`</span>
 <span class="sd">        for how `min_gap`/`span` are computed.</span>
 
 <span class="sd">        Examples</span>
@@ -2680,7 +2749,7 @@
         <span class="k">if</span> <span class="n">min_baseline</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_baseline</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of 'min_baseline'/'max_baseline' must be given."</span><span class="p">)</span>
 
-        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_detection_epoch_stats</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">_reduce_detection_timing</span><span class="p">)</span>
 
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -2692,6 +2761,121 @@
             <span class="k">if</span> <span class="n">min_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">gap</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">gap</span> <span class="o">&gt;=</span> <span class="n">min_baseline</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="n">max_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">span</span> <span class="o">&lt;=</span> <span class="n">max_baseline</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySimulator.filter_by_time_since_last_nondetection">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_time_since_last_nondetection.html#uvex_transients.simulation.core.SurveySimulator.filter_by_time_since_last_nondetection">[docs]</a>
+    <span class="nd">@cut</span><span class="p">(</span><span class="s2">"time_since_last_nondetection"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter_by_time_since_last_nondetection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
+        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
+        <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">min_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keep_if_no_nondetection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Cut on the time (days) from each event's last non-detection to its first detection.</span>
+
+<span class="sd">        This is how tightly the survey brackets the explosion: the first epoch after the</span>
+<span class="sd">        explosion whose SNR exceeds `snr_threshold` is the first detection, and the latest</span>
+<span class="sd">        epoch before it whose SNR does not is the last non-detection. Either can be before</span>
+<span class="sd">        or after the explosion, since a pre-explosion observation of the position is a</span>
+<span class="sd">        valid non-detection and the lookback below reaches back to it. Schedule-aware,</span>
+<span class="sd">        like `filter_by_snr`, and judged on the same measured SNR.</span>
+
+<span class="sd">        Pre-explosion epochs never count as detections. A pre-explosion epoch that comes</span>
+<span class="sd">        out above threshold is a noise fluctuation and is ignored altogether. An event</span>
+<span class="sd">        with no detection after its explosion never survives.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        catalog : EventCatalog</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        mission : m4opt.missions.Mission</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        snr_threshold : float</span>
+<span class="sd">            Same definition as `filter_by_snr`.</span>
+<span class="sd">        min_delay : float, optional</span>
+<span class="sd">            Minimum time (days) from the last non-detection to the first detection.</span>
+<span class="sd">            `None` (the default) leaves the lower end unconstrained.</span>
+<span class="sd">        max_delay : float, optional</span>
+<span class="sd">            Maximum time (days) from the last non-detection to the first detection, e.g.</span>
+<span class="sd">            to require the explosion be bracketed to within a few days. `None` (the</span>
+<span class="sd">            default) leaves the upper end unconstrained.</span>
+<span class="sd">        lookback : float, optional</span>
+<span class="sd">            Days before each explosion to search for a non-detection. `None` (the default)</span>
+<span class="sd">            searches back to the start of the schedule. Smaller values cost less.</span>
+<span class="sd">        keep_if_no_nondetection : bool, optional</span>
+<span class="sd">            What to do with an event that has a detection but no earlier non-detection</span>
+<span class="sd">            within the lookback, so no delay can be measured: its first observation was</span>
+<span class="sd">            already a detection. `False` (the default) drops it. `True` keeps it,</span>
+<span class="sd">            ignoring `min_delay`/`max_delay`.</span>
+<span class="sd">        bands : list of str, optional</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        chunk_size : int, optional</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EventCatalog</span>
+<span class="sd">            A new catalog over the surviving rows only.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If both `min_delay` and `max_delay` are `None`.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        filter_by_time_to_first_detection : Cut on the time from explosion instead.</span>
+<span class="sd">        filter_by_snr : The definition of a qualifying detection this cut builds on.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            bracketed = simulator.filter_by_time_since_last_nondetection(</span>
+<span class="sd">                catalog,</span>
+<span class="sd">                mission,</span>
+<span class="sd">                snr_threshold=5.0,</span>
+<span class="sd">                max_delay=3.0,</span>
+<span class="sd">            )</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of 'min_delay'/'max_delay' must be given."</span><span class="p">)</span>
+
+        <span class="n">gaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span>
+            <span class="n">mission</span><span class="p">,</span>
+            <span class="n">snr_threshold</span><span class="p">,</span>
+            <span class="n">bands</span><span class="p">,</span>
+            <span class="n">chunk_size</span><span class="p">,</span>
+            <span class="n">_reduce_nondetection_gap</span><span class="p">,</span>
+            <span class="n">keep_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">lookback</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">lookback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lookback</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">eid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">event_id</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">gap</span> <span class="o">=</span> <span class="n">gaps</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">eid</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
+                <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">keep_if_no_nondetection</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&lt;</span> <span class="n">min_delay</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&gt;</span> <span class="n">max_delay</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -3146,8 +3330,8 @@
 <span class="sd">        mission : m4opt.missions.Mission</span>
 <span class="sd">            Unused; accepted only so every `@action` shares one call signature.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An observation epoch counts as detected if at least one band's SNR exceeds</span>
-<span class="sd">            this value.</span>
+<span class="sd">            An observation epoch counts as detected if at least one band's measured ``snr``</span>
+<span class="sd">            in `photometry` exceeds this value.</span>
 <span class="sd">        confidence : float, optional</span>
 <span class="sd">            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.</span>
 
@@ -3208,12 +3392,12 @@
 <span class="sd">        mission : m4opt.missions.Mission</span>
 <span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            Same definition as `filter_by_snr`: an epoch qualifies if its best-band SNR</span>
+<span class="sd">            Same definition as `filter_by_snr`: an epoch qualifies if its measured SNR</span>
 <span class="sd">            exceeds this value.</span>
 <span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epoch_snr_chunks`.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        processing_delay : ~astropy.units.Quantity, optional</span>
 <span class="sd">            Extra fixed ground-segment latency added on top of the downlink's own</span>
 <span class="sd">            completion time, e.g. to model processing/distribution time before a real</span>
@@ -3228,7 +3412,8 @@
 
 <span class="sd">            - ``event_id``, ``transient_type``</span>
 <span class="sd">            - ``t_first_detection``: the qualifying epoch itself (absolute time).</span>
-<span class="sd">            - ``detection_band``, ``detection_snr``: that epoch's best band and SNR.</span>
+<span class="sd">            - ``detection_band``, ``detection_snr``: that epoch's best band and its</span>
+<span class="sd">              measured SNR.</span>
 <span class="sd">            - ``t_downlink``: the relevant downlink action's *completion* time</span>
 <span class="sd">              (``start_time + duration``).</span>
 <span class="sd">            - ``alert_time``: ``t_downlink + processing_delay``.</span>
@@ -3267,7 +3452,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">processing_delay</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'processing_delay' must be a Quantity, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">processing_delay</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_first_detection_epochs</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">_reduce_first_detection</span><span class="p">)</span>
 
         <span class="n">event_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">stats</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>

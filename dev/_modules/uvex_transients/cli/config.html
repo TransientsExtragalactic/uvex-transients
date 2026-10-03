@@ -473,11 +473,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">m4opt.missions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_mission</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Prior</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySimulator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.logical_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOGICAL_OP_ARITY</span>
@@ -540,12 +540,15 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_mission</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Resolve a mission name (e.g. ``"uvex"``) to its `m4opt.missions.Mission` instance.</span>
+<span class="sd">    Resolve a mission name (e.g. ``"uvex"`` or ``"uvex_fast"``) to its `m4opt.missions.Mission`.</span>
+
+<span class="sd">    Defers to `uvex_transients.missions.get_mission`, so the registered downsampled missions</span>
+<span class="sd">    resolve and the ``missions.downsample`` configuration applies.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
-<span class="sd">        The mission's attribute name in `m4opt.missions`.</span>
+<span class="sd">        A mission attribute name in `m4opt.missions`, or a registered fast mission name.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -555,13 +558,9 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `name` is not a known `m4opt.missions.Mission` attribute.</span>
+<span class="sd">        If `name` is not a known mission.</span>
 <span class="sd">    """</span>
-    <span class="n">mission</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">Mission</span><span class="p">):</span>
-        <span class="n">available</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mission</span><span class="p">))</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mission </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="n">available</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mission</span>
+    <span class="k">return</span> <span class="n">get_mission</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_schedule</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveySchedule</span><span class="p">:</span>

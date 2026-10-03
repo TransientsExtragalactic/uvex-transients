@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from m4opt.missions import uvex
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
 from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 

@@ -33,9 +33,9 @@ follow-up.
 
 
     import numpy as np
-    from m4opt.missions import uvex
     from matplotlib import pyplot as plt
 
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.simulation.core import SurveySimulator
     from uvex_transients.surveys import get_schedule
     from uvex_transients.transients.supernovae import MagnetarSLSNe
@@ -64,11 +64,11 @@ follow-up.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.66s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.66s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.67bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.34s/bin, bin=10/10, type=slsn]
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2603: RuntimeWarning: divide by zero encountered in log
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.59s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.59s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.66s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.66s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.68bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
       return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.99s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.99s/chunk, chunk=1/1, type=slsn]
-    34450 events available before the redshift cut.
+    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.02s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.02s/chunk, chunk=1/1, type=slsn]
+    36300 events available before the redshift cut.
 
 
 
@@ -99,7 +99,7 @@ Keeping only a nearby subsample
  .. code-block:: none
 
     z <= 0.5: 1900 events.
-    0.5 < z <= 1.5: 25200 events.
+    0.5 < z <= 1.5: 26050 events.
 
 
 
@@ -139,7 +139,7 @@ Before and after
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 17.730 seconds)
+   **Total running time of the script:** (0 minutes 20.971 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_redshift.py:

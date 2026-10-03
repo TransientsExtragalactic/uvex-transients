@@ -507,6 +507,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Self</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -523,7 +524,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">synphot_units</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">attenuation_callable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">AB_MAG_ZERO_POINT</span><span class="p">,</span> <span class="n">H_CGS</span>
@@ -541,12 +542,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_BOL_FLUX_UNIT</span><span class="p">,</span>
     <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+    <span class="n">_NEGLIGIBLE_FLUX_JY</span><span class="p">,</span>
+    <span class="n">_PLACEHOLDER_OBSERVER_LOCATION</span><span class="p">,</span>
+    <span class="n">_PLACEHOLDER_OBSTIME</span><span class="p">,</span>
     <span class="n">_SED_SHAPE_UNIT</span><span class="p">,</span>
     <span class="n">_SPEC_FLUX_UNIT</span><span class="p">,</span>
     <span class="n">_SPEC_LUM_UNIT</span><span class="p">,</span>
+    <span class="n">_flat_flux_source_spectrum</span><span class="p">,</span>
     <span class="n">hz_per_unit</span><span class="p">,</span>
+    <span class="n">measure_bands</span><span class="p">,</span>
     <span class="n">model_class_from_kernel</span><span class="p">,</span>
-    <span class="n">simulate_detector_photometry</span><span class="p">,</span>
+    <span class="n">normalize_times</span><span class="p">,</span>
+    <span class="n">photometry_table</span><span class="p">,</span>
+    <span class="n">resolve_bands</span><span class="p">,</span>
     <span class="n">to_cgs_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
@@ -3721,6 +3729,189 @@
     <span class="c1"># -------------------------------------- #</span>
     <span class="c1"># Detector-Aware (Noisy) Photometry       #</span>
     <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="SpectralModel.measure_photometry">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.measure_photometry.html#uvex_transients.models.core.base.SpectralModel.measure_photometry">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measure_photometry</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+        <span class="n">exptime</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
+        <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span>
+        <span class="n">coord</span><span class="p">:</span> <span class="n">SkyCoord</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">background</span><span class="p">:</span> <span class="n">SourceSpectrum</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observer_location</span><span class="p">:</span> <span class="n">EarthLocation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">obstime</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">redshift</span><span class="p">:</span> <span class="n">PhysicalInput</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">luminosity_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">angular_diameter_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">proper_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">in_model</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sys_err</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">noise_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">noise_observation_keys</span><span class="p">:</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Measure this model with a real detector at given times: one noisy measurement per epoch and band.</span>
+
+<span class="sd">        The array form of :meth:`simulate_photometry`, with no table around it. Every epoch can</span>
+<span class="sd">        belong to a different event: `coord`, `observer_location`, `obstime`, `redshift`, the</span>
+<span class="sd">        distances, `ebv`, `noise_seed`, and the model parameters can each be a scalar (shared by</span>
+<span class="sd">        every epoch) or an array with one entry per epoch. That makes it the one measurement</span>
+<span class="sd">        routine for a single event's photometry and for a survey-wide screening of many events.</span>
+
+<span class="sd">        The model is only valid from the explosion onward (some light curve shapes diverge at</span>
+<span class="sd">        negative times). Epochs not `in_model`, by default those with ``t &lt; 0``, are therefore</span>
+<span class="sd">        never evaluated against this model: they are measured against a flat, effectively</span>
+<span class="sd">        zero-flux spectrum instead, i.e. pure background at that observation's own depth.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : array-like or Quantity</span>
+<span class="sd">            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape ``(1,)``),</span>
+<span class="sd">            one entry per epoch.</span>
+<span class="sd">        exptime : ~astropy.units.Quantity</span>
+<span class="sd">            Exposure duration(s), scalar or shape matching `t`.</span>
+<span class="sd">        detector : ~m4opt.synphot.Detector</span>
+<span class="sd">            Supplies bandpasses, collecting area, plate scale, and noise terms (dark/read</span>
+<span class="sd">            noise, gain, ...). Its own ``background`` is used unless `background` is given.</span>
+<span class="sd">        coord : ~astropy.coordinates.SkyCoord</span>
+<span class="sd">            Sky position of the target, scalar or shape ``(N,)``.</span>
+<span class="sd">        background : ~synphot.SourceSpectrum, optional</span>
+<span class="sd">            Sky background to simulate against for this call, replacing `detector`'s own</span>
+<span class="sd">            (which is never mutated), e.g. `~m4opt.synphot.background.GalacticBackground()`</span>
+<span class="sd">            alone or combined with others via ``+``.</span>
+<span class="sd">        bands : list, optional</span>
+<span class="sd">            Which of `detector`'s bandpasses to evaluate. Defaults to every bandpass.</span>
+<span class="sd">        observer_location : ~astropy.coordinates.EarthLocation, optional</span>
+<span class="sd">            Observer location, scalar or shape ``(N,)``. Matters only insofar as `background`</span>
+<span class="sd">            depends on it (for example `~m4opt.synphot.background.EarthshineBackground`);</span>
+<span class="sd">            defaults to a fixed placeholder.</span>
+<span class="sd">        obstime : ~astropy.time.Time, optional</span>
+<span class="sd">            Observation time, scalar or shape ``(N,)``. Matters only insofar as `background`</span>
+<span class="sd">            depends on it (for example `~m4opt.synphot.background.ZodiacalBackground`);</span>
+<span class="sd">            defaults to a fixed placeholder.</span>
+<span class="sd">        redshift : array-like or ~astropy.units.Quantity, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        luminosity_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        angular_diameter_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        proper_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        cosmology : ~astropy.cosmology.FLRW, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional</span>
+<span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        in_model : numpy.ndarray, optional</span>
+<span class="sd">            Boolean, shape ``(N,)``: which epochs are evaluated against this model. By default</span>
+<span class="sd">            ``t &gt;= 0``. A caller can mark more epochs as background, e.g. an exposure that runs</span>
+<span class="sd">            past the end of the window it cares about.</span>
+<span class="sd">        sys_err : float or Mapping[str, float], optional</span>
+<span class="sd">            See `~uvex_transients.models._utils.measure_bands`.</span>
+<span class="sd">        rng : numpy.random.Generator, int, or None</span>
+<span class="sd">            See `~uvex_transients.models._utils.measure_bands`.</span>
+<span class="sd">        noise_seed, noise_observation_keys : optional</span>
+<span class="sd">            See `~uvex_transients.models._utils.measure_bands`.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        flux : numpy.ndarray</span>
+<span class="sd">            Measured flux density in Jy, shape ``(n_bands, N)``.</span>
+<span class="sd">        flux_err : numpy.ndarray</span>
+<span class="sd">            One-sigma uncertainty in Jy, same shape.</span>
+<span class="sd">        snr : numpy.ndarray</span>
+<span class="sd">            Measured SNR, ``flux / flux_err``, same shape.</span>
+<span class="sd">        snr_expected : numpy.ndarray</span>
+<span class="sd">            Noiseless SNR, the true flux over ``flux_err``, same shape.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `bands` or `sys_err` doesn't match `detector`, `exptime`, `in_model`, `coord`,</span>
+<span class="sd">            `observer_location` or `obstime` is neither scalar nor shaped like `t`, or</span>
+<span class="sd">            `noise_seed` is given without matching `noise_observation_keys`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">background</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">detector</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">)</span>
+        <span class="n">band_names</span> <span class="o">=</span> <span class="n">resolve_bands</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">sys_err</span><span class="p">)</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">exptime</span> <span class="o">=</span> <span class="n">normalize_times</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">exptime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">in_model</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">in_model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_model</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'in_model' must have shape </span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">in_model</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">observer_location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">observer_location</span> <span class="o">=</span> <span class="n">_PLACEHOLDER_OBSERVER_LOCATION</span>
+        <span class="k">if</span> <span class="n">obstime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">obstime</span> <span class="o">=</span> <span class="n">_PLACEHOLDER_OBSTIME</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"coord"</span><span class="p">,</span> <span class="n">coord</span><span class="p">),</span> <span class="p">(</span><span class="s2">"observer_location"</span><span class="p">,</span> <span class="n">observer_location</span><span class="p">),</span> <span class="p">(</span><span class="s2">"obstime"</span><span class="p">,</span> <span class="n">obstime</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">isscalar</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be scalar or match 't' shape </span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="c1"># Give every per-epoch input one entry per epoch, so that selecting an epoch's rows is the</span>
+        <span class="c1"># same indexing whether the caller passed a scalar (shared by every epoch) or an array.</span>
+        <span class="n">broadcast</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">subok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># noqa: E731</span>
+
+        <span class="n">coord</span><span class="p">,</span> <span class="n">observer_location</span><span class="p">,</span> <span class="n">obstime</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">coord</span><span class="p">),</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">observer_location</span><span class="p">),</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">obstime</span><span class="p">)</span>
+        <span class="n">sed_inputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
+                <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance</span><span class="p">,</span>
+                <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
+                <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
+                <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">noise_seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">noise_seed</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">noise_seed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">))</span>
+
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">band_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">evaluate_model</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">in_model</span> <span class="o">==</span> <span class="n">evaluate_model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">evaluate_model</span><span class="p">:</span>
+                <span class="c1"># Everything per-epoch gets a reserved trailing axis for wavelength, except `ebv`,</span>
+                <span class="c1"># which `attenuation_callable` reserves itself.</span>
+                <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"ebv"</span> <span class="k">else</span> <span class="n">value</span><span class="p">[</span><span class="n">rows</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sed_inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+                <span class="n">spectra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_source_spectrum</span><span class="p">(</span>
+                    <span class="n">t</span><span class="p">[</span><span class="n">rows</span><span class="p">][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spectra</span> <span class="o">=</span> <span class="n">_flat_flux_source_spectrum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">_NEGLIGIBLE_FLUX_JY</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+            <span class="n">measured</span> <span class="o">=</span> <span class="n">measure_bands</span><span class="p">(</span>
+                <span class="n">detector</span><span class="p">,</span>
+                <span class="n">band_names</span><span class="p">,</span>
+                <span class="n">exptime</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+                <span class="n">spectra</span><span class="p">,</span>
+                <span class="n">coord</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+                <span class="n">observer_location</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+                <span class="n">obstime</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+                <span class="n">sys_err</span><span class="o">=</span><span class="n">sys_err</span><span class="p">,</span>
+                <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+                <span class="n">noise_seed</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">noise_seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">noise_seed</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+                <span class="n">noise_observation_keys</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">noise_observation_keys</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">noise_observation_keys</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">out</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">measurements</span><span class="p">,</span> <span class="n">measured</span><span class="p">):</span>
+                <span class="n">out</span><span class="p">[:,</span> <span class="n">rows</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="SpectralModel.simulate_photometry">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.base.SpectralModel.simulate_photometry.html#uvex_transients.models.core.base.SpectralModel.simulate_photometry">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate_photometry</span><span class="p">(</span>
@@ -3741,77 +3932,46 @@
         <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">in_model</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sys_err</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">noise_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">noise_observation_keys</span><span class="p">:</span> <span class="n">FloatArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">ParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        Simulate noisy synthetic photometry of this model at given time(s), against a real detector.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Simulate noisy synthetic photometry of this model at given times, against a real detector.</span>
 
 <span class="sd">        The noise-aware counterpart to :meth:`mag`/:meth:`flux`/:meth:`as_source_spectrum`:</span>
-<span class="sd">        those give the noiseless truth; this adds the detector's own noise model</span>
-<span class="sd">        (:meth:`~m4opt.synphot.Detector.get_snr`, the same OIR CCD equation</span>
-<span class="sd">        :class:`~astropy.stats.signal_to_noise_oir_ccd` implements) and reports a</span>
-<span class="sd">        synthetic *measurement* -- one Gaussian realization of the true flux at each</span>
-<span class="sd">        requested time and band, at that time/band's own implied uncertainty.</span>
+<span class="sd">        those give the noiseless truth; this reports a synthetic *measurement*, one Gaussian</span>
+<span class="sd">        realization of the true flux at each requested time and band at that time and band's</span>
+<span class="sd">        own implied uncertainty, with the magnitudes and bounds worked out from it. The</span>
+<span class="sd">        measurement itself is :meth:`measure_photometry`; this lays it out as a table.</span>
 
 <span class="sd">        Deliberately independent of any :class:`~uvex_transients.surveys.base.SurveySchedule`</span>
 <span class="sd">        or :class:`~uvex_transients.simulation.event.Event`: `t`/`exptime` are whatever</span>
-<span class="sd">        times/exposures the caller wants evaluated (e.g. a target-of-opportunity's own</span>
-<span class="sd">        chosen observing cadence), not ones a schedule was queried for. `background` is</span>
-<span class="sd">        a required, explicit choice for the same reason -- rather than an implicit</span>
-<span class="sd">        default read off `detector`. This lets a caller decide what physics to include</span>
-<span class="sd">        (dust, via `ebv`, is always folded into the source flux itself; the</span>
-<span class="sd">        Milky Way's diffuse UV glow via</span>
-<span class="sd">        `~m4opt.synphot.background.GalacticBackground`; zodiacal light via</span>
-<span class="sd">        `~m4opt.synphot.background.ZodiacalBackground`; ...) without needing to know, let</span>
-<span class="sd">        alone undo, whatever combination a particular `detector` happens to ship with</span>
-<span class="sd">        (e.g. :data:`m4opt.missions.uvex`'s own detector defaults to</span>
-<span class="sd">        ``GalacticBackground() + ZodiacalBackground()``). If `background` is given, it</span>
-<span class="sd">        replaces `detector`'s own ``background`` for this call only (`detector` itself is</span>
-<span class="sd">        never mutated); if omitted, `detector`'s own ``background`` is used unchanged.</span>
-
-<span class="sd">        `observer_location`/`obstime` matter only insofar as `background` actually</span>
-<span class="sd">        depends on them: `GalacticBackground` reads only sky position (`coord`, by way of</span>
-<span class="sd">        `m4opt.synphot.observing`'s target coordinate), so for a dust-and-Galactic-only</span>
-<span class="sd">        call -- e.g. a target of opportunity whose real observing time isn't known yet --</span>
-<span class="sd">        neither needs to be real, and both default to fixed placeholders. Pass real values</span>
-<span class="sd">        (e.g. a mission's own ``observer_location(obstime)``) only when `background`</span>
-<span class="sd">        includes a term that actually varies with them, such as `ZodiacalBackground`</span>
-<span class="sd">        (sun-relative sky position, from `obstime`) or `EarthshineBackground`</span>
-<span class="sd">        (spacecraft position, from `observer_location`).</span>
+<span class="sd">        times and exposures the caller wants evaluated (for example a target of opportunity's</span>
+<span class="sd">        own cadence), not ones a schedule was queried for.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        t : array-like or Quantity</span>
-<span class="sd">            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape</span>
-<span class="sd">            ``(1,)``) -- one entry per requested observation. Unlike</span>
-<span class="sd">            :meth:`as_source_spectrum`, no manual trailing batch axis is needed; this</span>
-<span class="sd">            method inserts and removes it internally.</span>
+<span class="sd">            Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape ``(1,)``).</span>
 <span class="sd">        exptime : ~astropy.units.Quantity</span>
-<span class="sd">            Exposure duration(s), scalar (applied to every entry of `t`) or shape</span>
-<span class="sd">            matching `t`.</span>
+<span class="sd">            Exposure duration(s), scalar or shape matching `t`.</span>
 <span class="sd">        detector : ~m4opt.synphot.Detector</span>
-<span class="sd">            Supplies bandpasses, collecting area, plate scale, and detector noise terms</span>
-<span class="sd">            (dark/read noise, gain, ...). Its own ``background`` is used only if</span>
-<span class="sd">            `background` isn't given -- see above.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        coord : ~astropy.coordinates.SkyCoord</span>
-<span class="sd">            Scalar sky position of the target.</span>
+<span class="sd">            Sky position of the target, scalar or shape ``(N,)``.</span>
 <span class="sd">        background : ~synphot.SourceSpectrum, optional</span>
-<span class="sd">            Sky background surface brightness to simulate against for this call --</span>
-<span class="sd">            e.g. `~m4opt.synphot.background.GalacticBackground()` alone, or combined</span>
-<span class="sd">            with others via ``+``. If `None` (the default), `detector`'s own</span>
-<span class="sd">            ``background`` is used.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        bands : list, optional</span>
-<span class="sd">            Which of `detector`'s bandpasses to evaluate. Defaults to every bandpass</span>
-<span class="sd">            `detector` has.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        observer_location : ~astropy.coordinates.EarthLocation, optional</span>
-<span class="sd">            See above; defaults to a fixed placeholder location, correct whenever</span>
-<span class="sd">            `background` doesn't depend on it.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        obstime : ~astropy.time.Time, optional</span>
-<span class="sd">            See above; defaults to a fixed placeholder epoch, correct whenever</span>
-<span class="sd">            `background` doesn't depend on it.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        redshift : array-like or ~astropy.units.Quantity, optional</span>
 <span class="sd">            See :meth:`as_source_spectrum`.</span>
 <span class="sd">        luminosity_distance : ~astropy.units.Quantity, optional</span>
@@ -3824,95 +3984,69 @@
 <span class="sd">            See :meth:`as_source_spectrum`.</span>
 <span class="sd">        ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional</span>
 <span class="sd">            See :meth:`as_source_spectrum`.</span>
+<span class="sd">        in_model : numpy.ndarray, optional</span>
+<span class="sd">            See :meth:`measure_photometry`. By default ``t &gt;= 0``.</span>
 <span class="sd">        n_sigma : float, optional</span>
 <span class="sd">            Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/</span>
 <span class="sd">            ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses</span>
 <span class="sd">            ``config["simulation.detection_n_sigma"]`` (5 out of the box).</span>
 <span class="sd">        sys_err : float or Mapping[str, float], optional</span>
-<span class="sd">            A per-band systematic calibration error floor, in magnitudes, combined in</span>
-<span class="sd">            quadrature with the shot-noise uncertainty `detector` itself computes (via</span>
-<span class="sd">            :meth:`~m4opt.synphot.Detector.get_snr`, the OIR CCD equation -- source and</span>
-<span class="sd">            sky Poisson noise plus detector read/dark noise only, with no notion of</span>
-<span class="sd">            flat-fielding, PSF-fit, or zeropoint calibration systematics). Folded into</span>
-<span class="sd">            the noise realization itself, not just reported as a wider `flux_err` around</span>
-<span class="sd">            an unchanged draw -- otherwise the scatter of simulated points across</span>
-<span class="sd">            repeated visits would be narrower than what their own error bars claim.</span>
-<span class="sd">            A bare `float` applies the same floor to every band in `bands`; a mapping</span>
-<span class="sd">            must have an entry for every band in `bands`. If `None` (the default, and</span>
-<span class="sd">            the prior behavior), no systematic floor is added.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        rng : numpy.random.Generator, int, or None</span>
-<span class="sd">            Random-number source for the noise realization; see :func:`~uvex_transients.utils.get_rng`.</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
+<span class="sd">        noise_seed, noise_observation_keys : optional</span>
+<span class="sd">            See :meth:`measure_photometry`.</span>
 <span class="sd">        **parameters</span>
 <span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        astropy.table.QTable</span>
-<span class="sd">            One row per (time, band), sorted by ``t`` then ``band``, with columns</span>
-<span class="sd">            ``t``, ``exptime``, ``band``, ``snr``, ``flux``/``flux_err`` (Jy),</span>
-<span class="sd">            ``flux_upper``/``flux_lower`` (Jy, ``flux ± n_sigma*flux_err``),</span>
-<span class="sd">            ``ab_mag``/``mag_err``, and ``mag_upper``/``mag_lower`` -- the ``n_sigma``</span>
-<span class="sd">            interval transformed to magnitude, brighter bound first. See</span>
-<span class="sd">            :meth:`~uvex_transients.simulation.event.Event.simulate_photometry` for the</span>
-<span class="sd">            exact semantics of every column (this method implements the same math).</span>
-<span class="sd">            If `sys_err` is given, ``snr``/``flux_err``/``mag_err`` (and everything</span>
-<span class="sd">            derived from them) reflect the combined shot-noise-plus-systematic</span>
-<span class="sd">            uncertainty.</span>
+<span class="sd">            One row per (time, band), sorted by ``t`` then ``band``, with columns ``t``,</span>
+<span class="sd">            ``exptime``, ``band``, ``snr`` (the measured SNR, ``flux / flux_err``),</span>
+<span class="sd">            ``flux``/``flux_err`` (Jy), ``flux_upper``/``flux_lower`` (Jy, ``flux ±</span>
+<span class="sd">            n_sigma*flux_err``), ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower`` -- the</span>
+<span class="sd">            ``n_sigma`` interval transformed to magnitude, brighter bound first -- and</span>
+<span class="sd">            ``in_model``. See :meth:`~uvex_transients.simulation.event.Event.simulate_photometry`</span>
+<span class="sd">            for the exact semantics of every column. If `sys_err` is given,</span>
+<span class="sd">            ``snr``/``flux_err``/``mag_err`` (and everything derived from them) reflect the</span>
+<span class="sd">            combined shot-noise-plus-systematic uncertainty.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If `coord` is not scalar, if `bands` contains a name `detector` doesn't</span>
-<span class="sd">            have, if `exptime` is neither scalar nor shaped like `t`, or if `sys_err`</span>
-<span class="sd">            is a mapping missing an entry for one of `bands`.</span>
+<span class="sd">            As for :meth:`measure_photometry`.</span>
 <span class="sd">        """</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">exptime</span> <span class="o">=</span> <span class="n">normalize_times</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">exptime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">in_model</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">in_model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
-        <span class="c1"># Trailing batch axis reserved for `t`, as in `Event.simulate_photometry` --</span>
-        <span class="c1"># keeps this batch from colliding with whatever wavelength grid the spectrum</span>
-        <span class="c1"># is later called with (e.g. a bandpass's `waveset`). Deferred to a factory</span>
-        <span class="c1"># so `simulate_detector_photometry` can validate `bands`/`sys_err`/`coord`</span>
-        <span class="c1"># first and never build this spectrum at all if that validation fails.</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">spectra_factory</span><span class="p">(</span><span class="n">t_norm</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SourceSpectrum</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">"""</span>
-<span class="sd">            Build this model's `~synphot.SourceSpectrum` for `t_norm`'s normalized shape.</span>
-
-<span class="sd">            Parameters</span>
-<span class="sd">            ----------</span>
-<span class="sd">            t_norm : ~astropy.units.Quantity</span>
-<span class="sd">                `t`, already validated/normalized to shape ``(N,)`` by</span>
-<span class="sd">                `~uvex_transients.models._utils.simulate_detector_photometry`.</span>
-
-<span class="sd">            Returns</span>
-<span class="sd">            -------</span>
-<span class="sd">            ~synphot.SourceSpectrum</span>
-<span class="sd">                This model's spectrum to simulate photometry of.</span>
-<span class="sd">            """</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_source_spectrum</span><span class="p">(</span>
-                <span class="n">t_norm</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-                <span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
-                <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance</span><span class="p">,</span>
-                <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
-                <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
-                <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span>
-                <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
-                <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">simulate_detector_photometry</span><span class="p">(</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_photometry</span><span class="p">(</span>
             <span class="n">t</span><span class="p">,</span>
             <span class="n">exptime</span><span class="p">,</span>
             <span class="n">detector</span><span class="p">,</span>
             <span class="n">coord</span><span class="p">,</span>
-            <span class="n">spectra_factory</span><span class="p">,</span>
             <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span>
             <span class="n">bands</span><span class="o">=</span><span class="n">bands</span><span class="p">,</span>
             <span class="n">observer_location</span><span class="o">=</span><span class="n">observer_location</span><span class="p">,</span>
             <span class="n">obstime</span><span class="o">=</span><span class="n">obstime</span><span class="p">,</span>
-            <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">,</span>
+            <span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
+            <span class="n">luminosity_distance</span><span class="o">=</span><span class="n">luminosity_distance</span><span class="p">,</span>
+            <span class="n">angular_diameter_distance</span><span class="o">=</span><span class="n">angular_diameter_distance</span><span class="p">,</span>
+            <span class="n">proper_distance</span><span class="o">=</span><span class="n">proper_distance</span><span class="p">,</span>
+            <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span>
+            <span class="n">ebv</span><span class="o">=</span><span class="n">ebv</span><span class="p">,</span>
+            <span class="n">dust_law</span><span class="o">=</span><span class="n">dust_law</span><span class="p">,</span>
+            <span class="n">in_model</span><span class="o">=</span><span class="n">in_model</span><span class="p">,</span>
             <span class="n">sys_err</span><span class="o">=</span><span class="n">sys_err</span><span class="p">,</span>
             <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
-        <span class="p">)</span></div>
+            <span class="n">noise_seed</span><span class="o">=</span><span class="n">noise_seed</span><span class="p">,</span>
+            <span class="n">noise_observation_keys</span><span class="o">=</span><span class="n">noise_observation_keys</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">band_names</span> <span class="o">=</span> <span class="n">resolve_bands</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">sys_err</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">photometry_table</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">exptime</span><span class="p">,</span> <span class="n">band_names</span><span class="p">,</span> <span class="o">*</span><span class="n">measurements</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">,</span> <span class="n">in_model</span><span class="o">=</span><span class="n">in_model</span><span class="p">)</span></div>
 
 
     <span class="c1"># -------------------------------------- #</span>

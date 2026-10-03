@@ -33,9 +33,9 @@ intrinsic-plus-distance screen, distinct from
 .. code-block:: Python
 
 
-    from m4opt.missions import uvex
     from matplotlib import pyplot as plt
 
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.simulation.core import SurveySimulator
     from uvex_transients.surveys import get_schedule
     from uvex_transients.transients.supernovae import MagnetarSLSNe
@@ -62,7 +62,7 @@ intrinsic-plus-distance screen, distinct from
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:36, 10.69s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:36, 10.69s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.62s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.62s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.68s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.68s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.76s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.57bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.57bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  1.98bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  1.98bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.50bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.36s/bin, bin=10/10, type=slsn]
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.71bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.71bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.68bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.34s/bin, bin=10/10, type=slsn]
     169050 events sampled.
 
 
@@ -96,14 +96,14 @@ magnitude is allowed to be.
 
  .. code-block:: none
 
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2603: RuntimeWarning: divide by zero encountered in log
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
       return np.log(numerator / denominator)
-    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.85s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.85s/chunk, chunk=1/1, type=slsn]
-    max_mag=21.0: 3300 events peak this bright.
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.66s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.66s/chunk, chunk=1/1, type=slsn]
-    max_mag=22.0: 8150 events peak this bright.
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.89s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.89s/chunk, chunk=1/1, type=slsn]
-    max_mag=23.5: 25000 events peak this bright.
+    Evaluating peak band flux: 100%|██████████| 1/1 [00:09<00:00,  9.02s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:09<00:00,  9.02s/chunk, chunk=1/1, type=slsn]
+    max_mag=21.0: 3450 events peak this bright.
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.88s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.88s/chunk, chunk=1/1, type=slsn]
+    max_mag=22.0: 8450 events peak this bright.
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:01<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:06<00:00,  6.11s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:06<00:00,  6.11s/chunk, chunk=1/1, type=slsn]
+    max_mag=23.5: 26000 events peak this bright.
 
 
 
@@ -141,7 +141,7 @@ The rising survival count
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 57.236 seconds)
+   **Total running time of the script:** (4 minutes 43.790 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_peak_magnitude.py:

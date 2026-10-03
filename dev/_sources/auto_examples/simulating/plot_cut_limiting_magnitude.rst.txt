@@ -31,9 +31,9 @@ sampled catalog, before anything schedule-aware.
 .. code-block:: Python
 
 
-    from m4opt.missions import uvex
     from matplotlib import pyplot as plt
 
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.simulation.core import SurveySimulator
     from uvex_transients.surveys import get_schedule
     from uvex_transients.transients.supernovae import MagnetarSLSNe
@@ -79,7 +79,7 @@ A freshly sampled catalog, with no screening applied yet.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:36, 10.68s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:36, 10.68s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.62s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.62s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.68s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.68s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.77s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.77s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:13<00:01,  1.71bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.12bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.12bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.28bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.36s/bin, bin=10/10, type=slsn]
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.55s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.55s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.56s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.56s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.69bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
     Sampled 169050 SLSNe across 10 time bin(s) at NSIDE=32.
 
 
@@ -116,16 +116,16 @@ clear the limit at more than one sampled phase, not just momentarily.
 
  .. code-block:: none
 
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2603: RuntimeWarning: divide by zero encountered in log
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
       return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.77s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.77s/chunk, chunk=1/1, type=slsn]
-    mag_limit=22.0: 5200 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.75s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.75s/chunk, chunk=1/1, type=slsn]
-    mag_limit=23.5: 14600 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.96s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.96s/chunk, chunk=1/1, type=slsn]
-    mag_limit=25.0: 34450 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.76s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.76s/chunk, chunk=1/1, type=slsn]
-    mag_limit=25.0, n_visits=3: 31150 survive.
+    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.23s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.23s/chunk, chunk=1/1, type=slsn]
+    mag_limit=22.0: 5400 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]
+    mag_limit=23.5: 15550 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]
+    mag_limit=25.0: 36300 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.12s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.12s/chunk, chunk=1/1, type=slsn]
+    mag_limit=25.0, n_visits=3: 32450 survive.
 
 
 
@@ -163,7 +163,7 @@ The falling survival count
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 26.224 seconds)
+   **Total running time of the script:** (0 minutes 38.957 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_limiting_magnitude.py:

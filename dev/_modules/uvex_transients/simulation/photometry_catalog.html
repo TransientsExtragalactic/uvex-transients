@@ -497,9 +497,9 @@
 <span class="w">    </span><span class="sd">"""QTable: One row per ``(event, observation, band)``.</span>
 
 <span class="sd">    Columns are exactly `~uvex_transients.simulation.event.Event.simulate_photometry`'s own</span>
-<span class="sd">    schema: ``event_id``, ``obs_time``, ``exptime``, ``band``, ``snr``, ``flux``/``flux_err``</span>
-<span class="sd">    (Jy), ``flux_upper``/``flux_lower`` (Jy), ``ab_mag``/``mag_err``, and</span>
-<span class="sd">    ``mag_upper``/``mag_lower``.</span>
+<span class="sd">    schema: ``event_id``, ``obs_time``, ``rel_time``, ``exptime``, ``band``, ``snr`` (the</span>
+<span class="sd">    measured SNR), ``flux``/``flux_err`` (Jy), ``flux_upper``/``flux_lower`` (Jy),</span>
+<span class="sd">    ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower``, and ``in_model``.</span>
 <span class="sd">    """</span>
 
     <span class="c1"># ----------------------------------------- #</span>
@@ -557,7 +557,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">snr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""numpy.ndarray: Each row's signal-to-noise ratio."""</span>
+<span class="w">        </span><span class="sd">"""numpy.ndarray: Each row's measured signal-to-noise ratio, ``flux / flux_err``."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">column</span><span class="p">(</span><span class="s2">"snr"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -701,7 +701,7 @@
 <span class="sd">            Transient-type instances, keyed the same way as `event_catalog.transient_type` and</span>
 <span class="sd">            `exposure.transient_type`; supplies each type's `RATE_CI`.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An epoch counts as detected if at least one band's ``snr`` exceeds this value.</span>
+<span class="sd">            An epoch counts as detected if at least one band's measured ``snr`` exceeds this value.</span>
 <span class="sd">        confidence : float, optional</span>
 <span class="sd">            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.</span>
 
@@ -748,7 +748,7 @@
         <span class="c1"># Background/non-detection rows (`in_model == False`, from a transient's</span>
         <span class="c1"># `photometry_pre_window`/`photometry_post_window` -- see</span>
         <span class="c1"># `~uvex_transients.simulation.event.Event.simulate_photometry`) never had a real</span>
-        <span class="c1"># source to detect; their `snr` is pure noise around a true flux of zero, and</span>
+        <span class="c1"># source to detect; their measured `snr` is pure noise around a true flux of zero, and</span>
         <span class="c1"># excluding them here is the only thing standing between that noise and this</span>
         <span class="c1"># table's detection counts/yields.</span>
         <span class="n">phot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span>

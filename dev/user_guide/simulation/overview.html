@@ -821,7 +821,9 @@ in this guide visits almost every field exactly once, so the example below passe
 </div>
 </div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ``uvex_fast`` is ``m4opt.missions.uvex`` with its dense bandpass tables downsampled (see</span>
+<span class="c1"># ``uvex_transients.missions``); band integrals agree to about 1e-3 mag for thermal spectra.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex_fast</span> <span class="k">as</span> <span class="n">uvex</span>
 
 <span class="n">mission</span> <span class="o">=</span> <span class="n">uvex</span>
 <span class="n">mag_filtered</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>
@@ -1000,24 +1002,6 @@ are:</p>
 </pre></div>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/a8d7ca9a682638f84e7d7c885194a7b8/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
-<figure class="align-default" id="id3">
-<img alt="../../_images/overview-3_00.png" class="plot-directive" src="../../_images/overview-3_00.png" />
-<figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/30eae432d928ef8d373f6fe1438a3f21/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0990ba76e6f942efafcf6a1323447c9b/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b52214cade309f2c9c6dce953169a2be/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id4">
-<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
-<figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/897326a1434b79ac6ceb9a36969f7d63/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c57be1163b8884254c52784c1e96a8aa/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bfac5e7bb0163ca2c08ba0583c3a7778/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id5">
-<img alt="../../_images/overview-3_02.png" class="plot-directive" src="../../_images/overview-3_02.png" />
-<figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/c9a9da17499932f2649c17ea434677e0/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/04262613846f5f56177aede02e52b76f/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/08492c9b14e685e17e9fa477f43a96ce/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
 <p>This example schedule only ever visits a given field once, so most of its events – like this one
 – end up with just one or two associated observations; see the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> for the
 same workflow against a real, densely-cadenced UVEX schedule.</p>

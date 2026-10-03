@@ -33,9 +33,9 @@ not instead of it.
 .. code-block:: Python
 
 
-    from m4opt.missions import uvex
     from matplotlib import pyplot as plt
 
+    from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.simulation.core import SurveySimulator
     from uvex_transients.surveys import get_schedule
     from uvex_transients.transients.supernovae import MagnetarSLSNe
@@ -64,11 +64,11 @@ not instead of it.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.59s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.59s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.58s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.58s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.66s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.66s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.68bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2603: RuntimeWarning: divide by zero encountered in log
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.49s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.49s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.54s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.54s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.63s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.63s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.73s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.73s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.23s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.23s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.39bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.39bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.70bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.32s/bin, bin=10/10, type=slsn]
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
       return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.90s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:02<00:00,  2.90s/chunk, chunk=1/1, type=slsn]
-    34450 could ever clear 25.0 AB mag.
+    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.10s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.10s/chunk, chunk=1/1, type=slsn]
+    36300 could ever clear 25.0 AB mag.
 
 
 
@@ -105,14 +105,14 @@ than once, which is a much stricter, and schedule-real, requirement than
 
  .. code-block:: none
 
-    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]
-    snr_threshold=3.0: 13000 detected.
-    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.01s/chunk, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.01s/chunk, type=slsn]
-    snr_threshold=5.0: 11150 detected.
-    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]
-    snr_threshold=10.0: 5900 detected.
-    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epoch SNRs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]    Computing epoch SNRs: 100%|██████████| 1/1 [00:01<00:00,  1.00s/chunk, type=slsn]
-    snr_threshold=5.0, n_visits=2: 8000 detected on 2+ visits.
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.66s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.66s/chunk, type=slsn]
+    snr_threshold=3.0: 14100 detected.
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]
+    snr_threshold=5.0: 11100 detected.
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]
+    snr_threshold=10.0: 5700 detected.
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.40s/chunk, type=slsn]
+    snr_threshold=5.0, n_visits=2: 7350 detected on 2+ visits.
 
 
 
@@ -150,7 +150,7 @@ The detected count vs. threshold
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 21.619 seconds)
+   **Total running time of the script:** (0 minutes 26.470 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_snr.py:

@@ -37,10 +37,10 @@ import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
-from m4opt.missions import uvex
 from m4opt.synphot.background import GalacticBackground
 
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 from uvex_transients.utils.plotting import get_band_color, plot_band_light_curve, resolve_fig_axes, set_plot_style
 

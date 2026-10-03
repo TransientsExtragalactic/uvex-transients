@@ -9,9 +9,9 @@ full detected span to exceed it. Together they pick out events with both a dense
 sub-cadence and a long overall baseline, e.g. for light-curve-shape science.
 """
 
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.transients.supernovae import MagnetarSLSNe

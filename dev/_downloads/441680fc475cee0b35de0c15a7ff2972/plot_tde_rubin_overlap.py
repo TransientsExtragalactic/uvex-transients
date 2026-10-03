@@ -25,9 +25,9 @@ that can have optical follow-up or pre-discovery data from LSST. We'll:
 # :math:`\mathrm{SNR}=5` at an observation the schedule actually made.
 
 from astropy import units as u
-from m4opt.missions import uvex
 from matplotlib import pyplot as plt
 
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.surveys import get_schedule
 from uvex_transients.surveys.footprints import lsst_combined_footprint

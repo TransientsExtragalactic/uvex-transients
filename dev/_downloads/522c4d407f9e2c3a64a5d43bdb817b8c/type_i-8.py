@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from m4opt.missions import uvex
+from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.supernovae import TypeIcSNe
 
 rng = np.random.default_rng(20260918)
