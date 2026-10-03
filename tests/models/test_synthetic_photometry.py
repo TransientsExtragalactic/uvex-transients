@@ -13,6 +13,7 @@ from m4opt.synphot import observing
 from m4opt.synphot.background import GalacticBackground
 
 from uvex_transients.models import VanVelzenTDESED, VillarCoolingBlackbodySED
+from uvex_transients.utils.keyed_noise import keyed_standard_normal, time_key
 
 
 def test_synthetic_photometry_batches_events_and_times():
@@ -218,9 +219,14 @@ def test_simulate_photometry_matches_manual_get_snr():
             spectrum = model.as_source_spectrum(t_i, redshift=redshift, **params)
             with observing(observer_location[i], coord, obstime[i]):
                 expected_snr = uvex.detector.get_snr(exptime, spectrum, band)
+            true_flux = float(np.squeeze(spectrum(uvex.detector.bandpasses[band].pivot(), flux_unit=u.Jy).value))
             row = phot[(phot["band"] == band) & (phot["t"] == t_i)]
             assert len(row) == 1
-            np.testing.assert_allclose(row["snr"][0], expected_snr, rtol=1e-6)
+            # The uncertainty is the true flux over the detector's expected SNR.
+            np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-6)
+            # The reported `snr` is the measured one: the noisy flux over its uncertainty.
+            measured_snr = row["flux"][0].to_value(u.Jy) / row["flux_err"][0].to_value(u.Jy)
+            np.testing.assert_allclose(row["snr"][0], measured_snr, rtol=1e-10)
 
 
 def test_simulate_photometry_scalar_t_and_exptime():
@@ -277,7 +283,7 @@ def test_simulate_photometry_background_override_is_explicit_and_effective():
             rng=0,
             **params,
         )
-        return phot["snr"][0]
+        return phot["flux_err"][0].to_value(u.Jy)  # the noise level, set by the background
 
     snr_galactic_a = snr_at(obstime_a, GalacticBackground())
     snr_galactic_b = snr_at(obstime_b, GalacticBackground())
@@ -285,8 +291,8 @@ def test_simulate_photometry_background_override_is_explicit_and_effective():
 
     snr_default_a = snr_at(obstime_a, None)
     snr_default_b = snr_at(obstime_b, None)
-    assert not np.isclose(snr_default_a, snr_default_b, rtol=1e-6)
-    assert not np.isclose(snr_default_a, snr_galactic_a, rtol=1e-6)
+    assert not np.isclose(snr_default_a, snr_default_b, rtol=1e-6, atol=0)
+    assert not np.isclose(snr_default_a, snr_galactic_a, rtol=1e-6, atol=0)
 
 
 def test_simulate_photometry_unknown_band_raises():
@@ -307,14 +313,70 @@ def test_simulate_photometry_unknown_band_raises():
         )
 
 
-def test_simulate_photometry_requires_scalar_coord():
-    """A non-scalar `coord` raises rather than silently doing something batched-looking."""
+def test_simulate_photometry_per_epoch_arrays_must_match_t():
+    """A per-epoch `coord` (or observer location, or time) must be scalar or shaped like `t`."""
     model = VanVelzenTDESED()
     coord = SkyCoord(ra=[10, 20] * u.deg, dec=[-10, -20] * u.deg)
     params = {name: value[0] for name, value in model.sample_parameters(1, rng=5).items()}
 
-    with pytest.raises(ValueError, match="scalar"):
-        model.simulate_photometry(10 * u.day, 900 * u.s, uvex.detector, coord, redshift=0.05, **params)
+    with pytest.raises(ValueError, match="coord"):
+        model.simulate_photometry([1, 5, 10] * u.day, 900 * u.s, uvex.detector, coord, redshift=0.05, **params)
+
+
+def test_simulate_photometry_is_vectorized_over_events():
+    """
+    One call over epochs of different events equals separate calls, one per event.
+
+    Each epoch has its own position, redshift, model parameters and noise seed; the keyed noise
+    means an epoch's measurement cannot depend on which other epochs are in the call.
+    """
+    model = VanVelzenTDESED()
+    sampled = model.sample_parameters(2, rng=7)
+    coords = SkyCoord(ra=[150, 30] * u.deg, dec=[20, 5] * u.deg)
+    redshift = np.array([0.05, 0.08])
+    seeds = np.array([11, 22], dtype=np.uint64)
+
+    # Three epochs of event 0 and two of event 1, interleaved in time. Some are before the explosion,
+    # so each event has both modelled and background-only epochs, at its own position.
+    event = np.array([0, 1, 0, 1, 0])
+    t = np.array([2, -3, 10, 15, -1]) * u.day
+    obstime = Time("2025-01-01T00:00:00", scale="utc") + t
+    location = uvex.observer_location(obstime)
+    keys = time_key(obstime)
+
+    batched = model.simulate_photometry(
+        t,
+        900 * u.s,
+        uvex.detector,
+        coords[event],
+        observer_location=location,
+        obstime=obstime,
+        redshift=redshift[event],
+        noise_seed=seeds[event],
+        noise_observation_keys=keys,
+        **{name: value[event] for name, value in sampled.items()},
+    )
+
+    for i in (0, 1):
+        rows = np.flatnonzero(event == i)
+        single = model.simulate_photometry(
+            t[rows],
+            900 * u.s,
+            uvex.detector,
+            coords[i],
+            observer_location=location[rows],
+            obstime=obstime[rows],
+            redshift=redshift[i],
+            noise_seed=int(seeds[i]),
+            noise_observation_keys=keys[rows],
+            **{name: value[i] for name, value in sampled.items()},
+        )
+        for band in uvex.detector.bandpasses:
+            for column in ("flux", "flux_err", "snr"):
+                mine = np.isin(batched["t"].to_value(u.day), t[rows].to_value(u.day))
+                got = batched[(batched["band"] == band) & mine][column]
+                want = single[single["band"] == band][column]
+                np.testing.assert_array_equal(np.asarray(got), np.asarray(want))
 
 
 def test_simulate_photometry_exptime_shape_mismatch_raises():
@@ -460,3 +522,92 @@ def test_simulate_photometry_detector_is_not_mutated():
     )
 
     assert uvex.detector.background is original_background
+
+
+# =========================================================================== #
+# SpectralModel.measure_photometry                                           #
+# =========================================================================== #
+def _measure_setup(n):
+    """A TDE model, a sky position, and ``n`` epochs spread over 200 days, with their observing geometry."""
+    model = VanVelzenTDESED()
+    params = {name: value[0] for name, value in model.sample_parameters(1, rng=8).items()}
+    t = np.linspace(1, 200, n) * u.day
+    obstime = Time("2025-01-01T00:00:00", scale="utc") + t
+    return model, params, SkyCoord(ra=150 * u.deg, dec=20 * u.deg), t, obstime, uvex.observer_location(obstime)
+
+
+def test_measure_photometry_noise_is_exactly_the_keyed_draw():
+    """With one band, measured minus expected SNR is `keyed_standard_normal` of (seed, start time, band)."""
+    model, params, coord, t, obstime, location = _measure_setup(400)
+    band = list(uvex.detector.bandpasses)[-1]
+
+    flux, flux_err, snr, snr_expected = model.measure_photometry(
+        t,
+        900 * u.s,
+        uvex.detector,
+        coord,
+        bands=[band],
+        observer_location=location,
+        obstime=obstime,
+        redshift=0.05,
+        noise_seed=42,
+        noise_observation_keys=time_key(obstime),
+        **params,
+    )
+
+    assert np.all(np.isfinite(snr))
+    draw = keyed_standard_normal(42, time_key(obstime), list(uvex.detector.bandpasses).index(band))
+    np.testing.assert_allclose(snr[0] - snr_expected[0], draw, atol=1e-6)
+    np.testing.assert_allclose(flux[0] / flux_err[0], snr[0], rtol=1e-10)
+
+    # Across many epochs those draws are standard normal.
+    assert abs(draw.mean()) < 5 / np.sqrt(len(draw))
+    assert abs(draw.std() - 1) < 5 / np.sqrt(2 * len(draw))
+
+
+def test_measure_photometry_distinct_seeds_give_distinct_noise():
+    """Two events measured at the same instants do not share a noise draw."""
+    model, params, coord, t, obstime, location = _measure_setup(50)
+    common = dict(
+        observer_location=location,
+        obstime=obstime,
+        redshift=0.05,
+        noise_observation_keys=time_key(obstime),
+        bands=[list(uvex.detector.bandpasses)[0]],
+        **params,
+    )
+    *_, snr_a, expected_a = model.measure_photometry(t, 900 * u.s, uvex.detector, coord, noise_seed=1, **common)
+    *_, snr_b, expected_b = model.measure_photometry(t, 900 * u.s, uvex.detector, coord, noise_seed=2, **common)
+
+    noise_a, noise_b = (snr_a - expected_a)[0], (snr_b - expected_b)[0]
+    assert not np.any(np.isclose(noise_a, noise_b))
+
+
+def test_pre_explosion_epochs_are_background_only_by_default():
+    """Epochs with ``t < 0`` are never evaluated against the model: expected SNR is nil, flagged not `in_model`."""
+    model, params, coord, _, _, _ = _measure_setup(3)
+    t = [-20, -5, 10] * u.day
+
+    phot = model.simulate_photometry(t, 900 * u.s, uvex.detector, coord, redshift=0.05, rng=0, **params)
+
+    assert phot["in_model"][phot["t"] < 0 * u.day].tolist() == [False] * 2 * len(uvex.detector.bandpasses)
+    assert np.all(phot["in_model"][phot["t"] > 0 * u.day])
+
+    _, _, _, snr_expected = model.measure_photometry(t, 900 * u.s, uvex.detector, coord, redshift=0.05, rng=0, **params)
+    assert np.all(np.abs(snr_expected[:, :2]) < 1e-6)  # pure background: no source
+    assert np.all(snr_expected[:, 2] > 1)  # the one real epoch is a real measurement
+
+
+def test_in_model_overrides_the_default():
+    """A caller can mark a ``t >= 0`` epoch as background (e.g. an exposure running past its window)."""
+    model, params, coord, _, _, _ = _measure_setup(3)
+    t = [5, 10, 15] * u.day
+
+    _, _, _, snr_expected = model.measure_photometry(
+        t, 900 * u.s, uvex.detector, coord, redshift=0.05, in_model=[True, False, True], rng=0, **params
+    )
+    assert np.all(np.abs(snr_expected[:, 1]) < 1e-6)
+    assert np.all(snr_expected[:, [0, 2]] > 1)
+
+    with pytest.raises(ValueError, match="in_model"):
+        model.measure_photometry(t, 900 * u.s, uvex.detector, coord, redshift=0.05, in_model=[True], **params)

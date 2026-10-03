@@ -8,7 +8,6 @@ from astropy.coordinates import SkyCoord
 from astropy.table import QTable
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
-from m4opt.synphot import observing
 
 from uvex_transients.simulation.core import (
     SurveySimulator,
@@ -16,6 +15,7 @@ from uvex_transients.simulation.core import (
 )
 from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
+from uvex_transients.utils.keyed_noise import time_key
 
 CATALOG_NSIDE = 128
 CATALOG_ORDER = "nested"
@@ -103,9 +103,8 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
     )
     kept_ids = set(np.asarray(filtered.table["event_id"]))
 
-    # Ground truth: each event's own `parameter_seed` (exactly matching
-    # `_sample_parameters_from_seeds`, which `filter_by_snr` uses internally), then
-    # per event, per observation, per band -- all unbatched.
+    # Ground truth: each event's own `parameter_seed`, then per event, all unbatched across events:
+    # the schedule's observations of it, measured with the SED class's own photometry.
     sed_params_all = _sample_parameters_from_seeds(transient.sed, np.asarray(catalog.table["parameter_seed"]))
 
     expected_kept = set()
@@ -118,28 +117,25 @@ def test_filter_by_snr_matches_independent_unbatched_computation(make_schedule, 
             end_time=t_explosion[i] + transient.duration_limit,
         )
         obs_i = schedule.observe_rows[row_index_i]
-        obs_i = obs_i[np.argsort(obs_i["start_time"])]
         if len(obs_i) == 0:
             continue
 
-        sed_params_i = {name: value[i] for name, value in sed_params_all.items()}
-        best_snr = None
-        for j in range(len(obs_i)):
-            t_obs = (obs_i["start_time"][j] - t_explosion[i]).to(u.day)
-            spectrum = transient.sed.as_source_spectrum(
-                t_obs,
-                redshift=redshift[i],
-                luminosity_distance=catalog.table["luminosity_distance"][i],
-                ebv=0.05,
-                **sed_params_i,
-            )
-            with observing(obs_i["observer_location"][j], coord[i], obs_i["start_time"][j]):
-                snr = max(
-                    uvex.detector.get_snr(obs_i["duration"][j], spectrum, band) for band in uvex.detector.bandpasses
-                )
-            best_snr = snr if best_snr is None else max(best_snr, snr)
-
-        if best_snr is not None and best_snr > snr_threshold:
+        phot = transient.sed.simulate_photometry(
+            (obs_i["start_time"] - t_explosion[i]).to(u.day),
+            obs_i["duration"],
+            uvex.detector,
+            coord[i],
+            observer_location=obs_i["observer_location"],
+            obstime=obs_i["start_time"],
+            redshift=redshift[i],
+            luminosity_distance=catalog.table["luminosity_distance"][i],
+            ebv=0.05,
+            noise_seed=int(catalog.table["parameter_seed"][i]),
+            noise_observation_keys=time_key(obs_i["start_time"]),
+            **{name: value[i] for name, value in sed_params_all.items()},
+        )
+        phot = phot[phot["in_model"]]  # an exposure straddling the explosion is background, never a detection
+        if len(phot) > 0 and np.nanmax(phot["snr"]) > snr_threshold:
             expected_kept.add(i)
 
     assert kept_ids == expected_kept
@@ -307,16 +303,16 @@ def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
 
 
 # --------------------------------------------------------------------------- #
-# iter_epoch_snr_chunks                                                       #
+# iter_epochs                                                                 #
 # --------------------------------------------------------------------------- #
 def _collect_epochs(sim, catalog, **kwargs):
     from astropy.table import vstack
 
-    chunks = list(sim.iter_epoch_snr_chunks(catalog, uvex, progress=False, **kwargs))
+    chunks = list(sim.iter_epochs(catalog, uvex, progress=False, **kwargs))
     return vstack(chunks) if chunks else None
 
 
-def test_iter_epoch_snr_chunks_reproduces_filter_by_snr(make_schedule, hot_spot):
+def test_iter_epochs_reproduces_filter_by_snr(make_schedule, hot_spot):
     """Thresholding / counting the yielded epochs gives exactly `filter_by_snr`'s survivors."""
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=40)
@@ -350,7 +346,7 @@ def test_iter_epoch_snr_chunks_reproduces_filter_by_snr(make_schedule, hot_spot)
     assert np.array_equal(order, np.arange(len(epochs)))
 
 
-def test_iter_epoch_snr_chunks_chunk_size_independent(make_schedule, hot_spot):
+def test_iter_epochs_chunk_size_independent(make_schedule, hot_spot):
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=40)
     catalog, *_ = _make_catalog(transient, hot_spot)
@@ -363,10 +359,13 @@ def test_iter_epoch_snr_chunks_chunk_size_independent(make_schedule, hot_spot):
 
     assert np.array_equal(small["event_id"], large["event_id"])
     assert np.array_equal(small["observation_index"], large["observation_index"])
+    # Noise is keyed on (seed, start time, band), not drawn from a stream, so the measured
+    # SNR (and the flux behind it) cannot depend on how events are chunked.
     np.testing.assert_allclose(small["snr"], large["snr"], rtol=1e-10)
+    np.testing.assert_allclose(small["flux"].value, large["flux"].value, rtol=1e-10)
 
 
-def test_iter_epoch_snr_chunks_floor_and_mask(make_schedule, hot_spot):
+def test_iter_epochs_floor_and_mask(make_schedule, hot_spot):
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=40)
     catalog, *_ = _make_catalog(transient, hot_spot)
@@ -428,7 +427,7 @@ def test_subclass_extends_the_action_registry_independently_of_cuts():
     assert _ExtraActionSimulator.available_cuts() == SurveySimulator.available_cuts()
 
 
-def test_iter_epoch_snr_chunks_validates_eagerly(make_schedule, hot_spot):
+def test_iter_epochs_validates_eagerly(make_schedule, hot_spot):
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=5)
     catalog, *_ = _make_catalog(transient, hot_spot, n_events=5)
@@ -436,8 +435,8 @@ def test_iter_epoch_snr_chunks_validates_eagerly(make_schedule, hot_spot):
 
     # Errors surface at call time, without needing to start iterating.
     with pytest.raises(ValueError, match="Unknown bandpass"):
-        sim.iter_epoch_snr_chunks(catalog, uvex, bands=["nope"])
+        sim.iter_epochs(catalog, uvex, bands=["nope"])
     with pytest.raises(ValueError, match="chunk_size"):
-        sim.iter_epoch_snr_chunks(catalog, uvex, chunk_size=0)
+        sim.iter_epochs(catalog, uvex, chunk_size=0)
     with pytest.raises(ValueError, match="mask"):
-        sim.iter_epoch_snr_chunks(catalog, uvex, mask=np.ones(3, dtype=bool))
+        sim.iter_epochs(catalog, uvex, mask=np.ones(3, dtype=bool))

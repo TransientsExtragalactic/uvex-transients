@@ -10,7 +10,12 @@ from m4opt.fov import contains as fov_contains
 from m4opt.missions._uvex import uvex
 from regions import CircleSkyRegion
 
-from uvex_transients.simulation.core import SurveySimulator
+from uvex_transients.simulation.core import (
+    SurveySimulator,
+    _reduce_detection_timing,
+    _reduce_nondetection_gap,
+    _reduce_solo_detection,
+)
 from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
@@ -120,9 +125,9 @@ def test_peak_cuts_handle_empty_catalog(sim, hot_spot):
 # time_to_first_detection / baseline                                         #
 # --------------------------------------------------------------------------- #
 def test_time_to_first_detection_matches_manual_computation(sim, catalog):
-    """time_to_first_detection_cut agrees with a manual reduction of `iter_epoch_snr_chunks`."""
+    """time_to_first_detection_cut agrees with a manual reduction of `iter_epochs`."""
     snr_threshold = 3.0
-    epochs = list(sim.iter_epoch_snr_chunks(catalog, uvex, progress=False, detection_floor=snr_threshold))
+    epochs = list(sim.iter_epochs(catalog, uvex, progress=False, detection_floor=snr_threshold))
     first_by_event = {}
     for chunk in epochs:
         above = np.asarray(chunk["snr"]) > snr_threshold
@@ -145,7 +150,7 @@ def test_time_to_first_detection_requires_a_bound(sim, catalog):
 def test_baseline_cut_two_sided_example(sim, catalog):
     """A min_baseline/max_baseline pair keeps only events with a sub-threshold gap and a super-threshold span."""
     snr_threshold = 3.0
-    stats = sim._collect_detection_epoch_stats(catalog, uvex, snr_threshold, None, None)
+    stats = sim._reduce_events(catalog, uvex, snr_threshold, None, None, _reduce_detection_timing)
     assert len(stats) >= 2  # need at least two events with qualifying epochs for the split below to be meaningful
 
     # min_baseline above every event's own min_gap (so that side of the requirement never excludes anyone),
@@ -190,11 +195,13 @@ def test_collect_solo_detection_observation_indices_keeps_only_single_epoch_even
             "event_id": np.array([0, 1, 1, 2]),
             "observation_index": np.array([5, 6, 7, 8]),
             "snr": np.array([9.0, 9.0, 9.0, 9.0]),
+            "band": np.full(4, "NUV"),
+            "pre_explosion": np.zeros(4, dtype=bool),
         }
     )
-    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: iter([chunk]))
+    monkeypatch.setattr(sim, "iter_epochs", lambda *args, **kwargs: iter([chunk]))
 
-    solo = sim._collect_solo_detection_observation_indices(catalog, uvex, 5.0, None, None)
+    solo = sim._reduce_events(catalog, uvex, 5.0, None, None, _reduce_solo_detection)
 
     assert solo == {0: 5, 2: 8}  # event 1 has two epochs (6 and 7), so it's excluded entirely
 
@@ -225,12 +232,12 @@ def test_first_visit_detected_drops_solo_first_visit_and_keeps_the_rest(monkeypa
     A hand-built solo-detection map exercises all three outcomes at once: dropped
     (solo + first visit), kept (solo + revisit), and kept (no solo entry at all, standing
     in for both multi-epoch and zero-epoch events, which `filter_by_first_visit_detected`
-    treats identically -- see `_collect_solo_detection_observation_indices`).
+    treats identically -- see `_reduce_solo_detection`).
     """
     sim = _revisit_schedule_sim()
     monkeypatch.setattr(
         sim,
-        "_collect_solo_detection_observation_indices",
+        "_reduce_events",
         lambda *args, **kwargs: {0: 0, 1: 2},  # event 0 on a first visit; event 1 on a revisit
     )
 
@@ -247,10 +254,12 @@ def test_filter_by_snr_exclude_first_visit_detections_defaults_to_true(monkeypat
             "event_id": np.array([0, 1, 2, 2]),
             "observation_index": np.array([0, 2, 1, 3]),  # event 0: first visit; event 1: a revisit
             "snr": np.array([9.0, 9.0, 9.0, 9.0]),
+            "band": np.full(4, "NUV"),
+            "pre_explosion": np.zeros(4, dtype=bool),
         }
     )
     calls = []
-    monkeypatch.setattr(sim, "iter_epoch_snr_chunks", lambda *args, **kwargs: (calls.append(1), iter([chunk]))[1])
+    monkeypatch.setattr(sim, "iter_epochs", lambda *args, **kwargs: (calls.append(1), iter([chunk]))[1])
 
     with_default = sim.filter_by_snr(_first_visit_catalog(), uvex, snr_threshold=5.0)
     assert len(calls) == 1
@@ -353,3 +362,157 @@ def test_filter_by_query_builtins_are_unreachable(sim, catalog):
     """The eval namespace has no builtins, so an attempt to reach them fails."""
     with pytest.raises(ValueError, match="Failed to evaluate query expression"):
         sim.filter_by_query(catalog, uvex, "__import__('os').system('echo hi')")
+
+
+# --------------------------------------------------------------------------- #
+# time_since_last_nondetection                                                #
+# --------------------------------------------------------------------------- #
+def _gap_chunk():
+    """
+    A hand-built epoch chunk with one event per case the cut has to get right.
+
+    Event 0: pre-explosion and post-explosion non-detections, then a detection (gap 2).
+    Event 1: only a pre-explosion non-detection before the detection (gap 6).
+    Event 2: its first epoch is already a detection (no gap can be measured).
+    Event 3: never detected.
+    Event 4: a pre-explosion false positive that must be ignored (gap 3).
+    Event 5: non-detections after the first detection must not matter (gap 2).
+    """
+    rows = [
+        (0, -5.0, 1.0, True),
+        (0, 2.0, 2.0, False),
+        (0, 4.0, 9.0, False),
+        (1, -5.0, 1.0, True),
+        (1, 1.0, 9.0, False),
+        (2, 1.0, 9.0, False),
+        (3, 1.0, 1.0, False),
+        (3, 5.0, 2.0, False),
+        (4, -3.0, 9.0, True),
+        (4, -1.0, 0.0, True),
+        (4, 2.0, 9.0, False),
+        (5, 1.0, 1.0, False),
+        (5, 3.0, 9.0, False),
+        (5, 4.0, 1.0, False),
+        (5, 6.0, 9.0, False),
+    ]
+    event_id, t, snr, pre = zip(*rows)
+    return QTable(
+        {
+            "event_id": np.array(event_id),
+            "t_since_explosion": np.array(t) * u.day,
+            "snr": np.array(snr),
+            "band": np.full(len(rows), "NUV"),
+            "pre_explosion": np.array(pre),
+        }
+    )
+
+
+def _gaps(sim, catalog, snr_threshold, lookback=None):
+    """Days from each event's last non-detection to its first detection, as the cut computes them."""
+    return sim._reduce_events(
+        catalog,
+        uvex,
+        snr_threshold,
+        None,
+        None,
+        _reduce_nondetection_gap,
+        keep_all=True,
+        lookback=None if lookback is None else lookback * u.day,
+    )
+
+
+def _six_event_catalog():
+    table = QTable()
+    table["event_id"] = np.arange(6, dtype=np.int64)
+    return EventCatalog(table=table, nside=64, order="nested", time_bins=Time(["2025-01-01", "2025-06-01"]))
+
+
+def test_nondetection_gaps_semantics(sim, monkeypatch):
+    """The gap is first detection minus the last earlier non-detection; ignored epochs are really ignored."""
+    chunk = _gap_chunk()
+    monkeypatch.setattr(sim, "iter_epochs", lambda *args, **kwargs: iter([chunk]))
+
+    gaps = _gaps(sim, _six_event_catalog(), 5.0)
+
+    assert gaps.keys() == {0, 1, 2, 4, 5}  # event 3 never detected, so absent
+    assert [gaps[e] for e in (0, 1, 4, 5)] == [2.0, 6.0, 3.0, 2.0]
+    assert np.isnan(gaps[2])  # its first epoch is already a detection
+
+
+def test_time_since_last_nondetection_bounds_and_flag(sim, monkeypatch):
+    """`min_delay`/`max_delay` bound the gap, and `keep_if_no_nondetection` controls the unmeasurable event."""
+    chunk = _gap_chunk()
+    monkeypatch.setattr(sim, "iter_epochs", lambda *args, **kwargs: iter([chunk]))
+    catalog = _six_event_catalog()
+
+    def kept(**kwargs):
+        result = sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=5.0, **kwargs)
+        return set(np.asarray(result.table["event_id"]).tolist())
+
+    assert kept(max_delay=2.5) == {0, 5}
+    assert kept(min_delay=2.5, max_delay=7.0) == {1, 4}
+    assert kept(min_delay=2.5) == {1, 4}
+    assert kept(max_delay=100.0) == {0, 1, 4, 5}  # event 2 has no gap, event 3 never detected
+    assert kept(max_delay=2.5, keep_if_no_nondetection=True) == {0, 2, 5}
+
+    with pytest.raises(ValueError, match="At least one of"):
+        sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=5.0)
+
+
+@pytest.mark.parametrize(("lookback", "expected_lookback"), [(None, None), (10.0, 10 * u.day)])
+def test_nondetection_gaps_request_every_row(sim, lookback, expected_lookback, monkeypatch):
+    """The cut keeps every row (no SNR floor) and forwards `lookback` in days."""
+    seen = {}
+
+    def spy(*args, **kwargs):
+        seen.update(kwargs)
+        return iter([])
+
+    monkeypatch.setattr(sim, "iter_epochs", spy)
+    _gaps(sim, _six_event_catalog(), 5.0, lookback)
+
+    assert seen["detection_floor"] == -np.inf
+    assert seen["lookback"] == expected_lookback
+
+
+def test_time_since_last_nondetection_matches_hand_reduction(sim, catalog):
+    """On real epochs, the cut agrees with a plain row-by-row scan, and a shorter lookback only loses brackets."""
+    threshold = 3.0
+    chunks = list(sim.iter_epochs(catalog, uvex, progress=False, detection_floor=-np.inf, lookback=None))
+
+    def hand_gaps(chunks):
+        gaps = {}
+        for chunk in chunks:
+            for eid in np.unique(np.asarray(chunk["event_id"])):
+                last_nondet, first_det = None, None
+                for row in chunk[np.asarray(chunk["event_id"]) == eid]:
+                    t = row["t_since_explosion"].to_value(u.day)
+                    if row["snr"] > threshold and not row["pre_explosion"]:
+                        first_det = t
+                        break
+                    if row["snr"] <= threshold:
+                        last_nondet = t
+                if first_det is not None:
+                    gaps[int(eid)] = None if last_nondet is None else first_det - last_nondet
+        return gaps
+
+    expected = hand_gaps(chunks)
+    full = _gaps(sim, catalog, threshold)
+    assert full.keys() == expected.keys()
+    for eid, gap in expected.items():
+        assert np.isnan(full[eid]) if gap is None else full[eid] == pytest.approx(gap)
+
+    measured = {eid: gap for eid, gap in full.items() if not np.isnan(gap)}
+    assert len(measured) > 2  # guard against a vacuous comparison
+    assert any(
+        chunk_row["pre_explosion"] for chunk in chunks for chunk_row in chunk if int(chunk_row["event_id"]) in measured
+    )
+
+    short = _gaps(sim, catalog, threshold, 5.0)
+    assert short.keys() == full.keys()
+    for eid, gap in short.items():
+        assert np.isnan(gap) or gap == pytest.approx(full[eid])  # a shorter lookback can only lose the bracket
+
+    cut_at = float(np.median(list(measured.values())))
+    result = sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=threshold, max_delay=cut_at)
+    assert set(np.asarray(result.table["event_id"]).tolist()) == {e for e, g in measured.items() if g <= cut_at}

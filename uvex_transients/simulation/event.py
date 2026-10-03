@@ -17,14 +17,14 @@ from collections.abc import Hashable
 import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-from astropy.table import QTable, vstack
+from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
 from m4opt.missions import Mission
 
 from uvex_transients.dust import log_attenuation
-from uvex_transients.models._utils import simulate_flat_photometry
 from uvex_transients.utils import get_rng
+from uvex_transients.utils.keyed_noise import time_key
 
 from ..surveys.base import SurveySchedule
 from ..transients.base import TransientBase
@@ -183,6 +183,7 @@ class Event:
             candidate["start_time"] >= t_explosion,
             candidate["start_time"] + candidate["duration"] <= t_explosion + photometry_post_window,
         )
+        self._in_model = np.asarray(in_model)
         self._observations = candidate[in_model]
 
         # Everything else in the query window -- pre-explosion rows from
@@ -526,43 +527,27 @@ class Event:
         """
         Evaluate this event's detectability at every observation in `window_observations`.
 
-        Builds one `~synphot.SourceSpectrum` for `observations` -- batched over every
-        candidate observation's own time since explosion, via
-        `~uvex_transients.models.core.base.SpectralModel.as_source_spectrum`
-        (dust folded in through its ``log_attenuation``, from this event's own cached
-        `ebv`) -- and reuses it, unmodified, for every requested band:
-        a `~synphot.SourceSpectrum` is purely a function of wavelength/time, so
-        "band" only enters once it's integrated against a bandpass, via
-        `~m4opt.synphot.Detector.get_snr`. That turns what used to be a Python loop
-        over every (observation, band) pair, each doing its own scalar
-        `SpectralModel.flux`/`astropy.stats.signal_to_noise_oir_ccd` call, into one
-        vectorized `get_snr` call per band, regardless of how many observations
-        there are.
+        Every observation in `window_observations` is measured in one call to
+        `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`, vectorized over
+        observations and bands. Observations in `observations` are evaluated against
+        `transient.sed` (dust folded in from this event's own cached `ebv`). Those in
+        `background_observations` -- pre-explosion (from `photometry_pre_window`), plus any
+        exposure running past `photometry_post_window` -- never reach `transient.sed`: ``t < 0``
+        isn't in a `SpectralModel`'s valid domain (some light curve shapes are only smoothly
+        *wrong* there, but others, e.g. an early-time ``1/t`` singularity, diverge outright). They
+        are measured against a true source flux of zero instead: pure background, at that
+        observation's own real exposure and observing geometry, flagged ``in_model=False``.
 
-        `background_observations` -- every candidate observation outside `observations`
-        (pre-explosion, from `photometry_pre_window`, plus any exposure running past
-        `photometry_post_window`) -- never reaches `transient.sed` at all: `t < 0` isn't
-        in a `SpectralModel`'s valid domain (some light curve shapes are only smoothly
-        *wrong* there, but others, e.g. an early-time ``1/t`` singularity, diverge
-        outright), so these rows instead get
-        `~uvex_transients.models._utils.simulate_flat_photometry`'s pure
-        background/non-detection photometry -- the same detector noise model
-        (`~m4opt.synphot.Detector.get_snr`, real observing geometry included), just
-        against a true source flux of zero rather than an evaluated SED. The two sets
-        are simulated separately, then combined into one table -- see the ``in_model``
-        column below.
-
-        The reported flux/magnitude at each (observation, band) is then a Gaussian
-        realization of the true (noiseless) flux -- evaluated from that same
-        `SourceSpectrum` at the band's pivot wavelength -- at that SNR's implied
-        uncertainty; a synthetic measurement, not the ground truth. Physical SED
-        parameters are sampled once, from `seed`; every band's noise draws (`observations`
-        first, then `background_observations`) are one vectorized call over all
-        observations at once, in `bands` order, on the same stream that draw consumed --
-        so the whole event still replays identically given the same `seed`, but *not*
-        row-for-row identically to an older, unbatched implementation, since the draws
-        are now grouped per band across every observation rather than interleaved
-        observation-by-observation.
+        The reported flux/magnitude at each (observation, band) is a Gaussian realization of the
+        true (noiseless) flux, with the uncertainty the detector's noise model
+        (`~m4opt.synphot.Detector.get_snr`) implies for it: a synthetic measurement, not the
+        ground truth. Physical SED parameters are sampled once, from `seed`. Each noise draw is a
+        pure function of ``(seed, the observation's start time, the band's position in
+        mission.detector.bandpasses)`` (see
+        `~uvex_transients.utils.keyed_noise.keyed_standard_normal`), so the same measurement gets
+        the same noise whatever other observations or bands are simulated alongside it, and
+        exactly matches the noise `~uvex_transients.simulation.core.SurveySimulator`'s detection
+        cuts apply to it.
 
         ``mag_err`` is the usual linearized (first-order) propagation of ``flux_err``
         through the magnitude log transform -- a good description of the uncertainty
@@ -612,9 +597,11 @@ class Event:
             there, not a spuriously finite one -- and ``in_model``, ``True`` for a row
             from `observations` (a real evaluation of `transient.sed`) and ``False``
             for one from `background_observations` (pure background/non-detection,
-            `transient.sed` never evaluated). ``flux``/``flux_err``/``ab_mag``/
-            ``mag_err`` are ``nan`` wherever ``snr`` is non-positive or non-finite
-            (``ab_mag``/``mag_err`` are also ``nan`` wherever the noisy ``flux``
+            `transient.sed` never evaluated). ``snr`` is the measured SNR,
+            ``flux / flux_err`` of the noisy ``flux`` realization: the quantity a detection
+            threshold applies to. ``flux``/``flux_err``/``snr``/``ab_mag``/``mag_err`` are
+            ``nan`` wherever the detector's noiseless SNR for the true flux is non-positive or
+            non-finite (``ab_mag``/``mag_err`` are also ``nan`` wherever the noisy ``flux``
             realization itself came out non-positive). Empty (but correctly typed) if
             `window_observations` is empty.
         """
@@ -630,81 +617,42 @@ class Event:
         if unknown:
             raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
 
-        n_obs = len(self._observations)
-        if n_obs == 0 and len(self._background_observations) == 0:
+        window = self._window_observations
+        if len(window) == 0:
             return self._empty_photometry_table()
 
-        # One RNG, seeded from this event's own stored `seed`, drives the parameter
-        # draw and every noise realization below (`observations` first, then
-        # `background_observations`, in that order) -- so the whole event replays
-        # identically from `seed` alone. Deliberately *not* `self.sample_parameters()`
-        # (which reseeds fresh every call): the noise draws must continue on the same
-        # stream the parameter draw already consumed.
+        # `rng`, seeded from this event's own stored `seed`, drives only the SED parameter draw.
+        # The noise is instead keyed on (`seed`, the observation's start time, the band), so a
+        # given measurement gets the same noise here as in the survey-wide detection cuts
+        # (`SurveySimulator.iter_epochs`), whichever other observations are simulated alongside it.
         rng = get_rng(self._seed)
+        sed_params = {name: value[0] for name, value in self._transient.sed.sample_parameters(size=1, rng=rng).items()}
 
-        if n_obs > 0:
-            sed_params = {
-                name: value[0] for name, value in self._transient.sed.sample_parameters(size=1, rng=rng).items()
-            }
-            t_obs = (self._observations["start_time"] - self._t_explosion).to(u.day)
-
-            # The actual noise simulation -- batched `as_source_spectrum` plus `get_snr`,
-            # the Gaussian flux realization, and the `n_sigma` bound math -- lives on
-            # `SpectralModel.simulate_photometry` now, schedule-independent, so it's shared
-            # with callers that have no `SurveySchedule`/`Event` at all (e.g. a target of
-            # opportunity). This event's own `observer_location`/`start_time` are passed
-            # through as real `observer_location`/`obstime`, so `detector`'s own
-            # `background` (left unmodified -- `background` isn't overridden here) sees the
-            # same real observing geometry it always did.
-            phot_model = self._transient.sed.simulate_photometry(
-                t_obs,
-                self._observations["duration"],
-                detector,
-                self._coord,
-                bands=band_names,
-                observer_location=self._observations["observer_location"],
-                obstime=self._observations["start_time"],
-                redshift=self._redshift,
-                luminosity_distance=self._luminosity_distance,
-                ebv=self._ebv,
-                n_sigma=n_sigma,
-                rng=rng,
-                **sed_params,
-            )
-            phot_model["obs_time"] = self._t_explosion + phot_model["t"]
-            phot_model["rel_time"] = phot_model["t"]
-            del phot_model["t"]
-            phot_model["in_model"] = np.ones(len(phot_model), dtype=bool)
-        else:
-            phot_model = self._empty_photometry_table()
-
-        # `simulate_flat_photometry` shares `simulate_detector_photometry` with
-        # `SpectralModel.simulate_photometry` above -- same detector noise model, same
-        # `n_sigma` bound math, same real observing geometry -- but against a flat,
-        # zero-flux placeholder spectrum instead of `transient.sed`, so `t < 0` never
-        # reaches it. Continues the same `rng` stream `sed_params` (if sampled) already
-        # advanced, for the same reason.
-        t_bg = (self._background_observations["start_time"] - self._t_explosion).to(u.day)
-        phot_bg = simulate_flat_photometry(
-            t_bg,
-            self._background_observations["duration"],
+        # One call for the whole window. Observations that are not `in_model` (before the
+        # explosion, or running past `photometry_post_window`) are measured as pure background
+        # at that observation's own depth, never against `transient.sed`; see
+        # `SpectralModel.measure_photometry`. This event's own observer location and start time
+        # are passed through, so `detector`'s `background` sees the real observing geometry.
+        phot = self._transient.sed.simulate_photometry(
+            (window["start_time"] - self._t_explosion).to(u.day),
+            window["duration"],
             detector,
             self._coord,
             bands=band_names,
-            observer_location=self._background_observations["observer_location"],
-            obstime=self._background_observations["start_time"],
+            observer_location=window["observer_location"],
+            obstime=window["start_time"],
+            redshift=self._redshift,
+            luminosity_distance=self._luminosity_distance,
+            ebv=self._ebv,
+            in_model=self._in_model,
             n_sigma=n_sigma,
-            rng=rng,
+            noise_seed=self._seed,
+            noise_observation_keys=time_key(window["start_time"]),
+            **sed_params,
         )
-        phot_bg["obs_time"] = self._t_explosion + phot_bg["t"]
-        phot_bg["rel_time"] = phot_bg["t"]
-        del phot_bg["t"]
-        phot_bg["in_model"] = np.zeros(len(phot_bg), dtype=bool)
-
-        phot = vstack([phot_model, phot_bg])
+        phot["obs_time"] = self._t_explosion + phot["t"]
+        phot["rel_time"] = phot["t"]
         phot["event_id"] = np.full(len(phot), self._event_id, dtype=np.int64)
-        order = np.lexsort((phot["band"], phot["obs_time"].jd))
-        phot = phot[order]
 
         return phot[
             [

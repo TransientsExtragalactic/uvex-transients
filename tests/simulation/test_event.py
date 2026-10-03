@@ -65,7 +65,14 @@ def test_simulate_photometry_batches_observations_and_bands(make_schedule_from_p
                 expected_snr = uvex.detector.get_snr(obs_row["duration"], spectrum_single, band)
                 row = phot[(phot["band"] == band) & (phot["obs_time"] == obs_row["start_time"])]
                 assert len(row) == 1
-                np.testing.assert_allclose(row["snr"][0], expected_snr, rtol=1e-6)
+                true_flux = float(
+                    np.squeeze(spectrum_single(uvex.detector.bandpasses[band].pivot(), flux_unit=u.Jy).value)
+                )
+                # The uncertainty is the true flux over the detector's expected SNR.
+                np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-6)
+                # The reported `snr` is the measured one: the noisy flux over its uncertainty.
+                measured_snr = row["flux"][0].to_value(u.Jy) / row["flux_err"][0].to_value(u.Jy)
+                np.testing.assert_allclose(row["snr"][0], measured_snr, rtol=1e-10)
 
 
 def test_simulate_photometry_preserves_full_band_names(make_schedule_from_pointings):
@@ -158,3 +165,36 @@ def test_simulate_photometry_unknown_band_raises(make_schedule_from_pointings):
     )
     with pytest.raises(ValueError, match="Unknown bandpass"):
         event.simulate_photometry(uvex, bands=["not-a-real-band"])
+
+
+def test_exposure_running_past_the_window_is_background(make_schedule_from_pointings):
+    """An exposure that ends after `photometry_post_window` is measured as background, even at ``t > 0``."""
+    event_coord = SkyCoord(ra=150 * u.deg, dec=20 * u.deg)
+    t_explosion = Time("2025-01-01T00:00:00", scale="utc")
+    transient = TidalDisruptionEvent()
+
+    # The second 900 s exposure starts 5 minutes before the window closes, so it runs 10 minutes past it.
+    obs_times = Time([t_explosion + 5 * u.day, t_explosion + transient.duration_limit - 5 * u.min])
+    coords = SkyCoord([150, 150] * u.deg, [20, 20] * u.deg)
+    schedule = make_schedule_from_pointings(coords, obs_times)
+
+    event = Event(
+        event_id=1,
+        schedule=schedule,
+        transient=transient,
+        coord=event_coord,
+        redshift=0.05,
+        t_explosion=t_explosion,
+        seed=42,
+        ebv=0.1,
+    )
+    phot = event.simulate_photometry(uvex)
+
+    def rows_at(start):
+        return phot[np.abs((phot["obs_time"] - start).to_value(u.s)) < 1e-3]
+
+    inside, overrun = rows_at(obs_times[0]), rows_at(obs_times[1])
+    assert np.all(inside["in_model"]) and len(inside) == len(uvex.detector.bandpasses)
+    assert not np.any(overrun["in_model"]) and len(overrun) == len(uvex.detector.bandpasses)
+    assert np.all(overrun["rel_time"] > 0 * u.day)  # it is after the explosion; only its window policy excludes it
+    assert np.all(np.abs(overrun["snr"]) < 6)  # background noise, not the (bright) source

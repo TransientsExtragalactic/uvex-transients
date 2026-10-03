@@ -49,6 +49,7 @@ def test_available_cuts_includes_builtins():
         "region",
         "sky_position",
         "snr",
+        "time_since_last_nondetection",
         "time_to_first_detection",
         "transient_type",
     )

@@ -99,12 +99,12 @@ def test_run_alert_action_processing_delay_adds_on_top_of_downlink(sim, catalog)
 # Detection-epoch consistency with filter_by_snr                              #
 # --------------------------------------------------------------------------- #
 def test_run_alert_action_first_detection_matches_manual_computation(sim, catalog):
-    """`t_first_detection` matches a manual reduction of `iter_epoch_snr_chunks`, per event."""
+    """`t_first_detection` matches a manual reduction of `iter_epochs`, per event."""
     snr_threshold = 3.0
     schedule = _with_downlink_after_every_observation(sim.survey_schedule, delay=1 * u.hour, duration=10 * u.min)
     sim_with_downlink = SurveySimulator(schedule, transients=sim.transient_collection, simulation_seed=1)
 
-    epochs = list(sim_with_downlink.iter_epoch_snr_chunks(catalog, uvex, progress=False, detection_floor=snr_threshold))
+    epochs = list(sim_with_downlink.iter_epochs(catalog, uvex, progress=False, detection_floor=snr_threshold))
     first_t_obs = {}
     for chunk in epochs:
         above = np.asarray(chunk["snr"]) > snr_threshold
