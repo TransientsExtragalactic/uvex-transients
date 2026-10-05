@@ -34,6 +34,7 @@ from uvex_transients.utils.keyed_noise import time_key
 from ..surveys.base import SurveySchedule
 from ..transients.base import ExtragalacticTransient
 from ._registry import combine_metaclasses, make_tagged_registry
+from ._stats import clopper_pearson_interval
 from .event_catalog import EventCatalog
 from .exposure_catalog import ExposureCatalog
 from .photometry_catalog import PhotometryCatalog
@@ -156,6 +157,11 @@ def _reduce_first_detection(chunk: QTable, rows: slice) -> tuple[Time, str, floa
         float(chunk["snr"][first]),
         int(chunk["observation_index"][first]),
     )
+
+
+def _reduce_first_detection_age(chunk: QTable, rows: slice) -> float:
+    """Return days from explosion to an event's first detection (the chunk holds detection epochs only)."""
+    return float(chunk["t_since_explosion"][rows.start].to_value(u.day))
 
 
 def _reduce_solo_detection(chunk: QTable, rows: slice) -> int | None:
@@ -2960,3 +2966,248 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 "alert_delay": alert_delay,
             }
         )
+
+    @action("detection_delay")
+    def run_detection_delay_action(
+        self,
+        detected: EventCatalog,
+        raw: EventCatalog,
+        exposure: ExposureCatalog,
+        mission: Mission,
+        snr_threshold: float,
+        delays: u.Quantity | list[float],
+        reference: str = "last_nondetection",
+        transient_types: list[str] | None = None,
+        lookback: float | None = None,
+        bands: list[str] | None = None,
+        chunk_size: int | None = None,
+        confidence: float = 0.9,
+    ) -> QTable:
+        r"""
+        Count, per transient type, how many events are detected within each of a grid of delays.
+
+        Relevant transients are the ones caught young. Rather than running
+        `filter_by_time_since_last_nondetection` (or `filter_by_time_to_first_detection`)
+        once per delay, this makes a single pass over the schedule-aware epochs to get each
+        event's delay, then counts how many events fall at or below every entry of `delays`.
+        One grid is shared by every transient type.
+
+        The delay of an event is measured from `reference`:
+
+        - ``"last_nondetection"``: from the event's last non-detection to its first detection,
+          i.e. how tightly the survey brackets the explosion (see
+          `filter_by_time_since_last_nondetection`).
+        - ``"explosion"``: from the explosion itself to the first detection, i.e. the age at
+          first detection (see `filter_by_time_to_first_detection`).
+
+        Counting is cumulative: ``n_within`` at a given ``max_delay`` is the number of events
+        with delay :math:`\le` ``max_delay``. The estimators follow
+        `~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`:
+        the fraction is ``n_within / n_total`` with Clopper-Pearson bounds, and the expected
+        number of UVEX events is that fraction times the intrinsic expected count of `exposure`,
+        so it does not depend on how heavily `raw` was downsampled.
+
+        Parameters
+        ----------
+        detected : EventCatalog
+            The events to measure delays for, typically the output of an SNR cut. An event of
+            `raw` that is absent here is simply never counted as within any delay.
+        raw : EventCatalog
+            The full sampled catalog `detected` was cut from. Supplies each type's
+            denominator ``n_total``; passing the already-cut catalog here would inflate
+            every fraction.
+        exposure : ExposureCatalog
+            Typically `compute_effective_exposure`'s own output.
+        mission : m4opt.missions.Mission
+            Forwarded to `iter_epochs`.
+        snr_threshold : float
+            Same definition as `filter_by_snr`.
+        delays : ~astropy.units.Quantity or list of float
+            The shared grid of maximum delays. Bare numbers are interpreted as hours. The
+            grid is sorted and de-duplicated, and every entry must be positive and finite.
+        reference : {"last_nondetection", "explosion"}, optional
+            What the delay is measured from. The default is ``"last_nondetection"``.
+        transient_types : list of str, optional
+            Restrict the table to these transient types. `None` (the default) uses every
+            type present in `raw`.
+        lookback : float, optional
+            Days before each explosion to search for a non-detection. Only used when
+            `reference` is ``"last_nondetection"``; `None` (the default) searches back to the
+            start of the schedule.
+        bands : list of str, optional
+            Forwarded to `iter_epochs`.
+        chunk_size : int, optional
+            Forwarded to `iter_epochs`.
+        confidence : float, optional
+            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per ``(transient_type, max_delay)`` pair, with columns ``transient_type``,
+            ``max_delay`` (hours), ``n_within``, ``n_total``, ``n_unbracketed``, ``fraction``/
+            ``fraction_lower``/``fraction_upper``, and ``expected_events`` with its
+            ``..._binom_lower``/``..._binom_upper`` and ``..._rate_lower``/``..._rate_upper``
+            bounds (see `compute_detection_count_table`).
+
+            ``n_unbracketed`` is the number of detected events whose first observation was
+            already a detection, so no earlier non-detection exists and their delay is
+            unknown. They never count toward ``n_within``. It is always zero for
+            ``reference="explosion"``.
+
+        Raises
+        ------
+        ValueError
+            If `reference` is not recognized, `delays` is empty or has a non-positive or
+            non-finite entry, or `transient_types` names a type that is not registered.
+        KeyError
+            If `exposure` has no tabulated exposure for a selected type.
+
+        See Also
+        --------
+        filter_by_time_since_last_nondetection : The single-delay cut this tabulates.
+        filter_by_time_to_first_detection : The single-delay cut for ``reference="explosion"``.
+        run_detection_counts_action : The analogous table over the number of detected epochs.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            table = simulator.run_detection_delay_action(
+                detected=detected,
+                raw=baseline,
+                exposure=exposure,
+                mission=mission,
+                snr_threshold=5.0,
+                delays=[12, 24, 48],  # hours
+                transient_types=["kilonova", "tde"],
+            )
+        """
+        if reference not in ("last_nondetection", "explosion"):
+            raise ValueError(f"'reference' must be 'last_nondetection' or 'explosion', got {reference!r}.")
+        for name, catalog in (("detected", detected), ("raw", raw)):
+            if not isinstance(catalog, EventCatalog):
+                raise TypeError(f"'{name}' must be an EventCatalog, got {type(catalog)} instead.")
+
+        grid = delays.to_value(u.hr) if isinstance(delays, u.Quantity) else delays
+        grid = np.atleast_1d(np.asarray(grid, dtype=np.float64))
+        if grid.ndim != 1 or grid.size == 0:
+            raise ValueError("'delays' must be a non-empty 1D sequence.")
+        if not np.all(np.isfinite(grid)) or np.any(grid <= 0):
+            raise ValueError("Every entry of 'delays' must be positive and finite.")
+        grid = np.unique(grid)
+
+        raw_types = raw.transient_type
+        if transient_types is None:
+            names = sorted(np.unique(raw_types).tolist())
+        else:
+            unknown = sorted(set(transient_types) - set(self.transient_collection))
+            if unknown:
+                raise ValueError(
+                    f"Unknown transient type(s) {unknown}; registered: {sorted(self.transient_collection)}."
+                )
+            names = sorted(set(transient_types))
+        missing = [name for name in names if name not in exposure.total_expected_events]
+        if missing:
+            raise KeyError(
+                f"No exposure tabulated for transient type(s) {missing}; "
+                f"available: {sorted(exposure.total_expected_events)}."
+            )
+
+        # Only the selected types are ever evaluated against the schedule.
+        in_scope = np.isin(np.asarray(detected.table["transient_type"]).astype(str), names)
+        scoped = self._filtered(detected, in_scope)
+
+        delay_days: dict[int, float] = {}
+        if len(scoped) > 0:
+            if reference == "last_nondetection":
+                delay_days = self._reduce_events(
+                    scoped,
+                    mission,
+                    snr_threshold,
+                    bands,
+                    chunk_size,
+                    _reduce_nondetection_gap,
+                    keep_all=True,
+                    lookback=None if lookback is None else lookback * u.day,
+                )
+            else:
+                delay_days = self._reduce_events(
+                    scoped, mission, snr_threshold, bands, chunk_size, _reduce_first_detection_age
+                )
+
+        scoped_ids = scoped.event_id
+        scoped_types = scoped.transient_type
+        delay_hours = np.array([delay_days.get(int(eid), np.inf) for eid in scoped_ids]) * 24.0
+        # `inf` marks an event never detected, `nan` one with no earlier non-detection.
+        bracketed = np.isfinite(delay_hours)
+        unbracketed = np.isnan(delay_hours)
+
+        rows = {
+            column: []
+            for column in (
+                "transient_type",
+                "max_delay",
+                "n_within",
+                "n_total",
+                "n_unbracketed",
+                "fraction",
+                "fraction_lower",
+                "fraction_upper",
+                "expected_events",
+                "expected_events_binom_lower",
+                "expected_events_binom_upper",
+                "expected_events_rate_lower",
+                "expected_events_rate_upper",
+            )
+        }
+        for name in names:
+            transient = self.transient_collection[name]
+            lower_factor, upper_factor = transient.RATE_CI if transient.RATE_CI is not None else (1.0, 1.0)
+            mu0 = exposure.total_expected_events[name]
+            n_total = int(np.sum(raw_types == name))
+
+            of_type = scoped_types == name
+            type_delays = np.sort(delay_hours[of_type & bracketed])
+            n_unbracketed = int(np.sum(of_type & unbracketed))
+            n_within = np.searchsorted(type_delays, grid, side="right")
+
+            for max_delay, count in zip(grid, n_within):
+                count = int(count)
+                fraction_lower, fraction_upper = clopper_pearson_interval(count, n_total, confidence)
+                fraction = (count / n_total) if n_total > 0 else np.nan
+                expected = mu0 * fraction
+
+                rows["transient_type"].append(name)
+                rows["max_delay"].append(max_delay)
+                rows["n_within"].append(count)
+                rows["n_total"].append(n_total)
+                rows["n_unbracketed"].append(n_unbracketed)
+                rows["fraction"].append(fraction)
+                rows["fraction_lower"].append(fraction_lower)
+                rows["fraction_upper"].append(fraction_upper)
+                rows["expected_events"].append(expected)
+                rows["expected_events_binom_lower"].append(mu0 * fraction_lower)
+                rows["expected_events_binom_upper"].append(mu0 * fraction_upper)
+                rows["expected_events_rate_lower"].append(expected * lower_factor)
+                rows["expected_events_rate_upper"].append(expected * upper_factor)
+
+        table = QTable()
+        table["transient_type"] = np.asarray(rows["transient_type"], dtype=str)
+        table["max_delay"] = u.Quantity(rows["max_delay"], u.hr)
+        for column in ("n_within", "n_total", "n_unbracketed"):
+            table[column] = np.asarray(rows[column], dtype=np.int64)
+        for column in (
+            "fraction",
+            "fraction_lower",
+            "fraction_upper",
+            "expected_events",
+            "expected_events_binom_lower",
+            "expected_events_binom_upper",
+            "expected_events_rate_lower",
+            "expected_events_rate_upper",
+        ):
+            table[column] = np.asarray(rows[column], dtype=np.float64)
+        table.meta["reference"] = reference
+        table.meta["snr_threshold"] = float(snr_threshold)
+        return table

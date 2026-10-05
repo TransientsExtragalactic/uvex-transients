@@ -39,6 +39,8 @@ _ACTION_OUTPUT_TYPES: dict[str, type] = {
     "photometry": QTable,
     "yield": YieldTable,
     "detection_counts": QTable,
+    "alert": QTable,
+    "detection_delay": QTable,
 }
 
 

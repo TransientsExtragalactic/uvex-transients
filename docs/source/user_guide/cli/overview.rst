@@ -535,6 +535,30 @@ arguments.
      - ``catalog``, ``exposure``, ``photometry``
      - ``snr_threshold``
      - ``confidence`` (default ``0.9``)
+   * - ``detection_delay``
+     - ``detected``, ``raw``, ``exposure``
+     - ``snr_threshold``, ``delays``
+     - ``reference`` (``last_nondetection`` or ``explosion``), ``transient_types``, ``lookback``,
+       ``bands``, ``confidence`` (default ``0.9``)
+
+``detection_delay`` tabulates, per transient type, how many events are detected within each of a
+shared grid of delays (``delays:``, a list of hours), without running a cut once per delay. The
+delay is measured from the event's last non-detection to its first detection
+(``reference: last_nondetection``, the default) or from the explosion to the first detection
+(``reference: explosion``). ``transient_types:`` restricts the table to some types, all sharing the
+one grid. ``detected`` is the SNR-cut catalog the delays are measured on, and ``raw`` is the full
+sampled catalog, which supplies each type's denominator:
+
+.. code-block:: yaml
+
+    - id: young
+      type: action
+      action: detection_delay
+      inputs: {detected: snr_screen, raw: baseline, exposure: exposure}
+      params:
+        snr_threshold: 5.0
+        delays: [12, 24, 48]
+        transient_types: [kilonova, tde]
 
 A ``photometry`` action's output (a plain :class:`~astropy.table.QTable`, one row per (event,
 observation, band)) can itself feed a later ``detection_counts`` action by ``id``, exactly like

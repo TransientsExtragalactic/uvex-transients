@@ -130,6 +130,33 @@ def test_run_writes_detection_counts_when_configured(tmp_path, make_schedule):
     assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
 
 
+def test_run_writes_detection_delay_when_configured(tmp_path, make_schedule):
+    """A config with a `detection_delay` action step makes `run` also write its checkpoint."""
+    config_path = _write_config(tmp_path, make_schedule)
+    Path(config_path).write_text(
+        Path(config_path).read_text()
+        + """
+  - id: dd
+    type: action
+    action: detection_delay
+    inputs:
+      detected: cut_2
+      raw: baseline
+      exposure: exposure
+    params:
+      snr_threshold: 5.0
+      delays: [12, 24, 48]
+"""
+    )
+    out_dir = tmp_path / "results"
+
+    result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
+
+    assert result.exit_code == 0, result.output
+    table = QTable.read(out_dir / "04_dd.ecsv")
+    assert set(table.colnames) >= {"transient_type", "max_delay", "n_within", "n_unbracketed", "expected_events"}
+
+
 def test_run_no_keep_intermediate_writes_only_checkpointed_steps(tmp_path, make_schedule):
     """`run --no-keep-intermediate` skips every step whose own `checkpoint:` is unset."""
     config_path = _write_config(tmp_path, make_schedule)

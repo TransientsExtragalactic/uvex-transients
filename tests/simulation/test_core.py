@@ -389,7 +389,13 @@ def test_iter_epochs_floor_and_mask(make_schedule, hot_spot):
 
 def test_available_actions_includes_builtins(make_schedule):
     """`SurveySimulator.available_actions` lists the four built-in `@action`-registered methods."""
-    assert SurveySimulator.available_actions() == ("alert", "detection_counts", "photometry", "yield")
+    assert SurveySimulator.available_actions() == (
+        "alert",
+        "detection_counts",
+        "detection_delay",
+        "photometry",
+        "yield",
+    )
 
 
 def test_run_action_photometry_matches_direct_call(make_schedule, hot_spot):
