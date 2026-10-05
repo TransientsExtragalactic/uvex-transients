@@ -6,7 +6,6 @@ import click
 
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.exposure_catalog import ExposureCatalog
-from ..simulation.photometry_catalog import PhotometryCatalog
 from . import pipeline, steps
 from .config import RunConfig
 
@@ -76,7 +75,7 @@ def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, step_ids
     overwrite : bool
         Whether the real command would be allowed to overwrite existing outputs.
     step_ids : list of str, optional
-        For ``"cut"``/``"photometry"``/``"detection-counts"``, the step id(s) that would run.
+        For ``"cut"``/``"photometry"``, the step id(s) that would run.
     """
     try:
         lines, ok = pipeline.dry_run_report(config, command, outputs=outputs, overwrite=overwrite, step_ids=step_ids)
@@ -217,96 +216,6 @@ def photometry_command(
     phot = pipeline.run_photometry_step(config, step_id, catalog)
     phot.write(out_path, overwrite=overwrite)
     click.echo(f"photometry: {len(phot)} rows -> {out_path}")
-
-
-@cli.command("detection-counts")
-@CONFIG_ARGUMENT
-@click.argument("step_id", metavar="STEP_ID")
-@click.option(
-    "--catalog",
-    "catalog_path",
-    required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="The full, pre-cut event catalog from 'generate' (e.g. baseline.ecsv from 'run' with "
-    "intermediates kept), NOT the post-cut catalog --photometry was computed over: n_total must "
-    "count every sampled event, including ones later cut or never observed, or 'fraction' is "
-    "computed against the wrong denominator.",
-)
-@click.option(
-    "--photometry",
-    "photometry_path",
-    required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Photometry table, as written by the 'photometry' command.",
-)
-@click.option(
-    "--exposure",
-    "exposure_path",
-    required=True,
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Exposure catalog, as written by 'run' (or SurveySimulator.compute_effective_exposure).",
-)
-@click.option("--out", "out_path", required=True, type=click.Path(dir_okay=False, path_type=Path))
-@OVERWRITE_OPTION
-@DRY_RUN_OPTION
-def detection_counts_command(
-    config_path: Path,
-    step_id: str,
-    catalog_path: Path,
-    photometry_path: Path,
-    exposure_path: Path,
-    out_path: Path,
-    overwrite: bool,
-    dry_run: bool,
-) -> None:
-    """
-    Estimate, per transient type, how many events show N_det >= k detected epochs.
-
-    STEP_ID is an id from CONFIG's ``steps:`` list, naming a ``type: action``,
-    ``action: detection_counts`` step (for its ``snr_threshold``/``confidence`` params).
-    Combines CATALOG, PHOTOMETRY, and EXPOSURE (see
-    `~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`);
-    the output table carries both Clopper-Pearson confidence bounds and exposure-scaled expected
-    event counts, not just raw Monte Carlo catalog counts.
-
-    Parameters
-    ----------
-    config_path : Path
-        Path to the run-config YAML file (``CONFIG``).
-    step_id : str
-        The detection-counts step's own id in CONFIG's ``steps:`` list.
-    catalog_path : Path
-        Path to the full, pre-cut event catalog from the 'generate' stage (e.g.
-        ``baseline.ecsv`` from 'run' with intermediates kept) -- *not* the post-cut catalog
-        `photometry_path` was computed over. `compute_detection_count_table` needs every
-        sampled event, including ones later cut or never observed, to compute
-        `n_total`/`fraction` correctly; passing the post-cut catalog silently inflates
-        `expected_events` by roughly ``1/efficiency``.
-    photometry_path : Path
-        Path to the photometry table.
-    exposure_path : Path
-        Path to the exposure catalog.
-    out_path : Path
-        Destination path for the detection-count table.
-    overwrite : bool
-        Whether to overwrite an existing file at `out_path`.
-    dry_run : bool
-        If True, validate and report without computing or writing anything.
-
-    Returns
-    -------
-    None
-        Exits the process via ``click`` on failure; otherwise returns nothing.
-    """
-    config = RunConfig.from_yaml(config_path)
-    if dry_run:
-        return _dry_run(config, "detection-counts", [out_path], overwrite, step_ids=[step_id])
-    catalog = EventCatalog.from_disk(catalog_path)
-    photometry = PhotometryCatalog.from_disk(photometry_path)
-    exposure = ExposureCatalog.from_disk(exposure_path)
-    table = pipeline.run_detection_counts_step(config, step_id, catalog, exposure, photometry)
-    table.write(out_path, overwrite=overwrite)
-    click.echo(f"detection-counts: {len(table)} (type, k) row(s) -> {out_path}")
 
 
 KEEP_INTERMEDIATE_OPTION = click.option(

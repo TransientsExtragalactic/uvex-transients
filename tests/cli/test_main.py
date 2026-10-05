@@ -102,21 +102,22 @@ def test_run_end_to_end_produces_every_stage_file(tmp_path, make_schedule):
     assert set(phot.colnames) >= {"event_id", "obs_time", "band", "snr"}
 
 
-def test_run_writes_detection_counts_when_configured(tmp_path, make_schedule):
-    """A config with a `detection_counts` action step makes `run` also write its checkpoint."""
+def test_run_writes_event_summary_when_configured(tmp_path, make_schedule):
+    """A config with an `event_summary` action step makes `run` also write its checkpoint."""
     config_path = _write_config(tmp_path, make_schedule)
     Path(config_path).write_text(
         Path(config_path).read_text()
         + """
-  - id: dc
+  - id: es
     type: action
-    action: detection_counts
+    action: event_summary
     inputs:
       catalog: cut_2
       exposure: exposure
       photometry: phot
     params:
       snr_threshold: 5.0
+      footprints: []
 """
     )
     out_dir = tmp_path / "results"
@@ -124,10 +125,10 @@ def test_run_writes_detection_counts_when_configured(tmp_path, make_schedule):
     result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
 
     assert result.exit_code == 0, result.output
-    dc_path = out_dir / "04_dc.ecsv"
-    assert dc_path.exists()
-    table = QTable.read(dc_path)
-    assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
+    es_path = out_dir / "04_es.ecsv"
+    assert es_path.exists()
+    table = QTable.read(es_path)
+    assert set(table.colnames) >= {"event_id", "weight", "n_det", "t_first_det", "t_alert", "peak_snr"}
 
 
 def test_run_no_keep_intermediate_writes_only_checkpointed_steps(tmp_path, make_schedule):
@@ -283,102 +284,6 @@ def test_dry_run_reports_a_bad_config_as_a_clean_error(tmp_path, make_schedule):
     assert result.exit_code != 0
     assert "dry run failed" in result.output
     assert "NotARealTransient" in result.output
-
-
-def test_detection_counts_writes_a_table(tmp_path, make_schedule):
-    """`detection-counts` combines an already-computed catalog/photometry/exposure into a detection-count table."""
-    config_path = _write_config(tmp_path, make_schedule)
-    Path(config_path).write_text(
-        Path(config_path).read_text()
-        + """
-  - id: dc
-    type: action
-    action: detection_counts
-    inputs:
-      catalog: cut_2
-      exposure: exposure
-      photometry: phot
-    params:
-      snr_threshold: 5.0
-"""
-    )
-    out_dir = tmp_path / "results"
-
-    run_result = CliRunner().invoke(cli, ["run", config_path, "--out-dir", str(out_dir)])
-    assert run_result.exit_code == 0, run_result.output
-
-    out_path = tmp_path / "detection_counts.ecsv"
-    result = CliRunner().invoke(
-        cli,
-        [
-            "detection-counts",
-            config_path,
-            "dc",
-            "--catalog",
-            str(out_dir / "02_cut_2.ecsv"),
-            "--photometry",
-            str(out_dir / "03_phot.ecsv"),
-            "--exposure",
-            str(out_dir / "exposure.ecsv"),
-            "--out",
-            str(out_path),
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert out_path.exists()
-    table = QTable.read(out_path)
-    assert set(table.colnames) >= {"transient_type", "n_detections", "n_at_least", "fraction", "expected_events"}
-
-
-def test_detection_counts_dry_run_reports_the_plan_and_writes_nothing(tmp_path, make_schedule):
-    """`detection-counts --dry-run` validates the config and writes nothing, without reading its inputs."""
-    config_path = _write_config(tmp_path, make_schedule)
-    Path(config_path).write_text(
-        Path(config_path).read_text()
-        + """
-  - id: dc
-    type: action
-    action: detection_counts
-    inputs:
-      catalog: cut_2
-      exposure: exposure
-      photometry: phot
-    params:
-      snr_threshold: 5.0
-"""
-    )
-    out_path = tmp_path / "detection_counts.ecsv"
-
-    # Only has to exist (click's `exists=True` path check) -- a dry run never reads its contents.
-    catalog_path = tmp_path / "in_catalog.ecsv"
-    photometry_path = tmp_path / "in_photometry.ecsv"
-    exposure_path = tmp_path / "in_exposure.ecsv"
-    for path in (catalog_path, photometry_path, exposure_path):
-        path.write_text("placeholder")
-
-    result = CliRunner().invoke(
-        cli,
-        [
-            "detection-counts",
-            config_path,
-            "dc",
-            "--catalog",
-            str(catalog_path),
-            "--photometry",
-            str(photometry_path),
-            "--exposure",
-            str(exposure_path),
-            "--out",
-            str(out_path),
-            "--dry-run",
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert "dry run: detection-counts" in result.output
-    assert "snr_threshold" in result.output
-    assert not out_path.exists()
 
 
 def test_cut_dry_run_rejects_an_unknown_step_id(tmp_path, make_schedule):

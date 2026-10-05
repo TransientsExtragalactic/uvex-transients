@@ -7,7 +7,6 @@ import pytest
 from uvex_transients.cli.config import RunConfig
 from uvex_transients.cli.pipeline import (
     run_cut_steps,
-    run_detection_counts_step,
     run_generate,
     run_photometry_step,
 )
@@ -16,7 +15,6 @@ from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.simulation.photometry_catalog import PhotometryCatalog
 
 from ..simulation.test_core import _make_catalog
-from ..simulation.test_photometry_catalog import _make_exposure_catalog
 
 
 def _config_from(doc: str) -> RunConfig:
@@ -189,41 +187,3 @@ transients:
 
     with pytest.raises(ValueError, match="not a 'photometry' action step"):
         run_photometry_step(config, "cut_1", catalog)
-
-
-def test_run_detection_counts_step_matches_direct_call(tmp_path, make_schedule, hot_spot):
-    """`run_detection_counts_step` matches calling `PhotometryCatalog.compute_detection_count_table` directly."""
-    doc = f"""
-{_write_schedule(tmp_path, make_schedule)}
-transients:
-  tde:
-    class: TidalDisruptionEvent
-steps:
-  - id: phot
-    type: action
-    action: photometry
-    inputs:
-      catalog: baseline
-  - id: dc
-    type: action
-    action: detection_counts
-    inputs:
-      catalog: baseline
-      exposure: exposure
-      photometry: phot
-    params:
-      snr_threshold: 5.0
-      confidence: 0.8
-"""
-    config = _config_from(doc)
-    catalog, *_ = _make_catalog(config.transients["tde"], hot_spot, n_events=5, seed=4)
-    phot = catalog.simulate_photometry(config.mission, config.transients, config.schedule)
-    exposure = _make_exposure_catalog({"tde": 12.0})
-
-    table = run_detection_counts_step(config, "dc", catalog, exposure, phot)
-    expected = PhotometryCatalog(table=phot).compute_detection_count_table(
-        catalog, exposure, config.transients, snr_threshold=5.0, confidence=0.8
-    )
-
-    assert set(table.colnames) == set(expected.colnames)
-    assert len(table) == len(expected)

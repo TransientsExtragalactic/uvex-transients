@@ -87,6 +87,38 @@ def test_from_disk_defaults_downsample_to_none_when_absent_from_older_files(tmp_
 
 
 # --------------------------------------------------------------------------- #
+# to_disk / from_disk: pre_cut_counts round-trip                              #
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("counts", [None, {"tde": 1200}, {"tde": 1200, "kilonova": 0}])
+def test_to_disk_from_disk_round_trips_pre_cut_counts(tmp_path, hot_spot, counts):
+    """`pre_cut_counts` (a per-type dict, or `None`) survives an ECSV `to_disk`/`from_disk` round trip."""
+    catalog, *_ = _make_catalog(TidalDisruptionEvent(), hot_spot, n_events=3, seed=1)
+    catalog.pre_cut_counts = counts
+
+    path = tmp_path / "catalog.ecsv"
+    catalog.to_disk(path)
+
+    reloaded = EventCatalog.from_disk(path)
+    assert reloaded.pre_cut_counts == counts
+    if counts is not None:
+        assert all(isinstance(value, int) for value in reloaded.pre_cut_counts.values())
+
+
+def test_from_disk_defaults_pre_cut_counts_to_none_when_absent_from_older_files(tmp_path, hot_spot):
+    """A catalog file written before `pre_cut_counts` existed still reads back fine, defaulting to `None`."""
+    catalog, *_ = _make_catalog(TidalDisruptionEvent(), hot_spot, n_events=2, seed=1)
+
+    path = tmp_path / "catalog.ecsv"
+    table = catalog.table.copy()
+    table.meta.update(
+        {"nside": catalog.nside, "order": catalog.order, "time_bins": catalog.time_bins, "seed": catalog.seed}
+    )
+    table.write(path)
+
+    assert EventCatalog.from_disk(path).pre_cut_counts is None
+
+
+# --------------------------------------------------------------------------- #
 # get_example_event_catalog                                                   #
 # --------------------------------------------------------------------------- #
 def test_get_example_event_catalog_loads_packaged_catalog():

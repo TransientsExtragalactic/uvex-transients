@@ -298,8 +298,7 @@ counterpart built from ``RATE_CI``:
        applied.
 
 None of these know anything about a particular survey's footprint -- they're the :math:`\mu_0`
-that :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` and
-:meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary` restrict down
+that :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` restricts down
 to the footprint an actual schedule swept out (see :ref:`user_guide_simulation`).
 :attr:`~uvex_transients.transients.base.ExtragalacticTransient.effective_volume` (:math:`\mathcal
 V` in :ref:`yield-statistics`) is the rate-weighted comoving volume ``integrated_rate`` is built

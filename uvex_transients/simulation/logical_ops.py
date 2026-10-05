@@ -10,6 +10,8 @@ what "combine catalogs by event_id" can mean, not something users are expected t
 bespoke variants of.
 """
 
+from dataclasses import replace
+
 import numpy as np
 from astropy.table import vstack
 
@@ -31,7 +33,8 @@ def _check_compatible(catalogs: list[EventCatalog]) -> None:
     Raises
     ------
     ValueError
-        If `catalogs` is empty, or any two disagree on `nside`/`order`.
+        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry
+        ``pre_cut_counts`` disagree on them (they were not cut from the same generated catalog).
     """
     if not catalogs:
         raise ValueError("logical_op requires at least one input catalog.")
@@ -42,6 +45,11 @@ def _check_compatible(catalogs: list[EventCatalog]) -> None:
                 f"logical_op inputs must share the same (nside, order); got ({first.nside}, {first.order}) "
                 f"and ({other.nside}, {other.order})."
             )
+    counts = [c.pre_cut_counts for c in catalogs if c.pre_cut_counts is not None]
+    if any(other != counts[0] for other in counts[1:]):
+        raise ValueError(
+            f"logical_op inputs must come from the same generation run; their pre_cut_counts differ: {counts}."
+        )
 
 
 def union(catalogs: list[EventCatalog]) -> EventCatalog:
@@ -64,7 +72,8 @@ def union(catalogs: list[EventCatalog]) -> EventCatalog:
     Raises
     ------
     ValueError
-        If `catalogs` is empty, or any two disagree on `nside`/`order`.
+        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry
+        ``pre_cut_counts`` disagree on them.
     """
     _check_compatible(catalogs)
     first = catalogs[0]
@@ -78,14 +87,8 @@ def union(catalogs: list[EventCatalog]) -> EventCatalog:
         keep_masks.append(mask)
 
     combined = vstack([catalog.table[mask] for catalog, mask in zip(catalogs, keep_masks)], metadata_conflicts="silent")
-    return EventCatalog(
-        table=combined,
-        nside=first.nside,
-        order=first.order,
-        time_bins=first.time_bins,
-        seed=first.seed,
-        downsample=first.downsample,
-    )
+    known_counts = next((c.pre_cut_counts for c in catalogs if c.pre_cut_counts is not None), None)
+    return replace(first, table=combined, pre_cut_counts=known_counts)
 
 
 def intersection(catalogs: list[EventCatalog]) -> EventCatalog:
@@ -108,7 +111,8 @@ def intersection(catalogs: list[EventCatalog]) -> EventCatalog:
     Raises
     ------
     ValueError
-        If `catalogs` is empty, or any two disagree on `nside`/`order`.
+        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry
+        ``pre_cut_counts`` disagree on them.
     """
     _check_compatible(catalogs)
     first = catalogs[0]
@@ -118,14 +122,7 @@ def intersection(catalogs: list[EventCatalog]) -> EventCatalog:
         common &= set(np.asarray(catalog.table["event_id"]).tolist())
 
     mask = np.isin(np.asarray(first.table["event_id"]), list(common))
-    return EventCatalog(
-        table=first.table[mask],
-        nside=first.nside,
-        order=first.order,
-        time_bins=first.time_bins,
-        seed=first.seed,
-        downsample=first.downsample,
-    )
+    return replace(first, table=first.table[mask])
 
 
 def difference(catalogs: list[EventCatalog]) -> EventCatalog:
@@ -147,7 +144,8 @@ def difference(catalogs: list[EventCatalog]) -> EventCatalog:
     Raises
     ------
     ValueError
-        If `catalogs` doesn't have exactly two entries, or they disagree on `nside`/`order`.
+        If `catalogs` doesn't have exactly two entries, they disagree on `nside`/`order`, or both
+        carry ``pre_cut_counts`` and those disagree.
     """
     if len(catalogs) != 2:
         raise ValueError(f"'difference' requires exactly 2 input catalogs, got {len(catalogs)}.")
@@ -156,14 +154,7 @@ def difference(catalogs: list[EventCatalog]) -> EventCatalog:
 
     exclude = set(np.asarray(second.table["event_id"]).tolist())
     mask = ~np.isin(np.asarray(first.table["event_id"]), list(exclude))
-    return EventCatalog(
-        table=first.table[mask],
-        nside=first.nside,
-        order=first.order,
-        time_bins=first.time_bins,
-        seed=first.seed,
-        downsample=first.downsample,
-    )
+    return replace(first, table=first.table[mask])
 
 
 #: ``{op name: implementation}``, dispatched by name from a config-driven ``logical_op`` step
