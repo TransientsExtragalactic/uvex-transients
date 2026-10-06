@@ -70,21 +70,13 @@ generate:
   downsample: 20
   seed: 42
 
-# Two `cut` steps, chained, then a `photometry` action over whatever survives
-# both, then a `yield` summary and a `detection_counts` action (see
-# `PhotometryCatalog.compute_detection_count_table`): per transient type, the
-# expected number of UVEX events detected in >= k SNR-qualifying epochs.
-# `snr_threshold` matches `snr_screen` above so this table's k=1 row
-# reproduces `yield`'s own `detected_events`/`expected_detections`.
-# `detection_counts` takes the full, pre-cut `baseline` catalog (like `yield`'s
-# `raw:`), NOT `snr_screen`: its `n_total` is the efficiency's denominator, so
-# a post-cut catalog would inflate every `expected_events` by ~1/efficiency. `yield`'s
-# and `detection_counts`' explicit `checkpoint:` filenames
-# (`yield_summary.ecsv`/`detection_counts.ecsv`) are load-bearing: they feed
-# the website's automated report page (see `docs/source/_report_gen.py`),
-# which reads them by exact name from this run's published release assets
-# (see `.github/workflows/build_and_release.yml`) -- renaming either breaks
-# that page.
+# Two `cut` steps, chained, then a `photometry` action and an `event_summary`
+# action over whatever survives both. The four files this run writes
+# (`final_catalog.ecsv`, `exposure.ecsv`, `photometry.ecsv` and
+# `event_summary.ecsv`) are attached to each GitHub release, where
+# `uvex_transients.utils.get_results` downloads them for the website's report
+# and its examples. Their file names are load-bearing: renaming one means
+# updating `uvex_transients.utils.results.RESULT_ASSETS` too.
 steps:
   - id: mag_screen
     type: cut
@@ -110,33 +102,27 @@ steps:
     params:
       bands: [FUV, NUV]
     # Full-scale event counts make the intermediate cut catalogs large and
-    # rarely worth keeping around (see `keep_intermediate:` below) -- but the
+    # rarely worth keeping around (see `keep_intermediate:` below), but the
     # photometry table itself is always worth writing, so it opts back in.
     checkpoint: photometry.ecsv
 
-  - id: yield_summary
+  # One row per surviving event, with the table's meta carrying what
+  # `uvex_transients.simulation.rates.estimate_yield` needs to turn any
+  # selection of rows into expected events. `snr_threshold` matches
+  # `snr_screen` above.
+  - id: summary
     type: action
-    action: yield
+    action: event_summary
     inputs:
-      raw: baseline
-      detected: snr_screen
-      exposure: exposure
-    checkpoint: yield_summary.ecsv
-
-  - id: detection_counts
-    type: action
-    action: detection_counts
-    inputs:
-      catalog: baseline
+      catalog: snr_screen
       exposure: exposure
       photometry: phot
     params:
       snr_threshold: 5.0
-    checkpoint: detection_counts.ecsv
+    checkpoint: event_summary.ecsv
 
 # Suppresses per-step checkpointing by default (every step above whose own
 # `checkpoint:` is unset), and the raw generated `baseline.ecsv` along with
-# it -- only `phot`/`yield_summary`/`detection_counts`, which opt back in
-# explicitly, and the always-written `exposure.ecsv`, are written to
-# `--out-dir`.
+# it. Only `snr_screen`, `phot` and `summary`, which opt back in explicitly,
+# and the always-written `exposure.ecsv`, are written to `--out-dir`.
 keep_intermediate: false

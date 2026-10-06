@@ -10,8 +10,8 @@ the ``uvex-transients`` console script (:mod:`uvex_transients.cli`). One YAML **
 describes *what* to simulate (which transients, what schedule) and, via its ``steps:`` list, *how*
 to process the baseline catalog once it's sampled -- screening cuts, set operations between named
 catalogs, and post-processing actions like synthetic photometry, chained in one declared order,
-GitHub-Actions style. The CLI's five subcommands (``generate``, ``cut``, ``photometry``,
-``detection-counts``, and ``run``) drive that same pipeline, reading and writing plain catalog/table
+GitHub-Actions style. The CLI's four subcommands (``generate``, ``cut``, ``photometry``,
+and ``run``) drive that same pipeline, reading and writing plain catalog/table
 files between stages.
 
 This page is a hands-on tour of the run-config format and the commands themselves. See
@@ -73,7 +73,7 @@ with no ``steps:`` block is perfectly valid as long as you only ever run ``gener
        tabulated :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` over the
        same footprint is always available too, under ``"exposure"``.
    * - ``steps:``
-     - ``run`` (and, ad hoc, ``cut``/``photometry``/``detection-counts``)
+     - ``run`` (and, ad hoc, ``cut``/``photometry``)
      - An ordered list of ``cut``/``logical_op``/``action`` steps -- see below. Optional; an
        entirely absent ``steps:`` list is fine if you only ever want the raw baseline catalog.
    * - ``keep_intermediate:``
@@ -507,12 +507,12 @@ matters, so there's no n-ary form).
 ^^^^^^^^^^^^^^^^^^
 
 Post-processing that doesn't fit ``cut``'s "one ``EventCatalog`` in, one ``EventCatalog`` out"
-shape -- synthetic photometry, a yield summary, or a detection-count table. ``action:`` must name
+shape -- synthetic photometry or a per-event summary table. ``action:`` must name
 one of :meth:`SurveySimulator.available_actions()
 <uvex_transients.simulation.core.SurveySimulator.available_actions>`, registered the same way cuts
 are, via :func:`~uvex_transients.simulation.core.action`. ``inputs:`` is a mapping from that
 action's own parameter name(s) to artifact ids (so an action needing several inputs at once, like
-``yield`` or ``detection_counts``, can name each one); ``params:`` are its remaining keyword
+``event_summary``, can name each one); ``params:`` are its remaining keyword
 arguments.
 
 .. list-table:: ``action`` step parameters, by ``action:``
@@ -527,17 +527,29 @@ arguments.
      - ``catalog``
      - --
      - ``bands``, ``n_sigma``
-   * - ``yield``
-     - ``raw``, ``detected``, ``exposure``
-     - --
-     - ``confidence`` (default ``0.9``)
-   * - ``detection_counts``
+   * - ``event_summary``
      - ``catalog``, ``exposure``, ``photometry``
      - ``snr_threshold``
-     - ``confidence`` (default ``0.9``)
+     - ``rise_sigma`` (default ``3``), ``processing_delay`` (hours, default ``0``), ``lookback``,
+       ``bands``, ``footprints``, ``color_bands``
+
+``event_summary`` writes one row per event of ``catalog``, so that detection timing, cadence, and
+peak behavior can be studied from one small table rather than by replaying the event list. It
+holds each event's identity and position, which footprints it falls in, a ``weight`` (the
+expected number of real events it stands for, so summing it over a selection gives that
+selection's expected yield), the first and last observation and detection times, the time of the first
+downlink after the first detection (``t_alert``), the last non-detection before the first
+detection (``t_last_nondet`` and its ``last_nondet_snr``, plus ``t_last_constraining_nondet``,
+the last one whose rise to the first detection is at least ``rise_sigma``), and the peak SNR,
+magnitude, FUV-NUV color, and time from ``photometry``. ``catalog`` is typically the SNR-cut
+catalog. Its ``pre_cut_counts`` (the number of events of each type when the baseline was generated,
+which no cut changes) and the ``exposure`` and rate factors of each type are stored in the table's
+``meta``, so :func:`~uvex_transients.simulation.rates.estimate_yield` can turn any selection of its
+rows into expected events with confidence bounds from the table alone (see
+:ref:`user_guide_simulation`).
 
 A ``photometry`` action's output (a plain :class:`~astropy.table.QTable`, one row per (event,
-observation, band)) can itself feed a later ``detection_counts`` action by ``id``, exactly like
+observation, band)) can itself feed a later ``event_summary`` action by ``id``, exactly like
 any other artifact:
 
 .. code-block:: yaml
@@ -548,11 +560,12 @@ any other artifact:
         action: photometry
         inputs: {catalog: snr_screen}
 
-      - id: counts
+      - id: summary
         type: action
-        action: detection_counts
-        inputs: {catalog: baseline, exposure: exposure, photometry: phot}
+        action: event_summary
+        inputs: {catalog: snr_screen, exposure: exposure, photometry: phot}
         params: {snr_threshold: 5.0}
+        checkpoint: event_summary.ecsv
 
 Checkpointing
 ^^^^^^^^^^^^^^^
@@ -604,7 +617,7 @@ their own ``checkpoint:``:
     uvex-transients run quickstart_tde.yaml --out-dir results/ --no-keep-intermediate
 
 For ad hoc, single-step use (useful for inspecting/debugging one stage without rerunning the
-whole pipeline), three more subcommands each pick one declared step by its ``id:`` and run it
+whole pipeline), two more subcommands each pick one declared step by its ``id:`` and run it
 against externally supplied file(s), ignoring that step's own configured ``input:``/``inputs:``:
 
 .. code-block:: bash
@@ -617,17 +630,6 @@ against externally supplied file(s), ignoring that step's own configured ``input
 
     # A declared `action: photometry` step, by id:
     uvex-transients photometry quickstart_tde.yaml phot --in screened.ecsv --out photometry.ecsv
-
-    # A declared `action: detection_counts` step, by id:
-    uvex-transients detection-counts quickstart_tde.yaml counts \
-        --catalog baseline.ecsv --photometry photometry.ecsv --exposure exposure.ecsv \
-        --out detection_counts.ecsv
-
-``--catalog`` for ``detection-counts`` is the event catalog ``--photometry`` was computed over
-(typically the same catalog ``photometry`` ran against, i.e. whatever survived every declared
-cut) -- it's needed alongside the photometry table itself so that events with zero qualifying
-epochs (including ones the schedule never observed at all) are still counted at
-:math:`N_{\rm det}=0`.
 
 Every command accepts ``--overwrite`` to replace an existing output file/directory contents
 instead of raising.
@@ -645,12 +647,11 @@ mission, or an unreadable schedule fails here exactly as it would in the real ru
 ``dry run failed: ...`` message). On success it reports the mission, the size of the schedule,
 each transient population (class, SED, redshift limit, duration window), the ``generate:``
 settings (for ``generate``/``run``), the resolved ``steps:`` list (for ``run``, or the selected
-step(s) for ``cut``/``photometry``/``detection-counts``), and each output file it would write. If
+step(s) for ``cut``/``photometry``), and each output file it would write. If
 a real run would refuse to overwrite one that already exists, the dry run flags it as ``WOULD
 FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded (and
-downloaded on first use), but the command never reads the ``--in``/``--catalog``/
-``--photometry``/``--exposure`` inputs of ``cut``/``photometry``/``detection-counts``, only checks
-that they exist.
+downloaded on first use), but the command never reads the ``--in`` input of ``cut``/``photometry``,
+only checks that it exists.
 
 ----
 

@@ -97,11 +97,11 @@ jobs:
           files: results/release/*
           fail_on_unmatched_files: true
 
-      # The versioned docs build (build_documentation.yml) reads this
-      # release's yield_summary.ecsv/detection_counts.ecsv for its "Report"
-      # page, so it can't run until the assets above are actually uploaded --
-      # it's dispatched from here, after that, rather than off the tag push
-      # itself (which would race this job).
+      # The versioned docs build (build_documentation.yml) downloads this
+      # release's event_summary.ecsv for its "Report" page, and the report's
+      # examples download the other data products, so it can't run until the
+      # assets above are actually uploaded. It is dispatched from here, after
+      # that, rather than off the tag push itself (which would race this job).
       - name: Trigger versioned documentation build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

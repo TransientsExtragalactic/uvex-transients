@@ -60,6 +60,7 @@ exclude_patterns = [
     "transients/_page_template.rst",
     "user_guide/_page_template.rst",
     "galleries/**",
+    "report_examples/**",
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -124,6 +125,9 @@ intersphinx_mapping = {
 }
 
 napoleon_use_param = True
+# Render class "Attributes" sections as :ivar: fields; as ``.. attribute::`` entries they duplicate the
+# members that autodoc already documents on the class page.
+napoleon_use_ivar = True
 napoleon_preprocess_types = True
 
 # Suppress toc.not_included warnings for autosummary-generated attribute pages
@@ -132,11 +136,18 @@ suppress_warnings = ["toc.not_included"]
 
 # Configure the sphinx galleries. These are contained in the
 # /examples gallery.
+#
+# The second gallery holds the report's examples (see `_report_gen.py`). They download the latest
+# release's data, so its output directory is deliberately left out of the CI cache of
+# `auto_examples` and is rebuilt, and the examples re-run, on every documentation build.
 sphinx_gallery_conf = {
-    "examples_dirs": ["./galleries"],
-    "gallery_dirs": ["auto_examples"],
+    "examples_dirs": ["./galleries", "./report_examples"],
+    "gallery_dirs": ["auto_examples", "report/auto_examples"],
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
+    # Report failing examples as warnings instead of failing the build at the end. The release-data
+    # example in particular depends on the assets of whichever release is newest, which can lag the code.
+    "only_warn_on_example_error": True,
 }
 
 

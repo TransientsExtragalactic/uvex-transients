@@ -20,10 +20,8 @@ def test_get_observation_indices_of_matches_exact_well_inside_fov(make_schedule,
     schedule = make_schedule()
     nside, order = 128, "nested"
 
-    # `hot_spot` itself is exactly the pointing center -- as far from any FOV edge
-    # as a position can be, so this comparison isn't sensitive to the known
-    # pixel-center-vs-exact-boundary approximation (see `get_healpix_coverage_index`'s
-    # own docstring for that tradeoff).
+    # `hot_spot` itself is exactly the pointing center, as far from any FOV edge as a position can
+    # be. Positions near the edge are covered by the test below.
     t_start = Time("2025-01-01T00:00:00")
     t_end = Time("2025-06-01T00:00:00")
 
@@ -35,6 +33,64 @@ def test_get_observation_indices_of_matches_exact_well_inside_fov(make_schedule,
 
     assert set(np.asarray(exact["field_id"])) == set(np.asarray(fast["field_id"]))
     assert len(exact) > 0  # a meaningless pass if nothing was scheduled there at all
+
+
+def _edge_points(hot_spot, n=300, seed=0):
+    """Query positions scattered just inside and just outside the 1 degree circular FOV around `hot_spot`."""
+    rng = np.random.default_rng(seed)
+    separation = rng.uniform(0.85, 1.15, n) * u.deg
+    position_angle = rng.uniform(0, 360, n) * u.deg
+    return hot_spot.directional_offset_by(position_angle, separation)
+
+
+@pytest.mark.parametrize("nside", [64, 128])
+def test_get_observation_indices_of_matches_exact_at_the_footprint_edge(make_schedule, hot_spot, nside):
+    """
+    A point inside the footprint is found even when its own pixel's center is outside it.
+
+    The index registers an observation under a pixel only if the pixel center is inside the
+    footprint, so a lookup of the point's own pixel alone misses edge points. Neighbouring
+    pixels are searched too, and every candidate is then confirmed with the exact test, so the
+    result matches `get_observations_of` for points on both sides of the edge.
+    """
+    schedule = make_schedule(n_sched=6)
+    points = _edge_points(hot_spot)
+    t_start, t_end = Time("2025-01-01T00:00:00"), Time("2026-01-01T00:00:00")
+
+    query_index, row_index = schedule.get_observation_indices_of(
+        points, nside=nside, order="nested", start_time=t_start, end_time=t_end
+    )
+
+    found = np.bincount(query_index, minlength=len(points))
+    exact = np.array([len(schedule.get_observations_of(point, t_start, t_end)) for point in points])
+    np.testing.assert_array_equal(found, exact)
+    assert 0 < np.count_nonzero(exact) < len(points)  # points fall on both sides of the edge
+
+
+def test_get_observation_indices_of_applies_a_separate_window_per_query(make_schedule, hot_spot):
+    """Per-query windows select the same observations as one exact query per position."""
+    schedule = make_schedule(n_sched=30)
+    rng = np.random.default_rng(3)
+    n = 40
+    points = hot_spot.directional_offset_by(rng.uniform(0, 360, n) * u.deg, rng.uniform(0, 0.9, n) * u.deg)
+    starts = Time("2025-01-01T00:00:00") + rng.uniform(0, 100, n) * u.day
+    ends = starts + rng.uniform(1, 60, n) * u.day
+
+    query_index, row_index = schedule.get_observation_indices_of(
+        points, nside=128, order="nested", start_time=starts, end_time=ends
+    )
+
+    jd = schedule.observe_rows["start_time"].jd
+    for i in range(n):
+        exact = schedule.get_observations_of(points[i], starts[i], ends[i])
+        np.testing.assert_allclose(np.sort(jd[row_index[query_index == i]]), np.sort(exact["start_time"].jd))
+
+
+def test_get_observation_indices_of_without_a_window_returns_every_covering_row(make_schedule, hot_spot):
+    schedule = make_schedule(n_sched=7)
+    query_index, row_index = schedule.get_observation_indices_of(hot_spot, nside=128, order="nested")
+    assert len(row_index) == 7
+    assert list(row_index) == sorted(row_index)  # chronological, and no duplicates from neighbouring pixels
 
 
 def test_get_healpix_coverage_index_caches_index_per_resolution(make_schedule):

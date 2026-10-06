@@ -293,6 +293,32 @@ def test_generate_events_downsample_mapping_applies_per_type(monkeypatch, make_s
     assert catalog.downsample == {"tde_a": 5}
 
 
+def test_generate_events_records_pre_cut_counts_after_downsampling(monkeypatch, make_schedule):
+    """`pre_cut_counts` is the per-type count of what was actually generated, downsampling included."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, downsample={"tde_a": 5})
+
+    assert catalog.pre_cut_counts == {"tde_a": 8, "tde_b": 40}
+
+
+def test_cuts_do_not_change_pre_cut_counts(make_schedule, hot_spot):
+    """A cut removes rows but never touches the generation-time counts."""
+    transient = TidalDisruptionEvent()
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=12, seed=2)
+    catalog.pre_cut_counts = {"tde": 12}
+    sim = SurveySimulator(make_schedule(n_sched=10), transients={"tde": transient}, simulation_seed=1)
+
+    cut = sim.filter_by_query(catalog, uvex, expr="redshift < 0.03")
+
+    assert 0 < len(cut) < len(catalog)
+    assert cut.pre_cut_counts == {"tde": 12}
+
+
 def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
     """A `downsample` mapping naming a key not in `transients:` raises."""
     schedule = make_schedule(n_sched=5)
@@ -388,8 +414,8 @@ def test_iter_epochs_floor_and_mask(make_schedule, hot_spot):
 
 
 def test_available_actions_includes_builtins(make_schedule):
-    """`SurveySimulator.available_actions` lists the four built-in `@action`-registered methods."""
-    assert SurveySimulator.available_actions() == ("alert", "detection_counts", "photometry", "yield")
+    """`SurveySimulator.available_actions` lists the two built-in `@action`-registered methods."""
+    assert SurveySimulator.available_actions() == ("event_summary", "photometry")
 
 
 def test_run_action_photometry_matches_direct_call(make_schedule, hot_spot):

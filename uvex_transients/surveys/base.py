@@ -1127,12 +1127,11 @@ class SurveySchedule:
         `footprint_healpix` follows HEALPix's own convention of pixel-*center*
         membership, not full-pixel overlap: a row is registered under pixel ``p`` only
         if ``p``'s center falls inside that row's rolled footprint. A query point can
-        therefore sit inside a footprint while its own pixel goes unregistered (a
-        one-directional miss, never a false claim -- see :meth:`get_observation_indices_of`,
-        which confirms every candidate this index returns with an exact geometric test,
-        so nothing reached through this index is ever wrongly included, only
-        occasionally left out near a footprint's edge). Raise ``nside`` to shrink how
-        often that happens; there is no dilation margin built into the index itself.
+        therefore sit inside a footprint while its own pixel goes unregistered. The index
+        itself has no margin for that, so :meth:`get_observation_indices_of` also looks up
+        each point's eight neighbouring pixels and confirms every candidate with an exact
+        geometric test, so nothing reached through this index is wrongly included or, for
+        a pixel much smaller than the footprint, left out.
 
         Parameters
         ----------
@@ -1291,21 +1290,29 @@ class SurveySchedule:
         """
         Row indices of observations whose footprint covers each query position.
 
-        The batched, index-returning counterpart to :meth:`get_observations_of`: each
-        query position's own HEALPix pixel is looked up directly in the cached
-        coverage index (see :meth:`get_healpix_coverage_index`) -- a plain,
-        single-pixel broad-phase filter, not the final answer -- and just that
-        (typically small) candidate set is confirmed with the same exact, vectorized
-        :func:`m4opt.fov.contains` test :meth:`get_observations_of` uses, run once over
-        every query position at once rather than in a Python loop.
+        The batched, index-returning counterpart to :meth:`get_observations_of`, in three
+        stages that each narrow the candidates before the next, more expensive one:
 
-        Because :meth:`get_healpix_coverage_index` registers a pointing under a pixel
-        only if that pixel's *center* falls inside the rolled footprint, a query point
-        can sit inside a footprint while its own pixel goes unregistered -- such a
-        match is silently missed here, never falsely included (the exact `contains`
-        test can only remove a candidate, never add one back once the pixel lookup
-        already missed it). Raise ``nside`` to shrink how often that happens; there is
-        no neighbour-pixel margin here to compensate for a coarse index.
+        1. **Broad phase.** Each query position's own HEALPix pixel *and its eight
+           neighbours* are looked up in the cached coverage index (see
+           :meth:`get_healpix_coverage_index`), and duplicate (query, row) pairs are
+           dropped. The index registers a pointing under a pixel only if that pixel's
+           *center* is inside the rolled footprint, so a point near the footprint edge can
+           be covered while its own pixel is unregistered. A pixel center within one pixel
+           of the point is always inside a footprint much larger than a pixel, so the
+           neighbours catch these cases.
+        2. **Time window.** Candidates whose start time falls outside their query's window
+           are discarded. This is a cheap float comparison, done before the exact test so
+           that test only runs on observations that can matter.
+        3. **Exact test.** The surviving candidates are confirmed with the same vectorized
+           :func:`m4opt.fov.contains` test :meth:`get_observations_of` uses, run once over
+           every pair at once rather than in a Python loop.
+
+        The result matches :meth:`get_observations_of` as long as a pixel is much smaller
+        than the footprint (for example ``nside`` 64 or 128 against a footprint of a few
+        degrees). With a pixel comparable to the footprint, a point can still lie inside it
+        with no pixel center from its own or neighbouring pixels inside, and is missed.
+        Nothing is ever falsely included, since the exact test has the final say.
 
         Parameters
         ----------
@@ -1369,57 +1376,60 @@ class SurveySchedule:
         hpx = ah.HEALPix(nside=nside, order=order, frame=observe_rows["target_coord"].frame)
         query_pixel = np.asarray(hpx.skycoord_to_healpix(coord_array), dtype=np.int64)
 
-        # Each query's candidate range is resolved by fancy-indexing `pixel_offsets`
-        # with the whole `query_pixel` array at once -- no per-query Python loop. What
-        # remains is gathering each query's own (variable-length) slice of
-        # `sorted_rows` and concatenating them in query order; that ragged gather is
-        # itself vectorized via the standard repeat/arange/cumsum trick below.
-        starts = pixel_offsets[query_pixel]
-        ends = pixel_offsets[query_pixel + 1]
-        counts = ends - starts
-        total = int(counts.sum())
+        # Broad phase: each query's own pixel and its (up to) eight neighbours. `neighbours`
+        # marks a missing neighbour (at a base-pixel corner) with -1, which is skipped.
+        pixels = np.concatenate([query_pixel[None, :], np.asarray(hpx.neighbours(query_pixel), dtype=np.int64)])
+        n_rows = len(observe_rows)
+        candidate_query, candidate_row = [], []
+        for pixel in pixels:
+            valid = np.flatnonzero(pixel >= 0)
+            starts = pixel_offsets[pixel[valid]]
+            counts = pixel_offsets[pixel[valid] + 1] - starts
+            total = int(counts.sum())
+            if total == 0:
+                continue
 
-        if total == 0:
+            # Gather each query's variable-length slice of `sorted_rows` without a Python loop
+            # (the standard repeat/arange/cumsum trick for a ragged gather).
+            group_start = np.zeros(len(valid), dtype=np.int64)
+            np.cumsum(counts[:-1], out=group_start[1:])
+            within_group = np.arange(total, dtype=np.int64) - np.repeat(group_start, counts)
+            candidate_query.append(np.repeat(valid, counts))
+            candidate_row.append(sorted_rows[np.repeat(starts, counts) + within_group])
+
+        if not candidate_query:
             return empty, empty
 
-        query_index = np.repeat(np.arange(n, dtype=np.int64), counts)
-        group_start_in_output = np.zeros(n, dtype=np.int64)
-        np.cumsum(counts[:-1], out=group_start_in_output[1:])
-        within_group_index = np.arange(total, dtype=np.int64) - group_start_in_output[query_index]
-        row_index = sorted_rows[starts[query_index] + within_group_index]
+        # A row covering several of a query's nine pixels appears once per pixel; keep one.
+        key = np.unique(np.concatenate(candidate_query) * np.int64(n_rows) + np.concatenate(candidate_row))
+        query_index, row_index = key // n_rows, key % n_rows
 
-        # Exact confirmation: the same geometric test `get_observations_of` uses, run
-        # once over every candidate pair at once instead of once per query position.
-        # This can only remove a candidate the pixel lookup shouldn't have offered, not
-        # discard a genuine match -- see the docstring's note on this method's
-        # one-directional (miss, never false-claim) error.
+        # Time window, before the exact test: a start-time comparison is nearly free, while the
+        # exact test needs a coordinate transform per pair. Julian dates are taken on the
+        # schedule's own time scale so both sides are comparable.
+        scale = observe_rows["start_time"].scale
+        row_start_jd = observe_rows["start_time"].jd
+        if start_time is not None:
+            window_start = np.broadcast_to(getattr(start_time, scale).jd, (n,))
+            window_end = np.broadcast_to(getattr(end_time, scale).jd, (n,))
+            in_window = (row_start_jd[row_index] >= window_start[query_index]) & (
+                row_start_jd[row_index] < window_end[query_index]
+            )
+            query_index, row_index = query_index[in_window], row_index[in_window]
+            if len(row_index) == 0:
+                return empty, empty
+
+        # Exact test: the geometric test `get_observations_of` uses, over every remaining pair at
+        # once. It can only remove a candidate, so nothing is ever falsely included.
         candidate_rows = observe_rows[row_index]
         local_frame = SkyOffsetFrame(origin=candidate_rows["target_coord"], rotation=candidate_rows["roll"])
         local_coord = coord_array[query_index].transform_to(local_frame)
         local_coord_as_icrs = SkyCoord(local_coord.lon, local_coord.lat, frame="icrs")
         contains_mask = np.asarray(contains(self._instrument_fov, local_coord_as_icrs), dtype=bool)
-
-        query_index = query_index[contains_mask]
-        row_index = row_index[contains_mask]
-        candidate_rows = candidate_rows[contains_mask]
-
-        if start_time is not None:
-            matched_start = candidate_rows["start_time"]
-            # Scalar window broadcasts against every candidate as-is; a per-query
-            # window is indexed by `query_index` so each candidate is checked against
-            # *its own* query's window, not a shared one.
-            if start_time.isscalar:
-                window_start, window_end = start_time, end_time
-            else:
-                window_start = start_time[query_index]
-                window_end = end_time[query_index]
-            time_mask = (matched_start >= window_start) & (matched_start < window_end)
-            query_index = query_index[time_mask]
-            row_index = row_index[time_mask]
-            candidate_rows = candidate_rows[time_mask]
+        query_index, row_index = query_index[contains_mask], row_index[contains_mask]
 
         # Chronological within each query position.
-        sort_order = np.lexsort((candidate_rows["start_time"].jd, query_index))
+        sort_order = np.lexsort((row_start_jd[row_index], query_index))
         return query_index[sort_order], row_index[sort_order]
 
     def get_observations_of(

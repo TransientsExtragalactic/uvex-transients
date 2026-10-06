@@ -5,7 +5,7 @@ from .event import Event
 from .event_catalog import EventCatalog, get_example_event_catalog
 from .exposure_catalog import ExposureCatalog
 from .photometry_catalog import PhotometryCatalog
-from .yield_table import YieldTable
+from .rates import estimate_yield
 
 __all__ = [
     "Event",
@@ -13,6 +13,6 @@ __all__ = [
     "ExposureCatalog",
     "PhotometryCatalog",
     "SurveySimulator",
-    "YieldTable",
+    "estimate_yield",
     "get_example_event_catalog",
 ]
