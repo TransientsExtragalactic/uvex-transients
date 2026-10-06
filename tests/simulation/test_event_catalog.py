@@ -161,3 +161,46 @@ def test_in_footprint_matches_event_positions(make_schedule, hot_spot):
         assert [event.in_footprint(footprint) for event in events] == list(mask)
     finally:
         default_registry._footprints.pop("test:in_footprint_band")
+
+
+class TestGetEvents:
+    def test_order_duplicates_and_scalar(self, make_schedule, hot_spot):
+        """Ids come back in the order requested (repeats included); a scalar id gives a single `Event`."""
+        schedule = make_schedule()
+        transient = TidalDisruptionEvent()
+        catalog, *_ = _make_catalog(transient, hot_spot, n_events=5, seed=3)
+        ids = np.asarray(catalog.event_id)
+        request = [ids[3], ids[0], ids[3]]
+
+        events = catalog.get_events(request, {"tde": transient}, schedule)
+        assert [event.event_id for event in events] == [int(i) for i in request]
+        assert catalog.get_events(int(ids[2]), {"tde": transient}, schedule).event_id == int(ids[2])
+
+    def test_unknown_id_raises(self, make_schedule, hot_spot):
+        schedule = make_schedule()
+        transient = TidalDisruptionEvent()
+        catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=3)
+        missing = int(np.max(catalog.event_id)) + 1
+
+        with pytest.raises(KeyError, match="No event with id"):
+            catalog.get_events([int(catalog.event_id[0]), missing], {"tde": transient}, schedule)
+
+    def test_schedule_is_queried_lazily(self, make_schedule, hot_spot, monkeypatch):
+        """Reconstruction does no schedule query; the first observation access does, exactly once."""
+        schedule = make_schedule()
+        transient = TidalDisruptionEvent()
+        catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=3)
+        calls = []
+        original = type(schedule).get_observations_of
+        monkeypatch.setattr(
+            type(schedule),
+            "get_observations_of",
+            lambda self, *args, **kwargs: calls.append(1) or original(self, *args, **kwargs),
+        )
+
+        events = catalog.get_events(catalog.event_id, {"tde": transient}, schedule)
+        assert calls == []
+
+        events[0].n_observations
+        events[0].window_observations
+        assert calls == [1]
