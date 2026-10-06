@@ -37,17 +37,30 @@ from .plotting import (
     get_categorical_colors,
     plot_band_light_curve,
     plot_detection_funnel,
+    plot_footprints,
 )
 from .results import get_results
 
 if TYPE_CHECKING:
     from m4opt.missions import Mission
+    from mocpy import MOC
 
     from ..simulation.event_catalog import EventCatalog
     from ..surveys.base import SurveySchedule
+    from ..surveys.footprints.base import SurveyFootprint
     from ..transients.base import TransientBase
 
-__all__ = ["PopulationSpec", "SummaryReport"]
+__all__ = ["PopulationSpec", "SummaryReport", "UVEX_REGIONS"]
+
+UVEX_REGIONS = {
+    "LMLZ wide": "uvex:lmlz:wide",
+    "LMLZ deep": "uvex:lmlz:deep",
+    "Magellanic Clouds": "uvex:mc",
+}
+"""dict: Legend label and footprint registry name of each UVEX survey region shaded on the sky map."""
+
+# Pale, so the event markers drawn over them stay legible.
+REGION_COLORS = ["#d6e4f0", "#f2dcc0", "#d9ead3"]
 
 REQUIRED_COLUMNS = (
     "event_id",
@@ -511,18 +524,36 @@ class SummaryReport:
             figs.append(fig)
         return figs
 
-    def plot_sky(self) -> Figure:
+    def plot_sky(self, footprints: "Mapping[str, SurveyFootprint | MOC] | None" = None) -> Figure:
         """
         Plot where the detected and the selected events fall on the sky, in an Aitoff projection.
+
+        The survey regions are shaded behind the events, each with its area in the legend.
+
+        Parameters
+        ----------
+        footprints : mapping of str to SurveyFootprint or mocpy.MOC, optional
+            Regions to shade, keyed by legend label. Defaults to the three UVEX regions (`UVEX_REGIONS`),
+            which are fetched on first use. Pass an empty mapping to draw only the events.
 
         Returns
         -------
         matplotlib.figure.Figure
             The sky map.
         """
+        if footprints is None:
+            from ..surveys.footprints import default_registry
+
+            footprints = {label: default_registry[name] for label, name in UVEX_REGIONS.items()}
+
         coord = self.summary["coord"]
-        fig = plt.figure(figsize=(8, 4))
+        fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111, projection="aitoff")
+        region_handles = []
+        if footprints:
+            plot_footprints(footprints, colors=REGION_COLORS[: len(footprints)], fig=fig, ax=ax)
+            region_handles = ax.get_legend().legend_handles
+            ax.get_legend().remove()
         ax.grid(True)
         detected = np.isin(self.types, list(self.populations))
         ax.scatter(
@@ -542,8 +573,17 @@ class SummaryReport:
                 color=spec.color,
                 label=f"{spec.label} selected ({int(chosen.sum()):,})",
             )
-        ax.legend(loc="lower right", markerscale=2, fontsize=7)
-        ax.set_title("Sky distribution (Monte Carlo events)")
+        event_handles, _ = ax.get_legend_handles_labels()
+        ax.legend(
+            handles=[*region_handles, *event_handles],
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.08),
+            ncol=2,
+            markerscale=2,
+            fontsize=7,
+            frameon=False,
+        )
+        ax.set_title("Sky distribution (Monte Carlo events)", pad=18)
         fig.tight_layout()
         return fig
 

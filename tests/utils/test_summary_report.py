@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
 from uvex_transients.utils import summary_report
-from uvex_transients.utils.summary_report import PopulationSpec, SummaryReport
+from uvex_transients.utils.summary_report import UVEX_REGIONS, PopulationSpec, SummaryReport
 
 T0 = Time("2030-01-01T00:00:00")
 POPULATIONS = {
@@ -202,8 +202,31 @@ class TestFigures:
         assert [text.get_text() for text in gap_axes.texts] == ["no events"]
 
     def test_sky(self, report):
-        fig = report.plot_sky()
+        fig = report.plot_sky(footprints={})
         assert isinstance(fig, Figure)
+
+    def test_sky_shades_each_region_and_keeps_the_event_legend(self, report):
+        from mocpy import MOC
+
+        regions = {
+            "Cap": MOC.from_cone(lon=0 * u.deg, lat=0 * u.deg, radius=20 * u.deg, max_depth=5),
+            "Spot": MOC.from_cone(lon=90 * u.deg, lat=30 * u.deg, radius=5 * u.deg, max_depth=5),
+        }
+        fig = report.plot_sky(footprints=regions)
+        labels = [text.get_text() for text in fig.axes[0].get_legend().get_texts()]
+        assert labels[0].startswith("Cap (") and labels[1].startswith("Spot (")
+        assert any(label.startswith("Detected") for label in labels)
+
+    def test_sky_defaults_to_the_three_uvex_regions(self, report, monkeypatch):
+        from mocpy import MOC
+
+        from uvex_transients.surveys.footprints import default_registry
+
+        moc = MOC.from_cone(lon=0 * u.deg, lat=0 * u.deg, radius=10 * u.deg, max_depth=5)
+        monkeypatch.setattr(default_registry, "__getitem__", lambda self, name: moc)
+        fig = report.plot_sky()
+        labels = [text.get_text() for text in fig.axes[0].get_legend().get_texts()]
+        assert [label.split(" (")[0] for label in labels[:3]] == list(UVEX_REGIONS)
 
     def test_example_event_needs_a_selected_event(self):
         rows = [row for row in ROWS if row[0] != "kilonova"] + [("kilonova", 1, 20.0, 1.0, 1.0)]
