@@ -70,15 +70,17 @@ file loads with its own ``from_disk``:
 
 
 
-
-
 .. rst-class:: sphx-glr-script-out
 
- .. code-block:: none
+.. code-block:: pytb
 
-    No event summary in the latest release, skipping the yield analysis: Release v0.1.1alpha has no asset(s) ['event_summary.ecsv']. Available: ['detection_counts.ecsv', 'exposure.ecsv', 'final_catalog.ecsv', 'photometry.ecsv', 'yield_summary.ecsv'].
-    20556 events survive the cuts.
-    Intrinsic UVEX events by type: {np.str_('ia_sne'): '8,085,840', np.str_('ib_sne'): '492,014', np.str_('ic_sne'): '297,143', np.str_('icbl_sne'): '379,731', np.str_('iib_sne'): '668,211', np.str_('iip_excess_sne'): '7,955,043', np.str_('iip_sne'): '8,819,566', np.str_('kilonova'): '105', np.str_('lfbot'): '3,640', np.str_('slsne'): '159,311', np.str_('tde'): '104,601'}
+    Traceback (most recent call last):
+      File "/home/runner/work/uvex-transients/uvex-transients/docs/source/report_examples/plot_release_data.py", line 29, in <module>
+        paths = get_results(["events", "exposure"])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/home/runner/work/uvex-transients/uvex-transients/uvex_transients/utils/results.py", line 217, in get_results
+        raise LookupError(f"Release {tag} has no asset(s) {missing}. Available: {sorted(available)}.")
+    LookupError: Release v0.2.0alpha has no asset(s) ['exposure.ecsv', 'final_catalog.ecsv']. Available: [].
 
 
 
@@ -101,12 +103,6 @@ an expected number of real events.
     if summary is not None:
         print(summary.colnames)
         print(dict(summary.meta["n_pre_cut"]))
-
-
-
-
-
-
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 62-67
@@ -149,15 +145,9 @@ boolean ``mask`` to restrict it, for example to events detected in at least two 
         plt.show()
 
 
-
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.700 seconds)
+   **Total running time of the script:** (0 minutes 0.886 seconds)
 
 
 .. _sphx_glr_download_report_auto_examples_plot_release_data.py:
