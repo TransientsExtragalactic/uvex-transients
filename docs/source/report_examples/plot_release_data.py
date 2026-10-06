@@ -38,7 +38,11 @@ except LookupError as err:
     print(f"No event summary in the latest release, skipping the yield analysis: {err}")
     summary = None
 
-print(f"{len(events)} events survive the cuts, out of {sum(events.pre_cut_counts.values())} generated.")
+# Likewise, older releases do not record how many events were generated before the cuts.
+if events.pre_cut_counts is not None:
+    print(f"{len(events)} events survive the cuts, out of {sum(events.pre_cut_counts.values())} generated.")
+else:
+    print(f"{len(events)} events survive the cuts.")
 print("Intrinsic UVEX events by type:", {name: f"{mu0:,.0f}" for name, mu0 in exposure.total_expected_events.items()})
 
 # %%

@@ -145,6 +145,9 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["auto_examples", "report/auto_examples"],
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
+    # Report failing examples as warnings instead of failing the build at the end. The release-data
+    # example in particular depends on the assets of whichever release is newest, which can lag the code.
+    "only_warn_on_example_error": True,
 }
 
 
