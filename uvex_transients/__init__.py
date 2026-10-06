@@ -40,3 +40,8 @@ from . import missions, utils
 from .utils import *
 
 __all__.extend(utils.__all__)
+
+# Warn (without blocking the import) if a newer release exists; see `utils.updates`.
+from .utils.updates import check_for_updates
+
+check_for_updates()

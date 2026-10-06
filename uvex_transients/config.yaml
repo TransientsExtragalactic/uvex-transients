@@ -28,6 +28,19 @@ system:
     # platform-appropriate default (see uvex_transients.utils.get_cache_dir).
     cache_dir: null
 
+  # UPDATE CHECK
+  # ------------
+  # On import, warn if a newer uvex_transients release exists on GitHub (see
+  # uvex_transients.utils.updates). Importing only reads a cached answer; a stale cache is
+  # refreshed in a background thread, so a new release is reported on a later import. Setting the
+  # UVEX_TRANSIENTS_NO_UPDATE_CHECK environment variable also turns the check off.
+  update_check:
+    enabled: true
+    # How long a cached answer is trusted before the GitHub API is queried again.
+    interval_hours: 24
+    # Network timeout (seconds) for that query.
+    timeout: 3.0
+
 # ------------------------------- #
 # PHYSICS CONFIGURATION           #
 # ------------------------------- #
