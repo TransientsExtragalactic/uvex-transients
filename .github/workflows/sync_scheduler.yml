@@ -1,0 +1,74 @@
+# .github/workflows/sync_scheduler.yml
+# ------------------------------------------ #
+# Track uvex-scheduler releases
+# ------------------------------------------ #
+# Once a day, checks for a new m4opt/uvex-scheduler release. If there is one, scripts/sync_scheduler.py
+# registers it in the package config (older schedules stay registered as references), and pins the
+# package default, the survey footprints, and configs/full_run.yaml to it. The change is validated
+# with a dry run of the full-population config and then opened as a pull request. Merging that PR
+# and tagging a release (`make release VERSION=...`) regenerates the data products with the new
+# scheduler.
+#
+# Pull requests opened with the default GITHUB_TOKEN do not trigger other workflows, so the PR checks
+# will not run on their own. To have them run, add a SYNC_PAT secret (a token with contents and
+# pull-requests write access); it is used instead of GITHUB_TOKEN when present.
+name: Sync uvex-scheduler release
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Pin to the latest uvex-scheduler release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Pin to the latest release
+        id: sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/sync_scheduler.py
+
+      - name: Install package
+        if: steps.sync.outputs.changed == 'true'
+        run: pip install -e .
+
+      - name: Validate the full-population config against the new schedule
+        if: steps.sync.outputs.changed == 'true'
+        run: uvex-transients run configs/full_run.yaml --out-dir results/dry_run --dry-run
+
+      - name: Open pull request
+        if: steps.sync.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.SYNC_PAT || secrets.GITHUB_TOKEN }}
+          branch: bot/uvex-scheduler-${{ steps.sync.outputs.tag }}
+          base: main
+          commit-message: "feat: Pinned to uvex-scheduler ${{ steps.sync.outputs.tag }}."
+          title: "feat: Pin to uvex-scheduler ${{ steps.sync.outputs.tag }}"
+          labels: release-needed
+          body: |
+            A new [uvex-scheduler release](https://github.com/m4opt/uvex-scheduler/releases/tag/${{ steps.sync.outputs.tag }}) is available.
+
+            This PR registers `uvex_${{ steps.sync.outputs.tag }}` in the package config (the previous schedules stay registered), and pins the default schedule, the survey footprints and `configs/full_run.yaml` to it. The full-population config was dry-run against the new schedule before this PR was opened.
+
+            After merging, tag a release to regenerate the data products with the new scheduler:
+
+            ```
+            make release VERSION=<next version>
+            ```
