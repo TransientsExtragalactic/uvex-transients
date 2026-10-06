@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Superluminous Supernovae &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'report/auto_examples/transient_summaries/plot_slsne';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.2.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tidal Disruption Events" href="plot_tdes.html" />
+    <link rel="prev" title="Kilonovae" href="plot_kilonovae.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../index.html">Analyses of the Latest Release</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../plot_release_data.html">Loading the Release Data</a></li>
+</ul>
+</details></li>
+
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Transient Yield Report</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Analyses of the Latest Release</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Transient Summaries</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Superluminous Supernovae</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-report-auto-examples-transient-summaries-plot-slsne-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="superluminous-supernovae">
+<span id="sphx-glr-report-auto-examples-transient-summaries-plot-slsne-py"></span><h1>Superluminous Supernovae<a class="headerlink" href="#superluminous-supernovae" title="Link to this heading">#</a></h1>
+<p>Magnetar-powered Type I superluminous supernovae (see <a class="reference internal" href="../../../transients/slsne.html#transients-slsne"><span class="std std-ref">Superluminous Supernovae (SLSNe-I)</span></a> for the model, its priors and
+how its light curves compare to the literature sample). They are rare but extremely luminous, so UVEX sees
+them out to high redshift, and long-lived, so each one is observed many times.</p>
+<p>This page is built from the event summary table of the latest release (its <code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code>),
+which <a class="reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.from_release.html#uvex_transients.utils.summary_report.SummaryReport.from_release" title="uvex_transients.utils.summary_report.SummaryReport.from_release"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_release()</span></code></a> downloads with
+<code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code>. Every figure and table comes from the
+<a class="reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">SummaryReport</span></code></a> of that table. If a data product cannot be
+obtained, for instance without network access or from a release cut before the table existed, the cells
+that need it are skipped.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="nn">transients</span></a><span class="nn">.</span><span class="nn">supernovae</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-transients-supernovae sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><span class="n">MagnetarSLSNe</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="nn">.</span><span class="nn">plotting</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="nn">.</span><span class="nn">summary_report</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.PopulationSpec.html#uvex_transients.utils.summary_report.PopulationSpec" title="uvex_transients.utils.summary_report.PopulationSpec"><span class="n">PopulationSpec</span></a><span class="p">,</span> <span class="n">SummaryReport</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="c1"># The longest allowed gap, in days, between the last constraining non-detection and the first detection.</span><span class="w">
+</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">POPULATIONS</span></a> <span class="o">=</span> <span class="p">{</span><span class="w">
+</span>    <span class="s2">&quot;</span><span class="s2">slsne</span><span class="s2">&quot;</span><span class="p">:</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.PopulationSpec.html#uvex_transients.utils.summary_report.PopulationSpec" title="uvex_transients.utils.summary_report.PopulationSpec"><span class="n">PopulationSpec</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">SLSN-I</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="mf">60.0</span><span class="p">)</span><span class="p">,</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="w">
+</span><span class="k">try</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.from_release.html#uvex_transients.utils.summary_report.SummaryReport.from_release" title="uvex_transients.utils.summary_report.SummaryReport.from_release"><span class="n">SummaryReport</span><span class="o">.</span><span class="n">from_release</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">POPULATIONS</span></a><span class="p">)</span><span class="w">
+</span><span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">LookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="o">=</span> <span class="kc">None</span><span class="w">
+</span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Skipping this page</span><span class="s2">'</span><span class="s2">s analysis, the release data is not available: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="k">else</span><span class="p">:</span><span class="w">
+</span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">report</span><span class="o">.</span><span class="n">summary</span></a><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> events in the release</span><span class="s2">'</span><span class="s2">s summary table.</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>22,174 events in the release's summary table.
+</pre></div>
+</div>
+<section id="the-selection">
+<h2>The selection<a class="headerlink" href="#the-selection" title="Link to this heading">#</a></h2>
+<p>The summary table has one row per Monte Carlo event that cleared the magnitude and SNR screens.
+The science selection applied to those rows is three cumulative cuts:</p>
+<ul class="simple">
+<li><p><strong>Repeat detections</strong>: at least two epochs with SNR above threshold, since a lone detection is
+hard to tell apart from noise or an artifact.</p></li>
+<li><p><strong>Bright peak</strong>: the highest-SNR measurement is brighter than 23 AB mag.</p></li>
+<li><p><strong>Bracketed explosion</strong>: the gap between the last <em>constraining</em> non-detection (one whose rise to
+the first detection is significant at 3 sigma, so a marginal non-detection does not count) and the
+first detection is below a per-population limit, so that the explosion time is pinned down. An event
+with no constraining non-detection has no bracket and is dropped.</p></li>
+</ul>
+<p>The allowed gap is set at roughly the time each event takes to rise:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 15.0%" />
+<col style="width: 65.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Population</p></th>
+<th class="head"><p>Max gap (days)</p></th>
+<th class="head"><p>Reasoning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SLSN-I</p></td>
+<td><p>60</p></td>
+<td><p>SLSNe rise slowly, over roughly 30 to 100 days in the rest frame (longer in the observer frame).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <span class="k">for</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">key</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="list"><span class="n">counts</span></a> <span class="ow">in</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.stage_counts.html#uvex_transients.utils.summary_report.SummaryReport.stage_counts" title="uvex_transients.utils.summary_report.SummaryReport.stage_counts"><span class="n">report</span><span class="o">.</span><span class="n">stage_counts</span></a><span class="p">(</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="p">)</span><span class="p">:</span><span class="w">
+</span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">report</span><span class="o">.</span><span class="n">populations</span></a><span class="p">[</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">key</span></a><span class="p">]</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">:</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span>        <span class="k">for</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">name</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">count</span></a> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="tuple"><span class="n">report</span><span class="o">.</span><span class="n">STAGE_NAMES</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="list"><span class="n">counts</span></a><span class="p">)</span><span class="p">:</span><span class="w">
+</span>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">  </span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">name</span></a><span class="si">:</span><span class="s2">&lt;22s</span><span class="si">}</span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="int"><span class="n">count</span></a><span class="si">:</span><span class="s2">&gt;10,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SLSN-I:
+  Generated                  8,077
+  Detected                     702
+  Repeat detections            482
+  Bright peak                  170
+  Explosion bracketed           69
+</pre></div>
+</div>
+</section>
+<section id="detection-funnel">
+<h2>Detection funnel<a class="headerlink" href="#detection-funnel" title="Link to this heading">#</a></h2>
+<p>How many events of each population survive each stage, in <strong>expected UVEX events</strong>: the number of
+Monte Carlo events that reach a stage times <span class="math notranslate nohighlight">\(\mu_0 / n\)</span>, with <span class="math notranslate nohighlight">\(n\)</span> the number generated
+and <span class="math notranslate nohighlight">\(\mu_0\)</span> the intrinsic number of events in UVEX’s footprint and observing window. The first
+bar is therefore <span class="math notranslate nohighlight">\(\mu_0\)</span>, and any downsampling and windowed sampling is already accounted for.</p>
+<p>Black error bars are the Monte Carlo uncertainty on each stage (a Clopper-Pearson interval, treating
+the stage as a binomial subsample of the generated events). The pale band is the rate uncertainty,
+which scales every stage by the same factor instead of shrinking as the sample is cut down.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.plot_funnel.html#uvex_transients.utils.summary_report.SummaryReport.plot_funnel" title="uvex_transients.utils.summary_report.SummaryReport.plot_funnel"><span class="n">report</span><span class="o">.</span><span class="n">plot_funnel</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../../_images/sphx_glr_plot_slsne_001.png" srcset="../../../_images/sphx_glr_plot_slsne_001.png" alt="Detection funnel" class = "sphx-glr-single-img"/></section>
+<section id="expected-number-of-events">
+<h2>Expected number of events<a class="headerlink" href="#expected-number-of-events" title="Link to this heading">#</a></h2>
+<p>The Monte Carlo counts alone are not a forecast. With <span class="math notranslate nohighlight">\(n\)</span> events generated, <span class="math notranslate nohighlight">\(k\)</span> selected
+and <span class="math notranslate nohighlight">\(\mu_0\)</span> intrinsic UVEX events, the fraction selected is <span class="math notranslate nohighlight">\(k / n\)</span> and the expected yield
+is <span class="math notranslate nohighlight">\(\mu_0 k / n\)</span>
+(<a class="reference internal" href="../../../_as_gen/uvex_transients.simulation.rates.estimate_yield.html#uvex_transients.simulation.rates.estimate_yield" title="uvex_transients.simulation.rates.estimate_yield"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_yield()</span></code></a>). Populations are reported separately and
+never summed, since that would mix independent Monte Carlo errors with a shared rate uncertainty.
+With nothing selected, only an upper limit is meaningful.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.yield_table.html#uvex_transients.utils.summary_report.SummaryReport.yield_table" title="uvex_transients.utils.summary_report.SummaryReport.yield_table"><span class="n">report</span><span class="o">.</span><span class="n">yield_table</span></a><span class="p">(</span><span class="p">)</span><span class="o">.</span><span class="n">pprint_all</span><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Population Intrinsic UVEX events Selected / generated   Fraction (90% CI)            Expected selected events
+---------- --------------------- -------------------- ---------------------- ----------------------------------------
+    SLSN-I               159,311            69 / 8077 0.85% (0.69% to 1.04%) 1,361 (+300 / -257 MC, +509 / -737 rate)
+</pre></div>
+</div>
+</section>
+<section id="distributions-of-the-selected-events">
+<h2>Distributions of the selected events<a class="headerlink" href="#distributions-of-the-selected-events" title="Link to this heading">#</a></h2>
+<p>Histograms of the properties behind each cut, plus the redshift. Each event is weighted by its
+<code class="docutils literal notranslate"><span class="pre">weight</span></code> column, so a bin’s height is an expected number of UVEX events and the legend entries are
+totals: the gray histogram is the expected number of events detected at all, and the colored one the
+expected yield. Dashed lines mark the cuts. Each panel shows a single cut, so some events on the
+surviving side of a line are still removed by one of the others.</p>
+<ul class="simple">
+<li><p><strong>Peak magnitude</strong>: events to the left of the line survive. It is fainter than the true peak of the
+light curve whenever the cadence misses the maximum.</p></li>
+<li><p><strong>Number of detections</strong>: events to the right of the line survive.</p></li>
+<li><p><strong>Days from explosion to first detection</strong>: how long after the explosion UVEX first catches the
+event, in the observer frame.</p></li>
+<li><p><strong>Days from last constraining non-detection to first detection</strong>: how tightly the survey brackets
+the explosion. Events to the left of the line survive, and those with no constraining non-detection
+are left out of this panel.</p></li>
+</ul>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.plot_distributions.html#uvex_transients.utils.summary_report.SummaryReport.plot_distributions" title="uvex_transients.utils.summary_report.SummaryReport.plot_distributions"><span class="n">report</span><span class="o">.</span><span class="n">plot_distributions</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../../_images/sphx_glr_plot_slsne_002.png" srcset="../../../_images/sphx_glr_plot_slsne_002.png" alt="SLSN-I: distributions" class = "sphx-glr-single-img"/></section>
+<section id="sky-distribution">
+<h2>Sky distribution<a class="headerlink" href="#sky-distribution" title="Link to this heading">#</a></h2>
+<p>Where the detected events, and the selected ones among them, fall on the sky.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.plot_sky.html#uvex_transients.utils.summary_report.SummaryReport.plot_sky" title="uvex_transients.utils.summary_report.SummaryReport.plot_sky"><span class="n">report</span><span class="o">.</span><span class="n">plot_sky</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../../_images/sphx_glr_plot_slsne_003.png" srcset="../../../_images/sphx_glr_plot_slsne_003.png" alt="Sky distribution (Monte Carlo events)" class = "sphx-glr-single-img"/></section>
+<section id="example-light-curves">
+<h2>Example light curves<a class="headerlink" href="#example-light-curves" title="Link to this heading">#</a></h2>
+<p>One selected event of each population, rebuilt from the release’s event catalog and observed with
+synthetic photometry against the schedule. Filled squares are detections, open triangles are upper
+limits, and the lines are the noiseless model. This needs the event catalog and the survey schedule
+as well, and the schedule is fetched fresh, so it can differ from the one the release was run
+against.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">events</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a> <span class="o">=</span> <span class="kc">None</span><span class="w">
+</span><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <span class="k">try</span><span class="p">:</span><span class="w">
+</span>        <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span><span class="w">
+</span>        <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">surveys</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span><span class="w">
+</span>        <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_results</span><span class="w">
+</span><span class="w">
+</span>        <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">events</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.from_disk.html#uvex_transients.simulation.event_catalog.EventCatalog.from_disk" title="uvex_transients.EventCatalog.from_disk"><span class="n">EventCatalog</span><span class="o">.</span><span class="n">from_disk</span></a><span class="p">(</span><span class="n">get_results</span><span class="p">(</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">events</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">events</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="w">
+</span>        <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">(</span><span class="p">)</span><span class="w">
+</span>    <span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">LookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span><span class="w">
+</span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Skipping the example light curves, a data product is not available: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">events</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
+</span>    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">uvex_fast</span> <span class="k">as</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="w">
+</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">transients</span></a> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;</span><span class="s2">slsne</span><span class="s2">&quot;</span><span class="p">:</span> <a class="sphx-glr-backref-module-uvex_transients-transients-supernovae sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><span class="n">MagnetarSLSNe</span></a><span class="p">(</span><span class="p">)</span><span class="p">}</span><span class="w">
+</span>    <span class="k">for</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">key</span></a> <span class="ow">in</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">report</span><span class="o">.</span><span class="n">populations</span></a><span class="p">:</span><span class="w">
+</span>        <span class="k">try</span><span class="p">:</span><span class="w">
+</span>            <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-method reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.plot_example_event.html#uvex_transients.utils.summary_report.SummaryReport.plot_example_event" title="uvex_transients.utils.summary_report.SummaryReport.plot_example_event"><span class="n">report</span><span class="o">.</span><span class="n">plot_example_event</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">key</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.EventCatalog"><span class="n">events</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">transients</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.SurveySchedule"><span class="n">schedule</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">)</span><span class="w">
+</span>        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span><span class="w">
+</span>            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../../_images/sphx_glr_plot_slsne_004.png" srcset="../../../_images/sphx_glr_plot_slsne_004.png" alt="SLSN-I event 732406 (z=0.367, 3 observations)" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2856: RuntimeWarning: divide by zero encountered in log10
+  return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 4.366 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-report-auto-examples-transient-summaries-plot-slsne-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../../_downloads/e0039628d61b35035b3c15bdd1590451/plot_slsne.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_slsne.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../../_downloads/ef6bfa70e26e07c3bf9843e42d7d7fd5/plot_slsne.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_slsne.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../../../_downloads/949d3771d62dc93e62bfc7a3630e4939/plot_slsne.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">plot_slsne.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="plot_kilonovae.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Kilonovae</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="plot_tdes.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tidal Disruption Events</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-selection">The selection</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#detection-funnel">Detection funnel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expected-number-of-events">Expected number of events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributions-of-the-selected-events">Distributions of the selected events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sky-distribution">Sky distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-light-curves">Example light curves</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/report/auto_examples/transient_summaries/plot_slsne.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

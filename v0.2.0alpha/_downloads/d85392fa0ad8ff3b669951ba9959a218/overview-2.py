@@ -1,0 +1,19 @@
+# ``uvex_fast`` is ``m4opt.missions.uvex`` with its dense bandpass tables downsampled (see
+# ``uvex_transients.missions``); band integrals agree to about 1e-3 mag for thermal spectra.
+from uvex_transients.missions import uvex_fast as uvex
+
+mission = uvex
+mag_filtered = simulator.filter_by_limiting_magnitude(catalog, mission, mag_limit=25.0)
+detected = simulator.filter_by_snr(
+    mag_filtered, mission, snr_threshold=5.0, exclude_first_visit_detections=False
+)
+
+stages = ["Sampled", "Mag < 25", "SNR > 5"]
+counts = [len(catalog), len(mag_filtered), len(detected)]
+
+fig, ax = plt.subplots()
+ax.bar(stages, counts, color=["#888888", "#4C72B0", "#55A868"])
+for i, count in enumerate(counts):
+    ax.text(i, count, f"{count:,}", ha="center", va="bottom")
+ax.set_ylabel("Number of TDEs")
+ax.set_title("TDE detection funnel")
