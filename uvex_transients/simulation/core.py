@@ -584,6 +584,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
         # One vectorized Milky Way dust-map query over every sampled position at once, rather
         # than per-event later (see `EventCatalog.ebv`).
+        logger.info("Querying the dust map for %d sampled positions.", len(combined))
         combined["ebv"] = (
             np.asarray(dust_map().query(combined["coord"]), dtype=np.float64)
             if len(combined) > 0
@@ -1339,7 +1340,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             method_name = self._CUT_REGISTRY[name]
         except KeyError:
             raise ValueError(f"Unknown cut {name!r}; available: {self.available_cuts()}.") from None
-        return getattr(self, method_name)(catalog, mission, **params)
+        logger.info("Running cut %r on %d events.", name, len(catalog))
+        result = getattr(self, method_name)(catalog, mission, **params)
+        logger.info("Cut %r kept %d of %d events.", name, len(result), len(catalog))
+        return result
 
     @cut("limiting_magnitude")
     def filter_by_limiting_magnitude(
@@ -2750,6 +2754,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             method_name = self._ACTION_REGISTRY[name]
         except KeyError:
             raise ValueError(f"Unknown action {name!r}; available: {self.available_actions()}.") from None
+        logger.info("Running action %r.", name)
         return getattr(self, method_name)(mission=mission, **inputs_and_params)
 
     @action("photometry")

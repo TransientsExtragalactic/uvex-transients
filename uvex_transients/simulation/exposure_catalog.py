@@ -500,6 +500,7 @@ class ExposureCatalog:
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
 
+        logger.info("Reading exposure catalog from %s.", path)
         table = QTable.read(path, format=table_format)
         meta = dict(table.meta)
         table.meta.clear()

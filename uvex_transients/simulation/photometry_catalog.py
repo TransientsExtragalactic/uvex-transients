@@ -208,6 +208,7 @@ class PhotometryCatalog:
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
 
+        logger.info("Reading photometry catalog from %s.", path)
         table = QTable.read(path, format=table_format)
         logger.info("Read photometry catalog (%d rows) from %s.", len(table), path)
         return cls(table=table)
