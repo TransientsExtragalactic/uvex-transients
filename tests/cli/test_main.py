@@ -303,3 +303,17 @@ def test_cut_dry_run_rejects_an_unknown_step_id(tmp_path, make_schedule):
     )
     assert bad.exit_code != 0
     assert "No step with id 'nope'" in bad.output
+
+
+def test_log_level_option_sets_the_package_logger_level():
+    import logging
+
+    from uvex_transients.utils import configure_logging, logger
+
+    original = logger.level
+    try:
+        result = CliRunner().invoke(cli, ["--log-level", "debug", "generate", "--help"])
+        assert result.exit_code == 0
+        assert logger.level == logging.DEBUG
+    finally:
+        configure_logging(original)

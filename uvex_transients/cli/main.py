@@ -6,6 +6,7 @@ import click
 
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.exposure_catalog import ExposureCatalog
+from ..utils import configure_logging
 from . import pipeline, steps
 from .config import RunConfig
 
@@ -88,8 +89,23 @@ def _dry_run(config: RunConfig, command: str, outputs, overwrite: bool, step_ids
 
 
 @click.group(cls=_LogoGroup)
-def cli():
-    """Simulate UVEX transient populations against a survey schedule."""
+@click.option(
+    "--log-level",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
+    default=None,
+    help="Logging verbosity. Defaults to the configured system.logging.main.level.",
+)
+def cli(log_level: str | None):
+    """
+    Simulate UVEX transient populations against a survey schedule.
+
+    Parameters
+    ----------
+    log_level : str, optional
+        If given, overrides the configured logging level for this invocation.
+    """
+    if log_level is not None:
+        configure_logging(log_level.upper())
 
 
 @cli.command("generate")

@@ -350,6 +350,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
                 self._transients[_transient_type_name] = _transient_type
 
+        logger.debug(
+            "SurveySimulator created with transient type(s) %s (seed=%s).", sorted(self._transients), simulation_seed
+        )
+
     # ---------------------------------------------- #
     # Properties and Accessors                       #
     # ---------------------------------------------- #
@@ -499,6 +503,14 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         elif downsample is not None:
             logger.info(f"Downsampling the number of events by a factor of {downsample}.")
         tables = []
+        logger.info(
+            "Generating events for %d type(s) %s over %d time bin(s) (nside=%d, order=%r).",
+            len(sorted_names),
+            sorted_names,
+            n_bins,
+            nside,
+            order,
+        )
 
         with (
             tqdm(total=len(sorted_names) * n_bins, desc="Generating events", unit="bin") as pbar,
@@ -592,6 +604,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         )
 
         generated_types = np.asarray(combined["transient_type"]).astype(str)
+        logger.info(
+            "Generated %d events: %s.",
+            len(combined),
+            ", ".join(f"{name}={int(np.sum(generated_types == name))}" for name in sorted_names),
+        )
         return EventCatalog(
             table=combined,
             nside=nside,
@@ -680,6 +697,13 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         solid_angle = []
         duration = []
 
+        logger.info(
+            "Tabulating effective exposure for %d type(s) over %d time bin(s) (nside=%d, order=%r).",
+            len(sorted_names),
+            n_bins,
+            nside,
+            order,
+        )
         with (
             tqdm(total=len(sorted_names) * n_bins, desc="Tabulating effective exposure", unit="bin") as pbar,
             logging_redirect_tqdm(loggers=[logger]),
@@ -750,7 +774,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         }
         total_chunks = sum(-(-idx.size // chunk_size) for idx in type_idx.values())
 
-        with tqdm(total=total_chunks, desc="Computing epochs", unit="chunk", disable=not progress) as pbar:
+        with (
+            tqdm(total=total_chunks, desc="Computing epochs", unit="chunk", disable=not progress) as pbar,
+            logging_redirect_tqdm(loggers=[logger]),
+        ):
             for name, idx in type_idx.items():
                 transient = self._transients[name]
                 event_id_type = np.asarray(table["event_id"])[idx]

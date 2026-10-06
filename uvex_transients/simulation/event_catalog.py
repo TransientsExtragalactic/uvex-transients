@@ -342,13 +342,16 @@ class EventCatalog:
             return Event._empty_photometry_table()
 
         # `Event` queries the schedule lazily, so that cost lands inside the loop below, under the bar.
+        logger.info("Simulating photometry for %d events (bands=%s).", len(self), "all" if bands is None else bands)
         events = self.get_events(self.event_id, transients, schedule)
         with logging_redirect_tqdm(loggers=[logger]):
             tables = [
                 event.simulate_photometry(mission, bands=bands, n_sigma=n_sigma)
                 for event in tqdm(events, desc="Simulating photometry", unit="event")
             ]
-        return vstack(tables, metadata_conflicts="silent")
+        result = vstack(tables, metadata_conflicts="silent")
+        logger.info("Simulated photometry: %d rows for %d events.", len(result), len(events))
+        return result
 
     def compute_photometry_catalog(
         self,
