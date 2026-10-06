@@ -62,10 +62,10 @@ See the file itself for what each section does, and `uvex-transients --help` for
 transient class at once; run it directly or via `make run` (see the [`Makefile`](Makefile) --
 `make help` lists every target).
 
-If you'd rather work interactively, [`notebooks/`](notebooks/) has one self-contained, end-to-end
-notebook per transient family (kilonovae, TDEs, LFBOTs, Type II supernovae -- IIP, IIP + early
-excess and IIb together -- and Type I supernovae -- Ib and Ic); run them with `make notebooks` or
-open them directly in Jupyter.
+For the results of that run, the documentation's report page has a summary of every transient family
+(kilonovae, TDEs, LFBOTs, Type I and Type II supernovae, SLSNe): its detection funnel, expected
+number of events and the distributions of the selected events, all built from the data products
+attached to the latest release.
 
 Full documentation, including the API reference, is available in the [`docs/`](docs/) directory.
 
