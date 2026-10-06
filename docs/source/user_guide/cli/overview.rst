@@ -378,7 +378,7 @@ A single-catalog predicate filter -- narrows one :class:`EventCatalog
 of :meth:`SurveySimulator.available_cuts()
 <uvex_transients.simulation.core.SurveySimulator.available_cuts>`, registered via the
 :func:`~uvex_transients.simulation.core.cut` decorator -- the schedule/detector-aware
-``limiting_magnitude``/``snr`` pair walked through in :ref:`user_guide_simulation`, plus a further
+``limiting_magnitude``/``snr`` pair walked through in :ref:`user_guide_simulation_cuts`, plus a further
 set of cheaper or more specialized screens (redshift, type, peak brightness, detection timing,
 sky position, and an arbitrary boolean expression), listed in full below. ``input:`` names the
 artifact to filter; everything under ``params:`` is forwarded as keyword arguments to that cut's
@@ -420,7 +420,7 @@ later:
      - ``bands``, ``n_phase``, ``chunk_size``, ``n_visits``
    * - ``snr``
      - ``snr_threshold``
-     - ``bands``, ``chunk_size``, ``n_visits``
+     - ``bands``, ``chunk_size``, ``n_visits``, ``exclude_first_visit_detections`` (default ``true``)
    * - ``redshift``
      - --
      - ``min_redshift``, ``max_redshift`` (at least one required)
@@ -436,12 +436,18 @@ later:
    * - ``peak_luminosity``
      - --
      - ``min_luminosity``, ``max_luminosity`` (at least one required), ``n_phase``, ``chunk_size``
+   * - ``first_visit_detected``
+     - ``snr_threshold``
+     - ``bands``, ``chunk_size``
    * - ``time_to_first_detection``
      - ``snr_threshold``
      - ``min_delay``, ``max_delay`` (at least one required), ``bands``, ``chunk_size``
    * - ``baseline``
      - ``snr_threshold``
      - ``min_baseline``, ``max_baseline`` (at least one required), ``bands``, ``chunk_size``
+   * - ``time_since_last_nondetection``
+     - ``snr_threshold``
+     - ``min_delay``, ``max_delay``, ``lookback``, ``keep_if_no_nondetection``, ``bands``, ``chunk_size``
    * - ``region``
      - ``region``
      - --
