@@ -132,9 +132,13 @@ suppress_warnings = ["toc.not_included"]
 
 # Configure the sphinx galleries. These are contained in the
 # /examples gallery.
+#
+# The second gallery holds the report's examples (see `_report_gen.py`). They download the latest
+# release's data, so its output directory is deliberately left out of the CI cache of
+# `auto_examples` and is rebuilt, and the examples re-run, on every documentation build.
 sphinx_gallery_conf = {
-    "examples_dirs": ["./galleries"],
-    "gallery_dirs": ["auto_examples"],
+    "examples_dirs": ["./galleries", "./report_examples"],
+    "gallery_dirs": ["auto_examples", "report/auto_examples"],
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
 }

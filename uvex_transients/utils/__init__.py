@@ -7,11 +7,13 @@ from numpy.typing import NDArray
 
 from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
+from .results import get_results
 
 __all__ = [
     "config",
     "cache_dir",
     "get_cache_dir",
+    "get_results",
     "logger",
     "configure_logging",
     "get_rng",

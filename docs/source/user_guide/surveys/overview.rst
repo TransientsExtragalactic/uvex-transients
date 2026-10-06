@@ -400,12 +400,14 @@ lazily and caches it on the schedule instance, keyed by ``(nside, order)``
 same resolution reuse the cached index rather than re-rasterizing the whole schedule from scratch.
 
 The one thing to keep in mind is that HEALPix pixel membership here follows pixel-*center*
-containment, not full-pixel overlap, so the index can occasionally *miss* a query point whose own
-pixel center happens to fall just outside a footprint -- it never wrongly *includes* one. Every
-method below that touches the sky in bulk, rather than as a single scalar query, is ultimately
-built on this index, and treats it purely as a fast first-pass filter: each candidate it returns is
-always confirmed with an exact geometric containment test afterward, so results stay exact even
-though the index itself is approximate.
+containment, not full-pixel overlap, so a query point's own pixel can be unregistered even though
+the point is inside a footprint. Every method below that touches the sky in bulk, rather than as a
+single scalar query, is ultimately built on this index, and treats it purely as a fast first-pass
+filter: it looks up each point's own pixel and its eight neighbours, discards observations outside
+the query's time window, and confirms every remaining candidate with an exact geometric
+containment test, so nothing is wrongly included. The results match the exact scalar query as long
+as a pixel is much smaller than the footprint, as at ``nside`` 64 or 128 for a footprint of a few
+degrees.
 
 .. list-table::
    :header-rows: 1

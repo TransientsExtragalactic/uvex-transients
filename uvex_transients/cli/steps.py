@@ -10,7 +10,7 @@ generated `~uvex_transients.simulation.event_catalog.EventCatalog`) and typicall
 ``id`` becomes its artifact's key once it's run, so any later step can reference it as
 an input regardless of its type -- a `cut` step feeds another `cut` or a `logical_op`
 just as an `action` step (e.g. ``photometry``) can feed another `action` (e.g.
-``detection_counts``).
+``event_summary``).
 
 Structural validation (unique ids, resolvable inputs, known registry names, arity) is
 already done by `~uvex_transients.cli.config.RunConfig.steps` itself, the moment it's
@@ -20,6 +20,7 @@ pass; `run_steps` does this up front, before executing step 1, by simply reading
 """
 
 from collections.abc import Iterator
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,6 @@ from astropy.table import QTable
 
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.logical_ops import LOGICAL_OPS
-from ..simulation.yield_table import YieldTable
 from .config import RunConfig, StepSpec
 
 #: The artifact type each ``action`` name produces -- used to pick the right
@@ -37,8 +37,7 @@ from .config import RunConfig, StepSpec
 #: here.
 _ACTION_OUTPUT_TYPES: dict[str, type] = {
     "photometry": QTable,
-    "yield": YieldTable,
-    "detection_counts": QTable,
+    "event_summary": QTable,
 }
 
 
@@ -128,28 +127,14 @@ def apply_cut_scoped(
     table = catalog.table
     mask = np.isin(np.asarray(table["transient_type"]), transient_types)
 
-    scoped = EventCatalog(
-        table=table[mask],
-        nside=catalog.nside,
-        order=catalog.order,
-        time_bins=catalog.time_bins,
-        seed=catalog.seed,
-        downsample=catalog.downsample,
-    )
+    scoped = replace(catalog, table=table[mask])
     filtered_scoped = simulator.run_cut(cut_name, scoped, mission, **params)
 
     kept_ids = set(np.asarray(filtered_scoped.table["event_id"]).tolist()) | set(
         np.asarray(table["event_id"])[~mask].tolist()
     )
     keep = np.isin(np.asarray(table["event_id"]), list(kept_ids))
-    return EventCatalog(
-        table=table[keep],
-        nside=catalog.nside,
-        order=catalog.order,
-        time_bins=catalog.time_bins,
-        seed=catalog.seed,
-        downsample=catalog.downsample,
-    )
+    return replace(catalog, table=table[keep])
 
 
 def checkpoint_targets(config: RunConfig, keep_intermediate: bool) -> list[tuple[StepSpec, Path | None]]:

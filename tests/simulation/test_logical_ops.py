@@ -1,5 +1,7 @@
 """Tests for `uvex_transients.simulation.logical_ops`."""
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 
@@ -18,6 +20,7 @@ def _subset(catalog, ids):
         time_bins=catalog.time_bins,
         seed=catalog.seed,
         downsample=catalog.downsample,
+        pre_cut_counts=catalog.pre_cut_counts,
     )
 
 
@@ -34,6 +37,7 @@ def _assert_metadata_carried_from_first(result, first):
     assert np.array_equal(result.time_bins.jd, first.time_bins.jd)
     assert result.seed == first.seed
     assert result.downsample == first.downsample
+    assert result.pre_cut_counts == first.pre_cut_counts
 
 
 # --------------------------------------------------------------------------- #
@@ -162,6 +166,37 @@ def test_mismatched_order_raises(hot_spot):
     )
     with pytest.raises(ValueError, match=r"same \(nside, order\)"):
         difference([catalog, other])
+
+
+def _with_counts(catalog, counts):
+    return replace(catalog, pre_cut_counts=counts)
+
+
+@pytest.mark.parametrize("op", [union, intersection, difference])
+def test_every_op_carries_pre_cut_counts(hot_spot, op):
+    """No set operation changes the generation-time counts, whichever rows it keeps."""
+    catalog, *_ = _make_catalog(_DummyTransient(), hot_spot, n_events=10, seed=2)
+    catalog = _with_counts(catalog, {"tde": 1000})
+    result = op([_subset(catalog, range(0, 7)), _subset(catalog, range(5, 10))])
+    assert result.pre_cut_counts == {"tde": 1000}
+
+
+@pytest.mark.parametrize("op", [union, intersection, difference])
+def test_inputs_with_different_pre_cut_counts_raise(hot_spot, op):
+    """Catalogs cut from different generation runs cannot share a denominator, so combining them raises."""
+    catalog, *_ = _make_catalog(_DummyTransient(), hot_spot, n_events=6, seed=3)
+    a = _with_counts(_subset(catalog, range(0, 4)), {"tde": 100})
+    b = _with_counts(_subset(catalog, range(2, 6)), {"tde": 200})
+    with pytest.raises(ValueError, match="pre_cut_counts"):
+        op([a, b])
+
+
+def test_union_takes_the_counts_from_whichever_input_has_them(hot_spot):
+    catalog, *_ = _make_catalog(_DummyTransient(), hot_spot, n_events=6, seed=4)
+    a = _subset(catalog, range(0, 4))
+    b = _with_counts(_subset(catalog, range(2, 6)), {"tde": 100})
+    assert a.pre_cut_counts is None
+    assert union([a, b]).pre_cut_counts == {"tde": 100}
 
 
 # --------------------------------------------------------------------------- #

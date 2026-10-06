@@ -139,48 +139,6 @@ def run_photometry_step(config: RunConfig, step_id: str, catalog: EventCatalog):
     return config.simulator.run_action("photometry", config.mission, catalog=catalog, **step.params)
 
 
-def run_detection_counts_step(
-    config: RunConfig,
-    step_id: str,
-    catalog: EventCatalog,
-    exposure: ExposureCatalog,
-    photometry,
-):
-    """
-    Run one ``action``-type, ``action: detection_counts`` step against externally supplied inputs.
-
-    Parameters
-    ----------
-    config : RunConfig
-        The parsed run-config.
-    step_id : str
-        The step's own id in `config.steps`; must be an ``action`` step with
-        ``action: detection_counts``.
-    catalog : EventCatalog
-        The full per-type event list `photometry` was computed over.
-    exposure : ExposureCatalog
-        Typically `run_exposure`'s own output.
-    photometry : PhotometryCatalog or ~astropy.table.QTable
-        Typically `run_photometry_step`'s own output.
-
-    Returns
-    -------
-    ~astropy.table.QTable
-        One row per ``(transient_type, n_detections)`` pair.
-
-    Raises
-    ------
-    ValueError
-        If `step_id` isn't declared, or isn't a ``detection_counts`` action step.
-    """
-    step = config.step_by_id(step_id)
-    if step.type != "action" or step.action != "detection_counts":
-        raise ValueError(f"step {step_id!r} is not a 'detection_counts' action step.")
-    return config.simulator.run_action(
-        "detection_counts", config.mission, catalog=catalog, exposure=exposure, photometry=photometry, **step.params
-    )
-
-
 def dry_run_report(
     config: RunConfig,
     command: str,
@@ -201,16 +159,16 @@ def dry_run_report(
     ----------
     config : RunConfig
         The parsed run-config.
-    command : {"generate", "cut", "photometry", "detection-counts", "run"}
+    command : {"generate", "cut", "photometry", "run"}
         Which command is being dry-run; decides which config sections are validated. ``"run"``
-        validates ``generate:`` and the whole ``steps:`` list; ``"cut"``/``"photometry"``/
-        ``"detection-counts"`` validate `step_ids` against `config.steps`.
+        validates ``generate:`` and the whole ``steps:`` list; ``"cut"``/``"photometry"``
+        validate `step_ids` against `config.steps`.
     outputs : iterable of pathlib.Path, optional
         The files the real command would write, checked for collisions.
     overwrite : bool, optional
         Whether the real command would be run with ``--overwrite``.
     step_ids : list of str, optional
-        For ``"cut"``/``"photometry"``/``"detection-counts"``, the ad hoc step id(s) that
+        For ``"cut"``/``"photometry"``, the ad hoc step id(s) that
         would run (see `uvex_transients.cli.main`'s per-command semantics).
 
     Returns
@@ -251,7 +209,7 @@ def dry_run_report(
         lines.append(f"steps ({len(step_lines)}, in order):")
         lines.extend(step_lines)
 
-    if command in ("cut", "photometry", "detection-counts"):
+    if command in ("cut", "photometry"):
         expected_type = "cut" if command == "cut" else "action"
         selected = list(step_ids) if step_ids else [s.id for s in config.steps if s.type == expected_type]
         resolved = [config.step_by_id(step_id) for step_id in selected]

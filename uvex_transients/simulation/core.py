@@ -12,6 +12,8 @@ built on `SurveySimulator.iter_epochs`, which yields every observation of every 
 """
 
 from collections.abc import Callable, Iterator, Mapping
+from dataclasses import replace
+from functools import partial
 from pathlib import Path
 from typing import Any, Union
 
@@ -37,7 +39,6 @@ from ._registry import combine_metaclasses, make_tagged_registry
 from .event_catalog import EventCatalog
 from .exposure_catalog import ExposureCatalog
 from .photometry_catalog import PhotometryCatalog
-from .yield_table import YieldTable
 
 __all__ = ["SurveySimulator", "cut", "action"]
 
@@ -53,6 +54,9 @@ action, _ActionRegistryMeta = make_tagged_registry("_action_name", "_ACTION_REGI
 
 # We now combine these classes into a single pipeline registry metaclass.
 _PipelineRegistryMeta = combine_metaclasses(_CutRegistryMeta, _ActionRegistryMeta)
+
+#: Footprints `SurveySimulator.run_event_summary_action` flags each event against by default.
+_SUMMARY_FOOTPRINTS = ("uvex:lmlz:wide", "uvex:lmlz:deep", "uvex:mc")
 
 
 # ============================================ #
@@ -141,23 +145,6 @@ def _reduce_detection_timing(chunk: QTable, rows: slice) -> tuple[float, float |
     return float(t[0]), min_gap, float(t[-1] - t[0])
 
 
-def _reduce_first_detection(chunk: QTable, rows: slice) -> tuple[Time, str, float, int]:
-    """
-    Return ``(t_obs, band, snr, observation_index)`` of an event's earliest detection.
-
-    Unlike `_reduce_detection_timing` it keeps the absolute observation time and which
-    schedule row it came from, which `SurveySimulator.run_alert_action` needs to find the
-    next downlink.
-    """
-    first = rows.start
-    return (
-        chunk["t_obs"][first],
-        str(chunk["band"][first]),
-        float(chunk["snr"][first]),
-        int(chunk["observation_index"][first]),
-    )
-
-
 def _reduce_solo_detection(chunk: QTable, rows: slice) -> int | None:
     """
     Return the schedule row of an event's only detection, or `None` if it has several.
@@ -186,6 +173,112 @@ def _reduce_nondetection_gap(chunk: QTable, rows: slice) -> float | None:
         return np.nan
     t = chunk["t_since_explosion"]
     return float((t[first] - t[rows.start + earlier[-1]]).to_value(u.day))
+
+
+def _reduce_event_summary(chunk: QTable, rows: slice, snr_threshold: float, rise_sigma: float) -> dict:
+    """
+    Reduce one event's epochs to the scalars `SurveySimulator.run_event_summary_action` tabulates.
+
+    The chunk must keep every epoch (detections, non-detections, and pre-explosion rows), since
+    the last non-detection can lie before the explosion. Within one event the rows must be in
+    time order, as `SurveySimulator.iter_epochs` yields them. Times are returned as Julian dates,
+    and every quantity that is undefined for the event is `None`.
+
+    Parameters
+    ----------
+    chunk : ~astropy.table.QTable
+        A chunk from `SurveySimulator._iter_detection_epochs` with ``keep_all=True``.
+    rows : slice
+        The rows of `chunk` belonging to one event.
+    snr_threshold : float
+        The detection threshold. It is already applied in the chunk's ``detected`` and
+        ``non_detected`` columns, so it is not used directly here.
+    rise_sigma : float
+        Minimum significance of the rise from a non-detection to the first detection for that
+        non-detection to count as constraining.
+
+    Returns
+    -------
+    dict
+        - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations after the explosion.
+        - ``n_det``, ``t_first_det``, ``t_last_det``: detections (post-explosion, above threshold).
+        - ``first_det_obs_index``: the schedule row of the first detection, for looking up its
+          field and when it ended.
+        - ``t_last_nondet``, ``last_nondet_snr``: the last non-detection before the first
+          detection, which may be pre-explosion, and its measured SNR.
+        - ``t_last_constraining_nondet``: the last such non-detection whose rise to the first
+          detection is significant at `rise_sigma`.
+    """
+    pre_explosion = np.asarray(chunk["pre_explosion"][rows])
+    detected = np.asarray(chunk["detected"][rows])
+    non_detected = np.asarray(chunk["non_detected"][rows])
+    snr = np.asarray(chunk["snr"][rows], dtype=np.float64)
+    flux = chunk["flux"][rows].to_value(u.Jy)
+    flux_err = chunk["flux_err"][rows].to_value(u.Jy)
+    jd = chunk["t_obs"][rows].jd
+
+    # Pre-explosion rows have no source, so they are not observations of the event. They are kept
+    # in the chunk only because they can still serve as non-detections below.
+    post = np.flatnonzero(~pre_explosion)
+    detections = np.flatnonzero(detected)
+    summary = {
+        "n_obs": int(post.size),
+        "n_det": int(detections.size),
+        "t_first_obs": float(jd[post[0]]) if post.size else None,
+        "t_last_obs": float(jd[post[-1]]) if post.size else None,
+        "t_first_det": None,
+        "t_last_det": None,
+        "first_det_obs_index": None,
+        "t_last_nondet": None,
+        "last_nondet_snr": None,
+        "t_last_constraining_nondet": None,
+    }
+    if detections.size == 0:
+        return summary
+
+    first, last = detections[0], detections[-1]
+    summary["t_first_det"] = float(jd[first])
+    summary["t_last_det"] = float(jd[last])
+    summary["first_det_obs_index"] = int(chunk["observation_index"][rows][first])
+
+    # Only epochs before the first detection can bracket it. `non_detected` is "SNR at or below the
+    # threshold", so a pre-explosion false positive is neither a detection nor a non-detection and
+    # drops out here. If the first observation is already a detection, `earlier` is empty and the
+    # event is unbracketed.
+    earlier = np.flatnonzero(non_detected[:first])
+    if earlier.size:
+        summary["t_last_nondet"] = float(jd[earlier[-1]])
+        summary["last_nondet_snr"] = float(snr[earlier[-1]])
+
+        # A non-detection just under threshold next to a detection just over it says nothing about
+        # when the source turned on. It only constrains the rise if the detection is brighter than
+        # it by `rise_sigma` standard errors, with the two measurement errors added in quadrature.
+        # This uses measured fluxes only, so an observer with forced photometry could compute it.
+        rise = (flux[first] - flux[earlier]) / np.hypot(flux_err[first], flux_err[earlier])
+        constraining = earlier[rise >= rise_sigma]
+        if constraining.size:
+            summary["t_last_constraining_nondet"] = float(jd[constraining[-1]])
+    return summary
+
+
+def _gather(per_event: list[dict | None], key: str) -> list:
+    """Collect `key` from each event's `_reduce_event_summary` result, `None` for an event with no epochs."""
+    return [None if summary is None else summary[key] for summary in per_event]
+
+
+def _masked_times(values: list[float | None], scale: str, time_format: str) -> Time:
+    """Build a masked `~astropy.time.Time` column from Julian dates, with `None` entries masked."""
+    array = np.array([np.nan if v is None else v for v in values], dtype=np.float64)
+    mask = np.isnan(array)
+    result = Time(np.ma.MaskedArray(np.where(mask, 0.0, array), mask=mask), format="jd", scale=scale)
+    result.format = time_format
+    return result
+
+
+def _masked_floats(values: list[float | None]) -> np.ma.MaskedArray:
+    """Build a masked float column, with `None` entries masked."""
+    array = np.array([np.nan if v is None else v for v in values], dtype=np.float64)
+    return np.ma.MaskedArray(np.where(np.isnan(array), 0.0, array), mask=np.isnan(array))
 
 
 # ===================================== #
@@ -497,6 +590,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             else np.array([], dtype=np.float64)
         )
 
+        generated_types = np.asarray(combined["transient_type"]).astype(str)
         return EventCatalog(
             table=combined,
             nside=nside,
@@ -504,6 +598,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             time_bins=edges,
             seed=self._simulation_seed,
             downsample=dict(downsample) if isinstance(downsample, Mapping) else downsample,
+            pre_cut_counts={name: int(np.sum(generated_types == name)) for name in sorted_names},
         )
 
     def compute_effective_exposure(
@@ -892,14 +987,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
     def _filtered(self, catalog: EventCatalog, keep: np.ndarray) -> EventCatalog:
         """Return a new `EventCatalog` over `catalog.table[keep]`, carrying every other field unchanged."""
-        return EventCatalog(
-            table=catalog.table[keep],
-            nside=catalog.nside,
-            order=catalog.order,
-            time_bins=catalog.time_bins,
-            seed=catalog.seed,
-            downsample=catalog.downsample,
-        )
+        return replace(catalog, table=catalog.table[keep])
 
     def _peak_band_flux(
         self,
@@ -2625,11 +2713,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         """
         Run one `@action`-registered pipeline action by name.
 
-        A thin dispatch layer over `run_photometry_action`/`run_yield_action`/
-        `run_detection_counts_action` (and any further ``@action``-decorated methods a
-        subclass adds), mirroring `run_cut`'s relationship to `available_cuts`, so a
-        config-driven caller (see `uvex_transients.cli.steps`) can select an action by
-        name rather than hardcoding which Python method to call.
+        A thin dispatch layer over `run_photometry_action`/`run_event_summary_action` (and any
+        further ``@action``-decorated methods a subclass adds), mirroring `run_cut`'s
+        relationship to `available_cuts`, so a config-driven caller (see
+        `uvex_transients.cli.steps`) can select an action by name rather than hardcoding
+        which Python method to call.
 
         Parameters
         ----------
@@ -2639,8 +2727,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             The mission whose detector(s)/bandpasses the action evaluates against.
         **inputs_and_params
             Forwarded to the underlying action method as keyword arguments: both its
-            named artifact inputs (e.g. `catalog` for ``"photometry"``; `raw`,
-            `detected`, `exposure` for ``"yield"``) and its own parameters (e.g.
+            named artifact inputs (e.g. `catalog` for ``"photometry"``; `catalog`, `raw`,
+            `exposure`, `photometry` for ``"event_summary"``) and its own parameters (e.g.
             `bands`, `n_sigma`).
 
         Returns
@@ -2697,8 +2785,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
         See Also
         --------
-        run_yield_action : Combine this action's output with raw/detected catalogs into a yield summary.
-        run_detection_counts_action : Reduce this action's output to per-type detection counts.
+        run_event_summary_action : Reduce this action's output (and the epochs) to a per-event summary table.
 
         Examples
         --------
@@ -2712,108 +2799,133 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             mission, self.transient_collection, self.survey_schedule, bands=bands, n_sigma=n_sigma
         )
 
-    @action("yield")
-    def run_yield_action(
-        self,
-        raw: EventCatalog,
-        detected: EventCatalog,
-        exposure: ExposureCatalog,
-        mission: Mission,
-        confidence: float = 0.9,
-    ) -> YieldTable:
-        r"""
-        Build a per-transient-type yield summary from a raw, a detected, and an exposure catalog.
-
-        A thin wrapper over
-        `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`,
-        supplying this simulator's own `transient_collection`. Unlike the other actions,
-        `mission` is accepted (for a uniform `run_action` call signature) but unused,
-        since yield is purely a combination of already-computed catalogs/rates.
-
-        Parameters
-        ----------
-        raw : EventCatalog
-            The feasible (pre-cut) catalog.
-        detected : EventCatalog
-            The detected (post-cut) catalog.
-        exposure : ExposureCatalog
-            Typically `compute_effective_exposure`'s own output.
-        mission : m4opt.missions.Mission
-            Unused; accepted only so every `@action` shares one call signature.
-        confidence : float, optional
-            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.
-
-        Returns
-        -------
-        YieldTable
-            One row per transient type in `self.transient_collection`.
-
-        See Also
-        --------
-        compute_effective_exposure : Typically the source of `exposure`.
-        run_photometry_action : Typically upstream of `detected`, once further cut.
-
-        Examples
-        --------
-        .. code-block:: python
-
-            yields = simulator.run_yield_action(
-                raw=raw_catalog,
-                detected=detected_catalog,
-                exposure=exposure,
-                mission=mission,
-            )
-        """
-        return raw.compute_yield_summary(detected, exposure, self.transient_collection, confidence=confidence)
-
-    @action("detection_counts")
-    def run_detection_counts_action(
+    @action("event_summary")
+    def run_event_summary_action(
         self,
         catalog: EventCatalog,
         exposure: ExposureCatalog,
-        photometry: PhotometryCatalog | QTable,
+        photometry: QTable | PhotometryCatalog,
         mission: Mission,
         snr_threshold: float,
-        confidence: float = 0.9,
+        rise_sigma: float = 3.0,
+        processing_delay: u.Quantity | float = 0.0,
+        lookback: float | None = None,
+        bands: list[str] | None = None,
+        chunk_size: int | None = None,
+        footprints: list[str] | None = None,
+        color_bands: list[str] | None = None,
     ) -> QTable:
-        """
-        Estimate, per transient type, how many events show N_det >= k detected epochs.
+        r"""
+        Build a per-event summary table: when each event was first and last seen, and how it peaked.
 
-        A thin wrapper over
-        `~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`,
-        supplying this simulator's own `transient_collection`.
+        One row per event in `catalog`, in `catalog`'s order, so everything needed to study
+        detection timing, cadence, and peak behaviour is in one small table and does not require
+        replaying the full event list. Detection quantities come from a single pass over the
+        schedule-aware epochs (see `iter_epochs`); the peak quantities come from `photometry`.
+
+        The table's ``meta`` carries what is needed to turn any selection of its rows into an
+        expected number of real events with confidence bounds (see
+        `~uvex_transients.simulation.rates.estimate_yield`): the generation-time count of each
+        type from `catalog`'s ``pre_cut_counts``, each type's intrinsic expected event count
+        from `exposure`, and each type's rate-uncertainty factors.
+
+        A detection is an epoch after the explosion whose measured SNR exceeds `snr_threshold`,
+        exactly as in `filter_by_snr`. The first-visit exclusion of that cut is not re-applied
+        here, so pass a catalog that has already been through it if that matters.
 
         Parameters
         ----------
         catalog : EventCatalog
-            The full per-type event list `photometry` was computed over.
+            The events to summarize, typically the output of an SNR cut. It must carry
+            ``pre_cut_counts`` (set by `generate_events`), which survive every cut.
         exposure : ExposureCatalog
-            Typically `compute_effective_exposure`'s own output.
-        photometry : PhotometryCatalog or ~astropy.table.QTable
-            Typically `run_photometry_action`'s own output; a bare `QTable` is wrapped
-            automatically.
+            Typically `compute_effective_exposure`'s own output. Supplies each type's
+            expected number of UVEX events.
+        photometry : ~astropy.table.QTable or PhotometryCatalog
+            Synthetic photometry of `catalog`, typically `run_photometry_action`'s output.
+            An event with no rows in it has masked peak columns.
         mission : m4opt.missions.Mission
-            Unused; accepted only so every `@action` shares one call signature.
+            Forwarded to `iter_epochs`.
         snr_threshold : float
-            An observation epoch counts as detected if at least one band's measured ``snr``
-            in `photometry` exceeds this value.
-        confidence : float, optional
-            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.
+            The detection threshold.
+        rise_sigma : float, optional
+            Minimum significance of the rise from a non-detection to the first detection,
+            :math:`(f_{\rm det} - f_{\rm and}) / \sqrt{\sigma_{\rm det}^2 + \sigma_{\rm and}^2}`, for
+            that non-detection to count in ``t_last_constraining_nondet``. The default is 3.
+        processing_delay : ~astropy.units.Quantity or float, optional
+            Fixed ground-segment latency added to the downlink completion time to get
+            ``t_alert``. Bare numbers are interpreted as hours. The default is 0.
+        lookback : float, optional
+            Days before each explosion to search for non-detections. `None` (the default)
+            searches back to the start of the schedule.
+        bands : list of str, optional
+            Forwarded to `iter_epochs`.
+        chunk_size : int, optional
+            Forwarded to `iter_epochs`.
+        footprints : list of str, optional
+            Registered footprint names to flag each event against. The default is the LMLZ
+            wide and deep surveys and the Magellanic Clouds survey.
+        color_bands : list of str, optional
+            The two bands whose magnitude difference gives ``peak_color``, as
+            ``first - second``. The default is ``["FUV", "NUV"]``.
 
         Returns
         -------
         ~astropy.table.QTable
-            One row per ``(transient_type, n_detections)`` pair.
+            One row per event, with columns:
+
+            - ``event_id``, ``transient_type``, ``parameter_seed``, ``time_bin``, ``redshift``,
+              ``luminosity_distance``, ``ebv``, ``coord``, ``healpix_id`` and ``t_explosion``,
+              copied from `catalog`. ``t_explosion`` is the one quantity an observer could not
+              know.
+            - ``in_<footprint>``: one boolean per footprint, with ``:`` replaced by ``_`` in the
+              name (for example ``in_uvex_lmlz_deep``).
+            - ``weight``: the expected number of real events each sampled event stands for,
+              ``expected_events[type] / n_pre_cut[type]``. Summing it over any selection gives that
+              selection's expected yield.
+            - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations of the event's position
+              after the explosion, and the times of the first and last.
+            - ``n_det``, ``t_first_det``, ``t_last_det``: detections, and the times of the first
+              and last. The times are masked when ``n_det`` is zero.
+            - ``field_id``: the schedule field of the first detection's observation.
+            - ``t_alert``: the completion of the first downlink after the first detection's
+              observation ends, plus `processing_delay`. Masked if no downlink follows.
+            - ``t_last_nondet``, ``last_nondet_snr``: the last epoch before the first detection
+              with SNR at or below the threshold, and its measured SNR. This may be before the
+              explosion. Masked if the first observation was already a detection.
+            - ``t_last_constraining_nondet``: the last such epoch whose rise to the first
+              detection is at least `rise_sigma`.
+            - ``peak_snr``, ``peak_mag``, ``peak_color``, ``peak_time``: the highest-SNR
+              measurement in `photometry`, its AB magnitude, the color of that observation
+              (masked if either band is missing or not finite), and its time.
+
+            The table's ``meta`` records the parameters of the call and, keyed by transient type,
+            ``n_pre_cut`` (generated events), ``expected_events`` (intrinsic UVEX events, from
+            `exposure`) and ``rate_ci`` (the type's ``(lower, upper)`` rate factors), for every type
+            in `catalog`'s ``pre_cut_counts``.
+
+        Raises
+        ------
+        TypeError
+            If `catalog` is not an `EventCatalog`.
+        KeyError
+            If a transient type in `catalog`'s ``pre_cut_counts`` has no tabulated exposure in
+            `exposure`, or is not one of this simulator's transients.
+        ValueError
+            If `catalog` has no ``pre_cut_counts`` (it was built by hand, or read from a file
+            written before they were recorded), or `color_bands` does not have exactly two entries.
 
         See Also
         --------
-        run_photometry_action : Typically the source of `photometry`.
+        filter_by_snr : The definition of a detection this action builds on.
+        run_photometry_action : Produces the `photometry` input.
+        uvex_transients.simulation.rates.estimate_yield : Turns a selection of rows into expected events.
 
         Examples
         --------
         .. code-block:: python
 
-            counts = simulator.run_detection_counts_action(
+            summary = simulator.run_event_summary_action(
                 catalog=detected,
                 exposure=exposure,
                 photometry=photometry,
@@ -2821,142 +2933,155 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 snr_threshold=5.0,
             )
         """
-        if not isinstance(photometry, PhotometryCatalog):
-            photometry = PhotometryCatalog(table=photometry)
-        return photometry.compute_detection_count_table(
-            catalog, exposure, self.transient_collection, snr_threshold=snr_threshold, confidence=confidence
-        )
-
-    @action("alert")
-    def run_alert_action(
-        self,
-        catalog: EventCatalog,
-        mission: Mission,
-        snr_threshold: float,
-        bands: list[str] | None = None,
-        chunk_size: int | None = None,
-        processing_delay: u.Quantity = 0 * u.s,
-    ) -> QTable:
-        r"""
-        Build a per-event alert-timing table: first detection, next downlink, and alert time.
-
-        A transient with an explosion time :math:`t_0` may not have the opportunity to relay that information to
-        the ground until some :math:`t_{\rm transmission} > t_0` determined by the next downlink time. For fast
-        follow up of UVEX detected transients, this delay time may have very important implications for getting on
-        target with ground and space-based observatories. This function therefore provides an "alert" with the
-        corresponding trigger times to allow effective modeling of this.
-
-        Parameters
-        ----------
-        catalog : EventCatalog
-            Typically an already schedule-aware-filtered (e.g. `filter_by_snr`) catalog;
-            events with no qualifying epoch are dropped from the output (see Notes).
-        mission : m4opt.missions.Mission
-            Supplies the `~m4opt.synphot.Detector` `bands` selects from.
-        snr_threshold : float
-            Same definition as `filter_by_snr`: an epoch qualifies if its measured SNR
-            exceeds this value.
-        bands : list of str, optional
-            Forwarded to `iter_epochs`.
-        chunk_size : int, optional
-            Forwarded to `iter_epochs`.
-        processing_delay : ~astropy.units.Quantity, optional
-            Extra fixed ground-segment latency added on top of the downlink's own
-            completion time, e.g. to model processing/distribution time before a real
-            alert would actually be issued. The default is ``0 * u.s``: `alert_time` is
-            exactly the downlink completion time.
-
-        Returns
-        -------
-        ~astropy.table.QTable
-            One row per event in `catalog` with >= 1 qualifying detection epoch, sorted by
-            ``event_id``, with columns:
-
-            - ``event_id``, ``transient_type``
-            - ``t_first_detection``: the qualifying epoch itself (absolute time).
-            - ``detection_band``, ``detection_snr``: that epoch's best band and its
-              measured SNR.
-            - ``t_downlink``: the relevant downlink action's *completion* time
-              (``start_time + duration``).
-            - ``alert_time``: ``t_downlink + processing_delay``.
-            - ``alert_delay``: ``alert_time - t_first_detection``, as a
-              `~astropy.units.Quantity` in hours.
-
-            ``t_downlink``/``alert_time``/``alert_delay`` are masked for an event whose
-            first qualifying detection has no downlink scheduled after it (e.g. it falls
-            in the survey's final observing block, after the last downlink).
-
-        See Also
-        --------
-        filter_by_snr : The definition of a qualifying detection this action builds on.
-        uvex_transients.surveys.base.SurveySchedule.next_action_time : The schedule lookup this wraps.
-
-        Notes
-        -----
-        Events in `catalog` with zero qualifying epochs (e.g. it was cut with a lower
-        `snr_threshold` than this call uses) are excluded from the output entirely,
-        rather than appearing with masked detection columns too -- there is no detection
-        epoch to look up a downlink relative to.
-
-        Examples
-        --------
-        .. code-block:: python
-
-            alerts = simulator.run_alert_action(
-                detected,
-                mission,
-                snr_threshold=5.0,
-                processing_delay=1 * u.hour,
-            )
-        """
         if not isinstance(catalog, EventCatalog):
             raise TypeError(f"'catalog' must be an EventCatalog, got {type(catalog)} instead.")
-        if not isinstance(processing_delay, u.Quantity):
-            raise TypeError(f"'processing_delay' must be a Quantity, got {type(processing_delay)}.")
-
-        stats = self._reduce_events(catalog, mission, snr_threshold, bands, chunk_size, _reduce_first_detection)
-
-        event_ids = np.array(sorted(stats), dtype=np.int64)
-        if len(event_ids) == 0:
-            return QTable(
-                {
-                    "event_id": event_ids,
-                    "transient_type": np.array([], dtype=str),
-                    "t_first_detection": Time([], format="jd", scale=self.survey_schedule.table["start_time"].scale),
-                    "detection_band": np.array([], dtype=str),
-                    "detection_snr": np.array([], dtype=np.float64),
-                    "t_downlink": Time([], format="jd", scale=self.survey_schedule.table["start_time"].scale),
-                    "alert_time": Time([], format="jd", scale=self.survey_schedule.table["start_time"].scale),
-                    "alert_delay": u.Quantity([], u.hour),
-                }
+        if catalog.pre_cut_counts is None:
+            raise ValueError(
+                "'catalog' has no pre_cut_counts, so a denominator for detection fractions is unknown. "
+                "Regenerate it with generate_events (a catalog read from an older file lacks them)."
             )
+        color_bands = ["FUV", "NUV"] if color_bands is None else list(color_bands)
+        if len(color_bands) != 2:
+            raise ValueError(f"'color_bands' must name exactly two bands, got {color_bands}.")
+        footprints = list(_SUMMARY_FOOTPRINTS) if footprints is None else list(footprints)
+        delay = processing_delay if isinstance(processing_delay, u.Quantity) else processing_delay * u.hr
 
-        t_obs = Time([stats[eid][0] for eid in event_ids])
-        band = np.array([stats[eid][1] for eid in event_ids])
-        snr = np.array([stats[eid][2] for eid in event_ids])
-        observation_index = np.array([stats[eid][3] for eid in event_ids])
+        table = catalog.table
+        event_ids = np.asarray(table["event_id"])
+        types = np.asarray(table["transient_type"]).astype(str)
+        n_pre_cut = {name: int(count) for name, count in catalog.pre_cut_counts.items()}
+        unknown = [name for name in n_pre_cut if name not in self.transient_collection]
+        if unknown:
+            raise KeyError(f"Unknown transient type(s) {unknown}; registered: {sorted(self.transient_collection)}.")
+        missing = [name for name in n_pre_cut if name not in exposure.total_expected_events]
+        if missing:
+            raise KeyError(
+                f"No exposure tabulated for transient type(s) {missing}; "
+                f"available: {sorted(exposure.total_expected_events)}."
+            )
+        expected = {name: float(exposure.total_expected_events[name]) for name in n_pre_cut}
+        rate_ci = {
+            name: [float(x) for x in (self.transient_collection[name].RATE_CI or (1.0, 1.0))] for name in n_pre_cut
+        }
 
+        base_columns = [
+            c
+            for c in (
+                "event_id",
+                "transient_type",
+                "parameter_seed",
+                "time_bin",
+                "redshift",
+                "luminosity_distance",
+                "ebv",
+                "coord",
+                "healpix_id",
+                "t_explosion",
+            )
+            if c in table.colnames
+        ]
+        summary = QTable(table[base_columns], copy=True)
+        for footprint in footprints:
+            summary["in_" + footprint.replace(":", "_")] = catalog.in_footprint(footprint)
+        summary["weight"] = np.array(
+            [expected[name] / n_pre_cut[name] if n_pre_cut.get(name, 0) > 0 else np.nan for name in types],
+            dtype=np.float64,
+        )
+
+        stats = {}
+        if len(catalog) > 0:
+            stats = self._reduce_events(
+                catalog,
+                mission,
+                snr_threshold,
+                bands,
+                chunk_size,
+                partial(_reduce_event_summary, snr_threshold=snr_threshold, rise_sigma=rise_sigma),
+                keep_all=True,
+                lookback=None if lookback is None else lookback * u.day,
+            )
+        per_event = [stats.get(int(eid)) for eid in event_ids]
+
+        scale = self.survey_schedule.table["start_time"].scale
+        time_format = table["t_explosion"].format if "t_explosion" in table.colnames else "isot"
+
+        summary["n_obs"] = np.array([0 if s is None else s["n_obs"] for s in per_event], dtype=np.int64)
+        summary["t_first_obs"] = _masked_times(_gather(per_event, "t_first_obs"), scale, time_format)
+        summary["t_last_obs"] = _masked_times(_gather(per_event, "t_last_obs"), scale, time_format)
+        summary["n_det"] = np.array([0 if s is None else s["n_det"] for s in per_event], dtype=np.int64)
+        summary["t_first_det"] = _masked_times(_gather(per_event, "t_first_det"), scale, time_format)
+        summary["t_last_det"] = _masked_times(_gather(per_event, "t_last_det"), scale, time_format)
+
+        # The first detection's schedule field, and the first downlink after that observation ends.
         observe_rows = self.survey_schedule.observe_rows
-        t_detection_end = t_obs + observe_rows["duration"][observation_index]
+        detected_at = [i for i, s in enumerate(per_event) if s is not None and s["first_det_obs_index"] is not None]
+        field_id = np.ma.MaskedArray(np.zeros(len(per_event), dtype=np.int64), mask=np.ones(len(per_event), dtype=bool))
+        t_alert = [None] * len(per_event)
+        if detected_at:
+            obs_index = np.array([per_event[i]["first_det_obs_index"] for i in detected_at])
+            jd_first = np.array([per_event[i]["t_first_det"] for i in detected_at])
+            field_id[detected_at] = np.asarray(observe_rows["field_id"][obs_index], dtype=np.int64)
+            t_end = Time(jd_first, format="jd", scale=scale) + observe_rows["duration"][obs_index]
+            t_downlink = self.survey_schedule.next_action_time(t_end, "downlink", completion=True) + delay
+            downlink_jd = np.ma.filled(np.ma.asarray(t_downlink.jd, dtype=np.float64), np.nan)
+            for i, jd in zip(detected_at, downlink_jd):
+                t_alert[i] = None if np.isnan(jd) else float(jd)
+        summary["field_id"] = field_id
+        summary["t_alert"] = _masked_times(t_alert, scale, time_format)
+        summary["t_last_nondet"] = _masked_times(_gather(per_event, "t_last_nondet"), scale, time_format)
+        summary["last_nondet_snr"] = _masked_floats(_gather(per_event, "last_nondet_snr"))
+        summary["t_last_constraining_nondet"] = _masked_times(
+            _gather(per_event, "t_last_constraining_nondet"), scale, time_format
+        )
 
-        t_downlink = self.survey_schedule.next_action_time(t_detection_end, "downlink", completion=True)
-        alert_time = t_downlink + processing_delay
-        alert_delay = (alert_time - t_obs).to(u.hour)
+        # Peak quantities, from the highest-SNR row of each event in the photometry table.
+        phot = photometry.table if isinstance(photometry, PhotometryCatalog) else photometry
+        peak_snr, peak_mag, peak_color, peak_jd = {}, {}, {}, {}
+        if len(phot) > 0:
+            phot_event = np.asarray(phot["event_id"])
+            phot_snr = np.asarray(phot["snr"], dtype=np.float64)
+            phot_band = np.asarray(phot["band"]).astype(str)
+            phot_mag = np.asarray(phot["ab_mag"], dtype=np.float64)
+            phot_jd = np.asarray(phot["obs_time"].jd, dtype=np.float64)
+            band_mags = [
+                {
+                    (int(e), float(t)): float(m)
+                    for e, t, m in zip(phot_event[phot_band == b], phot_jd[phot_band == b], phot_mag[phot_band == b])
+                }
+                for b in color_bands
+            ]
+            order = np.lexsort((-np.nan_to_num(phot_snr, nan=-np.inf), phot_event))
+            sorted_event = phot_event[order]
+            starts = np.flatnonzero(np.r_[True, sorted_event[1:] != sorted_event[:-1]])
+            for row in order[starts]:
+                eid = int(phot_event[row])
+                peak_snr[eid] = float(phot_snr[row])
+                peak_mag[eid] = float(phot_mag[row])
+                peak_jd[eid] = float(phot_jd[row])
+                key = (eid, float(phot_jd[row]))
+                first_mag, second_mag = band_mags[0].get(key, np.nan), band_mags[1].get(key, np.nan)
+                peak_color[eid] = first_mag - second_mag if np.isfinite(first_mag - second_mag) else None
 
-        table_event_id = np.asarray(catalog.table["event_id"])
-        transient_type = np.asarray(catalog.table["transient_type"]).astype(str)
-        order = np.argsort(table_event_id)
-        type_of_event = transient_type[order[np.searchsorted(table_event_id[order], event_ids)]]
+        eids = [int(e) for e in event_ids]
+        summary["peak_snr"] = _masked_floats([peak_snr.get(e) for e in eids])
+        mags = [peak_mag.get(e) for e in eids]
+        summary["peak_mag"] = _masked_floats([m if m is not None and np.isfinite(m) else None for m in mags])
+        summary["peak_color"] = _masked_floats([peak_color.get(e) for e in eids])
+        summary["peak_time"] = _masked_times([peak_jd.get(e) for e in eids], scale, time_format)
 
-        return QTable(
+        summary.meta.update(
             {
-                "event_id": event_ids,
-                "transient_type": type_of_event,
-                "t_first_detection": t_obs,
-                "detection_band": band,
-                "detection_snr": snr,
-                "t_downlink": t_downlink,
-                "alert_time": alert_time,
-                "alert_delay": alert_delay,
+                "snr_threshold": float(snr_threshold),
+                "rise_sigma": float(rise_sigma),
+                "processing_delay_hr": float(delay.to_value(u.hr)),
+                "lookback_days": None if lookback is None else float(lookback),
+                "bands": None if bands is None else list(bands),
+                "color_bands": color_bands,
+                "nside": int(catalog.nside),
+                "order": str(catalog.order),
+                "n_pre_cut": n_pre_cut,
+                "expected_events": expected,
+                "rate_ci": rate_ci,
             }
         )
+        return summary

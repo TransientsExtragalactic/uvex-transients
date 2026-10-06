@@ -397,40 +397,42 @@ full-sky number. :meth:`~uvex_transients.simulation.exposure_catalog.ExposureCat
 re-tile that same tabulated exposure over an arbitrary sub-window or a different time binning
 without re-querying the schedule.
 
-Combine a raw (feasible) catalog, a detected (post-cut) catalog, and its exposure into one
-per-transient-type summary with
-:meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`:
+Summarizing events and estimating yields
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Every :class:`~uvex_transients.simulation.event_catalog.EventCatalog` records ``pre_cut_counts``: how
+many events of each transient type were generated. No cut, set operation, or other row selection
+changes it, which makes it the denominator of every later detection fraction. The photometry action
+and the cuts are unchanged; the
+:meth:`~uvex_transients.simulation.core.SurveySimulator.run_event_summary_action` then reduces a
+(typically SNR-cut) catalog to one plain :class:`~astropy.table.QTable` with a row per event: its
+identity and position, footprint flags, first and last observation and detection times, the last
+non-detection before the first detection, and its peak photometry:
 
 .. code-block:: python
 
-    yields = catalog.compute_yield_summary(detected, exposure, {"tde": tde}, confidence=0.9)
-    yields.table["transient_type", "uvex_intrinsic_events", "detection_probability", "expected_detections"]
+    summary = simulator.run_event_summary_action(
+        catalog=detected, exposure=exposure, photometry=photometry, mission=mission, snr_threshold=5.0
+    )
 
-The returned :class:`~uvex_transients.simulation.yield_table.YieldTable` carries, per transient
-type, the rate (``integrated_rate``/``all_sky_rate``), the footprint-aware intrinsic rate/count
-(``uvex_intrinsic_rate``/``uvex_intrinsic_events``, i.e. :math:`\mu_0`), the Monte Carlo detection
-efficiency (``detection_probability``, :math:`\hat\epsilon=k/n`), and the final yield estimate
-(``expected_detections``, :math:`\hat\lambda=\mu_0\hat\epsilon`) -- each rate-derived column with
-its own ``RATE_CI``-propagated bounds, and ``detection_probability``/``expected_detections`` with
-*two* separate uncertainty sources (Clopper-Pearson binomial and rate-normalization), kept apart
-as ``..._binom_lower``/``_upper`` and ``..._rate_lower``/``_upper`` columns rather than combined
-into one. :meth:`~uvex_transients.simulation.yield_table.YieldTable.to_ascii` writes a
-human-readable summary table; :meth:`~uvex_transients.simulation.yield_table.YieldTable.to_latex`
-renders both uncertainty sources as stacked LaTeX superscripts for a paper table.
+The table's ``meta`` carries the generation count, each type's intrinsic expected event count
+(:math:`\mu_0`, from the exposure catalog), and its rate-uncertainty factors, so a slice of it
+still knows everything needed to turn a selection into a yield. Cut it however you like, then pass
+the boolean mask of the rows you want to :func:`~uvex_transients.simulation.rates.estimate_yield`:
 
-.. hint::
+.. code-block:: python
 
-   For a finer-grained question than "was this event detected at all" -- "how many separate
-   epochs was it detected in" -- run synthetic photometry over a whole catalog with
-   :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog`
-   (wrapping :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry`,
-   below, as a :class:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog`), then
-   call its own
-   :meth:`~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`.
-   It generalizes ``compute_yield_summary``'s "detected at all" (:math:`N_{\rm det}\geq 1`) to
-   "detected in at least :math:`k` epochs" for every :math:`k` at once, with the same two-source
-   uncertainty treatment -- exactly what the ``detection-counts`` CLI command
-   (:ref:`user_guide_cli`) automates.
+    from uvex_transients.simulation.rates import estimate_yield
+
+    estimate_yield(summary)  # per type, for the cuts the summary was built from
+
+    delay = (summary["t_first_det"] - summary["t_last_nondet"]).to_value("hr")
+    estimate_yield(summary, mask=delay <= 6)
+
+For each type it returns the fraction :math:`k/n` of generated events selected, the expected number
+of real events :math:`\mu_0 k/n`, a Clopper-Pearson (Monte Carlo) interval on it, and a separate
+interval from the rate normalization, kept apart rather than combined. Types are not summed, since
+that would mix independent Monte Carlo errors with a shared rate uncertainty.
 
 ----
 

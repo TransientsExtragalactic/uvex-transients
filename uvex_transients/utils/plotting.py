@@ -21,9 +21,8 @@ sources of uncertainty that are otherwise easy to conflate into a single, mislea
 
 - **MC (statistical) uncertainty**: every stage after the first is a binomial subsample of the raw
   Monte Carlo draws in the first ("sampled") stage, so its uncertainty is exactly the same
-  Clopper-Pearson interval `~uvex_transients.simulation.event_catalog.EventCatalog.compute_detection_efficiency`
-  and `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary` already use for
-  detection efficiency, propagated back into count units.
+  Clopper-Pearson interval `~uvex_transients.simulation.rates.estimate_yield` uses for detection
+  efficiency, propagated back into count units.
 - **Rate (systematic) uncertainty**: the population's overall normalization, from
   `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`. Because it is a pure
   multiplicative scale on the underlying rate, it applies identically to every stage's point
@@ -642,9 +641,9 @@ def compute_funnel_bounds(
     ``stage_counts[0]`` is taken as the funnel's binomial denominator :math:`n` -- the number of raw
     Monte Carlo draws in the "sampled" stage -- and every later stage's count :math:`k_i` is treated
     as a binomial subsample of it, with a `clopper_pearson_interval` bound on :math:`k_i/n` converted
-    back into count units. This matches `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`'s
-    own convention (feasible draws as :math:`n`, a later cut's count as :math:`k`), just applied to
-    every stage rather than only the final one.
+    back into count units. This matches the convention of
+    `~uvex_transients.simulation.rates.estimate_yield` (generated events as :math:`n`, a later cut's
+    count as :math:`k`), just applied to every stage rather than only the final one.
 
     `rate_ci` (an `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`-style
     ``(lower, upper)`` multiplicative pair, or `None`) is applied uniformly to every stage's point
