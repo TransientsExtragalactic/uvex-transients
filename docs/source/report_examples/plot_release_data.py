@@ -26,11 +26,17 @@ from uvex_transients.utils.plotting import resolve_fig_axes, set_plot_style
 
 set_plot_style()
 
-paths = get_results(["events", "exposure", "summary"])
+paths = get_results(["events", "exposure"])
 
 events = EventCatalog.from_disk(paths["events"])
 exposure = ExposureCatalog.from_disk(paths["exposure"])
-summary = QTable.read(paths["summary"])
+
+# Releases cut before the event summary table was introduced do not carry one, so it is optional here.
+try:
+    summary = QTable.read(get_results(["summary"])["summary"])
+except LookupError as err:
+    print(f"No event summary in the latest release, skipping the yield analysis: {err}")
+    summary = None
 
 print(f"{len(events)} events survive the cuts, out of {sum(events.pre_cut_counts.values())} generated.")
 print("Intrinsic UVEX events by type:", {name: f"{mu0:,.0f}" for name, mu0 in exposure.total_expected_events.items()})
@@ -44,8 +50,9 @@ print("Intrinsic UVEX events by type:", {name: f"{mu0:,.0f}" for name, mu0 in ex
 # :func:`~uvex_transients.simulation.rates.estimate_yield` needs to turn a selection of rows into
 # an expected number of real events.
 
-print(summary.colnames)
-print(dict(summary.meta["n_pre_cut"]))
+if summary is not None:
+    print(summary.colnames)
+    print(dict(summary.meta["n_pre_cut"]))
 
 # %%
 # Expected detections per type
@@ -54,27 +61,28 @@ print(dict(summary.meta["n_pre_cut"]))
 # With no mask, every row counts, so this is the yield of the cuts the release was built with. Pass a
 # boolean ``mask`` to restrict it, for example to events detected in at least two epochs.
 
-everything = estimate_yield(summary)
-repeated = estimate_yield(summary, mask=np.asarray(summary["n_det"]) >= 2)
-print(everything["transient_type", "n_selected", "fraction", "expected_events"])
+if summary is not None:
+    everything = estimate_yield(summary)
+    repeated = estimate_yield(summary, mask=np.asarray(summary["n_det"]) >= 2)
+    print(everything["transient_type", "n_selected", "fraction", "expected_events"])
 
-fig, ax = resolve_fig_axes(fig_size=(8, 5))
-x = np.arange(len(everything))
-for table, label, offset in ((everything, "any detection", -0.2), (repeated, r"$\geq 2$ detected epochs", 0.2)):
-    expected = np.asarray(table["expected_events"])
-    lower = np.asarray(table["expected_events_binom_lower"])
-    upper = np.asarray(table["expected_events_binom_upper"])
-    ax.errorbar(
-        x + offset,
-        np.where(expected > 0, expected, np.nan),
-        yerr=[np.clip(expected - lower, 0, None), upper - expected],
-        fmt="o",
-        capsize=3,
-        label=label,
-    )
-ax.set_yscale("log")
-ax.set_xticks(x, everything["transient_type"], rotation=45, ha="right")
-ax.set_ylabel("Expected UVEX events")
-ax.legend()
-fig.tight_layout()
-plt.show()
+    fig, ax = resolve_fig_axes(fig_size=(8, 5))
+    x = np.arange(len(everything))
+    for table, label, offset in ((everything, "any detection", -0.2), (repeated, r"$\geq 2$ detected epochs", 0.2)):
+        expected = np.asarray(table["expected_events"])
+        lower = np.asarray(table["expected_events_binom_lower"])
+        upper = np.asarray(table["expected_events_binom_upper"])
+        ax.errorbar(
+            x + offset,
+            np.where(expected > 0, expected, np.nan),
+            yerr=[np.clip(expected - lower, 0, None), upper - expected],
+            fmt="o",
+            capsize=3,
+            label=label,
+        )
+    ax.set_yscale("log")
+    ax.set_xticks(x, everything["transient_type"], rotation=45, ha="right")
+    ax.set_ylabel("Expected UVEX events")
+    ax.legend()
+    fig.tight_layout()
+    plt.show()

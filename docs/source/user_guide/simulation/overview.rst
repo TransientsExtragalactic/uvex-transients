@@ -451,7 +451,7 @@ above), both are supplied again here -- typically the same ones the catalog was 
 
 .. code-block:: python
 
-    event = detected.get_events(19, {"tde": tde}, schedule)
+    event = detected.get_events(int(detected.event_id[0]), {"tde": tde}, schedule)
     print(event)
     ... <Event id=19 type='tde' z=0.7097 n_observations=2>
 
@@ -495,7 +495,7 @@ are:
    :context:
    :include-source: true
 
-   event = detected.get_events(19, {"tde": tde}, schedule)
+   event = detected.get_events(int(detected.event_id[0]), {"tde": tde}, schedule)
 
    phot = event.simulate_photometry(mission)
    t_since_explosion = (phot["obs_time"] - event.t_explosion).to(u.day)

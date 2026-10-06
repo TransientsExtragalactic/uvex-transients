@@ -271,7 +271,7 @@ for one position.
 
 Note that a footprint mask is deliberately *schedule-independent*: it says where an event is,
 not whether UVEX (or anyone) observed it. Combining the two is the point. In
-:ref:`the TDE and Rubin overlap example <sphx_glr_galleries_surveys_plot_tde_rubin_overlap.py>`,
+:ref:`the TDE and Rubin overlap example <sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py>`,
 TDEs are first detected using the UVEX schedule (see :ref:`user_guide_simulation`) and then masked
 against the LSST regions to count how many have Rubin coverage.
 
@@ -554,7 +554,7 @@ Putting It Together
 A typical footprint workflow strings these pieces together: simulate a population, keep the
 detected events, and ask where in the sky each survey could have seen them. The
 :ref:`surveys_gallery` has complete runnable versions, including the full
-:ref:`TDE and Rubin overlap example <sphx_glr_galleries_surveys_plot_tde_rubin_overlap.py>`, which
+:ref:`TDE and Rubin overlap example <sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py>`, which
 
 1. samples TDEs from the default UVEX schedule and keeps those detected above SNR 5,
 2. masks them against ``lsst:combined`` with

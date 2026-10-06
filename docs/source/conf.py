@@ -60,6 +60,7 @@ exclude_patterns = [
     "transients/_page_template.rst",
     "user_guide/_page_template.rst",
     "galleries/**",
+    "report_examples/**",
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -124,6 +125,9 @@ intersphinx_mapping = {
 }
 
 napoleon_use_param = True
+# Render class "Attributes" sections as :ivar: fields; as ``.. attribute::`` entries they duplicate the
+# members that autodoc already documents on the class page.
+napoleon_use_ivar = True
 napoleon_preprocess_types = True
 
 # Suppress toc.not_included warnings for autosummary-generated attribute pages
