@@ -469,7 +469,7 @@
 <span class="sd">``id`` becomes its artifact's key once it's run, so any later step can reference it as</span>
 <span class="sd">an input regardless of its type -- a `cut` step feeds another `cut` or a `logical_op`</span>
 <span class="sd">just as an `action` step (e.g. ``photometry``) can feed another `action` (e.g.</span>
-<span class="sd">``detection_counts``).</span>
+<span class="sd">``event_summary``).</span>
 
 <span class="sd">Structural validation (unique ids, resolvable inputs, known registry names, arity) is</span>
 <span class="sd">already done by `~uvex_transients.cli.config.RunConfig.steps` itself, the moment it's</span>
@@ -479,6 +479,7 @@
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
@@ -487,7 +488,6 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.logical_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOGICAL_OPS</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.yield_table</span><span class="w"> </span><span class="kn">import</span> <span class="n">YieldTable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">StepSpec</span>
 
 <span class="c1">#: The artifact type each ``action`` name produces -- used to pick the right</span>
@@ -496,8 +496,7 @@
 <span class="c1">#: here.</span>
 <span class="n">_ACTION_OUTPUT_TYPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"photometry"</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span>
-    <span class="s2">"yield"</span><span class="p">:</span> <span class="n">YieldTable</span><span class="p">,</span>
-    <span class="s2">"detection_counts"</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span>
+    <span class="s2">"event_summary"</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -589,28 +588,14 @@
     <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]),</span> <span class="n">transient_types</span><span class="p">)</span>
 
-    <span class="n">scoped</span> <span class="o">=</span> <span class="n">EventCatalog</span><span class="p">(</span>
-        <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
-        <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-        <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-        <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">scoped</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
     <span class="n">filtered_scoped</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_cut</span><span class="p">(</span><span class="n">cut_name</span><span class="p">,</span> <span class="n">scoped</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
     <span class="n">kept_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">filtered_scoped</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="p">)</span>
     <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">kept_ids</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-        <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-        <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-        <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-        <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">])</span></div>
 
 
 

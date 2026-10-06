@@ -483,9 +483,8 @@
 
 <span class="sd">- **MC (statistical) uncertainty**: every stage after the first is a binomial subsample of the raw</span>
 <span class="sd">  Monte Carlo draws in the first ("sampled") stage, so its uncertainty is exactly the same</span>
-<span class="sd">  Clopper-Pearson interval `~uvex_transients.simulation.event_catalog.EventCatalog.compute_detection_efficiency`</span>
-<span class="sd">  and `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary` already use for</span>
-<span class="sd">  detection efficiency, propagated back into count units.</span>
+<span class="sd">  Clopper-Pearson interval `~uvex_transients.simulation.rates.estimate_yield` uses for detection</span>
+<span class="sd">  efficiency, propagated back into count units.</span>
 <span class="sd">- **Rate (systematic) uncertainty**: the population's overall normalization, from</span>
 <span class="sd">  `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`. Because it is a pure</span>
 <span class="sd">  multiplicative scale on the underlying rate, it applies identically to every stage's point</span>
@@ -1136,9 +1135,9 @@
 <span class="sd">    ``stage_counts[0]`` is taken as the funnel's binomial denominator :math:`n` -- the number of raw</span>
 <span class="sd">    Monte Carlo draws in the "sampled" stage -- and every later stage's count :math:`k_i` is treated</span>
 <span class="sd">    as a binomial subsample of it, with a `clopper_pearson_interval` bound on :math:`k_i/n` converted</span>
-<span class="sd">    back into count units. This matches `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`'s</span>
-<span class="sd">    own convention (feasible draws as :math:`n`, a later cut's count as :math:`k`), just applied to</span>
-<span class="sd">    every stage rather than only the final one.</span>
+<span class="sd">    back into count units. This matches the convention of</span>
+<span class="sd">    `~uvex_transients.simulation.rates.estimate_yield` (generated events as :math:`n`, a later cut's</span>
+<span class="sd">    count as :math:`k`), just applied to every stage rather than only the final one.</span>
 
 <span class="sd">    `rate_ci` (an `~uvex_transients.transients.base.ExtragalacticTransient.RATE_CI`-style</span>
 <span class="sd">    ``(lower, upper)`` multiplicative pair, or `None`) is applied uniformly to every stage's point</span>

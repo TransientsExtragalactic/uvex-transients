@@ -471,6 +471,8 @@
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -496,7 +498,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.exposure_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExposureCatalog</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.photometry_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryCatalog</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.yield_table</span><span class="w"> </span><span class="kn">import</span> <span class="n">YieldTable</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SurveySimulator"</span><span class="p">,</span> <span class="s2">"cut"</span><span class="p">,</span> <span class="s2">"action"</span><span class="p">]</span>
 
@@ -512,6 +513,9 @@
 
 <span class="c1"># We now combine these classes into a single pipeline registry metaclass.</span>
 <span class="n">_PipelineRegistryMeta</span> <span class="o">=</span> <span class="n">combine_metaclasses</span><span class="p">(</span><span class="n">_CutRegistryMeta</span><span class="p">,</span> <span class="n">_ActionRegistryMeta</span><span class="p">)</span>
+
+<span class="c1">#: Footprints `SurveySimulator.run_event_summary_action` flags each event against by default.</span>
+<span class="n">_SUMMARY_FOOTPRINTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"uvex:lmlz:wide"</span><span class="p">,</span> <span class="s2">"uvex:lmlz:deep"</span><span class="p">,</span> <span class="s2">"uvex:mc"</span><span class="p">)</span>
 
 
 <span class="c1"># ============================================ #</span>
@@ -603,23 +607,6 @@
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">min_gap</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_first_detection</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Time</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Return ``(t_obs, band, snr, observation_index)`` of an event's earliest detection.</span>
-
-<span class="sd">    Unlike `_reduce_detection_timing` it keeps the absolute observation time and which</span>
-<span class="sd">    schedule row it came from, which `SurveySimulator.run_alert_action` needs to find the</span>
-<span class="sd">    next downlink.</span>
-<span class="sd">    """</span>
-    <span class="n">first</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">start</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">][</span><span class="n">first</span><span class="p">],</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"band"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">first</span><span class="p">]),</span>
-    <span class="p">)</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_reduce_solo_detection</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the schedule row of an event's only detection, or `None` if it has several.</span>
@@ -648,6 +635,112 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_since_explosion"</span><span class="p">]</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">((</span><span class="n">t</span><span class="p">[</span><span class="n">first</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="n">rows</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">earlier</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce_event_summary</span><span class="p">(</span><span class="n">chunk</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rise_sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Reduce one event's epochs to the scalars `SurveySimulator.run_event_summary_action` tabulates.</span>
+
+<span class="sd">    The chunk must keep every epoch (detections, non-detections, and pre-explosion rows), since</span>
+<span class="sd">    the last non-detection can lie before the explosion. Within one event the rows must be in</span>
+<span class="sd">    time order, as `SurveySimulator.iter_epochs` yields them. Times are returned as Julian dates,</span>
+<span class="sd">    and every quantity that is undefined for the event is `None`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    chunk : ~astropy.table.QTable</span>
+<span class="sd">        A chunk from `SurveySimulator._iter_detection_epochs` with ``keep_all=True``.</span>
+<span class="sd">    rows : slice</span>
+<span class="sd">        The rows of `chunk` belonging to one event.</span>
+<span class="sd">    snr_threshold : float</span>
+<span class="sd">        The detection threshold. It is already applied in the chunk's ``detected`` and</span>
+<span class="sd">        ``non_detected`` columns, so it is not used directly here.</span>
+<span class="sd">    rise_sigma : float</span>
+<span class="sd">        Minimum significance of the rise from a non-detection to the first detection for that</span>
+<span class="sd">        non-detection to count as constraining.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations after the explosion.</span>
+<span class="sd">        - ``n_det``, ``t_first_det``, ``t_last_det``: detections (post-explosion, above threshold).</span>
+<span class="sd">        - ``first_det_obs_index``: the schedule row of the first detection, for looking up its</span>
+<span class="sd">          field and when it ended.</span>
+<span class="sd">        - ``t_last_nondet``, ``last_nondet_snr``: the last non-detection before the first</span>
+<span class="sd">          detection, which may be pre-explosion, and its measured SNR.</span>
+<span class="sd">        - ``t_last_constraining_nondet``: the last such non-detection whose rise to the first</span>
+<span class="sd">          detection is significant at `rise_sigma`.</span>
+<span class="sd">    """</span>
+    <span class="n">pre_explosion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"pre_explosion"</span><span class="p">][</span><span class="n">rows</span><span class="p">])</span>
+    <span class="n">detected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"detected"</span><span class="p">][</span><span class="n">rows</span><span class="p">])</span>
+    <span class="n">non_detected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"non_detected"</span><span class="p">][</span><span class="n">rows</span><span class="p">])</span>
+    <span class="n">snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">][</span><span class="n">rows</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">][</span><span class="n">rows</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+    <span class="n">flux_err</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"flux_err"</span><span class="p">][</span><span class="n">rows</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+    <span class="n">jd</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="s2">"t_obs"</span><span class="p">][</span><span class="n">rows</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span>
+
+    <span class="c1"># Pre-explosion rows have no source, so they are not observations of the event. They are kept</span>
+    <span class="c1"># in the chunk only because they can still serve as non-detections below.</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">pre_explosion</span><span class="p">)</span>
+    <span class="n">detections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">detected</span><span class="p">)</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"n_obs"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+        <span class="s2">"n_det"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">detections</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+        <span class="s2">"t_first_obs"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">post</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"t_last_obs"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">post</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="k">if</span> <span class="n">post</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"t_first_det"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"t_last_det"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"first_det_obs_index"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"t_last_nondet"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"last_nondet_snr"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"t_last_constraining_nondet"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">detections</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">summary</span>
+
+    <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">detections</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">detections</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">summary</span><span class="p">[</span><span class="s2">"t_first_det"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">first</span><span class="p">])</span>
+    <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_det"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">last</span><span class="p">])</span>
+    <span class="n">summary</span><span class="p">[</span><span class="s2">"first_det_obs_index"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">"observation_index"</span><span class="p">][</span><span class="n">rows</span><span class="p">][</span><span class="n">first</span><span class="p">])</span>
+
+    <span class="c1"># Only epochs before the first detection can bracket it. `non_detected` is "SNR at or below the</span>
+    <span class="c1"># threshold", so a pre-explosion false positive is neither a detection nor a non-detection and</span>
+    <span class="c1"># drops out here. If the first observation is already a detection, `earlier` is empty and the</span>
+    <span class="c1"># event is unbracketed.</span>
+    <span class="n">earlier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">non_detected</span><span class="p">[:</span><span class="n">first</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">earlier</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_nondet"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">earlier</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"last_nondet_snr"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">snr</span><span class="p">[</span><span class="n">earlier</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+
+        <span class="c1"># A non-detection just under threshold next to a detection just over it says nothing about</span>
+        <span class="c1"># when the source turned on. It only constrains the rise if the detection is brighter than</span>
+        <span class="c1"># it by `rise_sigma` standard errors, with the two measurement errors added in quadrature.</span>
+        <span class="c1"># This uses measured fluxes only, so an observer with forced photometry could compute it.</span>
+        <span class="n">rise</span> <span class="o">=</span> <span class="p">(</span><span class="n">flux</span><span class="p">[</span><span class="n">first</span><span class="p">]</span> <span class="o">-</span> <span class="n">flux</span><span class="p">[</span><span class="n">earlier</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">flux_err</span><span class="p">[</span><span class="n">first</span><span class="p">],</span> <span class="n">flux_err</span><span class="p">[</span><span class="n">earlier</span><span class="p">])</span>
+        <span class="n">constraining</span> <span class="o">=</span> <span class="n">earlier</span><span class="p">[</span><span class="n">rise</span> <span class="o">&gt;=</span> <span class="n">rise_sigma</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">constraining</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_constraining_nondet"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">[</span><span class="n">constraining</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">summary</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Collect `key` from each event's `_reduce_event_summary` result, `None` for an event with no epochs."""</span>
+    <span class="k">return</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">summary</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">summary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">summary</span> <span class="ow">in</span> <span class="n">per_event</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_masked_times</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Time</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a masked `~astropy.time.Time` column from Julian dates, with `None` entries masked."""</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">array</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">time_format</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_masked_floats</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a masked float column, with `None` entries masked."""</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">array</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
 
 
 <span class="c1"># ===================================== #</span>
@@ -963,6 +1056,7 @@
             <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="p">)</span>
 
+        <span class="n">generated_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">combined</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
             <span class="n">table</span><span class="o">=</span><span class="n">combined</span><span class="p">,</span>
             <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
@@ -970,6 +1064,7 @@
             <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">,</span>
             <span class="n">downsample</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">downsample</span><span class="p">,</span>
+            <span class="n">pre_cut_counts</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">},</span>
         <span class="p">)</span></div>
 
 
@@ -1362,14 +1457,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_filtered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">keep</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return a new `EventCatalog` over `catalog.table[keep]`, carrying every other field unchanged."""</span>
-        <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-            <span class="n">table</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-            <span class="n">nside</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-            <span class="n">order</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-            <span class="n">time_bins</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-            <span class="n">seed</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-            <span class="n">downsample</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_peak_band_flux</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -3151,11 +3239,11 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run one `@action`-registered pipeline action by name.</span>
 
-<span class="sd">        A thin dispatch layer over `run_photometry_action`/`run_yield_action`/</span>
-<span class="sd">        `run_detection_counts_action` (and any further ``@action``-decorated methods a</span>
-<span class="sd">        subclass adds), mirroring `run_cut`'s relationship to `available_cuts`, so a</span>
-<span class="sd">        config-driven caller (see `uvex_transients.cli.steps`) can select an action by</span>
-<span class="sd">        name rather than hardcoding which Python method to call.</span>
+<span class="sd">        A thin dispatch layer over `run_photometry_action`/`run_event_summary_action` (and any</span>
+<span class="sd">        further ``@action``-decorated methods a subclass adds), mirroring `run_cut`'s</span>
+<span class="sd">        relationship to `available_cuts`, so a config-driven caller (see</span>
+<span class="sd">        `uvex_transients.cli.steps`) can select an action by name rather than hardcoding</span>
+<span class="sd">        which Python method to call.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3165,8 +3253,8 @@
 <span class="sd">            The mission whose detector(s)/bandpasses the action evaluates against.</span>
 <span class="sd">        **inputs_and_params</span>
 <span class="sd">            Forwarded to the underlying action method as keyword arguments: both its</span>
-<span class="sd">            named artifact inputs (e.g. `catalog` for ``"photometry"``; `raw`,</span>
-<span class="sd">            `detected`, `exposure` for ``"yield"``) and its own parameters (e.g.</span>
+<span class="sd">            named artifact inputs (e.g. `catalog` for ``"photometry"``; `catalog`, `raw`,</span>
+<span class="sd">            `exposure`, `photometry` for ``"event_summary"``) and its own parameters (e.g.</span>
 <span class="sd">            `bands`, `n_sigma`).</span>
 
 <span class="sd">        Returns</span>
@@ -3226,8 +3314,7 @@
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        run_yield_action : Combine this action's output with raw/detected catalogs into a yield summary.</span>
-<span class="sd">        run_detection_counts_action : Reduce this action's output to per-type detection counts.</span>
+<span class="sd">        run_event_summary_action : Reduce this action's output (and the epochs) to a per-event summary table.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -3242,113 +3329,135 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SurveySimulator.run_yield_action">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_yield_action.html#uvex_transients.simulation.core.SurveySimulator.run_yield_action">[docs]</a>
-    <span class="nd">@action</span><span class="p">(</span><span class="s2">"yield"</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_yield_action</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">raw</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
-        <span class="n">detected</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
-        <span class="n">exposure</span><span class="p">:</span> <span class="n">ExposureCatalog</span><span class="p">,</span>
-        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
-        <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YieldTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        Build a per-transient-type yield summary from a raw, a detected, and an exposure catalog.</span>
-
-<span class="sd">        A thin wrapper over</span>
-<span class="sd">        `~uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary`,</span>
-<span class="sd">        supplying this simulator's own `transient_collection`. Unlike the other actions,</span>
-<span class="sd">        `mission` is accepted (for a uniform `run_action` call signature) but unused,</span>
-<span class="sd">        since yield is purely a combination of already-computed catalogs/rates.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        raw : EventCatalog</span>
-<span class="sd">            The feasible (pre-cut) catalog.</span>
-<span class="sd">        detected : EventCatalog</span>
-<span class="sd">            The detected (post-cut) catalog.</span>
-<span class="sd">        exposure : ExposureCatalog</span>
-<span class="sd">            Typically `compute_effective_exposure`'s own output.</span>
-<span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Unused; accepted only so every `@action` shares one call signature.</span>
-<span class="sd">        confidence : float, optional</span>
-<span class="sd">            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        YieldTable</span>
-<span class="sd">            One row per transient type in `self.transient_collection`.</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        compute_effective_exposure : Typically the source of `exposure`.</span>
-<span class="sd">        run_photometry_action : Typically upstream of `detected`, once further cut.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            yields = simulator.run_yield_action(</span>
-<span class="sd">                raw=raw_catalog,</span>
-<span class="sd">                detected=detected_catalog,</span>
-<span class="sd">                exposure=exposure,</span>
-<span class="sd">                mission=mission,</span>
-<span class="sd">            )</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">compute_yield_summary</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient_collection</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="SurveySimulator.run_detection_counts_action">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_detection_counts_action.html#uvex_transients.simulation.core.SurveySimulator.run_detection_counts_action">[docs]</a>
-    <span class="nd">@action</span><span class="p">(</span><span class="s2">"detection_counts"</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_detection_counts_action</span><span class="p">(</span>
+<div class="viewcode-block" id="SurveySimulator.run_event_summary_action">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_event_summary_action.html#uvex_transients.simulation.core.SurveySimulator.run_event_summary_action">[docs]</a>
+    <span class="nd">@action</span><span class="p">(</span><span class="s2">"event_summary"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_event_summary_action</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
         <span class="n">exposure</span><span class="p">:</span> <span class="n">ExposureCatalog</span><span class="p">,</span>
-        <span class="n">photometry</span><span class="p">:</span> <span class="n">PhotometryCatalog</span> <span class="o">|</span> <span class="n">QTable</span><span class="p">,</span>
+        <span class="n">photometry</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="n">PhotometryCatalog</span><span class="p">,</span>
         <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
         <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="n">rise_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">processing_delay</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">lookback</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">footprints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">color_bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Estimate, per transient type, how many events show N_det &gt;= k detected epochs.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Build a per-event summary table: when each event was first and last seen, and how it peaked.</span>
 
-<span class="sd">        A thin wrapper over</span>
-<span class="sd">        `~uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table`,</span>
-<span class="sd">        supplying this simulator's own `transient_collection`.</span>
+<span class="sd">        One row per event in `catalog`, in `catalog`'s order, so everything needed to study</span>
+<span class="sd">        detection timing, cadence, and peak behaviour is in one small table and does not require</span>
+<span class="sd">        replaying the full event list. Detection quantities come from a single pass over the</span>
+<span class="sd">        schedule-aware epochs (see `iter_epochs`); the peak quantities come from `photometry`.</span>
+
+<span class="sd">        The table's ``meta`` carries what is needed to turn any selection of its rows into an</span>
+<span class="sd">        expected number of real events with confidence bounds (see</span>
+<span class="sd">        `~uvex_transients.simulation.rates.estimate_yield`): the generation-time count of each</span>
+<span class="sd">        type from `catalog`'s ``pre_cut_counts``, each type's intrinsic expected event count</span>
+<span class="sd">        from `exposure`, and each type's rate-uncertainty factors.</span>
+
+<span class="sd">        A detection is an epoch after the explosion whose measured SNR exceeds `snr_threshold`,</span>
+<span class="sd">        exactly as in `filter_by_snr`. The first-visit exclusion of that cut is not re-applied</span>
+<span class="sd">        here, so pass a catalog that has already been through it if that matters.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            The full per-type event list `photometry` was computed over.</span>
+<span class="sd">            The events to summarize, typically the output of an SNR cut. It must carry</span>
+<span class="sd">            ``pre_cut_counts`` (set by `generate_events`), which survive every cut.</span>
 <span class="sd">        exposure : ExposureCatalog</span>
-<span class="sd">            Typically `compute_effective_exposure`'s own output.</span>
-<span class="sd">        photometry : PhotometryCatalog or ~astropy.table.QTable</span>
-<span class="sd">            Typically `run_photometry_action`'s own output; a bare `QTable` is wrapped</span>
-<span class="sd">            automatically.</span>
+<span class="sd">            Typically `compute_effective_exposure`'s own output. Supplies each type's</span>
+<span class="sd">            expected number of UVEX events.</span>
+<span class="sd">        photometry : ~astropy.table.QTable or PhotometryCatalog</span>
+<span class="sd">            Synthetic photometry of `catalog`, typically `run_photometry_action`'s output.</span>
+<span class="sd">            An event with no rows in it has masked peak columns.</span>
 <span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Unused; accepted only so every `@action` shares one call signature.</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
-<span class="sd">            An observation epoch counts as detected if at least one band's measured ``snr``</span>
-<span class="sd">            in `photometry` exceeds this value.</span>
-<span class="sd">        confidence : float, optional</span>
-<span class="sd">            Confidence level for the Clopper-Pearson binomial bounds. The default is ``0.9``.</span>
+<span class="sd">            The detection threshold.</span>
+<span class="sd">        rise_sigma : float, optional</span>
+<span class="sd">            Minimum significance of the rise from a non-detection to the first detection,</span>
+<span class="sd">            :math:`(f_{\rm det} - f_{\rm and}) / \sqrt{\sigma_{\rm det}^2 + \sigma_{\rm and}^2}`, for</span>
+<span class="sd">            that non-detection to count in ``t_last_constraining_nondet``. The default is 3.</span>
+<span class="sd">        processing_delay : ~astropy.units.Quantity or float, optional</span>
+<span class="sd">            Fixed ground-segment latency added to the downlink completion time to get</span>
+<span class="sd">            ``t_alert``. Bare numbers are interpreted as hours. The default is 0.</span>
+<span class="sd">        lookback : float, optional</span>
+<span class="sd">            Days before each explosion to search for non-detections. `None` (the default)</span>
+<span class="sd">            searches back to the start of the schedule.</span>
+<span class="sd">        bands : list of str, optional</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        chunk_size : int, optional</span>
+<span class="sd">            Forwarded to `iter_epochs`.</span>
+<span class="sd">        footprints : list of str, optional</span>
+<span class="sd">            Registered footprint names to flag each event against. The default is the LMLZ</span>
+<span class="sd">            wide and deep surveys and the Magellanic Clouds survey.</span>
+<span class="sd">        color_bands : list of str, optional</span>
+<span class="sd">            The two bands whose magnitude difference gives ``peak_color``, as</span>
+<span class="sd">            ``first - second``. The default is ``["FUV", "NUV"]``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        ~astropy.table.QTable</span>
-<span class="sd">            One row per ``(transient_type, n_detections)`` pair.</span>
+<span class="sd">            One row per event, with columns:</span>
+
+<span class="sd">            - ``event_id``, ``transient_type``, ``parameter_seed``, ``time_bin``, ``redshift``,</span>
+<span class="sd">              ``luminosity_distance``, ``ebv``, ``coord``, ``healpix_id`` and ``t_explosion``,</span>
+<span class="sd">              copied from `catalog`. ``t_explosion`` is the one quantity an observer could not</span>
+<span class="sd">              know.</span>
+<span class="sd">            - ``in_&lt;footprint&gt;``: one boolean per footprint, with ``:`` replaced by ``_`` in the</span>
+<span class="sd">              name (for example ``in_uvex_lmlz_deep``).</span>
+<span class="sd">            - ``weight``: the expected number of real events each sampled event stands for,</span>
+<span class="sd">              ``expected_events[type] / n_pre_cut[type]``. Summing it over any selection gives that</span>
+<span class="sd">              selection's expected yield.</span>
+<span class="sd">            - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations of the event's position</span>
+<span class="sd">              after the explosion, and the times of the first and last.</span>
+<span class="sd">            - ``n_det``, ``t_first_det``, ``t_last_det``: detections, and the times of the first</span>
+<span class="sd">              and last. The times are masked when ``n_det`` is zero.</span>
+<span class="sd">            - ``field_id``: the schedule field of the first detection's observation.</span>
+<span class="sd">            - ``t_alert``: the completion of the first downlink after the first detection's</span>
+<span class="sd">              observation ends, plus `processing_delay`. Masked if no downlink follows.</span>
+<span class="sd">            - ``t_last_nondet``, ``last_nondet_snr``: the last epoch before the first detection</span>
+<span class="sd">              with SNR at or below the threshold, and its measured SNR. This may be before the</span>
+<span class="sd">              explosion. Masked if the first observation was already a detection.</span>
+<span class="sd">            - ``t_last_constraining_nondet``: the last such epoch whose rise to the first</span>
+<span class="sd">              detection is at least `rise_sigma`.</span>
+<span class="sd">            - ``peak_snr``, ``peak_mag``, ``peak_color``, ``peak_time``: the highest-SNR</span>
+<span class="sd">              measurement in `photometry`, its AB magnitude, the color of that observation</span>
+<span class="sd">              (masked if either band is missing or not finite), and its time.</span>
+
+<span class="sd">            The table's ``meta`` records the parameters of the call and, keyed by transient type,</span>
+<span class="sd">            ``n_pre_cut`` (generated events), ``expected_events`` (intrinsic UVEX events, from</span>
+<span class="sd">            `exposure`) and ``rate_ci`` (the type's ``(lower, upper)`` rate factors), for every type</span>
+<span class="sd">            in `catalog`'s ``pre_cut_counts``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `catalog` is not an `EventCatalog`.</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If a transient type in `catalog`'s ``pre_cut_counts`` has no tabulated exposure in</span>
+<span class="sd">            `exposure`, or is not one of this simulator's transients.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `catalog` has no ``pre_cut_counts`` (it was built by hand, or read from a file</span>
+<span class="sd">            written before they were recorded), or `color_bands` does not have exactly two entries.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        run_photometry_action : Typically the source of `photometry`.</span>
+<span class="sd">        filter_by_snr : The definition of a detection this action builds on.</span>
+<span class="sd">        run_photometry_action : Produces the `photometry` input.</span>
+<span class="sd">        uvex_transients.simulation.rates.estimate_yield : Turns a selection of rows into expected events.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        .. code-block:: python</span>
 
-<span class="sd">            counts = simulator.run_detection_counts_action(</span>
+<span class="sd">            summary = simulator.run_event_summary_action(</span>
 <span class="sd">                catalog=detected,</span>
 <span class="sd">                exposure=exposure,</span>
 <span class="sd">                photometry=photometry,</span>
@@ -3356,148 +3465,158 @@
 <span class="sd">                snr_threshold=5.0,</span>
 <span class="sd">            )</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">photometry</span><span class="p">,</span> <span class="n">PhotometryCatalog</span><span class="p">):</span>
-            <span class="n">photometry</span> <span class="o">=</span> <span class="n">PhotometryCatalog</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">photometry</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">photometry</span><span class="o">.</span><span class="n">compute_detection_count_table</span><span class="p">(</span>
-            <span class="n">catalog</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient_collection</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="n">snr_threshold</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="SurveySimulator.run_alert_action">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_alert_action.html#uvex_transients.simulation.core.SurveySimulator.run_alert_action">[docs]</a>
-    <span class="nd">@action</span><span class="p">(</span><span class="s2">"alert"</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_alert_action</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
-        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
-        <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">processing_delay</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        Build a per-event alert-timing table: first detection, next downlink, and alert time.</span>
-
-<span class="sd">        A transient with an explosion time :math:`t_0` may not have the opportunity to relay that information to</span>
-<span class="sd">        the ground until some :math:`t_{\rm transmission} &gt; t_0` determined by the next downlink time. For fast</span>
-<span class="sd">        follow up of UVEX detected transients, this delay time may have very important implications for getting on</span>
-<span class="sd">        target with ground and space-based observatories. This function therefore provides an "alert" with the</span>
-<span class="sd">        corresponding trigger times to allow effective modeling of this.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        catalog : EventCatalog</span>
-<span class="sd">            Typically an already schedule-aware-filtered (e.g. `filter_by_snr`) catalog;</span>
-<span class="sd">            events with no qualifying epoch are dropped from the output (see Notes).</span>
-<span class="sd">        mission : m4opt.missions.Mission</span>
-<span class="sd">            Supplies the `~m4opt.synphot.Detector` `bands` selects from.</span>
-<span class="sd">        snr_threshold : float</span>
-<span class="sd">            Same definition as `filter_by_snr`: an epoch qualifies if its measured SNR</span>
-<span class="sd">            exceeds this value.</span>
-<span class="sd">        bands : list of str, optional</span>
-<span class="sd">            Forwarded to `iter_epochs`.</span>
-<span class="sd">        chunk_size : int, optional</span>
-<span class="sd">            Forwarded to `iter_epochs`.</span>
-<span class="sd">        processing_delay : ~astropy.units.Quantity, optional</span>
-<span class="sd">            Extra fixed ground-segment latency added on top of the downlink's own</span>
-<span class="sd">            completion time, e.g. to model processing/distribution time before a real</span>
-<span class="sd">            alert would actually be issued. The default is ``0 * u.s``: `alert_time` is</span>
-<span class="sd">            exactly the downlink completion time.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        ~astropy.table.QTable</span>
-<span class="sd">            One row per event in `catalog` with &gt;= 1 qualifying detection epoch, sorted by</span>
-<span class="sd">            ``event_id``, with columns:</span>
-
-<span class="sd">            - ``event_id``, ``transient_type``</span>
-<span class="sd">            - ``t_first_detection``: the qualifying epoch itself (absolute time).</span>
-<span class="sd">            - ``detection_band``, ``detection_snr``: that epoch's best band and its</span>
-<span class="sd">              measured SNR.</span>
-<span class="sd">            - ``t_downlink``: the relevant downlink action's *completion* time</span>
-<span class="sd">              (``start_time + duration``).</span>
-<span class="sd">            - ``alert_time``: ``t_downlink + processing_delay``.</span>
-<span class="sd">            - ``alert_delay``: ``alert_time - t_first_detection``, as a</span>
-<span class="sd">              `~astropy.units.Quantity` in hours.</span>
-
-<span class="sd">            ``t_downlink``/``alert_time``/``alert_delay`` are masked for an event whose</span>
-<span class="sd">            first qualifying detection has no downlink scheduled after it (e.g. it falls</span>
-<span class="sd">            in the survey's final observing block, after the last downlink).</span>
-
-<span class="sd">        See Also</span>
-<span class="sd">        --------</span>
-<span class="sd">        filter_by_snr : The definition of a qualifying detection this action builds on.</span>
-<span class="sd">        uvex_transients.surveys.base.SurveySchedule.next_action_time : The schedule lookup this wraps.</span>
-
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Events in `catalog` with zero qualifying epochs (e.g. it was cut with a lower</span>
-<span class="sd">        `snr_threshold` than this call uses) are excluded from the output entirely,</span>
-<span class="sd">        rather than appearing with masked detection columns too -- there is no detection</span>
-<span class="sd">        epoch to look up a downlink relative to.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            alerts = simulator.run_alert_action(</span>
-<span class="sd">                detected,</span>
-<span class="sd">                mission,</span>
-<span class="sd">                snr_threshold=5.0,</span>
-<span class="sd">                processing_delay=1 * u.hour,</span>
-<span class="sd">            )</span>
-<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">EventCatalog</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'catalog' must be an EventCatalog, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead."</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">processing_delay</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'processing_delay' must be a Quantity, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">processing_delay</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-
-        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">_reduce_first_detection</span><span class="p">)</span>
-
-        <span class="n">event_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">stats</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">QTable</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">"event_id"</span><span class="p">:</span> <span class="n">event_ids</span><span class="p">,</span>
-                    <span class="s2">"transient_type"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
-                    <span class="s2">"t_first_detection"</span><span class="p">:</span> <span class="n">Time</span><span class="p">([],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">),</span>
-                    <span class="s2">"detection_band"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
-                    <span class="s2">"detection_snr"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
-                    <span class="s2">"t_downlink"</span><span class="p">:</span> <span class="n">Time</span><span class="p">([],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">),</span>
-                    <span class="s2">"alert_time"</span><span class="p">:</span> <span class="n">Time</span><span class="p">([],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">),</span>
-                    <span class="s2">"alert_delay"</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">hour</span><span class="p">),</span>
-                <span class="p">}</span>
+        <span class="k">if</span> <span class="n">catalog</span><span class="o">.</span><span class="n">pre_cut_counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"'catalog' has no pre_cut_counts, so a denominator for detection fractions is unknown. "</span>
+                <span class="s2">"Regenerate it with generate_events (a catalog read from an older file lacks them)."</span>
             <span class="p">)</span>
+        <span class="n">color_bands</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"FUV"</span><span class="p">,</span> <span class="s2">"NUV"</span><span class="p">]</span> <span class="k">if</span> <span class="n">color_bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">color_bands</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">color_bands</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'color_bands' must name exactly two bands, got </span><span class="si">{</span><span class="n">color_bands</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">footprints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_SUMMARY_FOOTPRINTS</span><span class="p">)</span> <span class="k">if</span> <span class="n">footprints</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">footprints</span><span class="p">)</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="n">processing_delay</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">processing_delay</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="k">else</span> <span class="n">processing_delay</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">hr</span>
 
-        <span class="n">t_obs</span> <span class="o">=</span> <span class="n">Time</span><span class="p">([</span><span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">])</span>
-        <span class="n">band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">])</span>
-        <span class="n">snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">])</span>
-        <span class="n">observation_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stats</span><span class="p">[</span><span class="n">eid</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">])</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
+        <span class="n">event_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">n_pre_cut</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">pre_cut_counts</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">n_pre_cut</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient_collection</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown transient type(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; registered: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transient_collection</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">n_pre_cut</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure</span><span class="o">.</span><span class="n">total_expected_events</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"No exposure tabulated for transient type(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">; "</span>
+                <span class="sa">f</span><span class="s2">"available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">exposure</span><span class="o">.</span><span class="n">total_expected_events</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">exposure</span><span class="o">.</span><span class="n">total_expected_events</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">n_pre_cut</span><span class="p">}</span>
+        <span class="n">rate_ci</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transient_collection</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">RATE_CI</span> <span class="ow">or</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">n_pre_cut</span>
+        <span class="p">}</span>
 
+        <span class="n">base_columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">c</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="s2">"event_id"</span><span class="p">,</span>
+                <span class="s2">"transient_type"</span><span class="p">,</span>
+                <span class="s2">"parameter_seed"</span><span class="p">,</span>
+                <span class="s2">"time_bin"</span><span class="p">,</span>
+                <span class="s2">"redshift"</span><span class="p">,</span>
+                <span class="s2">"luminosity_distance"</span><span class="p">,</span>
+                <span class="s2">"ebv"</span><span class="p">,</span>
+                <span class="s2">"coord"</span><span class="p">,</span>
+                <span class="s2">"healpix_id"</span><span class="p">,</span>
+                <span class="s2">"t_explosion"</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span>
+        <span class="p">]</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">base_columns</span><span class="p">],</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">footprint</span> <span class="ow">in</span> <span class="n">footprints</span><span class="p">:</span>
+            <span class="n">summary</span><span class="p">[</span><span class="s2">"in_"</span> <span class="o">+</span> <span class="n">footprint</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)]</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">in_footprint</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"weight"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">expected</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">/</span> <span class="n">n_pre_cut</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">n_pre_cut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">types</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span>
+                <span class="n">catalog</span><span class="p">,</span>
+                <span class="n">mission</span><span class="p">,</span>
+                <span class="n">snr_threshold</span><span class="p">,</span>
+                <span class="n">bands</span><span class="p">,</span>
+                <span class="n">chunk_size</span><span class="p">,</span>
+                <span class="n">partial</span><span class="p">(</span><span class="n">_reduce_event_summary</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="n">snr_threshold</span><span class="p">,</span> <span class="n">rise_sigma</span><span class="o">=</span><span class="n">rise_sigma</span><span class="p">),</span>
+                <span class="n">keep_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">lookback</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">lookback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lookback</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">per_event</span> <span class="o">=</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">eid</span><span class="p">))</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">]</span>
+
+        <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">time_format</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"t_explosion"</span><span class="p">]</span><span class="o">.</span><span class="n">format</span> <span class="k">if</span> <span class="s2">"t_explosion"</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span> <span class="k">else</span> <span class="s2">"isot"</span>
+
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"n_obs"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">s</span><span class="p">[</span><span class="s2">"n_obs"</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">per_event</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_first_obs"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_first_obs"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_obs"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_last_obs"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"n_det"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">s</span><span class="p">[</span><span class="s2">"n_det"</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">per_event</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_first_det"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_first_det"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_det"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_last_det"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+
+        <span class="c1"># The first detection's schedule field, and the first downlink after that observation ends.</span>
         <span class="n">observe_rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">observe_rows</span>
-        <span class="n">t_detection_end</span> <span class="o">=</span> <span class="n">t_obs</span> <span class="o">+</span> <span class="n">observe_rows</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">][</span><span class="n">observation_index</span><span class="p">]</span>
+        <span class="n">detected_at</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">per_event</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="s2">"first_det_obs_index"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">field_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_event</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_event</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="n">t_alert</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">per_event</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">detected_at</span><span class="p">:</span>
+            <span class="n">obs_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">per_event</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">"first_det_obs_index"</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">detected_at</span><span class="p">])</span>
+            <span class="n">jd_first</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">per_event</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">"t_first_det"</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">detected_at</span><span class="p">])</span>
+            <span class="n">field_id</span><span class="p">[</span><span class="n">detected_at</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">observe_rows</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">][</span><span class="n">obs_index</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="n">t_end</span> <span class="o">=</span> <span class="n">Time</span><span class="p">(</span><span class="n">jd_first</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span> <span class="o">+</span> <span class="n">observe_rows</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">][</span><span class="n">obs_index</span><span class="p">]</span>
+            <span class="n">t_downlink</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">next_action_time</span><span class="p">(</span><span class="n">t_end</span><span class="p">,</span> <span class="s2">"downlink"</span><span class="p">,</span> <span class="n">completion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">delay</span>
+            <span class="n">downlink_jd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_downlink</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">jd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detected_at</span><span class="p">,</span> <span class="n">downlink_jd</span><span class="p">):</span>
+                <span class="n">t_alert</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">jd</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">jd</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"field_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_id</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_alert"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">t_alert</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_nondet"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_last_nondet"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"last_nondet_snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_floats</span><span class="p">(</span><span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"last_nondet_snr"</span><span class="p">))</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_constraining_nondet"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">(</span>
+            <span class="n">_gather</span><span class="p">(</span><span class="n">per_event</span><span class="p">,</span> <span class="s2">"t_last_constraining_nondet"</span><span class="p">),</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span>
+        <span class="p">)</span>
 
-        <span class="n">t_downlink</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey_schedule</span><span class="o">.</span><span class="n">next_action_time</span><span class="p">(</span><span class="n">t_detection_end</span><span class="p">,</span> <span class="s2">"downlink"</span><span class="p">,</span> <span class="n">completion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">alert_time</span> <span class="o">=</span> <span class="n">t_downlink</span> <span class="o">+</span> <span class="n">processing_delay</span>
-        <span class="n">alert_delay</span> <span class="o">=</span> <span class="p">(</span><span class="n">alert_time</span> <span class="o">-</span> <span class="n">t_obs</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
+        <span class="c1"># Peak quantities, from the highest-SNR row of each event in the photometry table.</span>
+        <span class="n">phot</span> <span class="o">=</span> <span class="n">photometry</span><span class="o">.</span><span class="n">table</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">photometry</span><span class="p">,</span> <span class="n">PhotometryCatalog</span><span class="p">)</span> <span class="k">else</span> <span class="n">photometry</span>
+        <span class="n">peak_snr</span><span class="p">,</span> <span class="n">peak_mag</span><span class="p">,</span> <span class="n">peak_color</span><span class="p">,</span> <span class="n">peak_jd</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phot</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">phot_event</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
+            <span class="n">phot_snr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">phot_band</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"band"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">phot_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">phot_jd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"obs_time"</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">band_mags</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)):</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">phot_event</span><span class="p">[</span><span class="n">phot_band</span> <span class="o">==</span> <span class="n">b</span><span class="p">],</span> <span class="n">phot_jd</span><span class="p">[</span><span class="n">phot_band</span> <span class="o">==</span> <span class="n">b</span><span class="p">],</span> <span class="n">phot_mag</span><span class="p">[</span><span class="n">phot_band</span> <span class="o">==</span> <span class="n">b</span><span class="p">])</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">color_bands</span>
+            <span class="p">]</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">phot_snr</span><span class="p">,</span> <span class="n">nan</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">phot_event</span><span class="p">))</span>
+            <span class="n">sorted_event</span> <span class="o">=</span> <span class="n">phot_event</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+            <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="n">sorted_event</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">sorted_event</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[</span><span class="n">starts</span><span class="p">]:</span>
+                <span class="n">eid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">phot_event</span><span class="p">[</span><span class="n">row</span><span class="p">])</span>
+                <span class="n">peak_snr</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phot_snr</span><span class="p">[</span><span class="n">row</span><span class="p">])</span>
+                <span class="n">peak_mag</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phot_mag</span><span class="p">[</span><span class="n">row</span><span class="p">])</span>
+                <span class="n">peak_jd</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phot_jd</span><span class="p">[</span><span class="n">row</span><span class="p">])</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">phot_jd</span><span class="p">[</span><span class="n">row</span><span class="p">]))</span>
+                <span class="n">first_mag</span><span class="p">,</span> <span class="n">second_mag</span> <span class="o">=</span> <span class="n">band_mags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">band_mags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">peak_color</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_mag</span> <span class="o">-</span> <span class="n">second_mag</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">first_mag</span> <span class="o">-</span> <span class="n">second_mag</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 
-        <span class="n">table_event_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span>
-        <span class="n">transient_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">table_event_id</span><span class="p">)</span>
-        <span class="n">type_of_event</span> <span class="o">=</span> <span class="n">transient_type</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">table_event_id</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">event_ids</span><span class="p">)]]</span>
+        <span class="n">eids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">]</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"peak_snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_floats</span><span class="p">([</span><span class="n">peak_snr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">])</span>
+        <span class="n">mags</span> <span class="o">=</span> <span class="p">[</span><span class="n">peak_mag</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">]</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"peak_mag"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_floats</span><span class="p">([</span><span class="n">m</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mags</span><span class="p">])</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"peak_color"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_floats</span><span class="p">([</span><span class="n">peak_color</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">])</span>
+        <span class="n">summary</span><span class="p">[</span><span class="s2">"peak_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_masked_times</span><span class="p">([</span><span class="n">peak_jd</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">],</span> <span class="n">scale</span><span class="p">,</span> <span class="n">time_format</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">QTable</span><span class="p">(</span>
+        <span class="n">summary</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">"event_id"</span><span class="p">:</span> <span class="n">event_ids</span><span class="p">,</span>
-                <span class="s2">"transient_type"</span><span class="p">:</span> <span class="n">type_of_event</span><span class="p">,</span>
-                <span class="s2">"t_first_detection"</span><span class="p">:</span> <span class="n">t_obs</span><span class="p">,</span>
-                <span class="s2">"detection_band"</span><span class="p">:</span> <span class="n">band</span><span class="p">,</span>
-                <span class="s2">"detection_snr"</span><span class="p">:</span> <span class="n">snr</span><span class="p">,</span>
-                <span class="s2">"t_downlink"</span><span class="p">:</span> <span class="n">t_downlink</span><span class="p">,</span>
-                <span class="s2">"alert_time"</span><span class="p">:</span> <span class="n">alert_time</span><span class="p">,</span>
-                <span class="s2">"alert_delay"</span><span class="p">:</span> <span class="n">alert_delay</span><span class="p">,</span>
+                <span class="s2">"snr_threshold"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">snr_threshold</span><span class="p">),</span>
+                <span class="s2">"rise_sigma"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">rise_sigma</span><span class="p">),</span>
+                <span class="s2">"processing_delay_hr"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">delay</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">hr</span><span class="p">)),</span>
+                <span class="s2">"lookback_days"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">lookback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">lookback</span><span class="p">),</span>
+                <span class="s2">"bands"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">bands</span><span class="p">),</span>
+                <span class="s2">"color_bands"</span><span class="p">:</span> <span class="n">color_bands</span><span class="p">,</span>
+                <span class="s2">"nside"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">nside</span><span class="p">),</span>
+                <span class="s2">"order"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">order</span><span class="p">),</span>
+                <span class="s2">"n_pre_cut"</span><span class="p">:</span> <span class="n">n_pre_cut</span><span class="p">,</span>
+                <span class="s2">"expected_events"</span><span class="p">:</span> <span class="n">expected</span><span class="p">,</span>
+                <span class="s2">"rate_ci"</span><span class="p">:</span> <span class="n">rate_ci</span><span class="p">,</span>
             <span class="p">}</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">summary</span></div>
 </div>
 
 </pre></div>

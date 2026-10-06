@@ -1,4 +1,4 @@
-event = detected.get_events(19, {"tde": tde}, schedule)
+event = detected.get_events(int(detected.event_id[0]), {"tde": tde}, schedule)
 
 phot = event.simulate_photometry(mission)
 t_since_explosion = (phot["obs_time"] - event.t_explosion).to(u.day)

@@ -20,7 +20,7 @@ that can have optical follow-up or pre-discovery data from LSST. We'll:
 # Sample and detect TDEs with UVEX
 # ------------------------------------
 #
-# This follows :ref:`the end-to-end TDE example <sphx_glr_galleries_simulating_plot_tde_end_to_end.py>`:
+# This follows :ref:`the end-to-end TDE example <sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py>`:
 # draw a downsampled Monte Carlo population, then keep the events detected above
 # :math:`\mathrm{SNR}=5` at an observation the schedule actually made.
 

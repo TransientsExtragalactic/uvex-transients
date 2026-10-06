@@ -469,6 +469,8 @@
 <span class="sd">bespoke variants of.</span>
 <span class="sd">"""</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">vstack</span>
 
@@ -490,7 +492,8 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `catalogs` is empty, or any two disagree on `nside`/`order`.</span>
+<span class="sd">        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry</span>
+<span class="sd">        ``pre_cut_counts`` disagree on them (they were not cut from the same generated catalog).</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">catalogs</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"logical_op requires at least one input catalog."</span><span class="p">)</span>
@@ -501,6 +504,11 @@
                 <span class="sa">f</span><span class="s2">"logical_op inputs must share the same (nside, order); got (</span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">nside</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">order</span><span class="si">}</span><span class="s2">) "</span>
                 <span class="sa">f</span><span class="s2">"and (</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">nside</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">order</span><span class="si">}</span><span class="s2">)."</span>
             <span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">pre_cut_counts</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">catalogs</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pre_cut_counts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">other</span> <span class="o">!=</span> <span class="n">counts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"logical_op inputs must come from the same generation run; their pre_cut_counts differ: </span><span class="si">{</span><span class="n">counts</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
 
 
 <div class="viewcode-block" id="union">
@@ -525,7 +533,8 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `catalogs` is empty, or any two disagree on `nside`/`order`.</span>
+<span class="sd">        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry</span>
+<span class="sd">        ``pre_cut_counts`` disagree on them.</span>
 <span class="sd">    """</span>
     <span class="n">_check_compatible</span><span class="p">(</span><span class="n">catalogs</span><span class="p">)</span>
     <span class="n">first</span> <span class="o">=</span> <span class="n">catalogs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -539,14 +548,8 @@
         <span class="n">keep_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
 
     <span class="n">combined</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">([</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="k">for</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">catalogs</span><span class="p">,</span> <span class="n">keep_masks</span><span class="p">)],</span> <span class="n">metadata_conflicts</span><span class="o">=</span><span class="s2">"silent"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-        <span class="n">table</span><span class="o">=</span><span class="n">combined</span><span class="p">,</span>
-        <span class="n">nside</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-        <span class="n">order</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-        <span class="n">time_bins</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="n">known_counts</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span><span class="o">.</span><span class="n">pre_cut_counts</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">catalogs</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pre_cut_counts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">combined</span><span class="p">,</span> <span class="n">pre_cut_counts</span><span class="o">=</span><span class="n">known_counts</span><span class="p">)</span></div>
 
 
 
@@ -572,7 +575,8 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `catalogs` is empty, or any two disagree on `nside`/`order`.</span>
+<span class="sd">        If `catalogs` is empty, any two disagree on `nside`/`order`, or two that carry</span>
+<span class="sd">        ``pre_cut_counts`` disagree on them.</span>
 <span class="sd">    """</span>
     <span class="n">_check_compatible</span><span class="p">(</span><span class="n">catalogs</span><span class="p">)</span>
     <span class="n">first</span> <span class="o">=</span> <span class="n">catalogs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -582,14 +586,7 @@
         <span class="n">common</span> <span class="o">&amp;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">common</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-        <span class="n">table</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
-        <span class="n">nside</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-        <span class="n">order</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-        <span class="n">time_bins</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span></div>
 
 
 
@@ -614,7 +611,8 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `catalogs` doesn't have exactly two entries, or they disagree on `nside`/`order`.</span>
+<span class="sd">        If `catalogs` doesn't have exactly two entries, they disagree on `nside`/`order`, or both</span>
+<span class="sd">        carry ``pre_cut_counts`` and those disagree.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalogs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'difference' requires exactly 2 input catalogs, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">catalogs</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
@@ -623,14 +621,7 @@
 
     <span class="n">exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">exclude</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
-        <span class="n">table</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
-        <span class="n">nside</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span>
-        <span class="n">order</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-        <span class="n">time_bins</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">downsample</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span></div>
 
 
 

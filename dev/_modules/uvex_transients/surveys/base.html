@@ -1614,12 +1614,11 @@
 <span class="sd">        `footprint_healpix` follows HEALPix's own convention of pixel-*center*</span>
 <span class="sd">        membership, not full-pixel overlap: a row is registered under pixel ``p`` only</span>
 <span class="sd">        if ``p``'s center falls inside that row's rolled footprint. A query point can</span>
-<span class="sd">        therefore sit inside a footprint while its own pixel goes unregistered (a</span>
-<span class="sd">        one-directional miss, never a false claim -- see :meth:`get_observation_indices_of`,</span>
-<span class="sd">        which confirms every candidate this index returns with an exact geometric test,</span>
-<span class="sd">        so nothing reached through this index is ever wrongly included, only</span>
-<span class="sd">        occasionally left out near a footprint's edge). Raise ``nside`` to shrink how</span>
-<span class="sd">        often that happens; there is no dilation margin built into the index itself.</span>
+<span class="sd">        therefore sit inside a footprint while its own pixel goes unregistered. The index</span>
+<span class="sd">        itself has no margin for that, so :meth:`get_observation_indices_of` also looks up</span>
+<span class="sd">        each point's eight neighbouring pixels and confirms every candidate with an exact</span>
+<span class="sd">        geometric test, so nothing reached through this index is wrongly included or, for</span>
+<span class="sd">        a pixel much smaller than the footprint, left out.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1784,21 +1783,29 @@
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Row indices of observations whose footprint covers each query position.</span>
 
-<span class="sd">        The batched, index-returning counterpart to :meth:`get_observations_of`: each</span>
-<span class="sd">        query position's own HEALPix pixel is looked up directly in the cached</span>
-<span class="sd">        coverage index (see :meth:`get_healpix_coverage_index`) -- a plain,</span>
-<span class="sd">        single-pixel broad-phase filter, not the final answer -- and just that</span>
-<span class="sd">        (typically small) candidate set is confirmed with the same exact, vectorized</span>
-<span class="sd">        :func:`m4opt.fov.contains` test :meth:`get_observations_of` uses, run once over</span>
-<span class="sd">        every query position at once rather than in a Python loop.</span>
+<span class="sd">        The batched, index-returning counterpart to :meth:`get_observations_of`, in three</span>
+<span class="sd">        stages that each narrow the candidates before the next, more expensive one:</span>
 
-<span class="sd">        Because :meth:`get_healpix_coverage_index` registers a pointing under a pixel</span>
-<span class="sd">        only if that pixel's *center* falls inside the rolled footprint, a query point</span>
-<span class="sd">        can sit inside a footprint while its own pixel goes unregistered -- such a</span>
-<span class="sd">        match is silently missed here, never falsely included (the exact `contains`</span>
-<span class="sd">        test can only remove a candidate, never add one back once the pixel lookup</span>
-<span class="sd">        already missed it). Raise ``nside`` to shrink how often that happens; there is</span>
-<span class="sd">        no neighbour-pixel margin here to compensate for a coarse index.</span>
+<span class="sd">        1. **Broad phase.** Each query position's own HEALPix pixel *and its eight</span>
+<span class="sd">           neighbours* are looked up in the cached coverage index (see</span>
+<span class="sd">           :meth:`get_healpix_coverage_index`), and duplicate (query, row) pairs are</span>
+<span class="sd">           dropped. The index registers a pointing under a pixel only if that pixel's</span>
+<span class="sd">           *center* is inside the rolled footprint, so a point near the footprint edge can</span>
+<span class="sd">           be covered while its own pixel is unregistered. A pixel center within one pixel</span>
+<span class="sd">           of the point is always inside a footprint much larger than a pixel, so the</span>
+<span class="sd">           neighbours catch these cases.</span>
+<span class="sd">        2. **Time window.** Candidates whose start time falls outside their query's window</span>
+<span class="sd">           are discarded. This is a cheap float comparison, done before the exact test so</span>
+<span class="sd">           that test only runs on observations that can matter.</span>
+<span class="sd">        3. **Exact test.** The surviving candidates are confirmed with the same vectorized</span>
+<span class="sd">           :func:`m4opt.fov.contains` test :meth:`get_observations_of` uses, run once over</span>
+<span class="sd">           every pair at once rather than in a Python loop.</span>
+
+<span class="sd">        The result matches :meth:`get_observations_of` as long as a pixel is much smaller</span>
+<span class="sd">        than the footprint (for example ``nside`` 64 or 128 against a footprint of a few</span>
+<span class="sd">        degrees). With a pixel comparable to the footprint, a point can still lie inside it</span>
+<span class="sd">        with no pixel center from its own or neighbouring pixels inside, and is missed.</span>
+<span class="sd">        Nothing is ever falsely included, since the exact test has the final say.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1862,57 +1869,60 @@
         <span class="n">hpx</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">HEALPix</span><span class="p">(</span><span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">observe_rows</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">]</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span>
         <span class="n">query_pixel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hpx</span><span class="o">.</span><span class="n">skycoord_to_healpix</span><span class="p">(</span><span class="n">coord_array</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 
-        <span class="c1"># Each query's candidate range is resolved by fancy-indexing `pixel_offsets`</span>
-        <span class="c1"># with the whole `query_pixel` array at once -- no per-query Python loop. What</span>
-        <span class="c1"># remains is gathering each query's own (variable-length) slice of</span>
-        <span class="c1"># `sorted_rows` and concatenating them in query order; that ragged gather is</span>
-        <span class="c1"># itself vectorized via the standard repeat/arange/cumsum trick below.</span>
-        <span class="n">starts</span> <span class="o">=</span> <span class="n">pixel_offsets</span><span class="p">[</span><span class="n">query_pixel</span><span class="p">]</span>
-        <span class="n">ends</span> <span class="o">=</span> <span class="n">pixel_offsets</span><span class="p">[</span><span class="n">query_pixel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">counts</span> <span class="o">=</span> <span class="n">ends</span> <span class="o">-</span> <span class="n">starts</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="c1"># Broad phase: each query's own pixel and its (up to) eight neighbours. `neighbours`</span>
+        <span class="c1"># marks a missing neighbour (at a base-pixel corner) with -1, which is skipped.</span>
+        <span class="n">pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">query_pixel</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">hpx</span><span class="o">.</span><span class="n">neighbours</span><span class="p">(</span><span class="n">query_pixel</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)])</span>
+        <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">observe_rows</span><span class="p">)</span>
+        <span class="n">candidate_query</span><span class="p">,</span> <span class="n">candidate_row</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="n">pixels</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">pixel</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">starts</span> <span class="o">=</span> <span class="n">pixel_offsets</span><span class="p">[</span><span class="n">pixel</span><span class="p">[</span><span class="n">valid</span><span class="p">]]</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">pixel_offsets</span><span class="p">[</span><span class="n">pixel</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">starts</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
 
-        <span class="k">if</span> <span class="n">total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Gather each query's variable-length slice of `sorted_rows` without a Python loop</span>
+            <span class="c1"># (the standard repeat/arange/cumsum trick for a ragged gather).</span>
+            <span class="n">group_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">valid</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">counts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">group_start</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">within_group</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">group_start</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+            <span class="n">candidate_query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">counts</span><span class="p">))</span>
+            <span class="n">candidate_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sorted_rows</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span> <span class="o">+</span> <span class="n">within_group</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">candidate_query</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">empty</span><span class="p">,</span> <span class="n">empty</span>
 
-        <span class="n">query_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="n">counts</span><span class="p">)</span>
-        <span class="n">group_start_in_output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">counts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">group_start_in_output</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-        <span class="n">within_group_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">-</span> <span class="n">group_start_in_output</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span>
-        <span class="n">row_index</span> <span class="o">=</span> <span class="n">sorted_rows</span><span class="p">[</span><span class="n">starts</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span> <span class="o">+</span> <span class="n">within_group_index</span><span class="p">]</span>
+        <span class="c1"># A row covering several of a query's nine pixels appears once per pixel; keep one.</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">candidate_query</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="n">n_rows</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">candidate_row</span><span class="p">))</span>
+        <span class="n">query_index</span><span class="p">,</span> <span class="n">row_index</span> <span class="o">=</span> <span class="n">key</span> <span class="o">//</span> <span class="n">n_rows</span><span class="p">,</span> <span class="n">key</span> <span class="o">%</span> <span class="n">n_rows</span>
 
-        <span class="c1"># Exact confirmation: the same geometric test `get_observations_of` uses, run</span>
-        <span class="c1"># once over every candidate pair at once instead of once per query position.</span>
-        <span class="c1"># This can only remove a candidate the pixel lookup shouldn't have offered, not</span>
-        <span class="c1"># discard a genuine match -- see the docstring's note on this method's</span>
-        <span class="c1"># one-directional (miss, never false-claim) error.</span>
+        <span class="c1"># Time window, before the exact test: a start-time comparison is nearly free, while the</span>
+        <span class="c1"># exact test needs a coordinate transform per pair. Julian dates are taken on the</span>
+        <span class="c1"># schedule's own time scale so both sides are comparable.</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">observe_rows</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">row_start_jd</span> <span class="o">=</span> <span class="n">observe_rows</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span>
+        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">window_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
+            <span class="n">window_end</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">end_time</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
+            <span class="n">in_window</span> <span class="o">=</span> <span class="p">(</span><span class="n">row_start_jd</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">[</span><span class="n">query_index</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span>
+                <span class="n">row_start_jd</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">query_index</span><span class="p">,</span> <span class="n">row_index</span> <span class="o">=</span> <span class="n">query_index</span><span class="p">[</span><span class="n">in_window</span><span class="p">],</span> <span class="n">row_index</span><span class="p">[</span><span class="n">in_window</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">empty</span><span class="p">,</span> <span class="n">empty</span>
+
+        <span class="c1"># Exact test: the geometric test `get_observations_of` uses, over every remaining pair at</span>
+        <span class="c1"># once. It can only remove a candidate, so nothing is ever falsely included.</span>
         <span class="n">candidate_rows</span> <span class="o">=</span> <span class="n">observe_rows</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
         <span class="n">local_frame</span> <span class="o">=</span> <span class="n">SkyOffsetFrame</span><span class="p">(</span><span class="n">origin</span><span class="o">=</span><span class="n">candidate_rows</span><span class="p">[</span><span class="s2">"target_coord"</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="n">candidate_rows</span><span class="p">[</span><span class="s2">"roll"</span><span class="p">])</span>
         <span class="n">local_coord</span> <span class="o">=</span> <span class="n">coord_array</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">local_frame</span><span class="p">)</span>
         <span class="n">local_coord_as_icrs</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">local_coord</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="n">local_coord</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">"icrs"</span><span class="p">)</span>
         <span class="n">contains_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">contains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_instrument_fov</span><span class="p">,</span> <span class="n">local_coord_as_icrs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-
-        <span class="n">query_index</span> <span class="o">=</span> <span class="n">query_index</span><span class="p">[</span><span class="n">contains_mask</span><span class="p">]</span>
-        <span class="n">row_index</span> <span class="o">=</span> <span class="n">row_index</span><span class="p">[</span><span class="n">contains_mask</span><span class="p">]</span>
-        <span class="n">candidate_rows</span> <span class="o">=</span> <span class="n">candidate_rows</span><span class="p">[</span><span class="n">contains_mask</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">matched_start</span> <span class="o">=</span> <span class="n">candidate_rows</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span>
-            <span class="c1"># Scalar window broadcasts against every candidate as-is; a per-query</span>
-            <span class="c1"># window is indexed by `query_index` so each candidate is checked against</span>
-            <span class="c1"># *its own* query's window, not a shared one.</span>
-            <span class="k">if</span> <span class="n">start_time</span><span class="o">.</span><span class="n">isscalar</span><span class="p">:</span>
-                <span class="n">window_start</span><span class="p">,</span> <span class="n">window_end</span> <span class="o">=</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">window_start</span> <span class="o">=</span> <span class="n">start_time</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span>
-                <span class="n">window_end</span> <span class="o">=</span> <span class="n">end_time</span><span class="p">[</span><span class="n">query_index</span><span class="p">]</span>
-            <span class="n">time_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">matched_start</span> <span class="o">&gt;=</span> <span class="n">window_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">matched_start</span> <span class="o">&lt;</span> <span class="n">window_end</span><span class="p">)</span>
-            <span class="n">query_index</span> <span class="o">=</span> <span class="n">query_index</span><span class="p">[</span><span class="n">time_mask</span><span class="p">]</span>
-            <span class="n">row_index</span> <span class="o">=</span> <span class="n">row_index</span><span class="p">[</span><span class="n">time_mask</span><span class="p">]</span>
-            <span class="n">candidate_rows</span> <span class="o">=</span> <span class="n">candidate_rows</span><span class="p">[</span><span class="n">time_mask</span><span class="p">]</span>
+        <span class="n">query_index</span><span class="p">,</span> <span class="n">row_index</span> <span class="o">=</span> <span class="n">query_index</span><span class="p">[</span><span class="n">contains_mask</span><span class="p">],</span> <span class="n">row_index</span><span class="p">[</span><span class="n">contains_mask</span><span class="p">]</span>
 
         <span class="c1"># Chronological within each query position.</span>
-        <span class="n">sort_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">candidate_rows</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span><span class="o">.</span><span class="n">jd</span><span class="p">,</span> <span class="n">query_index</span><span class="p">))</span>
+        <span class="n">sort_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">row_start_jd</span><span class="p">[</span><span class="n">row_index</span><span class="p">],</span> <span class="n">query_index</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">query_index</span><span class="p">[</span><span class="n">sort_order</span><span class="p">],</span> <span class="n">row_index</span><span class="p">[</span><span class="n">sort_order</span><span class="p">]</span></div>
 
 

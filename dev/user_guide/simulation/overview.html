@@ -896,39 +896,39 @@ full-sky number. <a class="reference internal" href="../../_as_gen/uvex_transien
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rebin()</span></code></a> let you query or
 re-tile that same tabulated exposure over an arbitrary sub-window or a different time binning
 without re-querying the schedule.</p>
-<p>Combine a raw (feasible) catalog, a detected (post-cut) catalog, and its exposure into one
-per-transient-type summary with
-<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary" title="uvex_transients.simulation.event_catalog.EventCatalog.compute_yield_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_yield_summary()</span></code></a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">yields</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">compute_yield_summary</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-<span class="n">yields</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">,</span> <span class="s2">"uvex_intrinsic_events"</span><span class="p">,</span> <span class="s2">"detection_probability"</span><span class="p">,</span> <span class="s2">"expected_detections"</span><span class="p">]</span>
+<section id="summarizing-events-and-estimating-yields">
+<h3>Summarizing events and estimating yields<a class="headerlink" href="#summarizing-events-and-estimating-yields" title="Link to this heading">#</a></h3>
+<p>Every <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> records <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code>: how
+many events of each transient type were generated. No cut, set operation, or other row selection
+changes it, which makes it the denominator of every later detection fraction. The photometry action
+and the cuts are unchanged; the
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_event_summary_action.html#uvex_transients.simulation.core.SurveySimulator.run_event_summary_action" title="uvex_transients.simulation.core.SurveySimulator.run_event_summary_action"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_event_summary_action()</span></code></a> then reduces a
+(typically SNR-cut) catalog to one plain <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> with a row per event: its
+identity and position, footprint flags, first and last observation and detection times, the last
+non-detection before the first detection, and its peak photometry:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_event_summary_action</span><span class="p">(</span>
+    <span class="n">catalog</span><span class="o">=</span><span class="n">detected</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span> <span class="n">photometry</span><span class="o">=</span><span class="n">photometry</span><span class="p">,</span> <span class="n">mission</span><span class="o">=</span><span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>The returned <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.html#uvex_transients.simulation.yield_table.YieldTable" title="uvex_transients.simulation.yield_table.YieldTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">YieldTable</span></code></a> carries, per transient
-type, the rate (<code class="docutils literal notranslate"><span class="pre">integrated_rate</span></code>/<code class="docutils literal notranslate"><span class="pre">all_sky_rate</span></code>), the footprint-aware intrinsic rate/count
-(<code class="docutils literal notranslate"><span class="pre">uvex_intrinsic_rate</span></code>/<code class="docutils literal notranslate"><span class="pre">uvex_intrinsic_events</span></code>, i.e. <span class="math notranslate nohighlight">\(\mu_0\)</span>), the Monte Carlo detection
-efficiency (<code class="docutils literal notranslate"><span class="pre">detection_probability</span></code>, <span class="math notranslate nohighlight">\(\hat\epsilon=k/n\)</span>), and the final yield estimate
-(<code class="docutils literal notranslate"><span class="pre">expected_detections</span></code>, <span class="math notranslate nohighlight">\(\hat\lambda=\mu_0\hat\epsilon\)</span>) – each rate-derived column with
-its own <code class="docutils literal notranslate"><span class="pre">RATE_CI</span></code>-propagated bounds, and <code class="docutils literal notranslate"><span class="pre">detection_probability</span></code>/<code class="docutils literal notranslate"><span class="pre">expected_detections</span></code> with
-<em>two</em> separate uncertainty sources (Clopper-Pearson binomial and rate-normalization), kept apart
-as <code class="docutils literal notranslate"><span class="pre">..._binom_lower</span></code>/<code class="docutils literal notranslate"><span class="pre">_upper</span></code> and <code class="docutils literal notranslate"><span class="pre">..._rate_lower</span></code>/<code class="docutils literal notranslate"><span class="pre">_upper</span></code> columns rather than combined
-into one. <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.to_ascii.html#uvex_transients.simulation.yield_table.YieldTable.to_ascii" title="uvex_transients.simulation.yield_table.YieldTable.to_ascii"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_ascii()</span></code></a> writes a
-human-readable summary table; <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.yield_table.YieldTable.to_latex.html#uvex_transients.simulation.yield_table.YieldTable.to_latex" title="uvex_transients.simulation.yield_table.YieldTable.to_latex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_latex()</span></code></a>
-renders both uncertainty sources as stacked LaTeX superscripts for a paper table.</p>
-<div class="admonition hint">
-<p class="admonition-title">Hint</p>
-<p>For a finer-grained question than “was this event detected at all” – “how many separate
-epochs was it detected in” – run synthetic photometry over a whole catalog with
-<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog.html#uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog" title="uvex_transients.simulation.event_catalog.EventCatalog.compute_photometry_catalog"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_photometry_catalog()</span></code></a>
-(wrapping <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry.html#uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry" title="uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a>,
-below, as a <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">PhotometryCatalog</span></code></a>), then
-call its own
-<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table.html#uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table" title="uvex_transients.simulation.photometry_catalog.PhotometryCatalog.compute_detection_count_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_detection_count_table()</span></code></a>.
-It generalizes <code class="docutils literal notranslate"><span class="pre">compute_yield_summary</span></code>’s “detected at all” (<span class="math notranslate nohighlight">\(N_{\rm det}\geq 1\)</span>) to
-“detected in at least <span class="math notranslate nohighlight">\(k\)</span> epochs” for every <span class="math notranslate nohighlight">\(k\)</span> at once, with the same two-source
-uncertainty treatment – exactly what the <code class="docutils literal notranslate"><span class="pre">detection-counts</span></code> CLI command
-(<a class="reference internal" href="../cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a>) automates.</p>
+<p>The table’s <code class="docutils literal notranslate"><span class="pre">meta</span></code> carries the generation count, each type’s intrinsic expected event count
+(<span class="math notranslate nohighlight">\(\mu_0\)</span>, from the exposure catalog), and its rate-uncertainty factors, so a slice of it
+still knows everything needed to turn a selection into a yield. Cut it however you like, then pass
+the boolean mask of the rows you want to <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.rates.estimate_yield.html#uvex_transients.simulation.rates.estimate_yield" title="uvex_transients.simulation.rates.estimate_yield"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_yield()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_yield</span>
+
+<span class="n">estimate_yield</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>  <span class="c1"># per type, for the cuts the summary was built from</span>
+
+<span class="n">delay</span> <span class="o">=</span> <span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s2">"t_first_det"</span><span class="p">]</span> <span class="o">-</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"t_last_nondet"</span><span class="p">])</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="s2">"hr"</span><span class="p">)</span>
+<span class="n">estimate_yield</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">delay</span> <span class="o">&lt;=</span> <span class="mi">6</span><span class="p">)</span>
+</pre></div>
 </div>
+<p>For each type it returns the fraction <span class="math notranslate nohighlight">\(k/n\)</span> of generated events selected, the expected number
+of real events <span class="math notranslate nohighlight">\(\mu_0 k/n\)</span>, a Clopper-Pearson (Monte Carlo) interval on it, and a separate
+interval from the rate normalization, kept apart rather than combined. Types are not summed, since
+that would mix independent Monte Carlo errors with a shared rate uncertainty.</p>
 <hr class="docutils" />
+</section>
 </section>
 <section id="reconstructing-and-simulating-events">
 <span id="user-guide-simulation-events"></span><h2>Reconstructing and Simulating Events<a class="headerlink" href="#reconstructing-and-simulating-events" title="Link to this heading">#</a></h2>
@@ -939,7 +939,7 @@ light curve for one particular event means reconstructing it as a full
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.get_events.html#uvex_transients.simulation.event_catalog.EventCatalog.get_events" title="uvex_transients.simulation.event_catalog.EventCatalog.get_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_events()</span></code></a>. Because an
 <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> holds no live reference to the schedule or the transients it came from (see
 above), both are supplied again here – typically the same ones the catalog was generated with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">event_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 <span class="o">...</span> <span class="o">&lt;</span><span class="n">Event</span> <span class="nb">id</span><span class="o">=</span><span class="mi">19</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'tde'</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.7097</span> <span class="n">n_observations</span><span class="o">=</span><span class="mi">2</span><span class="o">&gt;</span>
 </pre></div>
@@ -975,7 +975,7 @@ earlier screening pass was designed to defer: real, per-observation, per-band sy
 against every observation in <code class="docutils literal notranslate"><span class="pre">observations</span></code>, batched into one
 <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
 are:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">event_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 
 <span class="n">phot</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">simulate_photometry</span><span class="p">(</span><span class="n">mission</span><span class="p">)</span>
 <span class="n">t_since_explosion</span> <span class="o">=</span> <span class="p">(</span><span class="n">phot</span><span class="p">[</span><span class="s2">"obs_time"</span><span class="p">]</span> <span class="o">-</span> <span class="n">event</span><span class="o">.</span><span class="n">t_explosion</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
@@ -1002,6 +1002,24 @@ are:</p>
 </pre></div>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/a8d7ca9a682638f84e7d7c885194a7b8/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<figure class="align-default" id="id3">
+<img alt="../../_images/overview-3_00.png" class="plot-directive" src="../../_images/overview-3_00.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/30eae432d928ef8d373f6fe1438a3f21/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0990ba76e6f942efafcf6a1323447c9b/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b52214cade309f2c9c6dce953169a2be/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id4">
+<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/897326a1434b79ac6ceb9a36969f7d63/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c57be1163b8884254c52784c1e96a8aa/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bfac5e7bb0163ca2c08ba0583c3a7778/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id5">
+<img alt="../../_images/overview-3_02.png" class="plot-directive" src="../../_images/overview-3_02.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/c9a9da17499932f2649c17ea434677e0/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/04262613846f5f56177aede02e52b76f/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/08492c9b14e685e17e9fa477f43a96ce/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
 <p>This example schedule only ever visits a given field once, so most of its events – like this one
 – end up with just one or two associated observations; see the <a class="reference internal" href="../../auto_examples/simulating/index.html#simulating-gallery"><span class="std std-ref">Survey Transient Simulations</span></a> for the
 same workflow against a real, densely-cadenced UVEX schedule.</p>
@@ -1075,7 +1093,10 @@ method-by-method detail.</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-event-catalog">The Event Catalog</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#filtering-the-event-catalog">Filtering the Event Catalog</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-yield">Exposure and Yield</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-yield">Exposure and Yield</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summarizing-events-and-estimating-yields">Summarizing events and estimating yields</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reconstructing-and-simulating-events">Reconstructing and Simulating Events</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#theoretical-curves">Theoretical Curves</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#synthetic-photometry">Synthetic Photometry</a></li>
