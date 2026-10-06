@@ -548,7 +548,7 @@
         <span class="n">photometry_post_window</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Construct an `Event` and query `schedule` for its covering observations.</span>
+<span class="sd">        Construct an `Event`; its covering observations are queried from `schedule` lazily, on first access.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -608,11 +608,8 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">ebv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">ebv</span><span class="p">)</span>
 
-        <span class="c1"># The one query this class exists to make: which scheduled observations actually</span>
-        <span class="c1"># covered this event, while it was active. `get_observations_of`'s own window can</span>
-        <span class="c1"># include a row that *started* slightly before `t_explosion` but overlaps into it</span>
-        <span class="c1"># (e.g. a long downlink); that row is dropped here since only observations that</span>
-        <span class="c1"># began at or after the explosion are ever useful for this event's lightcurve.</span>
+        <span class="c1"># Resolve the photometry window now, so bad values fail at construction rather than at</span>
+        <span class="c1"># the (deferred) schedule query.</span>
         <span class="k">if</span> <span class="n">photometry_post_window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">photometry_post_window</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span>
 
@@ -635,18 +632,31 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span> <span class="o">=</span> <span class="n">photometry_post_window</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span> <span class="o">=</span> <span class="n">photometry_pre_window</span>
-        <span class="n">candidate</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">get_observations_of</span><span class="p">(</span>
-            <span class="n">coord</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">-</span> <span class="n">photometry_pre_window</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">photometry_post_window</span>
+
+        <span class="c1"># The schedule query is the expensive part of construction (a WCS build per call), so it is</span>
+        <span class="c1"># deferred until `window_observations` (or something derived from it) is first accessed;</span>
+        <span class="c1"># see `_resolve_observations`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Run the schedule query and split its rows, once; a no-op after the first call."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">t_explosion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span>
+        <span class="n">post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span><span class="o">.</span><span class="n">get_observations_of</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coord</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">post</span>
         <span class="p">)</span>
 
         <span class="c1"># Determine the set of candidates that are actually observed.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span> <span class="o">=</span> <span class="n">candidate</span>
         <span class="n">in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
             <span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">t_explosion</span><span class="p">,</span>
-            <span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">candidate</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">photometry_post_window</span><span class="p">,</span>
+            <span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">candidate</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">post</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">in_model</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">in_model</span><span class="p">]</span>
 
         <span class="c1"># Everything else in the query window -- pre-explosion rows from</span>
         <span class="c1"># `photometry_pre_window`, plus any row whose exposure runs past</span>
@@ -655,7 +665,10 @@
         <span class="c1"># (see `simulate_photometry`): some light curve shapes are only smoothly</span>
         <span class="c1"># *wrong* there, but others (e.g. an early-time `1/t` singularity) diverge</span>
         <span class="c1"># outright, so this window is masked out rather than merely deprioritized.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">in_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">in_model</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="o">~</span><span class="n">in_model</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span> <span class="o">=</span> <span class="n">candidate</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -668,7 +681,7 @@
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">"&lt;Event id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="si">}</span><span class="s2"> type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_transient_type</span><span class="si">!r}</span><span class="s2"> "</span>
-            <span class="sa">f</span><span class="s2">"z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> n_observations=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">)</span><span class="si">}</span><span class="s2">&gt;"</span>
+            <span class="sa">f</span><span class="s2">"z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> n_observations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_observations</span><span class="si">}</span><span class="s2">&gt;"</span>
         <span class="p">)</span>
 
     <span class="c1"># ------------------------------ #</span>
@@ -729,6 +742,7 @@
 <span class="sd">        -- i.e. where the spacecraft was -- ``target_coord``, ``roll``, ...). Empty if</span>
 <span class="sd">        the survey never observed this event's position during its active window.</span>
 <span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span>
 
     <span class="nd">@property</span>
@@ -742,6 +756,7 @@
 <span class="sd">        i.e. `observations` before it's narrowed to rows the transient's SED is actually</span>
 <span class="sd">        valid for. See `observations`/`background_observations` for the split.</span>
 <span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span>
 
     <span class="nd">@property</span>
@@ -756,12 +771,13 @@
 <span class="sd">        domain. Empty whenever `photometry_pre_window` is the default ``0 * u.day`` and</span>
 <span class="sd">        no candidate observation overruns `photometry_post_window`.</span>
 <span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""int: Number of candidate observations (``len(observations)``)."""</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Event.in_footprint">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.in_footprint.html#uvex_transients.simulation.event.Event.in_footprint">[docs]</a>
@@ -1119,7 +1135,7 @@
         <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
-        <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_observations</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_empty_photometry_table</span><span class="p">()</span>
 

@@ -574,8 +574,9 @@ than downloading a real one, so the example below runs offline:</p>
 <p>That’s the whole shape of it: pair a transient population with a schedule, hand both to a
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.generate_events.html#uvex_transients.simulation.core.SurveySimulator.generate_events" title="uvex_transients.simulation.core.SurveySimulator.generate_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_events()</span></code></a> call, and get back
 every TDE that could plausibly have exploded somewhere the schedule looked. The rest of this page
-covers the simulator itself, the two screening steps that narrow that population down to
-detections, and how to turn any one surviving row back into a real light curve.</p>
+covers the simulator itself, the cuts that narrow that population down to detections, the actions
+that turn a surviving catalog into photometry and per-event summaries, and how to turn any one
+surviving row back into a real light curve.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
 <p><code class="docutils literal notranslate"><span class="pre">time_bins</span></code> above is a plain integer – the number of evenly-spaced bins to divide the
@@ -759,17 +760,41 @@ column per parameter would mean a different schema per transient type; regenerat
 lazily from a stored seed keeps <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> – and every filtering method below –
 agnostic to which SED any given row actually uses.</p>
 </div>
-</section>
 <hr class="docutils" />
-<section id="filtering-the-event-catalog">
-<h2>Filtering the Event Catalog<a class="headerlink" href="#filtering-the-event-catalog" title="Link to this heading">#</a></h2>
+</section>
+<section id="cuts">
+<span id="user-guide-simulation-cuts"></span><h2>Cuts<a class="headerlink" href="#cuts" title="Link to this heading">#</a></h2>
 <p>A freshly-sampled catalog is dominated by events far too faint to ever matter – most of a
 transient’s redshift-limited volume is, by construction, near the limit where it’s essentially
-undetectable. Two progressively more expensive passes narrow it down to the events actually worth
-keeping, both taking an <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> and an <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses) and returning a new <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the
-surviving rows – <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code>/<code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">downsample</span></code> unchanged, and
-original <code class="docutils literal notranslate"><span class="pre">event_id</span></code> values preserved rather than renumbered:</p>
+undetectable. A <strong>cut</strong> is a screening step that takes an
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> and a
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v3.0.1.dev6+gc45958402)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v3.0.1.dev6+gc45958402)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses, even for
+the cuts that don’t use it, so every cut shares one call signature) and returns a new
+<code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the surviving rows – <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code>/<code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">downsample</span></code>
+unchanged, <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code> unchanged, and original <code class="docutils literal notranslate"><span class="pre">event_id</span></code> values preserved rather than
+renumbered.</p>
+<p>Every cut is a <code class="docutils literal notranslate"><span class="pre">filter_by_&lt;name&gt;</span></code> method on
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a>, registered under <code class="docutils literal notranslate"><span class="pre">&lt;name&gt;</span></code> by the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">cut()</span></code> decorator. There are two equivalent ways to call one,
+and <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.available_cuts.html#uvex_transients.simulation.core.SurveySimulator.available_cuts" title="uvex_transients.simulation.core.SurveySimulator.available_cuts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">available_cuts()</span></code></a> lists every name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span>
+<span class="c1"># ('baseline', 'first_visit_detected', 'limiting_magnitude', 'peak_flux', ...)</span>
+
+<span class="c1"># Directly...</span>
+<span class="n">kept</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_redshift</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">max_redshift</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="c1"># ...or by name, which is what the CLI's ``cut`` steps do.</span>
+<span class="n">kept</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_cut</span><span class="p">(</span><span class="s2">"redshift"</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">max_redshift</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cuts never modify their input, so one catalog can feed any number of independent branches. See
+<a class="reference internal" href="#user-guide-simulation-logical-ops"><span class="std std-ref">Combining Cuts</span></a> for recombining branches, and <a class="reference internal" href="../cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a> for
+declaring a chain of cuts in a run-config.</p>
+<section id="the-standard-funnel">
+<h3>The Standard Funnel<a class="headerlink" href="#the-standard-funnel" title="Link to this heading">#</a></h3>
+<p>The two cuts used in nearly every run are <code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code> and <code class="docutils literal notranslate"><span class="pre">snr</span></code>, in that order:
+a cheap pass that throws away the hopeless majority, then the expensive, schedule-aware pass on
+what remains.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
@@ -800,7 +825,10 @@ actually made of an event’s position while it was active, is it ever detected 
 <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>? Every surviving event’s observations are gathered with one batched
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a> call per
 chunk (see <a class="reference internal" href="../surveys/overview.html#user-guide-surveys"><span class="std std-ref">Surveys</span></a>), then evaluated together with
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>.</p>
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev6+gc45958402)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>. Each observation is judged on a <em>measured</em> SNR (a
+simulated noisy measurement, the same one
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> makes), and epochs before
+the explosion never count.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">detected</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_snr</span><span class="p">(</span>
     <span class="n">mag_filtered</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
 <span class="p">)</span>
@@ -855,18 +883,227 @@ in this guide visits almost every field exactly once, so the example below passe
 <p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/09dafadbae7212ec5bd67993473a37a9/overview-2_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/e61dff4d9aeba1c1f21f6a69abcc2102/overview-2_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2f52add35ce569a3d63469aa3f7a2a47/overview-2_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
+</section>
+<section id="cut-reference">
+<h3>Cut Reference<a class="headerlink" href="#cut-reference" title="Link to this heading">#</a></h3>
+<p>Every registered cut, grouped by what it needs to evaluate. The columns give each cut’s registered
+name, what it keeps, and its parameters (<em>required</em> parameters in bold; anything not listed is
+optional). Where a cut takes a <code class="docutils literal notranslate"><span class="pre">min_</span></code>/<code class="docutils literal notranslate"><span class="pre">max_</span></code> pair, either bound may be left out to leave that
+side unconstrained, but at least one must be given.</p>
+<p><strong>Catalog-column cuts.</strong> These read only columns the catalog already carries, so they cost
+essentially nothing and need neither the schedule nor the detector (the <code class="docutils literal notranslate"><span class="pre">mission</span></code> argument is
+accepted and ignored). Use them freely, in any order, at any point.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cut</p></th>
+<th class="head"><p>Keeps events…</p></th>
+<th class="head"><p>Parameters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">redshift</span></code></p></td>
+<td><p>whose <code class="docutils literal notranslate"><span class="pre">redshift</span></code> lies in <code class="docutils literal notranslate"><span class="pre">[min_redshift,</span> <span class="pre">max_redshift]</span></code>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">min_redshift</span></code>, <code class="docutils literal notranslate"><span class="pre">max_redshift</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">transient_type</span></code></p></td>
+<td><p>whose <code class="docutils literal notranslate"><span class="pre">transient_type</span></code> is one of <code class="docutils literal notranslate"><span class="pre">types</span></code>; every other type is dropped entirely.</p></td>
+<td><p><strong>types</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">region</span></code></p></td>
+<td><p>inside a sky region: a <a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a>/<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> object or a
+region-file path (the same convention the instrument FOV uses).</p></td>
+<td><p><strong>region</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sky_position</span></code></p></td>
+<td><p>inside (<code class="docutils literal notranslate"><span class="pre">mode=&quot;include&quot;</span></code>, the default) or outside (<code class="docutils literal notranslate"><span class="pre">mode=&quot;exclude&quot;</span></code>) a longitude/latitude
+box in any coordinate frame. <code class="docutils literal notranslate"><span class="pre">phi_min</span> <span class="pre">&gt;</span> <span class="pre">phi_max</span></code> wraps through 0. For example,
+Galactic-plane avoidance is <code class="docutils literal notranslate"><span class="pre">frame=&quot;galactic&quot;,</span> <span class="pre">theta_min=-10,</span> <span class="pre">theta_max=10,</span> <span class="pre">mode=&quot;exclude&quot;</span></code>.</p></td>
+<td><p><strong>frame</strong>, <code class="docutils literal notranslate"><span class="pre">phi_min</span></code>, <code class="docutils literal notranslate"><span class="pre">phi_max</span></code>, <code class="docutils literal notranslate"><span class="pre">theta_min</span></code>, <code class="docutils literal notranslate"><span class="pre">theta_max</span></code>, <code class="docutils literal notranslate"><span class="pre">mode</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">query</span></code></p></td>
+<td><p>for which a boolean expression over the catalog’s own columns is true. Each column is bound
+to its native <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code></a>/<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyCoord</span></code></a>/
+<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Time</span></code></a> type, so comparisons stay unit- and frame-aware. Combine terms
+with <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>/<code class="docutils literal notranslate"><span class="pre">|</span></code>/<code class="docutils literal notranslate"><span class="pre">~</span></code>, not <code class="docutils literal notranslate"><span class="pre">and</span></code>/<code class="docutils literal notranslate"><span class="pre">or</span></code>/<code class="docutils literal notranslate"><span class="pre">not</span></code>. The expression is evaluated, not
+sandboxed: only use expressions you wrote.</p></td>
+<td><p><strong>expr</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kept</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_sky_position</span><span class="p">(</span>
+    <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">"galactic"</span><span class="p">,</span> <span class="n">theta_min</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">theta_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"exclude"</span>
+<span class="p">)</span>
+<span class="n">kept</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_query</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="s2">"(redshift &lt; 0.3) &amp; (ebv &lt; 0.1)"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Intrinsic brightness cuts.</strong> These regenerate each event’s physical parameters from its
+<code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code> and evaluate its SED over a shared <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">duration_limit]</span></code> phase grid, keeping
+the events whose <em>peak</em> falls in a range. They are purely intrinsic (plus distance for the first
+two): no schedule, no detector background, and, unlike <code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code>, no Milky Way dust.
+Unlike a one-sided threshold they can also reject events that are <em>too</em> bright, which is useful
+for isolating a population or discarding unphysical draws.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cut</p></th>
+<th class="head"><p>Keeps events…</p></th>
+<th class="head"><p>Parameters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">peak_magnitude</span></code></p></td>
+<td><p>whose brightest apparent AB magnitude, in the brightest of <code class="docutils literal notranslate"><span class="pre">bands</span></code>, lies in
+<code class="docutils literal notranslate"><span class="pre">[min_mag,</span> <span class="pre">max_mag]</span></code>. Remember that brighter is numerically <em>lower</em>: <code class="docutils literal notranslate"><span class="pre">max_mag=24</span></code>
+removes events fainter than 24th mag, <code class="docutils literal notranslate"><span class="pre">min_mag=15</span></code> removes implausibly bright ones.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">min_mag</span></code>, <code class="docutils literal notranslate"><span class="pre">max_mag</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">n_phase</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">peak_flux</span></code></p></td>
+<td><p>the same evaluation as <code class="docutils literal notranslate"><span class="pre">peak_magnitude</span></code>, compared as a flux density in
+erg/s/cm<sup>2</sup>/Hz instead, for a threshold you already have as a flux.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">min_flux</span></code>, <code class="docutils literal notranslate"><span class="pre">max_flux</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">n_phase</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">peak_luminosity</span></code></p></td>
+<td><p>whose peak rest-frame bolometric luminosity, in erg/s, lies in
+<code class="docutils literal notranslate"><span class="pre">[min_luminosity,</span> <span class="pre">max_luminosity]</span></code>. No bands, distance, or dust at all.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">min_luminosity</span></code>, <code class="docutils literal notranslate"><span class="pre">max_luminosity</span></code>, <code class="docutils literal notranslate"><span class="pre">n_phase</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Detector-aware cuts.</strong> The <code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code> and <code class="docutils literal notranslate"><span class="pre">snr</span></code> pair described
+<a class="reference internal" href="#user-guide-simulation-cuts"><span class="std std-ref">above</span></a>; the first needs the detector’s bandpasses, the second
+also the schedule.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cut</p></th>
+<th class="head"><p>Keeps events…</p></th>
+<th class="head"><p>Parameters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code></p></td>
+<td><p>whose brightest band clears <code class="docutils literal notranslate"><span class="pre">mag_limit</span></code> (with dust) at <code class="docutils literal notranslate"><span class="pre">n_visits</span></code> or more samples of the
+phase grid. Schedule-independent.</p></td>
+<td><p><strong>mag_limit</strong>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">n_phase</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code>, <code class="docutils literal notranslate"><span class="pre">n_visits</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">snr</span></code></p></td>
+<td><p>with at least <code class="docutils literal notranslate"><span class="pre">n_visits</span></code> observations whose measured SNR, in their best band, exceeds
+<code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>. By default also drops events whose only detection is on a field’s first
+visit.</p></td>
+<td><p><strong>snr_threshold</strong>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code>, <code class="docutils literal notranslate"><span class="pre">n_visits</span></code>, <code class="docutils literal notranslate"><span class="pre">exclude_first_visit_detections</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Detection-timing cuts.</strong> These are schedule-aware like <code class="docutils literal notranslate"><span class="pre">snr</span></code>, and share its definition of a
+<em>detection</em>: an epoch after the explosion whose measured SNR exceeds <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>. An event
+with no detection never survives any of them. They answer the questions that depend on <em>when</em> the
+survey saw an event, not merely whether it did.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Cut</p></th>
+<th class="head"><p>Keeps events…</p></th>
+<th class="head"><p>Parameters</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">first_visit_detected</span></code></p></td>
+<td><p><em>except</em> those with exactly one qualifying detection that falls on their field’s very first
+visit. With no earlier template image to difference against, such a detection is not
+recoverable. Events with zero or two-or-more detections are untouched, so on its own this
+cut does not enforce detection. It is the standalone form of <code class="docutils literal notranslate"><span class="pre">snr</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">exclude_first_visit_detections</span></code>.</p></td>
+<td><p><strong>snr_threshold</strong>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">time_to_first_detection</span></code></p></td>
+<td><p>whose delay from explosion to first detection, in days, lies in <code class="docutils literal notranslate"><span class="pre">[min_delay,</span> <span class="pre">max_delay]</span></code>.
+Selects fast-discovered events.</p></td>
+<td><p><strong>snr_threshold</strong>, <code class="docutils literal notranslate"><span class="pre">min_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">max_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">baseline</span></code></p></td>
+<td><p>with <em>both</em> at least one pair of detections closer together than <code class="docutils literal notranslate"><span class="pre">min_baseline</span></code> days
+<em>and</em> a first-to-last detection span longer than <code class="docutils literal notranslate"><span class="pre">max_baseline</span></code> days. For example,
+<code class="docutils literal notranslate"><span class="pre">min_baseline=1,</span> <span class="pre">max_baseline=10</span></code> needs a pair under a day apart and detections spanning
+more than ten days. Note the inverted-looking naming: <code class="docutils literal notranslate"><span class="pre">min_baseline</span></code> is a <em>ceiling</em> on
+the closest gap, <code class="docutils literal notranslate"><span class="pre">max_baseline</span></code> a <em>floor</em> on the total span. Either may be omitted.</p></td>
+<td><p><strong>snr_threshold</strong>, <code class="docutils literal notranslate"><span class="pre">min_baseline</span></code>, <code class="docutils literal notranslate"><span class="pre">max_baseline</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">time_since_last_nondetection</span></code></p></td>
+<td><p>whose last non-detection before the first detection is between <code class="docutils literal notranslate"><span class="pre">min_delay</span></code> and
+<code class="docutils literal notranslate"><span class="pre">max_delay</span></code> days earlier, i.e. how tightly the survey brackets the explosion. Either can
+be before or after the explosion (a pre-explosion observation is a valid non-detection).
+<code class="docutils literal notranslate"><span class="pre">lookback</span></code> limits the search to that many days before the explosion. An event whose first
+observation was already a detection has no such delay and is dropped, unless
+<code class="docutils literal notranslate"><span class="pre">keep_if_no_nondetection=True</span></code>, which keeps it regardless of the bounds.</p></td>
+<td><p><strong>snr_threshold</strong>, <code class="docutils literal notranslate"><span class="pre">min_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">max_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">lookback</span></code>, <code class="docutils literal notranslate"><span class="pre">keep_if_no_nondetection</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">chunk_size</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Detected within 3 days of explosion, and with the explosion bracketed to within 2 days.</span>
+<span class="n">fast</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_time_to_first_detection</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">max_delay</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="n">bracketed</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_time_since_last_nondetection</span><span class="p">(</span><span class="n">fast</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">max_delay</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The detection-timing cuts re-measure every remaining event’s observations, exactly as <code class="docutils literal notranslate"><span class="pre">snr</span></code>
+does. The measurement noise is keyed on each event’s <code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code>, the observation’s start
+time, and the band, so it is deterministic: an epoch is a detection in every cut or in none. Cheap catalog-column and intrinsic cuts should still go first, to keep the number
+of events paying the schedule query as small as possible.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">limiting_magnitude</span></code>/<code class="docutils literal notranslate"><span class="pre">snr</span></code> are the two schedule/detector-aware screens shown above, but not
-the whole story – <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.available_cuts.html#uvex_transients.simulation.core.SurveySimulator.available_cuts" title="uvex_transients.simulation.core.SurveySimulator.available_cuts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SurveySimulator.available_cuts()</span></code></a> also includes cheaper or more
-specialized cuts (redshift, transient type, peak apparent/intrinsic brightness, detection
-timing, sky position, and an arbitrary boolean expression over the catalog’s own columns), each
-called the same way (<code class="docutils literal notranslate"><span class="pre">simulator.run_cut(&quot;&lt;name&gt;&quot;,</span> <span class="pre">catalog,</span> <span class="pre">mission,</span> <span class="pre">**params)</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">simulator.filter_by_&lt;name&gt;(catalog,</span> <span class="pre">mission,</span> <span class="pre">**params)</span></code> directly). See
-<a class="reference internal" href="../cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a>’s <code class="docutils literal notranslate"><span class="pre">cut</span></code> step parameter table for the full list and each one’s
-parameters.</p>
+<p>When driven from a run-config, any cut can also be restricted to a subset of the transient
+types with the step’s <code class="docutils literal notranslate"><span class="pre">transient_types:</span></code> key, which leaves every other type untouched. That
+is handled by the CLI’s step executor rather than by the cuts themselves, so it has no
+equivalent argument on the methods above; in Python, apply the cut to one type’s rows and
+recombine the result with the rest via <code class="docutils literal notranslate"><span class="pre">union</span></code>. See <a class="reference internal" href="../cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a>.</p>
 </div>
+</section>
+<section id="combining-cuts">
+<span id="user-guide-simulation-logical-ops"></span><h3>Combining Cuts<a class="headerlink" href="#combining-cuts" title="Link to this heading">#</a></h3>
+<p>Because every cut preserves <code class="docutils literal notranslate"><span class="pre">event_id</span></code>, independent branches of a cut chain can be recombined
+afterward by set operations in <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.logical_ops.html#module-uvex_transients.simulation.logical_ops" title="uvex_transients.simulation.logical_ops"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.simulation.logical_ops</span></code></a>: <code class="docutils literal notranslate"><span class="pre">union</span></code>
+(deduplicated by <code class="docutils literal notranslate"><span class="pre">event_id</span></code>), <code class="docutils literal notranslate"><span class="pre">intersection</span></code> (<code class="docutils literal notranslate"><span class="pre">catalogs[0]</span></code>’s rows that appear in every
+other input), and <code class="docutils literal notranslate"><span class="pre">difference</span></code> (<code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">-</span> <span class="pre">b</span></code>, exactly two inputs). They are useful for asking which
+events two independent screens agree on, or which only one of them caught. All inputs must share
+<code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code> and come from the same generation run (matching <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.logical_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">difference</span><span class="p">,</span> <span class="n">intersection</span><span class="p">,</span> <span class="n">union</span>
+
+<span class="n">bright</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">mag_limit</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>
+<span class="n">nearby</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_redshift</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">max_redshift</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="n">both</span> <span class="o">=</span> <span class="n">intersection</span><span class="p">([</span><span class="n">bright</span><span class="p">,</span> <span class="n">nearby</span><span class="p">])</span>
+<span class="n">only_bright</span> <span class="o">=</span> <span class="n">difference</span><span class="p">([</span><span class="n">bright</span><span class="p">,</span> <span class="n">nearby</span><span class="p">])</span>
+<span class="n">either</span> <span class="o">=</span> <span class="n">union</span><span class="p">([</span><span class="n">bright</span><span class="p">,</span> <span class="n">nearby</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>These are fixed, closed operations, not a registry like cuts and actions. In a run-config they
+are the <code class="docutils literal notranslate"><span class="pre">logical_op</span></code> step type.</p>
 <hr class="docutils" />
+</section>
 </section>
 <section id="exposure-and-yield">
 <span id="user-guide-simulation-yield"></span><h2>Exposure and Yield<a class="headerlink" href="#exposure-and-yield" title="Link to this heading">#</a></h2>
@@ -896,25 +1133,122 @@ full-sky number. <a class="reference internal" href="../../_as_gen/uvex_transien
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog.rebin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rebin()</span></code></a> let you query or
 re-tile that same tabulated exposure over an arbitrary sub-window or a different time binning
 without re-querying the schedule.</p>
+</section>
+<section id="actions">
+<span id="user-guide-simulation-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Link to this heading">#</a></h2>
+<p>Where a cut maps one <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> to another, an <strong>action</strong> is post-processing that produces
+something else: a table of synthetic photometry or a per-event summary. Actions are registered
+with the <code class="xref py py-func docutils literal notranslate"><span class="pre">action()</span></code> decorator, listed by
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.available_actions.html#uvex_transients.simulation.core.SurveySimulator.available_actions" title="uvex_transients.simulation.core.SurveySimulator.available_actions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">available_actions()</span></code></a>, and callable either as
+<code class="docutils literal notranslate"><span class="pre">run_&lt;name&gt;_action</span></code> methods or by name with
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_action.html#uvex_transients.simulation.core.SurveySimulator.run_action" title="uvex_transients.simulation.core.SurveySimulator.run_action"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_action()</span></code></a> (what the CLI’s <code class="docutils literal notranslate"><span class="pre">action</span></code>
+steps do). There are two:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 28.0%" />
+<col style="width: 54.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Action</p></th>
+<th class="head"><p>Inputs</p></th>
+<th class="head"><p>Produces</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">photometry</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>; optional <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">n_sigma</span></code></p></td>
+<td><p>A <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> of synthetic photometry, one row per
+(event, observation, band): the same per-observation measurements
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> gives, for every event
+in the catalog at once.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">event_summary</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>, <strong>snr_threshold</strong>; optional <code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code>,
+<code class="docutils literal notranslate"><span class="pre">processing_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">lookback</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">footprints</span></code>, <code class="docutils literal notranslate"><span class="pre">color_bands</span></code></p></td>
+<td><p>One plain <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> with a row per event of <code class="docutils literal notranslate"><span class="pre">catalog</span></code>, carrying
+everything needed to study detection timing and turn a selection into a yield.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simulator</span><span class="o">.</span><span class="n">available_actions</span><span class="p">()</span>
+<span class="c1"># ('event_summary', 'photometry')</span>
+
+<span class="n">photometry</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_photometry_action</span><span class="p">(</span><span class="n">detected</span><span class="p">,</span> <span class="n">mission</span><span class="p">)</span>
+<span class="c1"># equivalently: simulator.run_action("photometry", mission, catalog=detected)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">photometry</span></code> is the expensive step every cut above was designed to defer, so run it on the
+<em>output</em> of the cuts, never on a raw catalog. It is the same computation as
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry.html#uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry" title="uvex_transients.simulation.event_catalog.EventCatalog.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EventCatalog.simulate_photometry()</span></code></a>,
+with the simulator’s own transients and schedule supplied for you.</p>
 <section id="summarizing-events-and-estimating-yields">
 <h3>Summarizing events and estimating yields<a class="headerlink" href="#summarizing-events-and-estimating-yields" title="Link to this heading">#</a></h3>
 <p>Every <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> records <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code>: how
 many events of each transient type were generated. No cut, set operation, or other row selection
-changes it, which makes it the denominator of every later detection fraction. The photometry action
-and the cuts are unchanged; the
-<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_event_summary_action.html#uvex_transients.simulation.core.SurveySimulator.run_event_summary_action" title="uvex_transients.simulation.core.SurveySimulator.run_event_summary_action"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_event_summary_action()</span></code></a> then reduces a
-(typically SNR-cut) catalog to one plain <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> with a row per event: its
-identity and position, footprint flags, first and last observation and detection times, the last
-non-detection before the first detection, and its peak photometry:</p>
+changes it, which makes it the denominator of every later detection fraction.
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_event_summary_action.html#uvex_transients.simulation.core.SurveySimulator.run_event_summary_action" title="uvex_transients.simulation.core.SurveySimulator.run_event_summary_action"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_event_summary_action()</span></code></a> reduces a
+(typically SNR-cut) catalog, together with its exposure and photometry, to one row per event:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_event_summary_action</span><span class="p">(</span>
     <span class="n">catalog</span><span class="o">=</span><span class="n">detected</span><span class="p">,</span> <span class="n">exposure</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span> <span class="n">photometry</span><span class="o">=</span><span class="n">photometry</span><span class="p">,</span> <span class="n">mission</span><span class="o">=</span><span class="n">mission</span><span class="p">,</span> <span class="n">snr_threshold</span><span class="o">=</span><span class="mf">5.0</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The table’s <code class="docutils literal notranslate"><span class="pre">meta</span></code> carries the generation count, each type’s intrinsic expected event count
-(<span class="math notranslate nohighlight">\(\mu_0\)</span>, from the exposure catalog), and its rate-uncertainty factors, so a slice of it
-still knows everything needed to turn a selection into a yield. Cut it however you like, then pass
-the boolean mask of the rows you want to <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.rates.estimate_yield.html#uvex_transients.simulation.rates.estimate_yield" title="uvex_transients.simulation.rates.estimate_yield"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_yield()</span></code></a>:</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id3">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">event_summary</span></code> columns</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column(s)</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">event_id</span></code>, <code class="docutils literal notranslate"><span class="pre">transient_type</span></code>, <code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code>, <code class="docutils literal notranslate"><span class="pre">time_bin</span></code>, <code class="docutils literal notranslate"><span class="pre">redshift</span></code>,
+<code class="docutils literal notranslate"><span class="pre">luminosity_distance</span></code>, <code class="docutils literal notranslate"><span class="pre">ebv</span></code>, <code class="docutils literal notranslate"><span class="pre">coord</span></code>, <code class="docutils literal notranslate"><span class="pre">healpix_id</span></code>, <code class="docutils literal notranslate"><span class="pre">t_explosion</span></code></p></td>
+<td><p>The catalog’s own columns, carried through.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">in_&lt;footprint&gt;</span></code></p></td>
+<td><p>Whether the event falls inside each named footprint (<code class="docutils literal notranslate"><span class="pre">footprints</span></code>; by default the UVEX
+LMLZ wide and deep surveys and the Magellanic Clouds survey).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">weight</span></code></p></td>
+<td><p>The expected number of real events this row stands for, <span class="math notranslate nohighlight">\(\mu_0 / n_{\rm generated}\)</span>
+for its type. Summing it over any selection gives that selection’s expected yield.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">n_obs</span></code>, <code class="docutils literal notranslate"><span class="pre">t_first_obs</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_obs</span></code></p></td>
+<td><p>How often, and when first and last, the schedule observed the event.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n_det</span></code>, <code class="docutils literal notranslate"><span class="pre">t_first_det</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_det</span></code></p></td>
+<td><p>The same for detections (post-explosion, measured SNR above <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">field_id</span></code>, <code class="docutils literal notranslate"><span class="pre">t_alert</span></code></p></td>
+<td><p>The field of the first detection, and the time of the first downlink after it plus
+<code class="docutils literal notranslate"><span class="pre">processing_delay</span></code> (hours if a bare number).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_last_nondet</span></code>, <code class="docutils literal notranslate"><span class="pre">last_nondet_snr</span></code></p></td>
+<td><p>The last non-detection before the first detection, and its SNR.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">t_last_constraining_nondet</span></code></p></td>
+<td><p>The last non-detection whose rise to the first detection is significant to at least
+<code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code> (default 3), i.e. one that actually constrains the explosion time.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">peak_snr</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_mag</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_color</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_time</span></code></p></td>
+<td><p>Peak behavior from <code class="docutils literal notranslate"><span class="pre">photometry</span></code>; <code class="docutils literal notranslate"><span class="pre">peak_color</span></code> is <code class="docutils literal notranslate"><span class="pre">color_bands[0]</span> <span class="pre">-</span> <span class="pre">color_bands[1]</span></code>
+(default FUV - NUV). Masked for an event with no photometry rows.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The first-visit exclusion of <code class="docutils literal notranslate"><span class="pre">snr</span></code> is not re-applied here, so pass a catalog that has already been
+through it if that matters. The table’s <code class="docutils literal notranslate"><span class="pre">meta</span></code> carries the generation count, each type’s intrinsic
+expected event count (<span class="math notranslate nohighlight">\(\mu_0\)</span>, from the exposure catalog), and its rate-uncertainty factors, so
+a slice of it still knows everything needed to turn a selection into a yield. Cut it however you like,
+then pass the boolean mask of the rows you want to
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.rates.estimate_yield.html#uvex_transients.simulation.rates.estimate_yield" title="uvex_transients.simulation.rates.estimate_yield"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_yield()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_yield</span>
 
 <span class="n">estimate_yield</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>  <span class="c1"># per type, for the cuts the summary was built from</span>
@@ -973,7 +1307,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> is the expensive step every
 earlier screening pass was designed to defer: real, per-observation, per-band synthetic photometry
 against every observation in <code class="docutils literal notranslate"><span class="pre">observations</span></code>, batched into one
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev2+ged11c0eb5)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v3.0.1.dev6+gc45958402)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
 are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">event_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 
@@ -1002,22 +1336,22 @@ are:</p>
 </pre></div>
 </div>
 <p>(<a class="reference download internal" download="" href="../../_downloads/a8d7ca9a682638f84e7d7c885194a7b8/overview-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
-<figure class="align-default" id="id3">
+<figure class="align-default" id="id4">
 <img alt="../../_images/overview-3_00.png" class="plot-directive" src="../../_images/overview-3_00.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/30eae432d928ef8d373f6fe1438a3f21/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0990ba76e6f942efafcf6a1323447c9b/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b52214cade309f2c9c6dce953169a2be/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-<figure class="align-default" id="id4">
-<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
-<figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/897326a1434b79ac6ceb9a36969f7d63/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c57be1163b8884254c52784c1e96a8aa/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bfac5e7bb0163ca2c08ba0583c3a7778/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/30eae432d928ef8d373f6fe1438a3f21/overview-3_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0990ba76e6f942efafcf6a1323447c9b/overview-3_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/b52214cade309f2c9c6dce953169a2be/overview-3_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id5">
+<img alt="../../_images/overview-3_01.png" class="plot-directive" src="../../_images/overview-3_01.png" />
+<figcaption>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/897326a1434b79ac6ceb9a36969f7d63/overview-3_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c57be1163b8884254c52784c1e96a8aa/overview-3_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bfac5e7bb0163ca2c08ba0583c3a7778/overview-3_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<figure class="align-default" id="id6">
 <img alt="../../_images/overview-3_02.png" class="plot-directive" src="../../_images/overview-3_02.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/c9a9da17499932f2649c17ea434677e0/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/04262613846f5f56177aede02e52b76f/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/08492c9b14e685e17e9fa477f43a96ce/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="../../_downloads/c9a9da17499932f2649c17ea434677e0/overview-3_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/04262613846f5f56177aede02e52b76f/overview-3_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/08492c9b14e685e17e9fa477f43a96ce/overview-3_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>This example schedule only ever visits a given field once, so most of its events – like this one
@@ -1092,8 +1426,14 @@ method-by-method detail.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-event-catalog">The Event Catalog</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#filtering-the-event-catalog">Filtering the Event Catalog</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-yield">Exposure and Yield</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cuts">Cuts</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-standard-funnel">The Standard Funnel</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cut-reference">Cut Reference</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-cuts">Combining Cuts</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-yield">Exposure and Yield</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#actions">Actions</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summarizing-events-and-estimating-yields">Summarizing events and estimating yields</a></li>
 </ul>
 </li>

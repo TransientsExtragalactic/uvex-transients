@@ -70,17 +70,17 @@ file loads with its own ``from_disk``:
 
 
 
+
+
 .. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
+ .. code-block:: none
 
-    Traceback (most recent call last):
-      File "/home/runner/work/uvex-transients/uvex-transients/docs/source/report_examples/plot_release_data.py", line 29, in <module>
-        paths = get_results(["events", "exposure"])
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      File "/home/runner/work/uvex-transients/uvex-transients/uvex_transients/utils/results.py", line 217, in get_results
-        raise LookupError(f"Release {tag} has no asset(s) {missing}. Available: {sorted(available)}.")
-    LookupError: Release v0.2.0alpha has no asset(s) ['exposure.ecsv', 'final_catalog.ecsv']. Available: [].
+    Downloading final_catalog.ecsv:   0%|          | 0.00/4.42M [00:00<?, ?B/s]    Downloading final_catalog.ecsv: 100%|██████████| 4.42M/4.42M [00:00<00:00, 74.5MB/s]
+    Downloading exposure.ecsv:   0%|          | 0.00/315k [00:00<?, ?B/s]    Downloading exposure.ecsv: 100%|██████████| 315k/315k [00:00<00:00, 18.2MB/s]
+    Downloading event_summary.ecsv:   0%|          | 0.00/10.4M [00:00<?, ?B/s]    Downloading event_summary.ecsv:  48%|████▊     | 5.00M/10.4M [00:00<00:00, 51.1MB/s]    Downloading event_summary.ecsv: 100%|██████████| 10.4M/10.4M [00:00<00:00, 44.4MB/s]    Downloading event_summary.ecsv: 100%|██████████| 10.4M/10.4M [00:00<00:00, 45.2MB/s]
+    22174 events survive the cuts, out of 1348940 generated.
+    Intrinsic UVEX events by type: {np.str_('ia_sne'): '8,085,840', np.str_('ib_sne'): '492,014', np.str_('ic_sne'): '297,143', np.str_('icbl_sne'): '379,731', np.str_('iib_sne'): '668,211', np.str_('iip_excess_sne'): '7,955,043', np.str_('iip_sne'): '8,819,566', np.str_('kilonova'): '105', np.str_('lfbot'): '3,640', np.str_('slsne'): '159,311', np.str_('tde'): '104,601'}
 
 
 
@@ -103,6 +103,19 @@ an expected number of real events.
     if summary is not None:
         print(summary.colnames)
         print(dict(summary.meta["n_pre_cut"]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    ['event_id', 'transient_type', 'parameter_seed', 'time_bin', 'redshift', 'luminosity_distance', 'ebv', 'coord', 'healpix_id', 't_explosion', 'in_uvex_lmlz_wide', 'in_uvex_lmlz_deep', 'in_uvex_mc', 'weight', 'n_obs', 't_first_obs', 't_last_obs', 'n_det', 't_first_det', 't_last_det', 'field_id', 't_alert', 't_last_nondet', 'last_nondet_snr', 't_last_constraining_nondet', 'peak_snr', 'peak_mag', 'peak_color', 'peak_time']
+    {'ia_sne': 404296, 'ib_sne': 24688, 'ic_sne': 14974, 'icbl_sne': 19072, 'iib_sne': 33519, 'iip_excess_sne': 397695, 'iip_sne': 441001, 'kilonova': 75, 'lfbot': 259, 'slsne': 8077, 'tde': 5284}
+
+
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 62-67
@@ -145,9 +158,38 @@ boolean ``mask`` to restrict it, for example to events detected in at least two 
         plt.show()
 
 
+
+.. image-sg:: /report/auto_examples/images/sphx_glr_plot_release_data_001.png
+   :alt: plot release data
+   :srcset: /report/auto_examples/images/sphx_glr_plot_release_data_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    transient_type n_selected       fraction        expected_events  
+    -------------- ---------- -------------------- ------------------
+            ia_sne       7367  0.01822179789065437  147338.5346035914
+            ib_sne        506 0.020495787427090083 10084.213165573616
+            ic_sne        421  0.02811540002671297  8354.301380162946
+          icbl_sne         71 0.003722734899328859 1413.6367053619879
+           iib_sne         93  0.00277454578000537 1853.9810790549723
+    iip_excess_sne       9389 0.023608544236160878 187806.99347785194
+           iip_sne       2960 0.006712002920628298 59196.955179718556
+          kilonova          0                  0.0                0.0
+             lfbot         20  0.07722007722007722 281.09599523737756
+             slsne        702  0.08691345796706698 13846.259252840484
+               tde        645   0.1220666161998486 12768.312199110387
+
+
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.886 seconds)
+   **Total running time of the script:** (0 minutes 2.959 seconds)
 
 
 .. _sphx_glr_download_report_auto_examples_plot_release_data.py:

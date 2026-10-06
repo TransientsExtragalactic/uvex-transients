@@ -814,6 +814,10 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">_transient_type_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_transient_type</span>
 
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">"SurveySimulator created with transient type(s) </span><span class="si">%s</span><span class="s2"> (seed=</span><span class="si">%s</span><span class="s2">)."</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">),</span> <span class="n">simulation_seed</span>
+        <span class="p">)</span>
+
     <span class="c1"># ---------------------------------------------- #</span>
     <span class="c1"># Properties and Accessors                       #</span>
     <span class="c1"># ---------------------------------------------- #</span>
@@ -965,6 +969,14 @@
         <span class="k">elif</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling the number of events by a factor of </span><span class="si">{</span><span class="n">downsample</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Generating events for </span><span class="si">%d</span><span class="s2"> type(s) </span><span class="si">%s</span><span class="s2"> over </span><span class="si">%d</span><span class="s2"> time bin(s) (nside=</span><span class="si">%d</span><span class="s2">, order=</span><span class="si">%r</span><span class="s2">)."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">),</span>
+            <span class="n">sorted_names</span><span class="p">,</span>
+            <span class="n">n_bins</span><span class="p">,</span>
+            <span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">with</span> <span class="p">(</span>
             <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Generating events"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
@@ -1050,6 +1062,7 @@
 
         <span class="c1"># One vectorized Milky Way dust-map query over every sampled position at once, rather</span>
         <span class="c1"># than per-event later (see `EventCatalog.ebv`).</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Querying the dust map for </span><span class="si">%d</span><span class="s2"> sampled positions."</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">))</span>
         <span class="n">combined</span><span class="p">[</span><span class="s2">"ebv"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dust_map</span><span class="p">()</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">combined</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
@@ -1057,6 +1070,11 @@
         <span class="p">)</span>
 
         <span class="n">generated_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">combined</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Generated </span><span class="si">%d</span><span class="s2"> events: </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">),</span>
+            <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">name</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">),</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
             <span class="n">table</span><span class="o">=</span><span class="n">combined</span><span class="p">,</span>
             <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
@@ -1148,6 +1166,13 @@
         <span class="n">solid_angle</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">duration</span> <span class="o">=</span> <span class="p">[]</span>
 
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Tabulating effective exposure for </span><span class="si">%d</span><span class="s2"> type(s) over </span><span class="si">%d</span><span class="s2"> time bin(s) (nside=</span><span class="si">%d</span><span class="s2">, order=</span><span class="si">%r</span><span class="s2">)."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">),</span>
+            <span class="n">n_bins</span><span class="p">,</span>
+            <span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">with</span> <span class="p">(</span>
             <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Tabulating effective exposure"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
             <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
@@ -1219,7 +1244,10 @@
         <span class="p">}</span>
         <span class="n">total_chunks</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">chunk_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">type_idx</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_chunks</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing epochs"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"chunk"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">progress</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total_chunks</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Computing epochs"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"chunk"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">progress</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+            <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+        <span class="p">):</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">type_idx</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">event_id_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])[</span><span class="n">idx</span><span class="p">]</span>
@@ -1817,7 +1845,10 @@
             <span class="n">method_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CUT_REGISTRY</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown cut </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running cut </span><span class="si">%r</span><span class="s2"> on </span><span class="si">%d</span><span class="s2"> events."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Cut </span><span class="si">%r</span><span class="s2"> kept </span><span class="si">%d</span><span class="s2"> of </span><span class="si">%d</span><span class="s2"> events."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="SurveySimulator.filter_by_limiting_magnitude">
@@ -3276,6 +3307,7 @@
             <span class="n">method_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ACTION_REGISTRY</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown action </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">available_actions</span><span class="p">()</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running action </span><span class="si">%r</span><span class="s2">."</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)(</span><span class="n">mission</span><span class="o">=</span><span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs_and_params</span><span class="p">)</span></div>
 
 

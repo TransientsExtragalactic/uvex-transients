@@ -475,6 +475,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.contrib.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_redirect_tqdm</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
@@ -568,6 +571,7 @@
 <span class="sd">    LookupError</span>
 <span class="sd">        If there are no published releases, or none carries `tag`.</span>
 <span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Querying </span><span class="si">%s</span><span class="s2"> for the release list."</span><span class="p">,</span> <span class="n">_API_URL</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">_urlopen</span><span class="p">(</span><span class="n">_request</span><span class="p">(</span><span class="n">_API_URL</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
             <span class="n">releases</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -602,9 +606,21 @@
 <span class="sd">    """</span>
     <span class="n">partial</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">".part"</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">_urlopen</span><span class="p">(</span><span class="n">_request</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">_urlopen</span><span class="p">(</span><span class="n">_request</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">,</span>
+            <span class="nb">open</span><span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span>
+            <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+            <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"Content-Length"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s2">"B"</span><span class="p">,</span>
+                <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+        <span class="p">):</span>
             <span class="k">while</span> <span class="n">chunk</span> <span class="o">:=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">_CHUNK_SIZE</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
         <span class="n">partial</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">partial</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -701,6 +717,7 @@
                 <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Downloading </span><span class="si">%s</span><span class="s2"> from release </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
         <span class="n">_download</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s2">"browser_download_url"</span><span class="p">],</span> <span class="n">dest</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Downloaded </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2"> bytes)."</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dest</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="p">)</span>
         <span class="n">paths</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
 
     <span class="k">return</span> <span class="n">paths</span></div>

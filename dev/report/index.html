@@ -53,6 +53,7 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'report/index';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
@@ -486,10 +487,84 @@
 <h1>Transient Yield Report<a class="headerlink" href="#transient-yield-report" title="Link to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>No published release report is available yet (or it could not be fetched during this
-documentation build, see the build log for details). Once a <code class="docutils literal notranslate"><span class="pre">vX.Y.Z</span></code> release with
-<code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> attached is published, this page will be generated automatically on
-the next documentation build.</p>
+<p>This page is generated automatically from the latest published release,
+<a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.2.0alpha">v0.2.0alpha</a>, of UVEX Transients, specifically its <code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> data
+product (see <a class="reference internal" href="../user_guide.html"><span class="doc">User Guide</span></a>). It is regenerated on every documentation build, so it may
+lag between releases.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Every data product from this run (the event catalog, photometry, exposure, and per-event
+summary) is attached to the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.2.0alpha">v0.2.0alpha release page</a> on GitHub, and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code> downloads them into a local cache. Earlier
+releases are listed on the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases">releases page</a>.</p>
+</div>
+</section>
+<section id="summary">
+<h1>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h1>
+<p>For each transient type, the fraction of simulated events that UVEX detects and the expected
+number of real events that corresponds to. The first uncertainty on each value is the
+90% Clopper-Pearson interval from the finite Monte Carlo sample, and the second, on the
+expected detections only, is the uncertainty on the event rate.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 26.0%" />
+<col style="width: 37.0%" />
+<col style="width: 37.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Transient Type</p></th>
+<th class="head"><p>Detection Probability</p></th>
+<th class="head"><p>Expected Detections</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Type Ia SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0182^{+0.000350}_{-0.000345}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(147,339^{+2,828}_{-2,787}\,{}^{+11,334}_{-11,334}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Type Ib SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0205^{+0.00155}_{-0.00146}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(10,084^{+761}_{-719}\,{}^{+4,538}_{-4,779}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Type Ic SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0281^{+0.00232}_{-0.00219}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(8,354^{+691}_{-650}\,{}^{+4,259}_{-4,437}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Type Ic-BL SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.00372^{+0.000811}_{-0.000695}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(1,414^{+308}_{-264}\,{}^{+1,195}_{-1,414}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Type IIb SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.00277^{+0.000521}_{-0.000455}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(1,854^{+348}_{-304}\,{}^{+843}_{-887}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Type IIP SNe (Excess)</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0236^{+0.000400}_{-0.000395}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(187,807^{+3,181}_{-3,140}\,{}^{+55,551}_{-62,923}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Type IIP SNe</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.00671^{+0.000206}_{-0.000201}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(59,197^{+1,815}_{-1,773}\,{}^{+17,510}_{-19,833}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Kilonova</p></td>
+<td><p><span class="math notranslate nohighlight">\(0^{+0.0392}_{-0}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(0^{+4.09}_{-0}\,{}^{+0}_{-0}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>LFBOT</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0772^{+0.0330}_{-0.0255}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(281^{+120}_{-92.7}\,{}^{+70.3}_{-256}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>SLSNe (Magnetar)</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0869^{+0.00533}_{-0.00511}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(13,846^{+849}_{-814}\,{}^{+5,180}_{-7,503}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Tidal Disruption Event</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.122^{+0.00766}_{-0.00735}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(12,768^{+801}_{-768}\,{}^{+2,471}_{-4,119}\)</span></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </section>
 <section id="examples">
@@ -556,6 +631,7 @@ so they follow the latest release.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Transient Yield Report</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
 </ul>
 
