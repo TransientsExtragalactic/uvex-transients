@@ -111,7 +111,7 @@ empirical shape fit directly to observed light curves.
       radioactive-decay peak of a full Type IIb light curve.
 
       +++
-      :math:`z \le 1` · 20 day window
+      :math:`z \le 1` · 5 day window
 
    .. grid-item-card:: Superluminous Supernovae
       :link: slsne

@@ -58,6 +58,9 @@ _MoragComponents = namedtuple(
 # Geometric prefactor (4*pi)**2 / sqrt(3) in Eq. A9 of Morag+24.
 _LOG_A9_PREFACTOR = np.log((4.0 * np.pi) ** 2 / np.sqrt(3.0))
 
+_INVALID_FILLS = {"zero": -np.inf, "nan": np.nan}
+"""dict: Natural-log value written to a luminosity outside the regime of validity, per fill setting."""
+
 
 # ================================================ #
 # Utility / Component Functions                    #
@@ -195,7 +198,7 @@ def _log_morag_temperature_log_K(
 def _log_morag_bolometric(
     components: _MoragComponents,
     log_time: FloatArray,
-    mask_invalid: bool = False,
+    log_fill: float | None = None,
 ) -> FloatArray:
     r"""
     Bolometric luminosity (natural log, cgs), Eq. A1 of Morag+24, from precomputed :attr:`components`.
@@ -210,9 +213,10 @@ def _log_morag_bolometric(
         Precomputed scalings/break points, from :func:`_log_morag_components`.
     log_time : ~numpy.ndarray or float
         The logarithm of the time, in seconds, since the epoch of explosion.
-    mask_invalid : bool, optional
-        If ``True``, mask out invalid parameter ranges (see
-        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.
+    log_fill : float, optional
+        If given, the natural-log value written wherever the model is outside its regime of validity
+        (see :attr:`_MoragComponents.valid`): ``-inf`` for zero luminosity, ``nan`` for undefined.
+        By default the formula is evaluated everywhere, including where it is known to be wrong.
 
     Returns
     -------
@@ -226,8 +230,8 @@ def _log_morag_bolometric(
         np.log(0.9) - np.exp(log_sqrt_arg) - 0.17 * log_t_rel,
     )
 
-    if mask_invalid:
-        log_L = np.where(components.valid, log_L, np.nan)
+    if log_fill is not None:
+        log_L = np.where(components.valid, log_L, log_fill)
 
     return log_L
 
@@ -292,7 +296,7 @@ def _log_morag_Lnu(
     log_opacity: CGSParameterValue,
     log_envelope_mass: CGSParameterValue,
     log_core_mass: CGSParameterValue,
-    mask_invalid: bool = False,
+    log_fill: float | None = None,
 ):
     r"""
     Specific luminosity :math:`L_\nu` from Morag+24\ :footcite:p:`2024MNRAS.528.7137M` for shock cooling IIb's.
@@ -320,9 +324,10 @@ def _log_morag_Lnu(
         The logarithm of the envelope mass in :math:`{\rm g}`.
     log_core_mass : ~numpy.ndarray or float
         The logarithm of the core mass in :math:`{\rm g}`.
-    mask_invalid : bool
-        If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise
-        they will be retained. By default, this is ``False``.
+    log_fill : float, optional
+        If given, the natural-log value written wherever the model is outside its regime of validity:
+        ``-inf`` for zero luminosity, ``nan`` for undefined. By default the formula is evaluated
+        everywhere, including where it is known to be wrong.
 
     Returns
     -------
@@ -393,8 +398,8 @@ def _log_morag_Lnu(
 
     log_L_nu = np.where(log_hnu < np.log(3.5) + log_T_eV, log_low, log_high)
 
-    if mask_invalid:
-        log_L_nu = np.where(components.valid, log_L_nu, np.nan)
+    if log_fill is not None:
+        log_L_nu = np.where(components.valid, log_L_nu, log_fill)
 
     return log_L_nu
 
@@ -431,31 +436,70 @@ class _MoragShockCoolingBase(SpectralModel):
          - Rosseland mean opacity. Fixed at the electron-scattering value.
        * - ``envelope_mass``
          - :math:`M_E`
-         - Envelope mass.
+         - Hydrogen-rich envelope mass.
        * - ``core_mass``
          - :math:`M_C`
          - Core mass.
+
+    .. rubric:: Regime of validity
+
+    The relations hold only between :math:`t_\mathrm{min} = \max(3R/c, t_\mathrm{bo})` and
+    :math:`t_\mathrm{max} = \min(t_{0.7}, t_\mathrm{tr}/2)` (Eqs. 17-18 of Morag+24). For
+    Type IIb-like parameters that is only about a day or two. Outside it the luminosity is not
+    just inaccurate: it diverges toward early times, reaching :math:`10^{45}\,\mathrm{erg\,s^{-1}}`
+    in the unmasked tail of the priors. What is written there is set by :attr:`_INVALID_FILL`.
 
     References
     ----------
     .. footbibliography::
     """
 
-    _MASK_INVALID: bool = False
+    _INVALID_FILL: ClassVar[str | None] = "zero"
     """
-    bool: If ``True``, invalid points are masked out of the analysis.
+    str or None: What to write where the model is outside its regime of validity.
+
+    ``"zero"`` gives zero luminosity (``-inf`` in log space), so an epoch the model cannot describe reads as
+    a non-detection and cannot poison a minimum or maximum taken over epochs. ``"nan"`` marks it undefined, for
+    plots and diagnostics. ``None`` evaluates the formulas everywhere, including where they are known to be
+    wrong (the shock-cooling luminosity grows without bound toward early times, so this overstates the early
+    emission by orders of magnitude). The color temperature is always ``nan`` outside the regime of validity
+    unless this is ``None``.
     """
+
+    @classmethod
+    def _log_fill(cls) -> float | None:
+        """
+        Resolve :attr:`_INVALID_FILL` to the natural-log value written to an invalid luminosity.
+
+        Returns
+        -------
+        float or None
+            ``-inf``, ``nan``, or ``None`` when masking is off.
+
+        Raises
+        ------
+        ValueError
+            If :attr:`_INVALID_FILL` is not ``"zero"``, ``"nan"`` or ``None``.
+        """
+        if cls._INVALID_FILL is None:
+            return None
+        try:
+            return _INVALID_FILLS[cls._INVALID_FILL]
+        except KeyError:
+            raise ValueError(
+                f"_INVALID_FILL must be one of {sorted(_INVALID_FILLS)} or None, got {cls._INVALID_FILL!r}."
+            ) from None
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "v_star": Parameter(
-            prior=LogNormalPrior(mean=0.0, sigma=0.5),
-            scale=10**8.5 * u.cm / u.s,
+            prior=LogNormalPrior(mean=0.0, sigma=0.35),
+            scale=2.0 * 10**8.5 * u.cm / u.s,
             description="Scale velocity of the shock near the stellar surface.",
             latex=r"v_*",
         ),
         "radius": Parameter(
-            prior=LogNormalPrior(mean=0.0, sigma=0.5),
-            scale=1e13 * u.cm,
+            prior=LogNormalPrior(mean=0.0, sigma=0.85),
+            scale=6e12 * u.cm,
             description="Progenitor stellar radius.",
             latex=r"R",
         ),
@@ -466,14 +510,14 @@ class _MoragShockCoolingBase(SpectralModel):
             latex=r"\kappa",
         ),
         "envelope_mass": Parameter(
-            prior=LogNormalPrior(mean=0.0, sigma=0.5),
-            scale=1.0 * u.Msun,
-            description="Envelope mass.",
+            prior=LogNormalPrior(mean=0.0, sigma=1.0),
+            scale=0.05 * u.Msun,
+            description="Hydrogen-rich envelope mass.",
             latex=r"M_E",
         ),
         "core_mass": Parameter(
-            prior=LogNormalPrior(mean=0.0, sigma=0.5),
-            scale=1.0 * u.Msun,
+            prior=LogNormalPrior(mean=0.0, sigma=0.35),
+            scale=2.8 * u.Msun,
             description="Core mass.",
             latex=r"M_C",
         ),
@@ -541,7 +585,8 @@ class _MoragShockCoolingBase(SpectralModel):
         cgs_parameters: dict[str, CGSParameterValue] = {name: to_cgs_value(value) for name, value in parameters.items()}
         log_time = np.log(t.cgs.value)
         components = cls._components(t.cgs.value, **cgs_parameters)
-        return np.exp(_log_morag_temperature_log_K(components, log_time, mask_invalid=cls._MASK_INVALID)) * u.K
+        log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=cls._log_fill() is not None)
+        return np.exp(log_T) * u.K
 
 
 # ======================================== #
@@ -620,7 +665,7 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
             log_opacity=np.log(opacity),
             log_envelope_mass=np.log(envelope_mass),
             log_core_mass=np.log(core_mass),
-            mask_invalid=cls._MASK_INVALID,
+            log_fill=cls._log_fill(),
         )
 
     @classmethod
@@ -681,7 +726,10 @@ class MoragShockCoolingSED(_MoragShockCoolingBase):
         with np.errstate(divide="ignore"):
             log_L = np.log(integral)
 
+        # With a zero fill, an invalid epoch integrates to exactly zero (log_L == -inf). Otherwise
         # nan wherever every frequency sample was masked invalid (integral == 0).
+        if cls._INVALID_FILL == "zero":
+            return log_L
         return np.where(np.any(np.isfinite(log_L_nu), axis=0), log_L, np.nan)
 
 
@@ -724,7 +772,7 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
         """
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
-        return _log_morag_bolometric(components, log_time, mask_invalid=cls._MASK_INVALID)
+        return _log_morag_bolometric(components, log_time, log_fill=cls._log_fill())
 
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
@@ -747,7 +795,9 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
         """
         log_time = np.log(np.asarray(t, dtype=np.float64))
         components = cls._components(t, **parameters)
-        log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=cls._MASK_INVALID)
+        # The shape is only masked for a ``nan`` fill. For a zero fill it stays finite, because the
+        # bolometric luminosity it is added to in `_eval` is already ``-inf``, and ``-inf + nan`` is ``nan``.
+        log_T = _log_morag_temperature_log_K(components, log_time, mask_invalid=cls._INVALID_FILL == "nan")
         return planck_shape_log_cgs(nu, np.exp(log_T))
 
     @classmethod

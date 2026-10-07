@@ -43,16 +43,16 @@ set_plot_style()
 # and the SED parameters from the SED's priors. Sky positions are drawn isotropically, and each event's
 # Milky Way reddening is looked up from the dust map at its position.
 #
-# The class's default duration only covers the first ~20 days, so we widen it to 30 days to match the
-# window we want to observe. We also cut the redshift limit down from its survey-scale default of
-# 1: shock-cooling peaks are only ~-17 to -18 mag, so at the rate-weighted typical z ~ 0.5-1 nearly every
+# The class's default duration is 5 days, which covers the regime of validity of the Morag+24 relations
+# for all but ~0.01% of draws from the priors (the median window is only ~1.5 days; outside it the SEDs
+# are zero, so the curves below simply end). We also cut the redshift limit down from its survey-scale
+# default of 1: shock-cooling peaks are only ~-17 to -18 mag, so at the rate-weighted typical z ~ 0.5-1 nearly every
 # event would sit below the detection limit of either instrument and make for an empty plot.
 
 N_EVENTS = 10
-DURATION = 30 * u.day
 
 transient = ShockCoolingIIb()
-transient.duration_limit = DURATION
+DURATION = transient.duration_limit
 transient.redshift_limit = 0.25
 sed_full = transient.sed
 sed_bb = MoragShockCoolingBlackbodySED()
@@ -84,25 +84,26 @@ events = [
 # Choosing the cadences
 # -------------------------
 #
-# We use the same cadences as :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py`:
-# Rubin's redder bands (``r``/``i``/``z``/``y``) every 5 days and its bluer bands (``u``/``g``) every
-# 10 days, at 30 s exposures, with Rubin's systematic calibration floor added in quadrature; and
-# UVEX's ``FUV``/``NUV`` every 20 days at 900 s. Each visit sequence starts at 0.1 days rather than
-# exactly 0, since the shock-cooling model is undefined at the moment of explosion itself.
+# The shock-cooling flash lasts only a day or two, so these are far tighter than the multi-day cadences
+# of :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py`: Rubin's redder bands
+# (``r``/``i``/``z``/``y``) every 0.25 days and its bluer bands (``u``/``g``) every 0.5 days, at 30 s
+# exposures, with Rubin's systematic calibration floor added in quadrature; and UVEX's ``FUV``/``NUV`` every
+# 0.5 days at 900 s. Each visit sequence starts at 0.05 days rather than exactly 0, since the
+# shock-cooling model is undefined at the moment of explosion itself.
 
 RUBIN_CADENCES = {
-    "u": 10 * u.day,
-    "g": 10 * u.day,
-    "r": 5 * u.day,
-    "i": 5 * u.day,
-    "z": 5 * u.day,
-    "y": 5 * u.day,
+    "u": 0.5 * u.day,
+    "g": 0.5 * u.day,
+    "r": 0.25 * u.day,
+    "i": 0.25 * u.day,
+    "z": 0.25 * u.day,
+    "y": 0.25 * u.day,
 }
 RUBIN_EXPTIME = 30 * u.s
 RUBIN_SIGMA_SYS = {"u": 0.0075, "g": 0.005, "r": 0.005, "i": 0.005, "z": 0.0075, "y": 0.0075}
-UVEX_CADENCE = 20 * u.day
+UVEX_CADENCE = 0.5 * u.day
 UVEX_EXPTIME = 900 * u.s
-T_START = 0.1 * u.day
+T_START = 0.05 * u.day
 
 rubin_band_groups: dict[u.Quantity, list[str]] = {}
 for band, cadence in RUBIN_CADENCES.items():

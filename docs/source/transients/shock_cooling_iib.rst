@@ -44,13 +44,13 @@ Quick Facts
      - --
      - Generous relative to the brief, luminous shock-cooling phase this SED targets.
    * - Duration
-     - 20 days
+     - 5 days
      - --
-     - Deliberately short: sampling 20,000 draws from the priors below, Morag+24's own stated
-       validity window (its Eqs. 17-18) extends past 10 days for only ~2% of realizations, and
-       essentially never reaches the ~15-25 day radioactive-decay peak that a full
-       Type IIb light curve would show. Parameter/time combinations outside that window evaluate
-       to ``nan`` rather than extrapolating.
+     - Deliberately short: sampling 200,000 draws from the priors below, Morag+24's regime of validity
+       (its Eqs. 17-18) lasts a median of only ~1.5 days, and 5 days covers all but ~0.01% of
+       realizations (see :ref:`shock_cooling_iib_validity`). The window essentially never reaches the
+       ~15-25 day radioactive-decay peak that a full Type IIb light curve would show. Epochs outside the
+       window are zero rather than extrapolated.
 
 SED Model
 ----------
@@ -89,8 +89,9 @@ how Morag+24 construct the two pieces independently, not a bug in either impleme
 
 .. dropdown:: Parameter priors
 
-   All five parameters use fairly broad priors, since the goal here is to sample plausible
-   shock-cooling realizations rather than to reproduce a specific calibrating event.
+   The priors describe Type IIb-like progenitors: a compact star with a low-mass, hydrogen-rich envelope
+   (:math:`M_E \sim 0.05\,M_\odot`) on a :math:`\sim2.8\,M_\odot` core. The goal is to sample
+   plausible shock-cooling realizations rather than to reproduce a specific calibrating event.
 
    .. list-table::
       :header-rows: 1
@@ -102,11 +103,11 @@ how Morag+24 construct the two pieces independently, not a bug in either impleme
         - Notes / Source
       * - ``v_star``
         - :math:`v_*`
-        - LogNormal(:math:`v_*/10^{8.5}\,\mathrm{cm\,s^{-1}}`; mean=0, :math:`\sigma`\=0.5)
+        - LogNormal(:math:`v_*/(2\times10^{8.5}\,\mathrm{cm\,s^{-1}})`; mean=0, :math:`\sigma`\=0.35)
         - Scale velocity of the shock near the stellar surface.
       * - ``radius``
         - :math:`R`
-        - LogNormal(:math:`R/10^{13}\,\mathrm{cm}`; mean=0, :math:`\sigma`\=0.5)
+        - LogNormal(:math:`R/(6\times10^{12}\,\mathrm{cm})`; mean=0, :math:`\sigma`\=0.85)
         - Progenitor stellar radius.
       * - ``opacity``
         - :math:`\kappa`
@@ -114,19 +115,86 @@ how Morag+24 construct the two pieces independently, not a bug in either impleme
         - Electron-scattering opacity.
       * - ``envelope_mass``
         - :math:`M_E`
-        - LogNormal(:math:`M_E/M_\odot`; mean=0, :math:`\sigma`\=0.5)
-        - Envelope mass.
+        - LogNormal(:math:`M_E/0.05\,M_\odot`; mean=0, :math:`\sigma`\=1.0)
+        - Hydrogen-rich envelope mass.
       * - ``core_mass``
         - :math:`M_C`
-        - LogNormal(:math:`M_C/M_\odot`; mean=0, :math:`\sigma`\=0.5)
+        - LogNormal(:math:`M_C/2.8\,M_\odot`; mean=0, :math:`\sigma`\=0.35)
         - Core mass.
+
+.. _shock_cooling_iib_validity:
+
+Regime of Validity
+~~~~~~~~~~~~~~~~~~~
+
+The closed-form relations hold only between
+
+.. math::
+
+    t_\mathrm{min} = \max(3R/c,\ t_\mathrm{bo}) \qquad\text{and}\qquad
+    t_\mathrm{max} = \min(t_{0.7},\ t_\mathrm{tr}/2),
+
+(Eqs. 17-18 of :footcite:t:`2024MNRAS.528.7137M`), where each bound is a closed-form function of the
+physical parameters. For Type IIb-like parameters that window is short. Drawing 200,000 realizations
+from the priors above:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 15 15 15 15
+
+   * - Quantity
+     - 50%
+     - 90%
+     - 99%
+     - 99.9%
+   * - :math:`t_\mathrm{min}` (days)
+     - 0.007
+     - 0.021
+     - 0.051
+     - 0.096
+   * - :math:`t_\mathrm{max}` (days)
+     - 1.5
+     - 2.3
+     - 3.3
+     - 4.2
+
+Outside the window the luminosity is not just less accurate: the relations diverge toward early times, and
+evaluated at :math:`t \ll t_\mathrm{min}` they give :math:`L_\mathrm{bol}` of order
+:math:`10^{45}\,\mathrm{erg\,s^{-1}}` and more, which is not a physical result for a Type IIb supernova
+(see `GitHub issue #9 <https://github.com/TransientsExtragalactic/uvex-transients/issues/9>`_). Within
+the window, the brightest epoch is the first, and it exceeds :math:`10^{44}\,\mathrm{erg\,s^{-1}}` for
+under 2% of draws.
+
+What the SEDs return outside the window is set by the class attribute ``_INVALID_FILL``:
+
+- ``"zero"`` (the default): zero luminosity, i.e. ``-inf`` in the natural-log methods, an infinite AB
+  magnitude, and zero band flux. An epoch the model cannot describe reads as a non-detection and cannot
+  poison a minimum or maximum taken over epochs. This is a **lower bound**, not a prediction: a real
+  event does not go dark when the model leaves its regime of validity, it is simply not described by
+  it. In particular, the shock-breakout peak before :math:`t_\mathrm{min}` and everything after
+  :math:`t_\mathrm{max}` (the model also omits the radioactive-decay peak) are missing, so yields from
+  this population are conservative.
+- ``"nan"``: undefined, which is more honest for plots and diagnostics.
+- ``None``: evaluate the raw formulas everywhere, including where they are known to be wrong.
+
+The color temperature is ``nan`` outside the window unless ``_INVALID_FILL`` is ``None``. To change the
+behavior, subclass the SED and override the attribute:
+
+.. code-block:: python
+
+    from uvex_transients.models.supernovae import MoragShockCoolingSED
+
+
+    class NanFilledShockCooling(MoragShockCoolingSED):
+        _INVALID_FILL = "nan"
 
 Simulated Light Curves
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The plot below draws 500 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, using the default
-:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED`. No comparison data is overlaid: unlike the other supernova
+:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED`. Each curve is drawn only inside its own regime of validity (here with ``_INVALID_FILL = "nan"``, so the
+curves end rather than drop to zero), which is why the bright, early-time divergence is absent. No comparison data is overlaid: unlike the other supernova
 populations in this package, there is not yet a curated bolometric/temperature dataset for
 shock-cooling Type IIb events under ``test_data/transients``.
 
@@ -137,7 +205,13 @@ shock-cooling Type IIb events under ``test_data/transients``.
    import matplotlib.pyplot as plt
    from astropy import units as u
 
-   from uvex_transients.models.supernovae import MoragShockCoolingSED as SEDClass
+   from uvex_transients.models.supernovae import MoragShockCoolingSED
+
+
+   class SEDClass(MoragShockCoolingSED):
+       # NaN rather than zero outside the regime of validity, so the curves simply end on the log axes.
+       _INVALID_FILL = "nan"
+
 
    rng = np.random.default_rng(20260910)
    n_samples = 500
@@ -145,7 +219,7 @@ shock-cooling Type IIb events under ``test_data/transients``.
    params = SEDClass().sample_parameters(size=n_samples, rng=rng)
    params_grid = {name: value[:, None] for name, value in params.items()}
 
-   t = np.geomspace(0.005, 15, 250) * u.day
+   t = np.geomspace(0.002, 6, 250) * u.day
    L_bol = SEDClass.eval_bolometric(t, **params_grid)
    T = SEDClass.temperature(t, **params_grid)
 
@@ -176,7 +250,7 @@ Because the shock-cooling phase lasts only days, seeing it well requires a caden
 than the multi-day cadences typically used for longer-lived transients. The two panels below show
 two random parameter realizations at a fixed redshift (:math:`z=0.02`, roughly 90 Mpc), each
 observed by Rubin (``g``/``r``/``i``, 30 s visits) and UVEX (``FUV``/``NUV``, 900 s visits) on a
-shared 12-hour cadence over the first 12 days: solid curves are the noiseless theory light curves,
+shared 2.4-hour cadence over the first 4 days: solid curves are the noiseless theory light curves,
 points are simulated photometry (shot noise plus, for Rubin, its own photometric-calibration
 floor), and open triangles are :math:`\mathrm{SNR}<5` upper limits. This is meant to give a sense
 of what the model's SEDs actually look like observationally, not a rate/yield forecast -- see the
@@ -208,10 +282,10 @@ other transient pages in this section for that kind of analysis.
    ]
 
    RUBIN_BANDS = ["g", "r", "i"]
-   CADENCE = 0.5 * u.day
+   CADENCE = 0.1 * u.day
    RUBIN_EXPTIME = 30 * u.s
    UVEX_EXPTIME = 900 * u.s
-   DURATION = 12 * u.day
+   DURATION = 4 * u.day
    SNR_THRESHOLD = 5.0
 
    # Rubin/LSST's own photometric-calibration floor (Table 14 of the LSST Science Requirements
@@ -225,7 +299,7 @@ other transient pages in this section for that kind of analysis.
    fig, axes = plt.subplots(1, len(param_draws), figsize=(11, 5), sharey=True)
 
    for ax, params in zip(axes, param_draws):
-       t_rubin = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+       t_rubin = np.arange(0.02, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
        phot_rubin = sed.simulate_photometry(
            t_rubin, RUBIN_EXPTIME, rubin.detector, coord,
            bands=RUBIN_BANDS, background=SkyBackground.medium(),
@@ -233,7 +307,7 @@ other transient pages in this section for that kind of analysis.
            sys_err=RUBIN_SIGMA_SYS, rng=0, **params,
        )
 
-       t_uvex = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+       t_uvex = np.arange(0.02, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
        phot_uvex = sed.simulate_photometry(
            t_uvex, UVEX_EXPTIME, uvex.detector, coord,
            background=GalacticBackground(),
