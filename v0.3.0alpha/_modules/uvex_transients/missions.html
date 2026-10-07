@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.missions &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/missions';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.3.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.missions</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.missions</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Missions, including bandpass-downsampled "fast" variants of m4opt missions.</span>
+
+<span class="sd">m4opt ships each mission's bandpasses as dense throughput tables (m4opt 3.1.0 gave the UVEX</span>
+<span class="sd">bands 11000 wavelength samples each, up from 100). Every band-integrated quantity in this</span>
+<span class="sd">package (`~uvex_transients.models.core.base.SpectralModel.flux_band`, the limiting-magnitude</span>
+<span class="sd">and SNR screening cuts, and m4opt's own count rates) costs time and memory linear in that</span>
+<span class="sd">sample count, so a fine table is expensive well beyond what a smooth SED can resolve.</span>
+
+<span class="sd">:func:`downsample_bandpass` replaces a table by a much shorter one whose band integrals agree</span>
+<span class="sd">with the original to a requested accuracy, for thermal-like spectra over a stated temperature</span>
+<span class="sd">range. :func:`downsample_mission` applies it to every bandpass of an m4opt</span>
+<span class="sd">`~m4opt.missions.Mission`, and :func:`get_mission` resolves mission names, including the</span>
+<span class="sd">registered ``"uvex_fast"``, honoring the ``missions.downsample`` section of the configuration.</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">Take ``n_spec`` blackbodies spaced log-uniformly in temperature from ``t_min`` to ``t_max``.</span>
+<span class="sd">For each, form the integrands that a band average integrates, throughput times spectrum, both</span>
+<span class="sd">as a flux-weighted and as a photon-weighted (extra ``1/nu``) integral, plus the throughput</span>
+<span class="sd">itself (the denominator of the band average). Each curve is normalized to unit peak. Starting</span>
+<span class="sd">from only the two end points, the point whose deviation from the straight chord between its</span>
+<span class="sd">neighboring kept points is largest (taken over all curves) is added as a knot, recursively,</span>
+<span class="sd">until every deviation is below a threshold ``eps``. The throughput values at the kept</span>
+<span class="sd">frequencies are the downsampled table, and the table is interpolated linearly between them,</span>
+<span class="sd">matching the trapezoidal quadrature used throughout the package.</span>
+
+<span class="sd">``eps`` is not the accuracy. It is a tuning parameter that is bisected so that the *measured*</span>
+<span class="sd">worst-case band magnitude error over a denser set of temperatures (which includes temperatures</span>
+<span class="sd">between the optimization ones) stays within ``tol_mag``. The measured quantities are the</span>
+<span class="sd">flux-weighted band average, the photon-weighted band average, and the absolute flux and photon</span>
+<span class="sd">rates (the latter two are what m4opt's count rates see, and are what the mass rescale below</span>
+<span class="sd">corrects).</span>
+
+<span class="sd">The kept table is finally rescaled by a single constant so its integrated transmission,</span>
+<span class="sd">``int T dnu``, equals that of the original exactly. Band averages are ratios, so the rescale</span>
+<span class="sd">cancels in them, but absolute count rates carry the mass error directly.</span>
+
+<span class="sd">Accuracy is only established for smooth, thermal-like spectra between ``t_min`` and ``t_max``.</span>
+<span class="sd">A spectrum with sharp features, or one cooler than ``t_min``, can exceed ``tol_mag``.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">m4opt.missions</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralElement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">synphot.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Empirical1D</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"FAST_MISSIONS"</span><span class="p">,</span>
+    <span class="s2">"downsample_bandpass"</span><span class="p">,</span>
+    <span class="s2">"downsample_mission"</span><span class="p">,</span>
+    <span class="s2">"get_mission"</span><span class="p">,</span>
+    <span class="s2">"list_missions"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1">#: Registered downsampled missions: name -&gt; the `m4opt.missions` attribute it is built from.</span>
+<span class="n">FAST_MISSIONS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"uvex_fast"</span><span class="p">:</span> <span class="s2">"uvex"</span><span class="p">}</span>
+
+<span class="c1"># Fallbacks for configuration files written before the ``missions.downsample`` section existed.</span>
+<span class="n">_DEFAULT_DOWNSAMPLE_SETTINGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"enabled"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">"tol_mag"</span><span class="p">:</span> <span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="s2">"t_min"</span><span class="p">:</span> <span class="mf">1500.0</span><span class="p">,</span>
+    <span class="s2">"t_max"</span><span class="p">:</span> <span class="mf">50000.0</span><span class="p">,</span>
+    <span class="s2">"n_spec"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Bisection search range for the knot threshold ``eps`` (log10), and the number of halvings.</span>
+<span class="n">_LOG_EPS_RANGE</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">_N_BISECTIONS</span> <span class="o">=</span> <span class="mi">24</span>
+
+<span class="n">_H</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+<span class="n">_C</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+<span class="n">_K_B</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">k_B</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_downsample_settings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read the ``missions.downsample`` configuration, falling back to defaults for missing keys.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The keys ``enabled``, ``tol_mag``, ``t_min``, ``t_max`` and ``n_spec``.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_DEFAULT_DOWNSAMPLE_SETTINGS</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">settings</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="sa">f</span><span class="s2">"missions.downsample.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">settings</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_planck_nu</span><span class="p">(</span><span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Blackbody specific intensity ``B_nu`` in cgs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Frequencies in Hz, shape ``(N,)``.</span>
+<span class="sd">    temperature : numpy.ndarray</span>
+<span class="sd">        Temperatures in K, shape ``(M,)``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        ``B_nu``, shape ``(M, N)``.</span>
+<span class="sd">    """</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">_H</span> <span class="o">*</span> <span class="n">nu</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/</span> <span class="p">(</span><span class="n">_K_B</span> <span class="o">*</span> <span class="n">temperature</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span>
+    <span class="k">return</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">_H</span> <span class="o">*</span> <span class="n">nu</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">_C</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_band_integrals</span><span class="p">(</span><span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">throughput</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">temperatures</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Band integrals of blackbodies through a throughput table (trapezoid rule in frequency).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Strictly increasing frequencies in Hz, shape ``(N,)``.</span>
+<span class="sd">    throughput : numpy.ndarray</span>
+<span class="sd">        Throughput at each frequency, shape ``(N,)``.</span>
+<span class="sd">    temperatures : numpy.ndarray</span>
+<span class="sd">        Blackbody temperatures in K, shape ``(M,)``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(4, M)``: the flux-weighted band average ``int B T dnu / int T dnu``, the</span>
+<span class="sd">        photon-weighted band average ``int B T/nu dnu / int T/nu dnu``, and the absolute</span>
+<span class="sd">        integrals ``int B T dnu`` and ``int B T/nu dnu`` (no denominator).</span>
+<span class="sd">    """</span>
+    <span class="n">spectra</span> <span class="o">=</span> <span class="n">_planck_nu</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperatures</span><span class="p">)</span>
+    <span class="n">inverse_nu</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">nu</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">spectra</span> <span class="o">*</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">photons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">spectra</span> <span class="o">*</span> <span class="n">throughput</span> <span class="o">*</span> <span class="n">inverse_nu</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">flux_ratio</span> <span class="o">=</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="n">photon_ratio</span> <span class="o">=</span> <span class="n">photons</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">throughput</span> <span class="o">*</span> <span class="n">inverse_nu</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">flux_ratio</span><span class="p">,</span> <span class="n">photon_ratio</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">photons</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mag_error</span><span class="p">(</span><span class="n">approximate</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">reference</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Worst-case magnitude difference between two sets of band integrals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    approximate, reference : numpy.ndarray</span>
+<span class="sd">        Band integrals as returned by `_band_integrals`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        ``max |2.5 log10(approximate / reference)|``, or ``inf`` if the ratio is not a finite</span>
+<span class="sd">        positive number anywhere.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">approximate</span> <span class="o">/</span> <span class="n">reference</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ratio</span><span class="p">))))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_integrand_curves</span><span class="p">(</span><span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">throughput</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">temperatures</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the curves whose piecewise-linear approximation drives the knot selection.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Strictly increasing frequencies in Hz, shape ``(N,)``.</span>
+<span class="sd">    throughput : numpy.ndarray</span>
+<span class="sd">        Throughput at each frequency, shape ``(N,)``.</span>
+<span class="sd">    temperatures : numpy.ndarray</span>
+<span class="sd">        The optimization temperatures in K, shape ``(M,)``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(2 * (M + 1), N)``: for the flux and photon weightings, the throughput itself</span>
+<span class="sd">        and its product with each blackbody, each normalized to unit peak.</span>
+<span class="sd">    """</span>
+    <span class="n">spectra</span> <span class="o">=</span> <span class="n">_planck_nu</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperatures</span><span class="p">)</span>
+    <span class="n">flux_curves</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">throughput</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:],</span> <span class="n">throughput</span> <span class="o">*</span> <span class="n">spectra</span><span class="p">])</span>
+    <span class="n">photon_curves</span> <span class="o">=</span> <span class="n">flux_curves</span> <span class="o">/</span> <span class="n">nu</span>
+    <span class="n">curves</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">flux_curves</span><span class="p">,</span> <span class="n">photon_curves</span><span class="p">])</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="n">curves</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">curves</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">peak</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_select_knots</span><span class="p">(</span><span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">curves</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Greedy knot insertion: refine until every curve is within `eps` of its piecewise-linear fit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Strictly increasing frequencies, shape ``(N,)``.</span>
+<span class="sd">    curves : numpy.ndarray</span>
+<span class="sd">        Curves sampled at `nu`, shape ``(K, N)``.</span>
+<span class="sd">    eps : float</span>
+<span class="sd">        Largest allowed deviation of any curve from the chord between kept points.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Sorted indices into `nu` of the kept points. Always includes both end points.</span>
+<span class="sd">    """</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nu</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">keep</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nu</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="n">lo</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">hi</span><span class="p">]</span> <span class="o">-</span> <span class="n">nu</span><span class="p">[</span><span class="n">lo</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="n">hi</span><span class="p">]</span> <span class="o">-</span> <span class="n">nu</span><span class="p">[</span><span class="n">lo</span><span class="p">])</span>
+        <span class="n">chord</span> <span class="o">=</span> <span class="n">curves</span><span class="p">[:,</span> <span class="p">[</span><span class="n">lo</span><span class="p">]]</span> <span class="o">+</span> <span class="p">(</span><span class="n">curves</span><span class="p">[:,</span> <span class="p">[</span><span class="n">hi</span><span class="p">]]</span> <span class="o">-</span> <span class="n">curves</span><span class="p">[:,</span> <span class="p">[</span><span class="n">lo</span><span class="p">]])</span> <span class="o">*</span> <span class="n">fraction</span>
+        <span class="n">deviation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">curves</span><span class="p">[:,</span> <span class="n">lo</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">hi</span><span class="p">]</span> <span class="o">-</span> <span class="n">chord</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">worst</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">deviation</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">deviation</span><span class="p">[</span><span class="n">worst</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+            <span class="n">knot</span> <span class="o">=</span> <span class="n">lo</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">worst</span>
+            <span class="n">keep</span><span class="p">[</span><span class="n">knot</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lo</span><span class="p">,</span> <span class="n">knot</span><span class="p">))</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">knot</span><span class="p">,</span> <span class="n">hi</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">keep</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="downsample_bandpass">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.missions.downsample_bandpass.html#uvex_transients.missions.downsample_bandpass">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">downsample_bandpass</span><span class="p">(</span>
+    <span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">t_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">t_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_spec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tol_mag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpectralElement</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Replace a dense bandpass table by a short one with matching thermal band integrals.</span>
+
+<span class="sd">    See the module docstring for the algorithm. The returned bandpass is linearly interpolated</span>
+<span class="sd">    between the kept points. Its ``meta["downsampling"]`` records the parameters, the point</span>
+<span class="sd">    counts, the achieved worst-case magnitude error, and the mass rescale factor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : ~synphot.SpectralElement</span>
+<span class="sd">        The bandpass to downsample. Its ``waveset`` and values at the waveset define the table.</span>
+<span class="sd">    t_min, t_max : float, optional</span>
+<span class="sd">        Temperature range in K over which the downsampled bandpass must reproduce blackbody band</span>
+<span class="sd">        integrals. Default to ``config["missions.downsample.t_min"]`` and ``t_max``.</span>
+<span class="sd">    n_spec : int, optional</span>
+<span class="sd">        Number of log-uniformly spaced blackbodies the knot selection is optimized on. The error</span>
+<span class="sd">        is verified on a denser set that includes temperatures between these. Defaults to</span>
+<span class="sd">        ``config["missions.downsample.n_spec"]``.</span>
+<span class="sd">    tol_mag : float, optional</span>
+<span class="sd">        Largest tolerated magnitude error in any band integral over the verification set.</span>
+<span class="sd">        Defaults to ``config["missions.downsample.tol_mag"]``.</span>
+<span class="sd">    rescale : bool, optional</span>
+<span class="sd">        If True (default), scale the kept values so the integrated transmission ``int T dnu``</span>
+<span class="sd">        equals the original's.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~synphot.SpectralElement</span>
+<span class="sd">        The downsampled bandpass, or `bandpass` itself if no reduction meets `tol_mag`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``t_min`` and ``t_max`` are not positive with ``t_min &lt; t_max``, ``n_spec &lt; 2``, or</span>
+<span class="sd">        ``tol_mag &lt;= 0``.</span>
+<span class="sd">    """</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">_downsample_settings</span><span class="p">()</span>
+    <span class="n">t_min</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"t_min"</span><span class="p">]</span> <span class="k">if</span> <span class="n">t_min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">t_min</span>
+    <span class="n">t_max</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"t_max"</span><span class="p">]</span> <span class="k">if</span> <span class="n">t_max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">t_max</span>
+    <span class="n">n_spec</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"n_spec"</span><span class="p">]</span> <span class="k">if</span> <span class="n">n_spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">n_spec</span>
+    <span class="n">tol_mag</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"tol_mag"</span><span class="p">]</span> <span class="k">if</span> <span class="n">tol_mag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tol_mag</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">t_min</span> <span class="o">&lt;</span> <span class="n">t_max</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Need 0 &lt; t_min &lt; t_max, got t_min=</span><span class="si">{</span><span class="n">t_min</span><span class="si">}</span><span class="s2">, t_max=</span><span class="si">{</span><span class="n">t_max</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_spec</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'n_spec' must be at least 2, got </span><span class="si">{</span><span class="n">n_spec</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tol_mag</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'tol_mag' must be positive, got </span><span class="si">{</span><span class="n">tol_mag</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+    <span class="n">wave</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">waveset</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span>
+    <span class="n">throughput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bandpass</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">nu_all</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+
+    <span class="c1"># Work in increasing frequency, the order the trapezoid rules in the package integrate in.</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">nu_all</span><span class="p">)</span>
+    <span class="n">wave</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">wave</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">nu_all</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">throughput</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+    <span class="n">n_points</span> <span class="o">=</span> <span class="n">nu</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">if</span> <span class="n">n_points</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">throughput</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">bandpass</span>
+
+    <span class="n">optimization_temperatures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">t_min</span><span class="p">,</span> <span class="n">t_max</span><span class="p">,</span> <span class="n">n_spec</span><span class="p">)</span>
+    <span class="c1"># Every optimization temperature plus three between each adjacent pair.</span>
+    <span class="n">check_temperatures</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">t_min</span><span class="p">,</span> <span class="n">t_max</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_spec</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">curves</span> <span class="o">=</span> <span class="n">_integrand_curves</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">optimization_temperatures</span><span class="p">)</span>
+    <span class="n">reference</span> <span class="o">=</span> <span class="n">_band_integrals</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">check_temperatures</span><span class="p">)</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">eps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Knot selection at threshold `eps`, with its rescaled values, rescale factor and measured error.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eps : float</span>
+<span class="sd">            Knot threshold for `_select_knots`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            ``(keep, values, scale, error)``: kept indices, their (rescaled) throughput, the rescale</span>
+<span class="sd">            factor applied, and the worst-case magnitude error over the verification temperatures.</span>
+<span class="sd">        """</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="n">_select_knots</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">curves</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">throughput</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">rescale</span><span class="p">:</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="n">mass</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">nu</span><span class="p">[</span><span class="n">keep</span><span class="p">])</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">_mag_error</span><span class="p">(</span><span class="n">_band_integrals</span><span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">values</span><span class="p">,</span> <span class="n">check_temperatures</span><span class="p">),</span> <span class="n">reference</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keep</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">error</span>
+
+    <span class="n">best</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">log_lo</span><span class="p">,</span> <span class="n">log_hi</span> <span class="o">=</span> <span class="n">_LOG_EPS_RANGE</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_N_BISECTIONS</span><span class="p">):</span>
+        <span class="n">log_mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_lo</span> <span class="o">+</span> <span class="n">log_hi</span><span class="p">)</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="mf">10.0</span><span class="o">**</span><span class="n">log_mid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">candidate</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">tol_mag</span><span class="p">:</span>
+            <span class="n">log_lo</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="n">log_mid</span><span class="p">,</span> <span class="n">candidate</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_hi</span> <span class="o">=</span> <span class="n">log_mid</span>
+
+    <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;=</span> <span class="n">n_points</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"Could not downsample the bandpass table (</span><span class="si">%d</span><span class="s2"> points) to within </span><span class="si">%.2g</span><span class="s2"> mag; keeping it unchanged."</span><span class="p">,</span>
+            <span class="n">n_points</span><span class="p">,</span>
+            <span class="n">tol_mag</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">bandpass</span>
+
+    <span class="n">keep</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">best</span>
+    <span class="n">downsampled</span> <span class="o">=</span> <span class="n">SpectralElement</span><span class="p">(</span><span class="n">Empirical1D</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">wave</span><span class="p">[</span><span class="n">keep</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">lookup_table</span><span class="o">=</span><span class="n">values</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">downsampled</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"downsampling"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"n_original"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_points</span><span class="p">),</span>
+        <span class="s2">"n_downsampled"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">keep</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+        <span class="s2">"tol_mag"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">tol_mag</span><span class="p">),</span>
+        <span class="s2">"achieved_mag_error"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">error</span><span class="p">),</span>
+        <span class="s2">"mass_rescale"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span>
+        <span class="s2">"t_min"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_min</span><span class="p">),</span>
+        <span class="s2">"t_max"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_max</span><span class="p">),</span>
+        <span class="s2">"n_spec"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_spec</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">"Downsampled a bandpass table from </span><span class="si">%d</span><span class="s2"> to </span><span class="si">%d</span><span class="s2"> points (worst-case </span><span class="si">%.2g</span><span class="s2"> mag over </span><span class="si">%.0f</span><span class="s2">-</span><span class="si">%.0f</span><span class="s2"> K, mass rescale </span><span class="si">%.6f</span><span class="s2">)."</span><span class="p">,</span>
+        <span class="n">n_points</span><span class="p">,</span>
+        <span class="n">keep</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+        <span class="n">error</span><span class="p">,</span>
+        <span class="n">t_min</span><span class="p">,</span>
+        <span class="n">t_max</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">downsampled</span></div>
+
+
+
+<div class="viewcode-block" id="downsample_mission">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.missions.downsample_mission.html#uvex_transients.missions.downsample_mission">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">downsample_mission</span><span class="p">(</span><span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Copy a mission with every detector bandpass downsampled.</span>
+
+<span class="sd">    The original mission is not modified. Everything other than the bandpasses (field of view,</span>
+<span class="sd">    background, noise terms, scheduling model) is shared with `mission`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mission : ~m4opt.missions.Mission</span>
+<span class="sd">        The mission to copy.</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Name of the copy. Defaults to ``f"{mission.name}_fast"``.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Passed to :func:`downsample_bandpass` (``t_min``, ``t_max``, ``n_spec``, ``tol_mag``,</span>
+<span class="sd">        ``rescale``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~m4opt.missions.Mission</span>
+<span class="sd">        The downsampled copy.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If a detector bandpass is not a `~synphot.SpectralElement`.</span>
+<span class="sd">    """</span>
+    <span class="n">bandpasses</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">band</span><span class="p">,</span> <span class="n">bandpass</span> <span class="ow">in</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bandpass</span><span class="p">,</span> <span class="n">SpectralElement</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Bandpass </span><span class="si">{</span><span class="n">band</span><span class="si">!r}</span><span class="s2"> of mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span><span class="si">}</span><span class="s2">, not a SpectralElement."</span>
+            <span class="p">)</span>
+        <span class="n">bandpasses</span><span class="p">[</span><span class="n">band</span><span class="p">]</span> <span class="o">=</span> <span class="n">downsample_bandpass</span><span class="p">(</span><span class="n">bandpass</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">detector</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">mission</span><span class="o">.</span><span class="n">detector</span><span class="p">,</span> <span class="n">bandpasses</span><span class="o">=</span><span class="n">bandpasses</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_fast"</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">name</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="n">detector</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fast_mission</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tol_mag</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_spec</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build (once per distinct setting) the downsampled copy of the m4opt mission `base`."""</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Building the downsampled copy of mission </span><span class="si">%r</span><span class="s2"> (tol_mag=</span><span class="si">%s</span><span class="s2">, n_spec=</span><span class="si">%d</span><span class="s2">)."</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">tol_mag</span><span class="p">,</span> <span class="n">n_spec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">downsample_mission</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">,</span> <span class="n">base</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_fast"</span><span class="p">,</span>
+        <span class="n">tol_mag</span><span class="o">=</span><span class="n">tol_mag</span><span class="p">,</span>
+        <span class="n">t_min</span><span class="o">=</span><span class="n">t_min</span><span class="p">,</span>
+        <span class="n">t_max</span><span class="o">=</span><span class="n">t_max</span><span class="p">,</span>
+        <span class="n">n_spec</span><span class="o">=</span><span class="n">n_spec</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="list_missions">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.missions.list_missions.html#uvex_transients.missions.list_missions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_missions</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    List the names accepted by :func:`get_mission`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        Every `~m4opt.missions.Mission` in `m4opt.missions` plus the registered `FAST_MISSIONS`.</span>
+<span class="sd">    """</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mission</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">available</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">FAST_MISSIONS</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="get_mission">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.missions.get_mission.html#uvex_transients.missions.get_mission">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mission</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">downsample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a mission name to a `~m4opt.missions.Mission`, optionally with downsampled bandpasses.</span>
+
+<span class="sd">    A registered fast name (``"uvex_fast"``) is always downsampled. For any other name,</span>
+<span class="sd">    `downsample` decides, and ``None`` defers to ``config["missions.downsample.enabled"]``. The</span>
+<span class="sd">    downsampling parameters always come from the ``missions.downsample`` configuration section.</span>
+<span class="sd">    Downsampled missions are built once per distinct set of parameters and cached.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        An attribute name of `m4opt.missions`, or a key of `FAST_MISSIONS`.</span>
+<span class="sd">    downsample : bool, optional</span>
+<span class="sd">        Force downsampling on or off for a non-fast name. Ignored for a fast name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~m4opt.missions.Mission</span>
+<span class="sd">        The resolved mission.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `name` is not a known mission.</span>
+<span class="sd">    """</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">FAST_MISSIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">mission</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">m4opt</span><span class="o">.</span><span class="n">missions</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">Mission</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mission </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="n">list_missions</span><span class="p">()</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">_downsample_settings</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Resolving mission </span><span class="si">%r</span><span class="s2"> (base=</span><span class="si">%r</span><span class="s2">, settings=</span><span class="si">%s</span><span class="s2">)."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">FAST_MISSIONS</span> <span class="ow">or</span> <span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">"enabled"</span><span class="p">]</span> <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">downsample</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_fast_mission</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"tol_mag"</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"t_min"</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"t_max"</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s2">"n_spec"</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">mission</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mission</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build registered fast missions on first access, so ``from uvex_transients.missions import uvex_fast`` works."""</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">FAST_MISSIONS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_mission</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"module </span><span class="si">{</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> has no attribute </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""List the module attributes, including the lazily built fast missions."""</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="o">*</span><span class="nb">globals</span><span class="p">(),</span> <span class="o">*</span><span class="n">FAST_MISSIONS</span><span class="p">])</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

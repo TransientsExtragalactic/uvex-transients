@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.shock_cooling &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/shock_cooling';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.3.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.shock_cooling</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.shock_cooling</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Analytic shock cooling emission (SCE) from extended, low-mass material.</span>
+
+<span class="sd">Implements the model of :footcite:t:`2021ApJ...909..209P`. An envelope of mass :math:`M_e` and initial radius</span>
+<span class="sd">:math:`R_e` is given an energy :math:`E_e` by a passing shock and then expands homologously, :math:`r = vt`. Its</span>
+<span class="sd">density is a broken power law in the scaled coordinate :math:`x = r / (v_t t)`,</span>
+
+<span class="sd">.. math::</span>
+
+<span class="sd">    \rho(r, t) = \frac{K M_e}{v_t^3 t^3} \begin{cases} x^{-n} &amp; x \ge 1 \\ x^{-\delta} &amp; x &lt; 1, \end{cases}</span>
+
+<span class="sd">with transition velocity :math:`v_t` (Eq. 4), and :math:`K` set by mass conservation (Eq. 3). A constant (electron</span>
+<span class="sd">scattering) opacity :math:`\kappa` is assumed throughout. The model has three characteristic outputs:</span>
+
+<span class="sd">* the bolometric luminosity :math:`L(t)` (:func:`compute_luminosity`), a power law before the diffusion time</span>
+<span class="sd">  :math:`t_d` and an exponential decay after it (Eqs. 17 and 20),</span>
+<span class="sd">* the photospheric radius :math:`r_\mathrm{ph}(t)` (:func:`compute_photospheric_radius`), which breaks at the</span>
+<span class="sd">  photospheric time :math:`t_\mathrm{ph}` (Eqs. 7 and 9), and</span>
+<span class="sd">* the blackbody temperature :math:`T(t) = [L / (4\pi r_\mathrm{ph}^2 \sigma_\mathrm{SB})]^{1/4}`</span>
+<span class="sd">  (:func:`compute_temperature`, Eq. 22).</span>
+
+<span class="sd">Everything private here works on bare CGS floats/arrays. The public functions accept unit-aware</span>
+<span class="sd">:class:`~astropy.units.Quantity` inputs (unitless inputs are assumed to already be in CGS), convert at the</span>
+<span class="sd">boundary, and return :class:`~astropy.units.Quantity` outputs.</span>
+
+<span class="sd">The model assumes :math:`n &gt; 5` (finite energy in the outer envelope) and :math:`1 &lt; \delta &lt; 3`. As discussed in</span>
+<span class="sd">the paper, it ignores recombination and any interior heating (e.g. radioactive), both of which matter before</span>
+<span class="sd">:math:`t_\mathrm{ph}`, so the early power-law scalings and the break in :math:`r_\mathrm{ph}` at :math:`t_d` are</span>
+<span class="sd">the most robust predictions.</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">.. footbibliography::</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">C_CGS</span><span class="p">,</span> <span class="n">SIGMA_SB_CGS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">PhysicalInput</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_in_units</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"compute_ejecta_normalization"</span><span class="p">,</span>
+    <span class="s2">"compute_transition_velocity"</span><span class="p">,</span>
+    <span class="s2">"compute_diffusion_time"</span><span class="p">,</span>
+    <span class="s2">"compute_photospheric_time"</span><span class="p">,</span>
+    <span class="s2">"compute_luminosity"</span><span class="p">,</span>
+    <span class="s2">"compute_photospheric_radius"</span><span class="p">,</span>
+    <span class="s2">"compute_temperature"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">DEFAULT_N</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="sd">"""float: Typical outer density power-law index (Chevalier &amp; Soker 1989; see the paper's Appendix A)."""</span>
+
+<span class="n">DEFAULT_DELTA</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.1</span>
+<span class="sd">"""float: Typical inner density power-law index (Chevalier &amp; Soker 1989)."""</span>
+
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Physics (CGS)                                     #</span>
+<span class="c1"># ================================================= #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ejecta_normalization</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Density normalization :math:`K = (n - 3)(3 - \delta) / [4\pi (n - \delta)]` (Eq. 3)."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">delta</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transition_velocity_cgs</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Transition velocity between the outer and inner envelope, in cm/s (Eq. 4).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        v_t = \left[\frac{(n - 5)(5 - \delta)}{(n - 3)(3 - \delta)}\right]^{1/2}</span>
+<span class="sd">              \left(\frac{2 E_e}{M_e}\right)^{1/2}</span>
+<span class="sd">    """</span>
+    <span class="n">coefficient</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">-</span> <span class="n">delta</span><span class="p">))</span> <span class="o">/</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">-</span> <span class="n">delta</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">coefficient</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">E_envelope</span> <span class="o">/</span> <span class="n">M_envelope</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_diffusion_time_cgs</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Time at which the diffusion depth reaches the transition velocity, in s (Eq. 14).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        t_d = \left[\frac{3\kappa K M_e}{(n - 1) v_t c}\right]^{1/2}</span>
+<span class="sd">    """</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">_ejecta_normalization</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">v_t</span> <span class="o">=</span> <span class="n">_transition_velocity_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">K</span> <span class="o">*</span> <span class="n">M_envelope</span> <span class="o">/</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">v_t</span> <span class="o">*</span> <span class="n">C_CGS</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_photospheric_time_cgs</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Time at which the photosphere reaches the transition velocity, in s (Eq. 8).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        t_\mathrm{ph} = \left[\frac{3\kappa K M_e}{2 (n - 1) v_t^2}\right]^{1/2}</span>
+<span class="sd">    """</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">_ejecta_normalization</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">v_t</span> <span class="o">=</span> <span class="n">_transition_velocity_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">K</span> <span class="o">*</span> <span class="n">M_envelope</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">v_t</span> <span class="o">*</span> <span class="n">v_t</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_luminosity_cgs</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">R_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Bolometric luminosity in erg/s (Eqs. 17, 20, and 21).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \frac{\pi (n - 1)}{3 (n - 5)} \frac{c R_e v_t^2}{\kappa}</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            (t_d / t)^{4/(n - 2)} &amp; t \le t_d \\</span>
+<span class="sd">            \exp\left[-\frac{1}{2}\left(t^2 / t_d^2 - 1\right)\right] &amp; t \ge t_d.</span>
+<span class="sd">        \end{cases}</span>
+<span class="sd">    """</span>
+    <span class="n">v_t</span> <span class="o">=</span> <span class="n">_transition_velocity_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">t_d</span> <span class="o">=</span> <span class="n">_diffusion_time_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+
+    <span class="n">prefactor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">5.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">C_CGS</span> <span class="o">*</span> <span class="n">R_envelope</span> <span class="o">*</span> <span class="n">v_t</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">kappa</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">t_d</span>
+
+    <span class="c1"># Both branches are finite for every t &gt; 0 (the unused one at worst under or overflows harmlessly to 0 or a</span>
+    <span class="c1"># large number), so np.where is safe and broadcasts over arbitrary parameter and time shapes.</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">x</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">prefactor</span> <span class="o">*</span> <span class="n">shape</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_photospheric_radius_cgs</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Photospheric radius in cm (Eqs. 7 and 9).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        r_\mathrm{ph}(t) = v_t t</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            (t_\mathrm{ph} / t)^{2/(n - 1)} &amp; t \le t_\mathrm{ph} \\</span>
+<span class="sd">            \left[\frac{\delta - 1}{n - 1}\left(t^2 / t_\mathrm{ph}^2 - 1\right) + 1\right]^{-1/(\delta - 1)}</span>
+<span class="sd">            &amp; t \ge t_\mathrm{ph}.</span>
+<span class="sd">        \end{cases}</span>
+<span class="sd">    """</span>
+    <span class="n">v_t</span> <span class="o">=</span> <span class="n">_transition_velocity_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">t_ph</span> <span class="o">=</span> <span class="n">_photospheric_time_cgs</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">t_ph</span>
+
+    <span class="c1"># As in the luminosity, both branches are finite for every t &gt; 0: the late-time base is at least</span>
+    <span class="c1"># 1 - (delta - 1) / (n - 1) &gt; 0 for x &lt; 1.</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">x</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)),</span>
+        <span class="p">((</span><span class="n">delta</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">delta</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">shape</span> <span class="o">*</span> <span class="n">v_t</span> <span class="o">*</span> <span class="n">t</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_temperature_cgs</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">R_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Blackbody temperature in K, :math:`T = [L / (4\pi r_\mathrm{ph}^2 \sigma_\mathrm{SB})]^{1/4}` (Eq. 22)."""</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">_luminosity_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">E_envelope</span><span class="p">,</span> <span class="n">R_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">r_ph</span> <span class="o">=</span> <span class="n">_photospheric_radius_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">L</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">SIGMA_SB_CGS</span> <span class="o">*</span> <span class="n">r_ph</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mf">0.25</span>
+
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Input handling                                    #</span>
+<span class="c1"># ================================================= #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_profile</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise if the density profile indices are outside the range where the model is defined."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mf">5.0</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"n must be finite and greater than 5"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">delta</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">delta</span> <span class="o">&lt;</span> <span class="mf">3.0</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"delta must be finite and in the open interval (1, 3)"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_positive</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise if any of the named arrays is non-finite or not strictly positive."""</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be finite and positive"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_prepare_envelope</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Coerce and validate the parameters shared by every public function (energy in erg, mass in g)."""</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">M_envelope</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">E_envelope</span><span class="o">=</span><span class="n">E</span><span class="p">,</span> <span class="n">M_envelope</span><span class="o">=</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">_check_profile</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_prepare_time</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Coerce and validate a time since explosion (in s), which must be strictly positive."""</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span>
+
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Public API                                        #</span>
+<span class="c1"># ================================================= #</span>
+<div class="viewcode-block" id="compute_ejecta_normalization">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_ejecta_normalization.html#uvex_transients.models.shock_cooling.compute_ejecta_normalization">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_ejecta_normalization</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Density normalization :math:`K` of the two-component envelope.</span>
+
+<span class="sd">    Set by mass conservation (Eq. 3 of :footcite:t:`2021ApJ...909..209P`),</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        K = \frac{(n - 3)(3 - \delta)}{4\pi (n - \delta)}.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : array_like, optional</span>
+<span class="sd">        Outer density power-law index, :math:`\rho \propto r^{-n}`. Must exceed 5. Default 10.</span>
+<span class="sd">    delta : array_like, optional</span>
+<span class="sd">        Inner density power-law index, :math:`\rho \propto r^{-\delta}`. Must lie in (1, 3). Default 1.1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Dimensionless :math:`K` (about 0.119 for the defaults).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">_check_profile</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_ejecta_normalization</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_transition_velocity">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_transition_velocity.html#uvex_transients.models.shock_cooling.compute_transition_velocity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_transition_velocity</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Transition velocity :math:`v_t` between the outer and inner envelope.</span>
+
+<span class="sd">    From energy conservation (Eq. 4 of :footcite:t:`2021ApJ...909..209P`),</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        v_t = \left[\frac{(n - 5)(5 - \delta)}{(n - 3)(3 - \delta)}\right]^{1/2}</span>
+<span class="sd">              \left(\frac{2 E_e}{M_e}\right)^{1/2}.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        :math:`v_t` in cm/s.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_transition_velocity_cgs</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_diffusion_time">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_diffusion_time.html#uvex_transients.models.shock_cooling.compute_diffusion_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_diffusion_time</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Diffusion time :math:`t_d`, when the diffusion depth reaches the transition velocity.</span>
+
+<span class="sd">    Eq. 14 of :footcite:t:`2021ApJ...909..209P`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        t_d = \left[\frac{3\kappa K M_e}{(n - 1) v_t c}\right]^{1/2}.</span>
+
+<span class="sd">    The luminosity switches from a power law to an exponential decay here.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    kappa : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Constant opacity (floats are taken to be in cm^2/g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        :math:`t_d` in s.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_diffusion_time_cgs</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span></div>
+
+
+
+<div class="viewcode-block" id="compute_photospheric_time">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_photospheric_time.html#uvex_transients.models.shock_cooling.compute_photospheric_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_photospheric_time</span><span class="p">(</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Photospheric time :math:`t_\mathrm{ph}`, when the photosphere reaches the transition velocity.</span>
+
+<span class="sd">    Eq. 8 of :footcite:t:`2021ApJ...909..209P`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        t_\mathrm{ph} = \left[\frac{3\kappa K M_e}{2 (n - 1) v_t^2}\right]^{1/2}</span>
+<span class="sd">                      = \left(\frac{c}{2 v_t}\right)^{1/2} t_d.</span>
+
+<span class="sd">    The photospheric radius shows a break here.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    kappa : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Constant opacity (floats are taken to be in cm^2/g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        :math:`t_\mathrm{ph}` in s.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_photospheric_time_cgs</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span></div>
+
+
+
+<div class="viewcode-block" id="compute_luminosity">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_luminosity.html#uvex_transients.models.shock_cooling.compute_luminosity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_luminosity</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">R_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Bolometric shock cooling luminosity :math:`L(t)`.</span>
+
+<span class="sd">    Eqs. 17, 20, and 21 of :footcite:t:`2021ApJ...909..209P`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \frac{\pi (n - 1)}{3 (n - 5)} \frac{c R_e v_t^2}{\kappa}</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            (t_d / t)^{4/(n - 2)} &amp; t \le t_d \\</span>
+<span class="sd">            \exp\left[-\frac{1}{2}\left(t^2 / t_d^2 - 1\right)\right] &amp; t \ge t_d.</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Times since explosion (floats are taken to be in s). Must be positive.</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    R_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Initial envelope radius :math:`R_e` (floats are taken to be in cm).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    kappa : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Constant opacity (floats are taken to be in cm^2/g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        Luminosity in erg/s. Inputs are broadcast against one another, so e.g. a time grid of shape ``(T,)``</span>
+<span class="sd">        against parameters of shape ``(N, 1)`` gives an ``(N, T)`` result.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``t`` or a physical parameter is non-finite or not positive, if ``n &lt;= 5``, or if ``delta`` is outside</span>
+<span class="sd">        (1, 3).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">_prepare_time</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">R_envelope</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">R_envelope</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_luminosity_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_photospheric_radius">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_photospheric_radius.html#uvex_transients.models.shock_cooling.compute_photospheric_radius">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_photospheric_radius</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Photospheric radius :math:`r_\mathrm{ph}(t)`, where the optical depth is 2/3.</span>
+
+<span class="sd">    Eqs. 7 and 9 of :footcite:t:`2021ApJ...909..209P`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        r_\mathrm{ph}(t) = v_t t</span>
+<span class="sd">        \begin{cases}</span>
+<span class="sd">            (t_\mathrm{ph} / t)^{2/(n - 1)} &amp; t \le t_\mathrm{ph} \\</span>
+<span class="sd">            \left[\frac{\delta - 1}{n - 1}\left(t^2 / t_\mathrm{ph}^2 - 1\right) + 1\right]^{-1/(\delta - 1)}</span>
+<span class="sd">            &amp; t \ge t_\mathrm{ph}.</span>
+<span class="sd">        \end{cases}</span>
+
+<span class="sd">    Unlike the luminosity, this does not depend on the initial radius :math:`R_e`. Since :math:`\delta` is close to</span>
+<span class="sd">    1, the late-time branch is very sensitive to :math:`\delta`, which the paper cautions is hard to predict</span>
+<span class="sd">    without simulations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Times since explosion (floats are taken to be in s). Must be positive.</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    kappa : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Constant opacity (floats are taken to be in cm^2/g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        Photospheric radius in cm, broadcast as in :func:`compute_luminosity`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``t`` or a physical parameter is non-finite or not positive, if ``n &lt;= 5``, or if ``delta`` is outside</span>
+<span class="sd">        (1, 3).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">_prepare_time</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_photospheric_radius_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span></div>
+
+
+
+<div class="viewcode-block" id="compute_temperature">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.models.shock_cooling.compute_temperature.html#uvex_transients.models.shock_cooling.compute_temperature">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_temperature</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">E_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">R_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">M_envelope</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">kappa</span><span class="p">:</span> <span class="n">PhysicalInput</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_N</span><span class="p">,</span>
+    <span class="n">delta</span><span class="p">:</span> <span class="n">NumericalInput</span> <span class="o">=</span> <span class="n">DEFAULT_DELTA</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Blackbody temperature :math:`T(t)` of the photosphere.</span>
+
+<span class="sd">    Eq. 22 of :footcite:t:`2021ApJ...909..209P`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        T(t) = \left[\frac{L(t)}{4\pi r_\mathrm{ph}^2(t)\,\sigma_\mathrm{SB}}\right]^{1/4},</span>
+
+<span class="sd">    with :math:`L` from :func:`compute_luminosity` and :math:`r_\mathrm{ph}` from</span>
+<span class="sd">    :func:`compute_photospheric_radius`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Times since explosion (floats are taken to be in s). Must be positive.</span>
+<span class="sd">    E_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Energy :math:`E_e` imparted to the envelope (floats are taken to be in erg).</span>
+<span class="sd">    R_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Initial envelope radius :math:`R_e` (floats are taken to be in cm).</span>
+<span class="sd">    M_envelope : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Envelope mass :math:`M_e` (floats are taken to be in g).</span>
+<span class="sd">    kappa : ~astropy.units.Quantity or array_like</span>
+<span class="sd">        Constant opacity (floats are taken to be in cm^2/g).</span>
+<span class="sd">    n, delta : array_like, optional</span>
+<span class="sd">        Density power-law indices; see :func:`compute_ejecta_normalization`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        Temperature in K, broadcast as in :func:`compute_luminosity`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``t`` or a physical parameter is non-finite or not positive, if ``n &lt;= 5``, or if ``delta`` is outside</span>
+<span class="sd">        (1, 3).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">_prepare_time</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">_prepare_envelope</span><span class="p">(</span><span class="n">E_envelope</span><span class="p">,</span> <span class="n">M_envelope</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">R_envelope</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
+    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ensure_in_units</span><span class="p">(</span><span class="n">kappa</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">_check_positive</span><span class="p">(</span><span class="n">R_envelope</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">kappa</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

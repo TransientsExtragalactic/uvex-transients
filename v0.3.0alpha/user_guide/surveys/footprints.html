@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Survey Footprints &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/surveys/footprints';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.3.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulation" href="../simulation/overview.html" />
+    <link rel="prev" title="Surveys" href="overview.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../models/overview.html">Models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/custom_models.html">Writing a Custom Model</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../transients/overview.html">Transients</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../transients/custom_transients.html">Writing a Custom Transient</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Surveys</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Survey Footprints</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../simulation/overview.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../simulation/yield_statistics.html">Yield Statistics</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../cli/overview.html">Command-Line Interface</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../user_guide.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Survey Footprints</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="survey-footprints">
+<span id="user-guide-footprints"></span><h1>Survey Footprints<a class="headerlink" href="#survey-footprints" title="Link to this heading">#</a></h1>
+<p>A <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.html#uvex_transients.surveys.base.SurveySchedule" title="uvex_transients.surveys.base.SurveySchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySchedule</span></code></a> answers the question “what did UVEX
+actually observe, and when?” That is exactly what you need to decide whether one simulated
+transient was seen. A different, coarser question comes up just as often: “<em>where</em> does a survey
+look at all?” Which of the UVEX-detected TDEs also fall in the area Rubin LSST covers, and could
+have optical follow-up or pre-discovery data? How much of ZTF’s sky overlaps the UVEX wide
+survey? Those questions have nothing to do with a particular exposure or date. They concern the
+<em>footprint</em>: the region of sky a survey is designed to cover.</p>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.html#module-uvex_transients.surveys.footprints" title="uvex_transients.surveys.footprints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.surveys.footprints</span></code></a> represents footprints as named
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.base.SurveyFootprint" title="uvex_transients.surveys.footprints.base.SurveyFootprint"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveyFootprint</span></code></a> objects. Each one wraps a
+<a class="reference external" href="https://cds-astro.github.io/mocpy/">MOC</a> (a Multi-Order Coverage map, a compact and exact-ish
+description of a region of sky built from HEALPix cells), builds it lazily, caches it to disk,
+and registers itself under a short name such as <code class="docutils literal notranslate"><span class="pre">&quot;uvex:lmlz:wide&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;lsst:wfd&quot;</span></code>. Once a
+footprint exists, testing a position against it, or an entire
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> of events, is a single
+vectorized call.</p>
+<p>This page covers what a footprint is and how the registered ones are organized, how to query
+them, how to combine them with set operations, how to define your own, and how the disk cache
+behaves.</p>
+<section id="quick-look">
+<h2>Quick Look<a class="headerlink" href="#quick-look" title="Link to this heading">#</a></h2>
+<p>Every footprint the package defines is already in the
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.default_registry.html#uvex_transients.surveys.footprints.base.default_registry" title="uvex_transients.surveys.footprints.base.default_registry"><code class="xref py py-data docutils literal notranslate"><span class="pre">default_registry</span></code></a>. Look one up by name, test
+some positions against it, and draw it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_registry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_footprints</span>
+
+<span class="n">ztf</span> <span class="o">=</span> <span class="n">default_registry</span><span class="p">[</span><span class="s2">"ztf:main"</span><span class="p">]</span>
+
+<span class="c1"># Is (RA, Dec) = (10, 45) deg in ZTF's footprint? What about (10, -60)?</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ztf</span><span class="o">.</span><span class="n">contains</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">45</span><span class="p">,</span> <span class="o">-</span><span class="mi">60</span><span class="p">]))</span>
+
+<span class="n">plot_footprints</span><span class="p">({</span><span class="s2">"ZTF"</span><span class="p">:</span> <span class="n">ztf</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s2">"ZTF survey footprint"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/e7dedbb38054c8ca6104a8ea879ef40c/footprints-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bc83277122bca4a7f3461433d2cc6418/footprints-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/e9c59fdf3e619338410282846c96532d/footprints-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2450bfe94502c064112616f1bedbcd2f/footprints-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/footprints-1.png" class="plot-directive" src="../../_images/footprints-1.png" />
+</figure>
+<p>The legend reports the footprint’s area, and the first <code class="docutils literal notranslate"><span class="pre">contains</span></code> call returns one boolean per
+position. Everything else on this page elaborates on those two moves: <em>get a footprint</em> and
+<em>ask it questions</em>.</p>
+</section>
+<hr class="docutils" />
+<section id="what-a-footprint-is">
+<h2>What a Footprint Is<a class="headerlink" href="#what-a-footprint-is" title="Link to this heading">#</a></h2>
+<p>A <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.base.SurveyFootprint" title="uvex_transients.surveys.footprints.base.SurveyFootprint"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveyFootprint</span></code></a> is a small dataclass with
+four things that matter:</p>
+<ul class="simple">
+<li><p>a <code class="docutils literal notranslate"><span class="pre">name</span></code>, colon-separated and ordered <em>observatory, survey, region</em> (<code class="docutils literal notranslate"><span class="pre">uvex:lmlz:wide</span></code>),</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">generator</span></code>, a function that actually builds the MOC,</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">params</span></code> dictionary of keyword arguments for that generator, and</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">persist</span></code> flag saying whether the finished MOC should be cached to disk.</p></li>
+</ul>
+<p>Nothing is computed when you construct one. The MOC is only built the first time something
+touches <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.moc.html#uvex_transients.surveys.footprints.base.SurveyFootprint.moc" title="uvex_transients.surveys.footprints.base.SurveyFootprint.moc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">moc</span></code></a>, either by
+running the generator or, for a persisted footprint, by reading the cache. That matters because
+some generators are expensive: the UVEX footprints download a DS9 region file, and the LSST
+footprints need a ~240 MB scheduler data archive. Importing the package costs none of that, and
+you pay only for the footprints you use.</p>
+<p>The MOC is stored at a maximum HEALPix order (<code class="docutils literal notranslate"><span class="pre">MOC_max_order</span></code>, default 10, about 3.4 arcmin
+cells). A generator that produces something finer is degraded to that order, so footprints have a
+predictable memory and disk size regardless of how they were made.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A MOC is a <em>cell-level</em> description of the sky, so a footprint’s edge is only as sharp as its
+cell size. At the default order a position within a few arcminutes of a boundary can fall on
+either side of the true edge. For population-level questions like “what fraction of events
+lie in this survey?” that is negligible, but it is not the right tool for deciding whether
+one specific target sits right on a boundary.</p>
+</div>
+</section>
+<hr class="docutils" />
+<section id="the-registered-footprints">
+<h2>The Registered Footprints<a class="headerlink" href="#the-registered-footprints" title="Link to this heading">#</a></h2>
+<p>The package ships footprints for four observatories. All register themselves when
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.html#module-uvex_transients.surveys.footprints" title="uvex_transients.surveys.footprints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.surveys.footprints</span></code></a> is imported, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.names.html#uvex_transients.surveys.footprints.base.FootprintRegistry.names" title="uvex_transients.surveys.footprints.base.FootprintRegistry.names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">names()</span></code></a> lists them, optionally
+filtered by prefix:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_registry</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">default_registry</span><span class="o">.</span><span class="n">names</span><span class="p">())</span>          <span class="c1"># everything</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">default_registry</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">"uvex:"</span><span class="p">))</span>   <span class="c1"># just UVEX</span>
+</pre></div>
+</div>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 78.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>What it covers</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">uvex:allsky</span></code></p></td>
+<td><p>The whole sky, an unrestricted baseline for the others to be intersected against.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">uvex:lmlz:wide</span></code></p></td>
+<td><p>The low-Milky-Way/low-zodiacal-light wide survey.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">uvex:lmlz:deep</span></code></p></td>
+<td><p>The LMLZ deep fields. These are point targets, expanded into circles the size of UVEX’s
+inscribed field of view.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">uvex:mc</span></code></p></td>
+<td><p>The Magellanic Clouds survey (LMC and SMC).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ztf:main</span></code></p></td>
+<td><p>ZTF’s visible sky, a declination cut from Palomar (declination above -31 degrees).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ls4:sole</span></code></p></td>
+<td><p>The LS4 SOLE survey (Stellar Oscillations, Lensing, and Eruptions): a Galactic plane strip
+and a bulge box, about 1200 square degrees.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lsst:main</span></code></p></td>
+<td><p>Everything in Rubin’s sky-area map. The more specific regions below are its pieces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lsst:wfd</span></code>, <code class="docutils literal notranslate"><span class="pre">lsst:nes</span></code>, <code class="docutils literal notranslate"><span class="pre">lsst:scp</span></code>, <code class="docutils literal notranslate"><span class="pre">lsst:galplane</span></code>, <code class="docutils literal notranslate"><span class="pre">lsst:mc</span></code>, <code class="docutils literal notranslate"><span class="pre">lsst:virgo</span></code></p></td>
+<td><p>The wide-fast-deep area, north ecliptic spur, south celestial pole, Galactic plane and
+bulge, Magellanic Clouds, and Virgo cluster regions of the LSST survey.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lsst:ddf</span></code></p></td>
+<td><p>The LSST deep drilling fields, expanded from single pointings to the 1.75 degree radius
+field of view.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lsst:combined</span></code></p></td>
+<td><p>The union of <code class="docutils literal notranslate"><span class="pre">lsst:main</span></code> and <code class="docutils literal notranslate"><span class="pre">lsst:ddf</span></code>: everything LSST observes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The names are just strings, looked up case-insensitively. A misspelled one raises a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>
+that lists every registered name, so you rarely have to guess.</p>
+<section id="where-the-footprints-come-from">
+<h3>Where the Footprints Come From<a class="headerlink" href="#where-the-footprints-come-from" title="Link to this heading">#</a></h3>
+<p>Each observatory’s footprint is built differently, depending on what the observatory publishes:</p>
+<p><strong>UVEX</strong> footprints come from the DS9 region files in the
+<a class="reference external" href="https://github.com/m4opt/uvex-scheduler/tree/main/survey-footprints">uvex-scheduler</a>
+repository, the same project that produces the real schedules (see
+<a class="reference internal" href="overview.html#user-guide-surveys-loading-scheduler"><span class="std std-ref">From the UVEX Scheduler</span></a>). The first use of each downloads its file, converts
+the circles, polygons, and points to a MOC, and caches the result.</p>
+<p><strong>ZTF</strong> and <strong>LS4</strong> publish no region file. ZTF’s coverage is the sky visible from Palomar, which
+a single declination cut describes well. LS4’s SOLE survey is defined in Bellm et al. (2025) as two
+boxes in Galactic coordinates, which the package turns into polygons. The other LS4 surveys have
+no numeric footprint in the paper and are deliberately left out rather than guessed.</p>
+<p><strong>LSST</strong> footprints are built from Rubin’s own scheduler: its labeled sky-area map supplies the
+survey regions and its field list supplies the deep drilling fields. This is the one case that
+needs an optional dependency, <code class="docutils literal notranslate"><span class="pre">rubin_scheduler</span></code>, installed with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"uvex-transients[rubin]"</span>
+</pre></div>
+</div>
+<p>You only need it to <em>generate</em> the MOCs. The scheduler data is downloaded once, and each finished
+MOC is cached, so later runs need neither the package nor the download. The <code class="docutils literal notranslate"><span class="pre">lsst:*</span></code> names are
+registered either way, and asking for the MOC of one without <code class="docutils literal notranslate"><span class="pre">rubin_scheduler</span></code> installed
+(and nothing cached) raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> with the install command rather than failing
+obscurely.</p>
+<p>All of the URLs, region labels, radii, and box limits behind these footprints live in the
+<code class="docutils literal notranslate"><span class="pre">observatories</span></code> section of <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, so pointing at a new mirror or tweaking a region is
+a config change rather than a code change.</p>
+</section>
+<section id="drawing-footprints">
+<h3>Drawing Footprints<a class="headerlink" href="#drawing-footprints" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.utils.plotting.plot_footprints.html#uvex_transients.utils.plotting.plot_footprints" title="uvex_transients.utils.plotting.plot_footprints"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_footprints()</span></code></a> draws any mapping of labels to footprints
+(or raw MOCs) on a full-sky Aitoff map, each in its own color with its area in the legend. Colors
+are assigned in order, and later footprints are drawn over earlier ones. The LS4 SOLE survey and
+ZTF make a nice pair, since SOLE hugs the Galactic plane and only partly overlaps ZTF’s sky:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sole</span> <span class="o">=</span> <span class="n">default_registry</span><span class="p">[</span><span class="s2">"ls4:sole"</span><span class="p">]</span>
+
+<span class="n">plot_footprints</span><span class="p">({</span><span class="s2">"ZTF"</span><span class="p">:</span> <span class="n">ztf</span><span class="p">,</span> <span class="s2">"LS4 SOLE"</span><span class="p">:</span> <span class="n">sole</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s2">"ZTF and LS4 SOLE"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/d9643196ef9782058820b2ccd327e258/footprints-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/41ae9602888c289af04797c747ab3af7/footprints-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/6ae06b9db857bf3b8732e88974349d51/footprints-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/3643093df485d13d1693f8eb1a13fb8f/footprints-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/footprints-2.png" class="plot-directive" src="../../_images/footprints-2.png" />
+</figure>
+<p>The map samples each footprint on a HEALPix grid (<code class="docutils literal notranslate"><span class="pre">nside=128</span></code> by default), so regions much
+smaller than a pixel will not show. Pass a larger <code class="docutils literal notranslate"><span class="pre">nside</span></code> if you need to see them. See the
+<a class="reference internal" href="../../auto_examples/surveys/index.html#surveys-gallery"><span class="std std-ref">Survey Footprints</span></a> for maps of every registered observatory.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="querying-footprints">
+<h2>Querying Footprints<a class="headerlink" href="#querying-footprints" title="Link to this heading">#</a></h2>
+<p>The central operation is asking whether sky positions lie inside a footprint.
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains.html#uvex_transients.surveys.footprints.base.SurveyFootprint.contains" title="uvex_transients.surveys.footprints.base.SurveyFootprint.contains"><code class="xref py py-meth docutils literal notranslate"><span class="pre">contains()</span></code></a> takes RA and Dec in
+degrees (ICRS), which broadcast against each other:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ztf</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="mf">150.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>                  <span class="c1"># array([ True])</span>
+<span class="n">ztf</span><span class="o">.</span><span class="n">contains</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">45.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">60.0</span><span class="p">])</span> <span class="c1"># array([ True, False])</span>
+</pre></div>
+</div>
+<p>If you already have a <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.coordinates.SkyCoord.html#astropy.coordinates.SkyCoord" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyCoord</span></code></a>, in any frame,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord.html#uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord" title="uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord"><code class="xref py py-meth docutils literal notranslate"><span class="pre">contains_skycoord()</span></code></a> skips the
+unit handling. Both are vectorized MOC lookups, so testing a million positions costs about as
+much as it sounds like it should, which is very little:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">200_000</span>
+<span class="n">coords</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span>
+    <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span>  <span class="c1"># uniform on the sphere</span>
+<span class="p">)</span>
+
+<span class="n">in_ztf</span> <span class="o">=</span> <span class="n">ztf</span><span class="o">.</span><span class="n">contains_skycoord</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">in_ztf</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> of the sky lies in ZTF's footprint"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/f72ede11881c96ecc1980e6d5a723ac8/footprints-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>)</p>
+<p>A uniform draw on the sphere makes the in-footprint fraction an area estimate, and here it
+should land near 76%, the fraction of the sky above a declination of -31 degrees.</p>
+<section id="testing-against-several-footprints-at-once">
+<h3>Testing Against Several Footprints at Once<a class="headerlink" href="#testing-against-several-footprints-at-once" title="Link to this heading">#</a></h3>
+<p>When the same positions need checking against several surveys,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.match.html#uvex_transients.surveys.footprints.base.FootprintRegistry.match" title="uvex_transients.surveys.footprints.base.FootprintRegistry.match"><code class="xref py py-meth docutils literal notranslate"><span class="pre">match()</span></code></a> takes a list of names and
+returns a dictionary of boolean masks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">masks</span> <span class="o">=</span> <span class="n">default_registry</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="p">[</span><span class="s2">"ztf:main"</span><span class="p">,</span> <span class="s2">"ls4:sole"</span><span class="p">])</span>
+<span class="n">masks</span><span class="p">[</span><span class="s2">"ls4:sole"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Anywhere a function accepts “a footprint or its name”,
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.resolve.html#uvex_transients.surveys.footprints.base.FootprintRegistry.resolve" title="uvex_transients.surveys.footprints.base.FootprintRegistry.resolve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resolve()</span></code></a> is what turns the
+string into the object, and passes an existing footprint straight through.</p>
+</section>
+<section id="footprints-and-event-catalogs">
+<h3>Footprints and Event Catalogs<a class="headerlink" href="#footprints-and-event-catalogs" title="Link to this heading">#</a></h3>
+<p>The most common use of a footprint is cross-matching a simulated population against it.
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.in_footprint.html#uvex_transients.simulation.event_catalog.EventCatalog.in_footprint" title="uvex_transients.simulation.event_catalog.EventCatalog.in_footprint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EventCatalog.in_footprint</span></code></a>
+returns one boolean per catalog row, aligned with the table, from a single vectorized lookup:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">in_lsst</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">in_footprint</span><span class="p">(</span><span class="s2">"lsst:combined"</span><span class="p">)</span>
+
+<span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">detected</span><span class="p">)</span>
+<span class="n">n_overlap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">in_lsst</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_overlap</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_total</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> of detected events are in the LSST footprint"</span><span class="p">)</span>
+
+<span class="c1"># The mask indexes the catalog's table or any per-event array.</span>
+<span class="n">overlap_table</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">in_lsst</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>It accepts either a registered name or a footprint object. For a single event reconstructed with
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.get_events.html#uvex_transients.simulation.event_catalog.EventCatalog.get_events" title="uvex_transients.simulation.event_catalog.EventCatalog.get_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_events()</span></code></a>,
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.in_footprint.html#uvex_transients.simulation.event.Event.in_footprint" title="uvex_transients.simulation.event.Event.in_footprint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Event.in_footprint</span></code></a> does the same
+for one position.</p>
+<p>Note that a footprint mask is deliberately <em>schedule-independent</em>: it says where an event is,
+not whether UVEX (or anyone) observed it. Combining the two is the point. In
+<a class="reference internal" href="../../auto_examples/surveys/plot_tde_rubin_overlap.html#sphx-glr-auto-examples-surveys-plot-tde-rubin-overlap-py"><span class="std std-ref">the TDE and Rubin overlap example</span></a>,
+TDEs are first detected using the UVEX schedule (see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>) and then masked
+against the LSST regions to count how many have Rubin coverage.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="combining-footprints">
+<h2>Combining Footprints<a class="headerlink" href="#combining-footprints" title="Link to this heading">#</a></h2>
+<p>Real questions are rarely about a single footprint. “Where do ZTF and LS4 SOLE overlap?” “What
+part of LSST’s sky does UVEX’s wide survey <em>not</em> reach?” These are set operations, and
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.combine_footprints.html#uvex_transients.surveys.footprints.base.combine_footprints" title="uvex_transients.surveys.footprints.base.combine_footprints"><code class="xref py py-func docutils literal notranslate"><span class="pre">combine_footprints()</span></code></a> builds a new, registered
+footprint from any of them:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>Aliases</p></th>
+<th class="head"><p>Result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;union&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;or&quot;</span></code></p></td>
+<td><p>Sky covered by any operand.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;intersection&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;and&quot;</span></code></p></td>
+<td><p>Sky covered by every operand.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;difference&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;minus&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;subtract&quot;</span></code></p></td>
+<td><p>The first operand with every later operand removed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;xor&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;symmetric_difference&quot;</span></code></p></td>
+<td><p>Sky covered by exactly one of two operands.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Operands can be footprint objects or their names, and the operation folds left to right, so
+<code class="docutils literal notranslate"><span class="pre">&quot;difference&quot;</span></code> over three footprints is the first minus the second minus the third:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">combine_footprints</span>
+
+<span class="n">overlap</span> <span class="o">=</span> <span class="n">combine_footprints</span><span class="p">(</span>
+    <span class="s2">"demo:ztf_and_sole"</span><span class="p">,</span>
+    <span class="s2">"intersection"</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">"ztf:main"</span><span class="p">,</span> <span class="s2">"ls4:sole"</span><span class="p">],</span>
+    <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">ztf_only</span> <span class="o">=</span> <span class="n">combine_footprints</span><span class="p">(</span>
+    <span class="s2">"demo:ztf_minus_sole"</span><span class="p">,</span>
+    <span class="s2">"difference"</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">ztf</span><span class="p">,</span> <span class="n">sole</span><span class="p">],</span>
+    <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plot_footprints</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">"ZTF minus SOLE"</span><span class="p">:</span> <span class="n">ztf_only</span><span class="p">,</span> <span class="s2">"ZTF and SOLE"</span><span class="p">:</span> <span class="n">overlap</span><span class="p">},</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">"Combining footprints"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/8be921291d453a04d001051cb3896083/footprints-4.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2aca62424512db7b0c3a8006c9d45dd7/footprints-4.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/e62f123494da592ad224763bb5f38932/footprints-4.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/f4c7a4e839284c07eae78b3910696c28/footprints-4.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/footprints-4.png" class="plot-directive" src="../../_images/footprints-4.png" />
+</figure>
+<p>The result is an ordinary <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.base.SurveyFootprint" title="uvex_transients.surveys.footprints.base.SurveyFootprint"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveyFootprint</span></code></a>: it is
+lazy, queryable, plottable, and registered under the name you gave it, so it can be the operand
+of a later combination or be passed by name to
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.in_footprint.html#uvex_transients.simulation.event_catalog.EventCatalog.in_footprint" title="uvex_transients.simulation.event_catalog.EventCatalog.in_footprint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">in_footprint()</span></code></a>. A combined footprint
+also generates a description from its operation and operands unless you supply one.</p>
+<p>Combined footprints are cached by default (<code class="docutils literal notranslate"><span class="pre">persist=True</span></code>), unlike a hand-built footprint,
+because their operands are often cached, large MOCs and a set operation over them is not free. The
+<code class="docutils literal notranslate"><span class="pre">lsst:combined</span></code> footprint is built exactly this way, as the union of <code class="docutils literal notranslate"><span class="pre">lsst:main</span></code> and
+<code class="docutils literal notranslate"><span class="pre">lsst:ddf</span></code>. Because a combined footprint’s cache key includes its operands’ keys, changing an
+operand invalidates the combination automatically. See <a class="reference internal" href="#user-guide-footprints-caching"><span class="std std-ref">Caching</span></a>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Operands finer than the result’s <code class="docutils literal notranslate"><span class="pre">MOC_max_order</span></code> are degraded before the operation, so you
+can combine footprints of different resolutions. The combined footprint takes its own
+<code class="docutils literal notranslate"><span class="pre">MOC_max_order</span></code> (pass it as a keyword argument).</p>
+</div>
+</section>
+<hr class="docutils" />
+<section id="defining-your-own-footprint">
+<h2>Defining Your Own Footprint<a class="headerlink" href="#defining-your-own-footprint" title="Link to this heading">#</a></h2>
+<p>Anything you can express as a MOC can be a footprint. A generator is just a function that takes
+a keyword-only <code class="docutils literal notranslate"><span class="pre">max_order</span></code> plus whatever else you put in <code class="docutils literal notranslate"><span class="pre">params</span></code> and returns a
+<cite>~mocpy.MOC</cite>. The package ships several building blocks in
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.html#module-uvex_transients.surveys.footprints.utils" title="uvex_transients.surveys.footprints.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.surveys.footprints.utils</span></code></a>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Generator</p></th>
+<th class="head"><p>Builds</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.all_sky_MOC.html#uvex_transients.surveys.footprints.utils.all_sky_MOC" title="uvex_transients.surveys.footprints.utils.all_sky_MOC"><code class="xref py py-func docutils literal notranslate"><span class="pre">all_sky_MOC()</span></code></a></p></td>
+<td><p>The full sky.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.dec_band_MOC.html#uvex_transients.surveys.footprints.utils.dec_band_MOC" title="uvex_transients.surveys.footprints.utils.dec_band_MOC"><code class="xref py py-func docutils literal notranslate"><span class="pre">dec_band_MOC()</span></code></a></p></td>
+<td><p>A declination band across every right ascension (<code class="docutils literal notranslate"><span class="pre">min_dec</span></code>, optional <code class="docutils literal notranslate"><span class="pre">max_dec</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.galactic_box_MOC.html#uvex_transients.surveys.footprints.utils.galactic_box_MOC" title="uvex_transients.surveys.footprints.utils.galactic_box_MOC"><code class="xref py py-func docutils literal notranslate"><span class="pre">galactic_box_MOC()</span></code></a></p></td>
+<td><p>A box bounded by constant Galactic longitude and latitude.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.union_of_galactic_boxes_MOC.html#uvex_transients.surveys.footprints.utils.union_of_galactic_boxes_MOC" title="uvex_transients.surveys.footprints.utils.union_of_galactic_boxes_MOC"><code class="xref py py-func docutils literal notranslate"><span class="pre">union_of_galactic_boxes_MOC()</span></code></a></p></td>
+<td><p>The union of several such boxes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.utils.fetch_and_generate_MOC_from_URL.html#uvex_transients.surveys.footprints.utils.fetch_and_generate_MOC_from_URL" title="uvex_transients.surveys.footprints.utils.fetch_and_generate_MOC_from_URL"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_and_generate_MOC_from_URL()</span></code></a></p></td>
+<td><p>A DS9 region file at a URL (circles, polygons, and points).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For example, a hypothetical survey covering the northern cap above a declination of 60 degrees:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveyFootprint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">dec_band_MOC</span>
+
+<span class="n">polar</span> <span class="o">=</span> <span class="n">SurveyFootprint</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"demo:polar:north"</span><span class="p">,</span>
+    <span class="n">generator</span><span class="o">=</span><span class="n">dec_band_MOC</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"min_dec"</span><span class="p">:</span> <span class="mf">60.0</span><span class="p">},</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"A made-up polar survey: everything above Dec = +60 deg."</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">plot_footprints</span><span class="p">({</span><span class="s2">"Polar survey"</span><span class="p">:</span> <span class="n">polar</span><span class="p">,</span> <span class="s2">"ZTF"</span><span class="p">:</span> <span class="n">ztf</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s2">"A custom footprint"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/49054940105fdd8a3b86ba1b5c8c2eeb/footprints-5.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/ad3267d31b563c4e8e8d9740a6674df3/footprints-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/357f750d08c541974dcb69d63f1fa6b6/footprints-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/cd0d8eb052ab27e6382a0a8a9694adf6/footprints-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/footprints-5.png" class="plot-directive" src="../../_images/footprints-5.png" />
+</figure>
+<p>Constructing the footprint registered it in the default registry, so <code class="docutils literal notranslate"><span class="pre">default_registry[&quot;demo:polar:north&quot;]</span></code>
+now works anywhere in the same session.</p>
+<section id="using-a-region-file">
+<h3>Using a Region File<a class="headerlink" href="#using-a-region-file" title="Link to this heading">#</a></h3>
+<p>If your survey ships a DS9 region file, you do not need to write a generator at all. Point the
+URL helper at it and cache the result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.footprints.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_and_generate_MOC_from_URL</span>
+
+<span class="n">my_survey</span> <span class="o">=</span> <span class="n">SurveyFootprint</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"myobs:deep:fields"</span><span class="p">,</span>
+    <span class="n">generator</span><span class="o">=</span><span class="n">fetch_and_generate_MOC_from_URL</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="s2">"https://example.org/fields.ds9"</span><span class="p">,</span> <span class="s2">"point_region_size"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Circles and polygons convert directly. A <code class="docutils literal notranslate"><span class="pre">point</span></code> region is a pointing rather than an area, so
+<code class="docutils literal notranslate"><span class="pre">point_region_size</span></code> (a radius in degrees, normally your instrument’s field of view) is required
+whenever the file contains any.</p>
+</section>
+<section id="a-fully-custom-generator">
+<h3>A Fully Custom Generator<a class="headerlink" href="#a-fully-custom-generator" title="Link to this heading">#</a></h3>
+<p>For anything else, write the function yourself. It must accept <code class="docutils literal notranslate"><span class="pre">max_order</span></code> as a keyword and
+return a <cite>~mocpy.MOC</cite>; a return of any other type raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> with the footprint’s
+name in it. Here, a survey made of three fixed circular fields:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mocpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">MOC</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">circular_fields</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">max_order</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Union of circles (centers in (RA, Dec) degrees, radius in degrees)."""</span>
+    <span class="n">mocs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">MOC</span><span class="o">.</span><span class="n">from_cone</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="n">ra</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">dec</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">radius</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="n">max_order</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span> <span class="ow">in</span> <span class="n">centers</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="n">MOC</span><span class="o">.</span><span class="n">union</span><span class="p">,</span> <span class="n">mocs</span><span class="p">)</span>
+
+<span class="n">fields</span> <span class="o">=</span> <span class="n">SurveyFootprint</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"demo:fields:three"</span><span class="p">,</span>
+    <span class="n">generator</span><span class="o">=</span><span class="n">circular_fields</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"centers"</span><span class="p">:</span> <span class="p">[(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">50</span><span class="p">)],</span> <span class="s2">"radius"</span><span class="p">:</span> <span class="mf">12.0</span><span class="p">},</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Three 12 degree circular fields."</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fields</span><span class="o">.</span><span class="n">moc</span><span class="o">.</span><span class="n">sky_fraction</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">41253</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2"> deg^2"</span><span class="p">)</span>
+<span class="n">plot_footprints</span><span class="p">({</span><span class="s2">"Three fields"</span><span class="p">:</span> <span class="n">fields</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s2">"A custom generator"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/6fd76565482dbac1ef202165f025359c/footprints-6.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/cc25a0fdfb9f82556756ec6e902fb10c/footprints-6.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/5e4bd8d8026a53421cd0f2279d648ea0/footprints-6.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/9d06c920e239b87cc1be26112f68803d/footprints-6.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/footprints-6.png" class="plot-directive" src="../../_images/footprints-6.png" />
+</figure>
+<p>Keep <code class="docutils literal notranslate"><span class="pre">params</span></code> JSON-friendly (numbers, strings, lists, and dictionaries of those). They are part
+of the cache key, discussed next.</p>
+</section>
+<section id="registering-and-naming">
+<h3>Registering and Naming<a class="headerlink" href="#registering-and-naming" title="Link to this heading">#</a></h3>
+<p>Names are unique within a registry. Constructing a second footprint with a name that is already
+taken raises a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>, so a typo cannot silently shadow a built-in. To replace one on
+purpose, register explicitly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">polar</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.register.html#uvex_transients.surveys.footprints.base.SurveyFootprint.register" title="uvex_transients.surveys.footprints.base.SurveyFootprint.register"><code class="xref py py-meth docutils literal notranslate"><span class="pre">register()</span></code></a> also accepts a
+<code class="docutils literal notranslate"><span class="pre">registry</span></code> argument if you would rather keep a project’s footprints in their own
+<a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.html#uvex_transients.surveys.footprints.base.FootprintRegistry" title="uvex_transients.surveys.footprints.base.FootprintRegistry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FootprintRegistry</span></code></a> and out of the package-wide
+default. Stick to the <code class="docutils literal notranslate"><span class="pre">observatory:survey:region</span></code> naming convention. The registry treats names as
+opaque strings, but the cache uses each colon-separated part as a directory, and the convention
+lets <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.names.html#uvex_transients.surveys.footprints.base.FootprintRegistry.names" title="uvex_transients.surveys.footprints.base.FootprintRegistry.names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">names()</span></code></a> prefix filters
+(<code class="docutils literal notranslate"><span class="pre">&quot;uvex:&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;lsst:&quot;</span></code>) group things the way you would expect.</p>
+<hr class="docutils" />
+</section>
+</section>
+<section id="caching">
+<span id="user-guide-footprints-caching"></span><h2>Caching<a class="headerlink" href="#caching" title="Link to this heading">#</a></h2>
+<p>Building a footprint can be slow (a download, a scheduler data archive, a polygon rasterized to
+fine cells), and the answer rarely changes. A footprint created with <code class="docutils literal notranslate"><span class="pre">persist=True</span></code> is written
+to the package cache directory the first time it is generated and reloaded from there on every
+later run, in any session.</p>
+<p>You can see where it lives and whether it is there:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fp</span> <span class="o">=</span> <span class="n">default_registry</span><span class="p">[</span><span class="s2">"uvex:lmlz:wide"</span><span class="p">]</span>
+
+<span class="n">fp</span><span class="o">.</span><span class="n">is_cached</span>      <span class="c1"># whether a cached MOC matching the current key exists</span>
+<span class="n">fp</span><span class="o">.</span><span class="n">cache_key</span>      <span class="c1"># e.g. "a6bbd64807df118d"</span>
+<span class="n">fp</span><span class="o">.</span><span class="n">cache_path</span>     <span class="c1"># .../footprints/uvex/lmlz/wide/&lt;cache_key&gt;.fits</span>
+</pre></div>
+</div>
+<section id="the-cache-key">
+<h3>The Cache Key<a class="headerlink" href="#the-cache-key" title="Link to this heading">#</a></h3>
+<p>The cache file is named after a hash of everything that can change the footprint: its name, its
+<code class="docutils literal notranslate"><span class="pre">version</span></code>, the dotted path of its generator, its <code class="docutils literal notranslate"><span class="pre">params</span></code>, and its <code class="docutils literal notranslate"><span class="pre">MOC_max_order</span></code>. Change
+any of them and the key changes, so the old file is simply never looked up again. You never have
+to remember to invalidate the cache after editing a footprint’s parameters.</p>
+<p>The one thing the key cannot see is a change in the <em>data behind</em> a footprint when nothing
+you control changed. For example, the UVEX region files track the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch of
+uvex-scheduler, so an upstream fix keeps the same URL and the same key. There are two ways to
+refresh in that case:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fp</span><span class="o">.</span><span class="n">clear_from_cache</span><span class="p">()</span>   <span class="c1"># delete the cached file and drop the in-memory copy</span>
+<span class="n">fp</span><span class="o">.</span><span class="n">moc</span>                  <span class="c1"># regenerates (and re-caches)</span>
+</pre></div>
+</div>
+<p>or bump <code class="docutils literal notranslate"><span class="pre">version</span></code> on the footprint (<code class="docutils literal notranslate"><span class="pre">SurveyFootprint(...,</span> <span class="pre">version=&quot;v2&quot;)</span></code>), which changes the
+key. This is what the LSST footprints do: <code class="docutils literal notranslate"><span class="pre">version</span></code> in the <code class="docutils literal notranslate"><span class="pre">observatories.lsst</span></code> config
+section is meant to be bumped after a <code class="docutils literal notranslate"><span class="pre">rubin_scheduler</span></code> upgrade changes the survey strategy.</p>
+</section>
+<section id="where-the-cache-lives">
+<h3>Where the Cache Lives<a class="headerlink" href="#where-the-cache-lives" title="Link to this heading">#</a></h3>
+<p>The footprint cache is a <code class="docutils literal notranslate"><span class="pre">footprints/</span></code> folder inside the package-wide cache directory. That
+directory is resolved from, in order, the <code class="docutils literal notranslate"><span class="pre">UVEX_TRANSIENTS_CACHE</span></code> environment variable, the
+<code class="docutils literal notranslate"><span class="pre">system.caching.cache_dir</span></code> config entry, and finally your platform’s standard user cache
+location. It is the same directory that holds other downloaded data, so on a shared machine or a
+cluster it is worth pointing at fast, persistent storage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">UVEX_TRANSIENTS_CACHE</span><span class="o">=</span>/scratch/me/uvex_cache
+</pre></div>
+</div>
+<p>Cache writes are atomic (a temporary file, then a rename), so a job killed mid-write never leaves
+a truncated file that the next run would trip over.</p>
+</section>
+<section id="when-not-to-cache">
+<h3>When <em>not</em> to Cache<a class="headerlink" href="#when-not-to-cache" title="Link to this heading">#</a></h3>
+<p>Persisting is off by default for a hand-built <code class="docutils literal notranslate"><span class="pre">SurveyFootprint</span></code> because analytic shapes such as
+<code class="docutils literal notranslate"><span class="pre">all_sky_MOC</span></code> and <code class="docutils literal notranslate"><span class="pre">dec_band_MOC</span></code> are instantaneous to rebuild, and a cache file would only add
+clutter. Turn it on for anything that downloads, parses a file, or rasterizes something large.
+The built-in <code class="docutils literal notranslate"><span class="pre">ztf:main</span></code> and <code class="docutils literal notranslate"><span class="pre">uvex:allsky</span></code> footprints follow this rule, while the region file
+and LSST footprints persist.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="putting-it-together">
+<h2>Putting It Together<a class="headerlink" href="#putting-it-together" title="Link to this heading">#</a></h2>
+<p>A typical footprint workflow strings these pieces together: simulate a population, keep the
+detected events, and ask where in the sky each survey could have seen them. The
+<a class="reference internal" href="../../auto_examples/surveys/index.html#surveys-gallery"><span class="std std-ref">Survey Footprints</span></a> has complete runnable versions, including the full
+<a class="reference internal" href="../../auto_examples/surveys/plot_tde_rubin_overlap.html#sphx-glr-auto-examples-surveys-plot-tde-rubin-overlap-py"><span class="std std-ref">TDE and Rubin overlap example</span></a>, which</p>
+<ol class="arabic simple">
+<li><p>samples TDEs from the default UVEX schedule and keeps those detected above SNR 5,</p></li>
+<li><p>masks them against <code class="docutils literal notranslate"><span class="pre">lsst:combined</span></code> with
+<a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.in_footprint.html#uvex_transients.simulation.event_catalog.EventCatalog.in_footprint" title="uvex_transients.simulation.event_catalog.EventCatalog.in_footprint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">in_footprint()</span></code></a>,</p></li>
+<li><p>repeats the mask for each LSST region to see where the overlap lives, and</p></li>
+<li><p>plots the detected events over the LSST footprint, colored by whether they fall inside it.</p></li>
+</ol>
+<p>For method-by-method detail, see <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.footprints.html#module-uvex_transients.surveys.footprints" title="uvex_transients.surveys.footprints"><code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.surveys.footprints</span></code></a> in the <a class="reference internal" href="../../api.html#api"><span class="std std-ref">API</span></a>
+reference.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="overview.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Surveys</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../simulation/overview.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Simulation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-look">Quick Look</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-a-footprint-is">What a Footprint Is</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-registered-footprints">The Registered Footprints</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-the-footprints-come-from">Where the Footprints Come From</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drawing-footprints">Drawing Footprints</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-footprints">Querying Footprints</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-against-several-footprints-at-once">Testing Against Several Footprints at Once</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#footprints-and-event-catalogs">Footprints and Event Catalogs</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-footprints">Combining Footprints</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-your-own-footprint">Defining Your Own Footprint</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-a-region-file">Using a Region File</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-fully-custom-generator">A Fully Custom Generator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#registering-and-naming">Registering and Naming</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#caching">Caching</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-cache-key">The Cache Key</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#where-the-cache-lives">Where the Cache Lives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-not-to-cache">When <em>not</em> to Cache</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#putting-it-together">Putting It Together</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user_guide/surveys/footprints.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

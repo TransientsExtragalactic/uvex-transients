@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.simulation.event &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/simulation/event';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.3.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.simulation.event</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.simulation.event</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">A single sampled transient event, reconstructed from one `EventCatalog` row.</span>
+
+<span class="sd">An :class:`Event` wraps everything needed to evaluate one sampled transient's</span>
+<span class="sd">detectability against a real survey schedule: its position, redshift, the</span>
+<span class="sd">luminosity distance and E(B-V) already cached in the catalog at generation time</span>
+<span class="sd">(see :meth:`~uvex_transients.simulation.core.SurveySimulator.generate_events` --</span>
+<span class="sd">neither is re-derived here), its SED parameter seed, and the schedule's own record</span>
+<span class="sd">of which observations actually covered its position during its active window.</span>
+
+<span class="sd">Normally reconstructed via :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.get_events`,</span>
+<span class="sd">not constructed directly.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Hashable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_attenuation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.keyed_noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">time_key</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveyFootprint</span><span class="p">,</span> <span class="n">default_registry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransientBase</span>
+
+
+<div class="viewcode-block" id="Event">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.html#uvex_transients.simulation.event.Event">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    One sampled transient event, tied to a real survey schedule.</span>
+
+<span class="sd">    Building an `Event` runs exactly one query against `schedule`</span>
+<span class="sd">    (:meth:`~uvex_transients.surveys.base.SurveySchedule.get_observations_of`) to find</span>
+<span class="sd">    which scheduled observations actually covered this event's position during</span>
+<span class="sd">    ``[t_explosion, t_explosion + transient.duration_limit)`` -- no photometry is done</span>
+<span class="sd">    here. :meth:`simulate_photometry` does the (comparatively expensive) per-observation,</span>
+<span class="sd">    per-band synthetic photometry, on demand.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event_id : int</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    transient : ~uvex_transients.transients.base.TransientBase</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    coord : ~astropy.coordinates.SkyCoord</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    t_explosion : ~astropy.time.Time</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    luminosity_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    ebv : float, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    transient_type : str, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    photometry_pre_window : ~astropy.units.Quantity, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    photometry_post_window : ~astropy.units.Quantity, optional</span>
+<span class="sd">        See :meth:`__init__`.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">event_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span><span class="p">,</span>
+        <span class="n">transient</span><span class="p">:</span> <span class="n">TransientBase</span><span class="p">,</span>
+        <span class="n">coord</span><span class="p">:</span> <span class="n">SkyCoord</span><span class="p">,</span>
+        <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t_explosion</span><span class="p">:</span> <span class="n">Time</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">luminosity_distance</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ebv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transient_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">photometry_pre_window</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+        <span class="n">photometry_post_window</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Construct an `Event`; its covering observations are queried from `schedule` lazily, on first access.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_id : int</span>
+<span class="sd">            This event's unique id, as assigned by `EventCatalog`.</span>
+<span class="sd">        schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">            The survey schedule to check this event's visibility against.</span>
+<span class="sd">        transient : ~uvex_transients.transients.base.TransientBase</span>
+<span class="sd">            The transient type this event is a realization of -- supplies `sed` and</span>
+<span class="sd">            `duration_limit`.</span>
+<span class="sd">        coord : ~astropy.coordinates.SkyCoord</span>
+<span class="sd">            Scalar sky position of the event.</span>
+<span class="sd">        redshift : float</span>
+<span class="sd">            Cosmological redshift.</span>
+<span class="sd">        t_explosion : ~astropy.time.Time</span>
+<span class="sd">            Scalar time of explosion.</span>
+<span class="sd">        seed : int</span>
+<span class="sd">            This event's stored parameter seed; deterministically regenerates its</span>
+<span class="sd">            physical SED parameters (see :meth:`sample_parameters`).</span>
+<span class="sd">        luminosity_distance : ~astropy.units.Quantity, optional</span>
+<span class="sd">            Luminosity distance, if already known (e.g. cached by `EventCatalog` at</span>
+<span class="sd">            generation time). If not given, it's derived from `redshift` via</span>
+<span class="sd">            `transient.cosmology` -- a real cosmology call, so passing it in when</span>
+<span class="sd">            it's already on hand is the whole point of caching it.</span>
+<span class="sd">        ebv : float, optional</span>
+<span class="sd">            Milky Way foreground E(B-V) at `coord`, if already known (cached by</span>
+<span class="sd">            `EventCatalog`). If not given, reddening is treated as zero.</span>
+<span class="sd">        transient_type : str, optional</span>
+<span class="sd">            This event's transient-type name, for `__repr__` only.</span>
+<span class="sd">        photometry_pre_window : ~astropy.units.Quantity, optional</span>
+<span class="sd">            The duration (with units of time) prior to the true explosion time to include in the</span>
+<span class="sd">            synthetic photometry. By default, this is ``0 * u.day``, meaning that the detections</span>
+<span class="sd">            all occur after the explosion epoch. This setting should be used to generate pre-explosion</span>
+<span class="sd">            reference data equivalent to drawing forced photometry from a pre-explosion template image.</span>
+<span class="sd">        photometry_post_window : ~astropy.units.Quantity, optional</span>
+<span class="sd">            The duration (with units of time) following the explosion time to include in the synthetic</span>
+<span class="sd">            photometry. By default, ``photometry_post_window=transient_type.duration_limit``; however,</span>
+<span class="sd">            this can be modified as needed by the user.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schedule</span><span class="p">,</span> <span class="n">SurveySchedule</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'schedule' must be a SurveySchedule, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">schedule</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transient</span><span class="p">,</span> <span class="n">TransientBase</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'transient' must be a TransientBase, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">transient</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span> <span class="o">=</span> <span class="n">schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span> <span class="o">=</span> <span class="n">transient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transient_type</span> <span class="o">=</span> <span class="n">transient_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coord</span> <span class="o">=</span> <span class="n">coord</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span> <span class="o">=</span> <span class="n">t_explosion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">luminosity_distance</span>
+            <span class="k">if</span> <span class="n">luminosity_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">transient</span><span class="o">.</span><span class="n">cosmology</span><span class="o">.</span><span class="n">luminosity_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">ebv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">ebv</span><span class="p">)</span>
+
+        <span class="c1"># Resolve the photometry window now, so bad values fail at construction rather than at</span>
+        <span class="c1"># the (deferred) schedule query.</span>
+        <span class="k">if</span> <span class="n">photometry_post_window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">photometry_post_window</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">photometry_post_window</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'photometry_post_window' must be a Quantity, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">photometry_post_window</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">photometry_pre_window</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'photometry_pre_window' must be a Quantity, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">photometry_pre_window</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">allow_zero</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">"photometry_pre_window"</span><span class="p">,</span> <span class="n">photometry_pre_window</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"photometry_post_window"</span><span class="p">,</span> <span class="n">photometry_post_window</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">u</span><span class="o">.</span><span class="n">UnitConversionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">u</span><span class="o">.</span><span class="n">UnitConversionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be convertible to time units, got </span><span class="si">{</span><span class="n">window</span><span class="o">.</span><span class="n">unit</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">allow_zero</span> <span class="k">else</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">bound</span> <span class="o">=</span> <span class="s2">"non-negative"</span> <span class="k">if</span> <span class="n">allow_zero</span> <span class="k">else</span> <span class="s2">"positive"</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must be finite and </span><span class="si">{</span><span class="n">bound</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">window</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span> <span class="o">=</span> <span class="n">photometry_post_window</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span> <span class="o">=</span> <span class="n">photometry_pre_window</span>
+
+        <span class="c1"># The schedule query is the expensive part of construction (a WCS build per call), so it is</span>
+        <span class="c1"># deferred until `window_observations` (or something derived from it) is first accessed;</span>
+        <span class="c1"># see `_resolve_observations`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span><span class="p">:</span> <span class="n">QTable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Run the schedule query and split its rows, once; a no-op after the first call."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">t_explosion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span>
+        <span class="n">post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_post_window</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schedule</span><span class="o">.</span><span class="n">get_observations_of</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coord</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_photometry_pre_window</span><span class="p">,</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">post</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Determine the set of candidates that are actually observed.</span>
+        <span class="n">in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+            <span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">t_explosion</span><span class="p">,</span>
+            <span class="n">candidate</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">candidate</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">t_explosion</span> <span class="o">+</span> <span class="n">post</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Everything else in the query window -- pre-explosion rows from</span>
+        <span class="c1"># `photometry_pre_window`, plus any row whose exposure runs past</span>
+        <span class="c1"># `photometry_post_window` -- falls outside the transient SED's valid</span>
+        <span class="c1"># domain (`t &gt;= 0`). These are never evaluated against `transient.sed`</span>
+        <span class="c1"># (see `simulate_photometry`): some light curve shapes are only smoothly</span>
+        <span class="c1"># *wrong* there, but others (e.g. an early-time `1/t` singularity) diverge</span>
+        <span class="c1"># outright, so this window is masked out rather than merely deprioritized.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">in_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">in_model</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span> <span class="o">=</span> <span class="n">candidate</span><span class="p">[</span><span class="o">~</span><span class="n">in_model</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span> <span class="o">=</span> <span class="n">candidate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a one-line summary showing the event's id, type, redshift, and observation count.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            ``&lt;Event id=... type=... z=... n_observations=...&gt;``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"&lt;Event id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="si">}</span><span class="s2"> type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_transient_type</span><span class="si">!r}</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> n_observations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_observations</span><span class="si">}</span><span class="s2">&gt;"</span>
+        <span class="p">)</span>
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Properties                     #</span>
+    <span class="c1"># ------------------------------ #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""int: This event's unique id."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transient</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransientBase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""TransientBase: The transient type this event is a realization of."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transient_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Str or None: This event's transient-type name."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coord</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SkyCoord</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.coordinates.SkyCoord: Sky position of the event."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coord</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""float: Cosmological redshift."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">luminosity_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.units.Quantity: Luminosity distance to the event."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ebv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""float: Milky Way foreground E(B-V) at `coord` (0 if never supplied)."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">t_explosion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Time</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.time.Time: Time of explosion."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">seed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""int: This event's stored parameter seed."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        QTable: The schedule's ``"observe"`` rows that covered this event while active.</span>
+
+<span class="sd">        One row per candidate observation, chronological, with the same columns as</span>
+<span class="sd">        `SurveySchedule.table` (``start_time``, ``duration``, ``observer_location``</span>
+<span class="sd">        -- i.e. where the spacecraft was -- ``target_coord``, ``roll``, ...). Empty if</span>
+<span class="sd">        the survey never observed this event's position during its active window.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">window_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        QTable: The schedule's ``"observe"`` rows covering the full query window.</span>
+
+<span class="sd">        `observations` plus `background_observations`, one row per candidate</span>
+<span class="sd">        observation, chronological, over</span>
+<span class="sd">        ``[t_explosion - photometry_pre_window, t_explosion + photometry_post_window]`` --</span>
+<span class="sd">        i.e. `observations` before it's narrowed to rows the transient's SED is actually</span>
+<span class="sd">        valid for. See `observations`/`background_observations` for the split.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_observations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">background_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        QTable: The schedule's ``"observe"`` rows in `window_observations` outside `observations`.</span>
+
+<span class="sd">        Pre-explosion rows (from `photometry_pre_window`) plus any row whose exposure</span>
+<span class="sd">        runs past `photometry_post_window` -- i.e. every candidate observation</span>
+<span class="sd">        `simulate_photometry` gives background-only (non-detection) photometry rather</span>
+<span class="sd">        than evaluating `transient.sed` for, since `t &lt; 0` isn't in the SED's valid</span>
+<span class="sd">        domain. Empty whenever `photometry_pre_window` is the default ``0 * u.day`` and</span>
+<span class="sd">        no candidate observation overruns `photometry_post_window`.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_observations</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_observations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_observations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""int: Number of candidate observations (``len(observations)``)."""</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Event.in_footprint">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.in_footprint.html#uvex_transients.simulation.event.Event.in_footprint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">footprint</span><span class="p">:</span> <span class="n">SurveyFootprint</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether this event's sky position lies inside a footprint.</span>
+
+<span class="sd">        For many events use `EventCatalog.in_footprint`, which does one vectorized lookup.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        footprint : SurveyFootprint or str</span>
+<span class="sd">            A footprint or its registered name (e.g. ``"lsst:combined"``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            `True` if the event is inside the footprint.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If `footprint` is a name that is not registered.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">default_registry</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span><span class="o">.</span><span class="n">contains_skycoord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coord</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Parameters                     #</span>
+    <span class="c1"># ------------------------------ #</span>
+<div class="viewcode-block" id="Event.sample_parameters">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.sample_parameters.html#uvex_transients.simulation.event.Event.sample_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return this event's physical SED parameters, deterministically regenerated from `seed`.</span>
+
+<span class="sd">        A pure, idempotent "peek" -- every call reseeds a fresh generator from `seed`</span>
+<span class="sd">        rather than sharing state with `simulate_photometry`, so this always returns</span>
+<span class="sd">        the same values regardless of how many times it (or `simulate_photometry`)</span>
+<span class="sd">        has already been called.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            ``{name: value}`` for each of this event's transient type's SED parameters.</span>
+<span class="sd">        """</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Theoretical Photometry         #</span>
+    <span class="c1"># ------------------------------ #</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_bandpass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="n">Hashable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the `~synphot.SpectralElement` named `band` in `mission.detector.bandpasses`.</span>
+
+<span class="sd">        `band` may be omitted only if the detector has exactly one bandpass -- mirrors</span>
+<span class="sd">        `~m4opt.synphot.Detector`'s own bandpass-resolution rule (see</span>
+<span class="sd">        `~m4opt.synphot.Detector.get_snr`).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
+<span class="sd">        band : Hashable, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to return. Required unless the</span>
+<span class="sd">            detector has exactly one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~synphot.SpectralElement</span>
+<span class="sd">            The resolved bandpass.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `mission` has no detector configured, `band` is required but not</span>
+<span class="sd">            given, or `band` isn't one of the detector's bandpasses.</span>
+<span class="sd">        """</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span>
+        <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no detector configured."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">[</span><span class="n">band</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">bandpass</span><span class="p">,)</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">bandpass</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has more than one bandpass. Please specify "</span>
+            <span class="sa">f</span><span class="s2">"one of them: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bandpass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return `bandpass`'s pivot frequency and this event's own dust attenuation there.</span>
+
+<span class="sd">        The same single-wavelength approximation `simulate_photometry` uses for its</span>
+<span class="sd">        noiseless flux (`SpectralElement.pivot`), not a full bandpass-throughput</span>
+<span class="sd">        integral -- see :meth:`mag`'s docstring for why that distinction matters here.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bandpass : ~synphot.SpectralElement</span>
+<span class="sd">            The bandpass to evaluate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of (~astropy.units.Quantity, numpy.ndarray)</span>
+<span class="sd">            `bandpass`'s pivot frequency, and the natural log of this event's</span>
+<span class="sd">            dust attenuation there (see :func:`~uvex_transients.dust.log_attenuation`).</span>
+<span class="sd">        """</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">pivot</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">log_attenuation</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Event.mag">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.mag.html#uvex_transients.simulation.event.Event.mag">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="n">Hashable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Theoretical (noiseless) apparent AB magnitude of this event's SED at time(s) `t`.</span>
+
+<span class="sd">        This is the literal noiseless curve :meth:`simulate_photometry`'s noisy points</span>
+<span class="sd">        scatter around, not merely a physically similar but numerically different</span>
+<span class="sd">        quantity: like that method, the flux is evaluated at `band`'s pivot</span>
+<span class="sd">        wavelength (`~synphot.SpectralElement.pivot`), *not* integrated across the</span>
+<span class="sd">        full bandpass throughput, and this event's own foreground dust (`ebv`) is</span>
+<span class="sd">        applied, in addition to its `redshift`/`luminosity_distance`/SED parameters</span>
+<span class="sd">        (see :meth:`sample_parameters`) -- so only a time grid and a mission/band are</span>
+<span class="sd">        needed. Useful for plotting a theory curve alongside real observations, not</span>
+<span class="sd">        for simulating a detection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Observed time(s) since explosion, any shape.</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
+<span class="sd">        band : Hashable, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Required unless the</span>
+<span class="sd">            detector has exactly one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The apparent AB magnitude, as an :attr:`~astropy.units.ABmag` Quantity,</span>
+<span class="sd">            with `t`'s shape.</span>
+<span class="sd">        """</span>
+        <span class="n">bandpass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_bandpass</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
+        <span class="n">nu</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span>
+            <span class="n">nu</span><span class="p">,</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">redshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">,</span>
+            <span class="n">luminosity_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span><span class="p">,</span>
+            <span class="n">log_attenuation</span><span class="o">=</span><span class="n">attenuation</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Event.flux">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.flux.html#uvex_transients.simulation.event.Event.flux">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="n">Hashable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Theoretical (noiseless) observed flux density of this event's SED, at `band`'s pivot wavelength.</span>
+
+<span class="sd">        Same inputs, and the same pivot-wavelength-plus-dust definition matching</span>
+<span class="sd">        :meth:`simulate_photometry` exactly, as :meth:`mag` -- see its docstring.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Observed time(s) since explosion, any shape.</span>
+<span class="sd">        mission : ~m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` `band` selects a bandpass from.</span>
+<span class="sd">        band : Hashable, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Required unless the</span>
+<span class="sd">            detector has exactly one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The observed flux density, with `t`'s shape.</span>
+<span class="sd">        """</span>
+        <span class="n">bandpass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_bandpass</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
+        <span class="n">nu</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span>
+            <span class="n">nu</span><span class="p">,</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">redshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">,</span>
+            <span class="n">luminosity_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span><span class="p">,</span>
+            <span class="n">log_attenuation</span><span class="o">=</span><span class="n">attenuation</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Event.luminosity">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.luminosity.html#uvex_transients.simulation.event.Event.luminosity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">luminosity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Bolometric luminosity of this event's SED at time(s) `t` since explosion.</span>
+
+<span class="sd">        Intrinsic (rest-frame, distance-independent) -- unlike :meth:`mag`/:meth:`flux`,</span>
+<span class="sd">        no `mission`/`band` is involved. This event's own SED parameters (see</span>
+<span class="sd">        :meth:`sample_parameters`) are supplied automatically. Wraps</span>
+<span class="sd">        `~uvex_transients.models.core.base.SpectralModel.eval_bolometric`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time(s) since explosion, any shape.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            :math:`L_\\mathrm{bol}(t)`, in erg/s, with `t`'s shape.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">())</span></div>
+
+
+    <span class="c1"># ------------------------------ #</span>
+    <span class="c1"># Photometry                     #</span>
+    <span class="c1"># ------------------------------ #</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_empty_photometry_table</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a zero-row `QTable` with `simulate_photometry`'s columns and dtypes.</span>
+
+<span class="sd">        Returned as-is by `simulate_photometry` when there are no observations to</span>
+<span class="sd">        simulate, so a caller can always rely on the result having the right columns.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.table.QTable</span>
+<span class="sd">            An empty table with `simulate_photometry`'s schema.</span>
+<span class="sd">        """</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">()</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"obs_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Time</span><span class="p">([],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"jd"</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"rel_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"exptime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+        <span class="c1"># A wide, explicit itemsize -- `dtype=str` alone infers itemsize 1 from</span>
+        <span class="c1"># an empty array (silently truncating any band name to one character</span>
+        <span class="c1"># once populated rows are ever `vstack`'d onto this one).</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"band"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"&lt;U32"</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"snr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"flux_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"flux_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"flux_lower"</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([],</span> <span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"ab_mag"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"mag_err"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"mag_upper"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"mag_lower"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"in_model"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span>
+
+<div class="viewcode-block" id="Event.simulate_photometry">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate_photometry</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
+        <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Evaluate this event's detectability at every observation in `window_observations`.</span>
+
+<span class="sd">        Every observation in `window_observations` is measured in one call to</span>
+<span class="sd">        `~uvex_transients.models.core.base.SpectralModel.simulate_photometry`, vectorized over</span>
+<span class="sd">        observations and bands. Observations in `observations` are evaluated against</span>
+<span class="sd">        `transient.sed` (dust folded in from this event's own cached `ebv`). Those in</span>
+<span class="sd">        `background_observations` -- pre-explosion (from `photometry_pre_window`), plus any</span>
+<span class="sd">        exposure running past `photometry_post_window` -- never reach `transient.sed`: ``t &lt; 0``</span>
+<span class="sd">        isn't in a `SpectralModel`'s valid domain (some light curve shapes are only smoothly</span>
+<span class="sd">        *wrong* there, but others, e.g. an early-time ``1/t`` singularity, diverge outright). They</span>
+<span class="sd">        are measured against a true source flux of zero instead: pure background, at that</span>
+<span class="sd">        observation's own real exposure and observing geometry, flagged ``in_model=False``.</span>
+
+<span class="sd">        The reported flux/magnitude at each (observation, band) is a Gaussian realization of the</span>
+<span class="sd">        true (noiseless) flux, with the uncertainty the detector's noise model</span>
+<span class="sd">        (`~m4opt.synphot.Detector.get_snr`) implies for it: a synthetic measurement, not the</span>
+<span class="sd">        ground truth. Physical SED parameters are sampled once, from `seed`. Each noise draw is a</span>
+<span class="sd">        pure function of ``(seed, the observation's start time, the band's position in</span>
+<span class="sd">        mission.detector.bandpasses)`` (see</span>
+<span class="sd">        `~uvex_transients.utils.keyed_noise.keyed_standard_normal`), so the same measurement gets</span>
+<span class="sd">        the same noise whatever other observations or bands are simulated alongside it, and</span>
+<span class="sd">        exactly matches the noise `~uvex_transients.simulation.core.SurveySimulator`'s detection</span>
+<span class="sd">        cuts apply to it.</span>
+
+<span class="sd">        ``mag_err`` is the usual linearized (first-order) propagation of ``flux_err``</span>
+<span class="sd">        through the magnitude log transform -- a good description of the uncertainty</span>
+<span class="sd">        only while it's small relative to ``flux``, i.e. at high SNR. It is *not* a</span>
+<span class="sd">        substitute for a real confidence interval: because magnitude is a nonlinear</span>
+<span class="sd">        (logarithmic) function of flux, a symmetric interval in flux is an asymmetric</span>
+<span class="sd">        one in magnitude, and that asymmetry grows as SNR drops -- comparing against</span>
+<span class="sd">        ``ab_mag``/``mag_err`` as if they were a plain Gaussian pull systematically</span>
+<span class="sd">        reads as biased at low SNR even when the underlying flux draw has no bias at</span>
+<span class="sd">        all. ``flux_upper``/``flux_lower`` and ``mag_upper``/``mag_lower`` are the</span>
+<span class="sd">        actual ``n_sigma`` interval, built the correct way around: bound `flux`</span>
+<span class="sd">        symmetrically first (where the noise is actually Gaussian), then transform</span>
+<span class="sd">        each bound to magnitude separately, rather than propagating one linearized</span>
+<span class="sd">        width through the transform. For a `background_observations` row this interval</span>
+<span class="sd">        is exactly the pure-noise upper limit expected of a non-detection: ``mag_upper``</span>
+<span class="sd">        is ``nan`` (no faint bound -- the "source" is, by construction, never securely</span>
+<span class="sd">        distinguished from zero flux) and ``mag_lower`` is the ``n_sigma`` detection</span>
+<span class="sd">        depth reached by that observation's own real exposure/background.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mission : m4opt.missions.Mission</span>
+<span class="sd">            Supplies the `~m4opt.synphot.Detector` (bandpasses, background, ...) evaluated</span>
+<span class="sd">            against.</span>
+<span class="sd">        bands : list of str, optional</span>
+<span class="sd">            Which of `mission.detector`'s bandpasses to evaluate. Defaults to every</span>
+<span class="sd">            bandpass the detector has.</span>
+<span class="sd">        n_sigma : float, optional</span>
+<span class="sd">            Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/</span>
+<span class="sd">            ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses</span>
+<span class="sd">            ``config["simulation.detection_n_sigma"]`` (5 out of the box).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.QTable</span>
+<span class="sd">            One row per (observation, band), sorted by ``obs_time`` then ``band``,</span>
+<span class="sd">            with columns ``event_id``, ``obs_time``, ``rel_time`` (``obs_time -</span>
+<span class="sd">            t_explosion``, in days -- negative for a `background_observations` row),</span>
+<span class="sd">            ``exptime``, ``band``, ``snr``, ``flux``/``flux_err`` (Jy),</span>
+<span class="sd">            ``flux_upper``/``flux_lower`` (Jy, ``flux ±</span>
+<span class="sd">            n_sigma*flux_err``), ``ab_mag``/``mag_err``, ``mag_upper``/``mag_lower``</span>
+<span class="sd">            -- the ``n_sigma`` interval transformed to magnitude, brighter bound first:</span>
+<span class="sd">            ``mag_lower`` (from ``flux_upper``) is always finite when ``flux_upper&gt;0``;</span>
+<span class="sd">            ``mag_upper`` (from ``flux_lower``) is ``nan`` whenever ``flux_lower&lt;=0``,</span>
+<span class="sd">            i.e. whenever the source isn't securely distinguished from zero flux at</span>
+<span class="sd">            ``n_sigma`` -- the correct behavior is a one-sided (no faint bound) result</span>
+<span class="sd">            there, not a spuriously finite one -- and ``in_model``, ``True`` for a row</span>
+<span class="sd">            from `observations` (a real evaluation of `transient.sed`) and ``False``</span>
+<span class="sd">            for one from `background_observations` (pure background/non-detection,</span>
+<span class="sd">            `transient.sed` never evaluated). ``snr`` is the measured SNR,</span>
+<span class="sd">            ``flux / flux_err`` of the noisy ``flux`` realization: the quantity a detection</span>
+<span class="sd">            threshold applies to. ``flux``/``flux_err``/``snr``/``ab_mag``/``mag_err`` are</span>
+<span class="sd">            ``nan`` wherever the detector's noiseless SNR for the true flux is non-positive or</span>
+<span class="sd">            non-finite (``ab_mag``/``mag_err`` are also ``nan`` wherever the noisy ``flux``</span>
+<span class="sd">            realization itself came out non-positive). Empty (but correctly typed) if</span>
+<span class="sd">            `window_observations` is empty.</span>
+<span class="sd">        """</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">mission</span><span class="o">.</span><span class="n">detector</span>
+        <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mission </span><span class="si">{</span><span class="n">mission</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no detector configured."</span><span class="p">)</span>
+
+        <span class="c1"># Validated up front (rather than left to `SpectralModel.simulate_photometry`/</span>
+        <span class="c1"># `simulate_flat_photometry`) so an unknown band raises even when both sets of</span>
+        <span class="c1"># observations below are empty.</span>
+        <span class="n">band_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span> <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">band</span> <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="n">band_names</span> <span class="k">if</span> <span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown bandpass(es) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_observations</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_empty_photometry_table</span><span class="p">()</span>
+
+        <span class="c1"># `rng`, seeded from this event's own stored `seed`, drives only the SED parameter draw.</span>
+        <span class="c1"># The noise is instead keyed on (`seed`, the observation's start time, the band), so a</span>
+        <span class="c1"># given measurement gets the same noise here as in the survey-wide detection cuts</span>
+        <span class="c1"># (`SurveySimulator.iter_epochs`), whichever other observations are simulated alongside it.</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">get_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span><span class="p">)</span>
+        <span class="n">sed_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="c1"># One call for the whole window. Observations that are not `in_model` (before the</span>
+        <span class="c1"># explosion, or running past `photometry_post_window`) are measured as pure background</span>
+        <span class="c1"># at that observation's own depth, never against `transient.sed`; see</span>
+        <span class="c1"># `SpectralModel.measure_photometry`. This event's own observer location and start time</span>
+        <span class="c1"># are passed through, so `detector`'s `background` sees the real observing geometry.</span>
+        <span class="n">phot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">simulate_photometry</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">window</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span>
+            <span class="n">window</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">],</span>
+            <span class="n">detector</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coord</span><span class="p">,</span>
+            <span class="n">bands</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+            <span class="n">observer_location</span><span class="o">=</span><span class="n">window</span><span class="p">[</span><span class="s2">"observer_location"</span><span class="p">],</span>
+            <span class="n">obstime</span><span class="o">=</span><span class="n">window</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">],</span>
+            <span class="n">redshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">,</span>
+            <span class="n">luminosity_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span><span class="p">,</span>
+            <span class="n">ebv</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">,</span>
+            <span class="n">in_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_in_model</span><span class="p">,</span>
+            <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">,</span>
+            <span class="n">noise_seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span><span class="p">,</span>
+            <span class="n">noise_observation_keys</span><span class="o">=</span><span class="n">time_key</span><span class="p">(</span><span class="n">window</span><span class="p">[</span><span class="s2">"start_time"</span><span class="p">]),</span>
+            <span class="o">**</span><span class="n">sed_params</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">phot</span><span class="p">[</span><span class="s2">"obs_time"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_explosion</span> <span class="o">+</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span>
+        <span class="n">phot</span><span class="p">[</span><span class="s2">"rel_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">phot</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span>
+        <span class="n">phot</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phot</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">phot</span><span class="p">[</span>
+            <span class="p">[</span>
+                <span class="s2">"event_id"</span><span class="p">,</span>
+                <span class="s2">"obs_time"</span><span class="p">,</span>
+                <span class="s2">"rel_time"</span><span class="p">,</span>
+                <span class="s2">"exptime"</span><span class="p">,</span>
+                <span class="s2">"band"</span><span class="p">,</span>
+                <span class="s2">"snr"</span><span class="p">,</span>
+                <span class="s2">"flux"</span><span class="p">,</span>
+                <span class="s2">"flux_err"</span><span class="p">,</span>
+                <span class="s2">"flux_upper"</span><span class="p">,</span>
+                <span class="s2">"flux_lower"</span><span class="p">,</span>
+                <span class="s2">"ab_mag"</span><span class="p">,</span>
+                <span class="s2">"mag_err"</span><span class="p">,</span>
+                <span class="s2">"mag_upper"</span><span class="p">,</span>
+                <span class="s2">"mag_lower"</span><span class="p">,</span>
+                <span class="s2">"in_model"</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

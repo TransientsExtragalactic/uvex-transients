@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.cli.steps &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/cli/steps';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.22.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.3.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.cli.steps</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.cli.steps</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Executes a `RunConfig`'s ``steps:`` list.</span>
+
+<span class="sd">The config-driven generalization of the old hardcoded ``cuts -&gt; photometry -&gt; ...``</span>
+<span class="sd">sequence. Each `~uvex_transients.cli.config.StepSpec` (``cut``, ``logical_op``, or ``action``) is</span>
+<span class="sd">run strictly in declared order against a growing **artifact store**</span>
+<span class="sd">(``{id: artifact}``), seeded by the caller with at least ``"baseline"`` (the raw</span>
+<span class="sd">generated `~uvex_transients.simulation.event_catalog.EventCatalog`) and typically also</span>
+<span class="sd">``"exposure"`` (see `uvex_transients.cli.config.RESERVED_ARTIFACT_IDS`). A step's own</span>
+<span class="sd">``id`` becomes its artifact's key once it's run, so any later step can reference it as</span>
+<span class="sd">an input regardless of its type -- a `cut` step feeds another `cut` or a `logical_op`</span>
+<span class="sd">just as an `action` step (e.g. ``photometry``) can feed another `action` (e.g.</span>
+<span class="sd">``event_summary``).</span>
+
+<span class="sd">Structural validation (unique ids, resolvable inputs, known registry names, arity) is</span>
+<span class="sd">already done by `~uvex_transients.cli.config.RunConfig.steps` itself, the moment it's</span>
+<span class="sd">accessed -- accessing it is the "validate the whole graph before running anything"</span>
+<span class="sd">pass; `run_steps` does this up front, before executing step 1, by simply reading</span>
+<span class="sd">`config.steps` before its loop starts.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..simulation.logical_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOGICAL_OPS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">StepSpec</span>
+
+<span class="c1">#: The artifact type each ``action`` name produces -- used to pick the right</span>
+<span class="c1">#: `from_disk`/`QTable.read` when resuming a checkpointed action step. `cut`/</span>
+<span class="c1">#: `logical_op` steps always produce an `EventCatalog`, so they don't need an entry</span>
+<span class="c1">#: here.</span>
+<span class="n">_ACTION_OUTPUT_TYPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"photometry"</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span>
+    <span class="s2">"event_summary"</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_artifact_type</span><span class="p">(</span><span class="n">step</span><span class="p">:</span> <span class="n">StepSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the artifact type `step` produces, used to pick a checkpoint (de)serializer."""</span>
+    <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cut"</span><span class="p">,</span> <span class="s2">"logical_op"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">EventCatalog</span>
+    <span class="k">return</span> <span class="n">_ACTION_OUTPUT_TYPES</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_checkpoint_path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">StepSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a step's checkpoint file path under `out_dir`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    out_dir : ~pathlib.Path</span>
+<span class="sd">        The run's output directory.</span>
+<span class="sd">    index : int</span>
+<span class="sd">        This step's 1-based position in `RunConfig.steps`, used only for the default</span>
+<span class="sd">        filename's numeric prefix.</span>
+<span class="sd">    step : StepSpec</span>
+<span class="sd">        The step being checkpointed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~pathlib.Path</span>
+<span class="sd">        `out_dir / step.checkpoint` if `step.checkpoint` is a `str` (an explicit</span>
+<span class="sd">        filename); otherwise the default ``{index:02d}_{step.id}.ecsv`` convention.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span>
+    <span class="k">return</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.ecsv"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_save_artifact</span><span class="p">(</span><span class="n">artifact</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Write `artifact` to `path`, via `to_disk` (every catalog/table type here has one) or `QTable.write`."""</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="s2">"to_disk"</span><span class="p">):</span>
+        <span class="n">artifact</span><span class="o">.</span><span class="n">to_disk</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">artifact</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_artifact</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">artifact_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Read an artifact of `artifact_type` back from `path`, as written by `_save_artifact`."""</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">artifact_type</span><span class="p">,</span> <span class="s2">"from_disk"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">artifact_type</span><span class="o">.</span><span class="n">from_disk</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QTable</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="apply_cut_scoped">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.steps.apply_cut_scoped.html#uvex_transients.cli.steps.apply_cut_scoped">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_cut_scoped</span><span class="p">(</span>
+    <span class="n">simulator</span><span class="p">,</span> <span class="n">cut_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">transient_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run a `cut` step, optionally restricted to a subset of ``transient_type`` values.</span>
+
+<span class="sd">    Generic at the executor level (not inside any individual ``@cut`` method, per</span>
+<span class="sd">    `SurveySimulator.run_cut`'s own docstring): with `transient_types` given, only rows</span>
+<span class="sd">    whose ``transient_type`` is in that list are evaluated against the cut; every other</span>
+<span class="sd">    row passes through unchanged, regardless of what the cut would have done to it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    simulator : ~uvex_transients.simulation.core.SurveySimulator</span>
+<span class="sd">        Supplies `~uvex_transients.simulation.core.SurveySimulator.run_cut`.</span>
+<span class="sd">    cut_name : str</span>
+<span class="sd">        One of `~uvex_transients.simulation.core.SurveySimulator.available_cuts`.</span>
+<span class="sd">    catalog : EventCatalog</span>
+<span class="sd">        The catalog to filter.</span>
+<span class="sd">    mission : m4opt.missions.Mission</span>
+<span class="sd">        Forwarded to `run_cut`.</span>
+<span class="sd">    transient_types : list of str, optional</span>
+<span class="sd">        If given, restricts the cut to rows with a matching ``transient_type``; other</span>
+<span class="sd">        rows are kept untouched. `None` runs the cut over the whole catalog, exactly</span>
+<span class="sd">        like calling `run_cut` directly.</span>
+<span class="sd">    **params</span>
+<span class="sd">        Forwarded to `run_cut`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EventCatalog</span>
+<span class="sd">        The filtered catalog.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">transient_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_cut</span><span class="p">(</span><span class="n">cut_name</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">table</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]),</span> <span class="n">transient_types</span><span class="p">)</span>
+
+    <span class="n">scoped</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+    <span class="n">filtered_scoped</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_cut</span><span class="p">(</span><span class="n">cut_name</span><span class="p">,</span> <span class="n">scoped</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="n">kept_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">filtered_scoped</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">])[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">kept_ids</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="checkpoint_targets">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.steps.checkpoint_targets.html#uvex_transients.cli.steps.checkpoint_targets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">checkpoint_targets</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span> <span class="n">keep_intermediate</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute each step's checkpoint path, or `None`, without running anything.</span>
+
+<span class="sd">    For each step in `config.steps`, the checkpoint path it would be written under</span>
+<span class="sd">    (relative to ``--out-dir``), or `None` if it wouldn't be checkpointed at all. Used</span>
+<span class="sd">    both by `run_steps` (each `(step, path)` pair reproduces exactly what it computes</span>
+<span class="sd">    internally) and by a dry run / progress listing that needs to know this ahead of time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+<span class="sd">    keep_intermediate : bool</span>
+<span class="sd">        The default "should this step be checkpointed" answer for a step whose own</span>
+<span class="sd">        `~uvex_transients.cli.config.StepSpec.checkpoint` is `None`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of (StepSpec, Path or None)</span>
+<span class="sd">        One entry per declared step, in declared order.</span>
+<span class="sd">    """</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">steps</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">effective_checkpoint</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span> <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">keep_intermediate</span>
+        <span class="n">targets</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">step</span><span class="p">,</span> <span class="n">_checkpoint_path</span><span class="p">(</span><span class="n">Path</span><span class="p">(),</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span> <span class="k">if</span> <span class="n">effective_checkpoint</span> <span class="k">else</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">targets</span></div>
+
+
+
+<div class="viewcode-block" id="run_steps">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.steps.run_steps.html#uvex_transients.cli.steps.run_steps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_steps</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">,</span>
+    <span class="n">store</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">out_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">keep_intermediate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run every step in `config.steps`, in order, against `store`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config; `config.steps` is accessed here (forcing its own</span>
+<span class="sd">        structural validation, if not already resolved) before the first step runs.</span>
+<span class="sd">    store : dict of str to Any</span>
+<span class="sd">        The artifact store, seeded by the caller with at least ``"baseline"`` (and</span>
+<span class="sd">        typically ``"exposure"``) -- see `uvex_transients.cli.config.RESERVED_ARTIFACT_IDS`.</span>
+<span class="sd">        Mutated in place: each step's own ``id`` is added once it's run (or loaded from</span>
+<span class="sd">        an existing checkpoint).</span>
+<span class="sd">    out_dir : ~pathlib.Path, optional</span>
+<span class="sd">        Directory to read/write checkpoint files from/to. If `None`, no step is ever</span>
+<span class="sd">        checkpointed, regardless of its own `checkpoint`/`keep_intermediate`.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Whether an existing checkpoint file may be overwritten -- and, symmetrically,</span>
+<span class="sd">        whether an existing one is trusted and loaded instead of the step being rerun.</span>
+<span class="sd">        With `overwrite=True`, every step always reruns and any existing checkpoint is</span>
+<span class="sd">        replaced.</span>
+<span class="sd">    keep_intermediate : bool, optional</span>
+<span class="sd">        The default "should this step be checkpointed" answer for a step whose own</span>
+<span class="sd">        `~uvex_transients.cli.config.StepSpec.checkpoint` is `None`. The default is</span>
+<span class="sd">        `True`.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    step : StepSpec</span>
+<span class="sd">        The step just run (or loaded from checkpoint).</span>
+<span class="sd">    artifact : Any</span>
+<span class="sd">        Its resulting artifact (also written into `store[step.id]`).</span>
+<span class="sd">    path : ~pathlib.Path or None</span>
+<span class="sd">        The checkpoint file it was written to or loaded from, or `None` if it wasn't</span>
+<span class="sd">        checkpointed at all.</span>
+<span class="sd">    """</span>
+    <span class="n">simulator</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">simulator</span>
+    <span class="n">mission</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">mission</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">steps</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">effective_checkpoint</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span> <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">keep_intermediate</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">effective_checkpoint</span> <span class="ow">and</span> <span class="n">out_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">_checkpoint_path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="n">artifact</span> <span class="o">=</span> <span class="n">_load_artifact</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">_artifact_type</span><span class="p">(</span><span class="n">step</span><span class="p">))</span>
+            <span class="n">store</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">artifact</span>
+            <span class="k">yield</span> <span class="n">step</span><span class="p">,</span> <span class="n">artifact</span><span class="p">,</span> <span class="n">path</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"cut"</span><span class="p">:</span>
+            <span class="n">artifact</span> <span class="o">=</span> <span class="n">apply_cut_scoped</span><span class="p">(</span>
+                <span class="n">simulator</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">cut</span><span class="p">,</span> <span class="n">store</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">input</span><span class="p">],</span> <span class="n">mission</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">transient_types</span><span class="p">,</span> <span class="o">**</span><span class="n">step</span><span class="o">.</span><span class="n">params</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">step</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"logical_op"</span><span class="p">:</span>
+            <span class="n">artifact</span> <span class="o">=</span> <span class="n">LOGICAL_OPS</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">op</span><span class="p">]([</span><span class="n">store</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">inputs</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># action</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">param_name</span><span class="p">:</span> <span class="n">store</span><span class="p">[</span><span class="n">artifact_id</span><span class="p">]</span> <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">artifact_id</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">artifact</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">run_action</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">step</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">store</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">artifact</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_save_artifact</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">step</span><span class="p">,</span> <span class="n">artifact</span><span class="p">,</span> <span class="n">path</span></div>
+
+
+
+<div class="viewcode-block" id="describe_step_specs">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.steps.describe_step_specs.html#uvex_transients.cli.steps.describe_step_specs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">describe_step_specs</span><span class="p">(</span><span class="n">step_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StepSpec</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Describe a list of `StepSpec` as human-readable report lines, without running anything.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    step_list : list of StepSpec</span>
+<span class="sd">        The steps to describe, in the order to report them.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        One summary line per entry in `step_list`.</span>
+<span class="sd">    """</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">step_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"cut"</span><span class="p">:</span>
+            <span class="n">scope</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">" [</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">transient_types</span><span class="p">)</span><span class="si">}</span><span class="s2">]"</span> <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">transient_types</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> cut          </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">cut</span><span class="si">}{</span><span class="n">scope</span><span class="si">}</span><span class="s2">  input=</span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">params</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">step</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"logical_op"</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> logical_op   </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">op</span><span class="si">}</span><span class="s2">  inputs=</span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">inputs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="si">:</span><span class="s2">&lt;20s</span><span class="si">}</span><span class="s2"> action       </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="si">}</span><span class="s2">  inputs=</span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">inputs</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">params</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+
+
+<div class="viewcode-block" id="describe_steps">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.cli.steps.describe_steps.html#uvex_transients.cli.steps.describe_steps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">describe_steps</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">RunConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Describe `config.steps` as human-readable report lines, without running anything.</span>
+
+<span class="sd">    Accessing `config.steps` here is itself the validation (see the module docstring);</span>
+<span class="sd">    an invalid ``steps:`` block raises before any line is produced.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    config : RunConfig</span>
+<span class="sd">        The parsed run-config.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        One summary line per declared step, in declared order.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">describe_step_specs</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
