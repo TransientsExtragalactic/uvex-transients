@@ -239,14 +239,15 @@ class ShockCoolingIIb(_CoreCollapseSNe):
 
     Uses `MoragShockCoolingSED` (Morag et al. 2024).
 
-    This models only the shock-cooling phase -- from shock breakout out to roughly a week
-    post-explosion, per Morag+24's own stated validity window -- not the radioactive-decay-powered
-    peak that dominates a typical Type IIb light curve at ~15-25 days. `DEFAULT_DURATION` is set
-    accordingly, well short of a full Type IIb light curve.
+    This models only the shock-cooling phase, not the radioactive-decay-powered peak that dominates a
+    typical Type IIb light curve at ~15-25 days. Morag+24's regime of validity is short for Type IIb
+    parameters: for the SED's default priors it ends after a median of ~1.5 days and after 5 days for
+    only ~0.01% of draws, and the SED is zero outside it (see `MoragShockCoolingSED`).
+    `DEFAULT_DURATION` is set to cover that window, well short of a full Type IIb light curve.
     """
 
     DEFAULT_MODEL = MoragShockCoolingSED
-    DEFAULT_DURATION = 20 * u.day
+    DEFAULT_DURATION = 5 * u.day
     DEFAULT_Z_LIM = 1
 
     RATE_FRACTION = _TYPE_IIB_FRACTION
