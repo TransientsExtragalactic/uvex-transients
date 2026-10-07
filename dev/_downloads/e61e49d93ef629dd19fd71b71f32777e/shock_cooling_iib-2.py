@@ -21,10 +21,10 @@ param_draws = [
 ]
 
 RUBIN_BANDS = ["g", "r", "i"]
-CADENCE = 0.5 * u.day
+CADENCE = 0.1 * u.day
 RUBIN_EXPTIME = 30 * u.s
 UVEX_EXPTIME = 900 * u.s
-DURATION = 12 * u.day
+DURATION = 4 * u.day
 SNR_THRESHOLD = 5.0
 
 # Rubin/LSST's own photometric-calibration floor (Table 14 of the LSST Science Requirements
@@ -38,7 +38,7 @@ band_colors = {"g": "#008060", "r": "#FF4000", "i": "#850000", "FUV": "#4C72B0",
 fig, axes = plt.subplots(1, len(param_draws), figsize=(11, 5), sharey=True)
 
 for ax, params in zip(axes, param_draws):
-    t_rubin = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+    t_rubin = np.arange(0.02, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
     phot_rubin = sed.simulate_photometry(
         t_rubin, RUBIN_EXPTIME, rubin.detector, coord,
         bands=RUBIN_BANDS, background=SkyBackground.medium(),
@@ -46,7 +46,7 @@ for ax, params in zip(axes, param_draws):
         sys_err=RUBIN_SIGMA_SYS, rng=0, **params,
     )
 
-    t_uvex = np.arange(0.1, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
+    t_uvex = np.arange(0.02, DURATION.to_value(u.day), CADENCE.to_value(u.day)) * u.day
     phot_uvex = sed.simulate_photometry(
         t_uvex, UVEX_EXPTIME, uvex.detector, coord,
         background=GalacticBackground(),

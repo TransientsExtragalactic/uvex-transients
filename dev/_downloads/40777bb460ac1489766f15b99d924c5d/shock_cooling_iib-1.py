@@ -2,7 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from uvex_transients.models.supernovae import MoragShockCoolingSED as SEDClass
+from uvex_transients.models.supernovae import MoragShockCoolingSED
+
+
+class SEDClass(MoragShockCoolingSED):
+    # NaN rather than zero outside the regime of validity, so the curves simply end on the log axes.
+    _INVALID_FILL = "nan"
+
 
 rng = np.random.default_rng(20260910)
 n_samples = 500
@@ -10,7 +16,7 @@ n_samples = 500
 params = SEDClass().sample_parameters(size=n_samples, rng=rng)
 params_grid = {name: value[:, None] for name, value in params.items()}
 
-t = np.geomspace(0.005, 15, 250) * u.day
+t = np.geomspace(0.002, 6, 250) * u.day
 L_bol = SEDClass.eval_bolometric(t, **params_grid)
 T = SEDClass.temperature(t, **params_grid)
 

@@ -537,13 +537,13 @@ Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-s
 <td><p>Generous relative to the brief, luminous shock-cooling phase this SED targets.</p></td>
 </tr>
 <tr class="row-even"><td><p>Duration</p></td>
-<td><p>20 days</p></td>
+<td><p>5 days</p></td>
 <td><p>–</p></td>
-<td><p>Deliberately short: sampling 20,000 draws from the priors below, Morag+24’s own stated
-validity window (its Eqs. 17-18) extends past 10 days for only ~2% of realizations, and
-essentially never reaches the ~15-25 day radioactive-decay peak that a full
-Type IIb light curve would show. Parameter/time combinations outside that window evaluate
-to <code class="docutils literal notranslate"><span class="pre">nan</span></code> rather than extrapolating.</p></td>
+<td><p>Deliberately short: sampling 200,000 draws from the priors below, Morag+24’s regime of validity
+(its Eqs. 17-18) lasts a median of only ~1.5 days, and 5 days covers all but ~0.01% of
+realizations (see <a class="reference internal" href="#shock-cooling-iib-validity"><span class="std std-ref">Regime of Validity</span></a>). The window essentially never reaches the
+~15-25 day radioactive-decay peak that a full Type IIb light curve would show. Epochs outside the
+window are zero rather than extrapolated.</p></td>
 </tr>
 </tbody>
 </table>
@@ -581,8 +581,9 @@ how Morag+24 construct the two pieces independently, not a bug in either impleme
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
-<p class="sd-card-text">All five parameters use fairly broad priors, since the goal here is to sample plausible
-shock-cooling realizations rather than to reproduce a specific calibrating event.</p>
+<p class="sd-card-text">The priors describe Type IIb-like progenitors: a compact star with a low-mass, hydrogen-rich envelope
+(<span class="math notranslate nohighlight">\(M_E \sim 0.05\,M_\odot\)</span>) on a <span class="math notranslate nohighlight">\(\sim2.8\,M_\odot\)</span> core. The goal is to sample
+plausible shock-cooling realizations rather than to reproduce a specific calibrating event.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 16.0%" />
@@ -600,12 +601,12 @@ shock-cooling realizations rather than to reproduce a specific calibrating event
 <tbody>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_star</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_*\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(v_*/10^{8.5}\,\mathrm{cm\,s^{-1}}\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.5)</p></td>
+<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(v_*/(2\times10^{8.5}\,\mathrm{cm\,s^{-1}})\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
 <td><p class="sd-card-text">Scale velocity of the shock near the stellar surface.</p></td>
 </tr>
 <tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">radius</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(R\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(R/10^{13}\,\mathrm{cm}\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.5)</p></td>
+<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(R/(6\times10^{12}\,\mathrm{cm})\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.85)</p></td>
 <td><p class="sd-card-text">Progenitor stellar radius.</p></td>
 </tr>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">opacity</span></code></p></td>
@@ -615,23 +616,93 @@ shock-cooling realizations rather than to reproduce a specific calibrating event
 </tr>
 <tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">envelope_mass</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_E\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(M_E/M_\odot\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.5)</p></td>
-<td><p class="sd-card-text">Envelope mass.</p></td>
+<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(M_E/0.05\,M_\odot\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.0)</p></td>
+<td><p class="sd-card-text">Hydrogen-rich envelope mass.</p></td>
 </tr>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">core_mass</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_C\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(M_C/M_\odot\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.5)</p></td>
+<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(M_C/2.8\,M_\odot\)</span>; mean=0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
 <td><p class="sd-card-text">Core mass.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-</details><section id="simulated-light-curves">
+</details><section id="regime-of-validity">
+<span id="shock-cooling-iib-validity"></span><h3>Regime of Validity<a class="headerlink" href="#regime-of-validity" title="Link to this heading">#</a></h3>
+<p>The closed-form relations hold only between</p>
+<div class="math notranslate nohighlight">
+\[t_\mathrm{min} = \max(3R/c,\ t_\mathrm{bo}) \qquad\text{and}\qquad
+t_\mathrm{max} = \min(t_{0.7},\ t_\mathrm{tr}/2),\]</div>
+<p>(Eqs. 17-18 of Morag <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2024mnras-528-7137m" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>), where each bound is a closed-form function of the
+physical parameters. For Type IIb-like parameters that window is short. Drawing 200,000 realizations
+from the priors above:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 15.0%" />
+<col style="width: 15.0%" />
+<col style="width: 15.0%" />
+<col style="width: 15.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>50%</p></th>
+<th class="head"><p>90%</p></th>
+<th class="head"><p>99%</p></th>
+<th class="head"><p>99.9%</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(t_\mathrm{min}\)</span> (days)</p></td>
+<td><p>0.007</p></td>
+<td><p>0.021</p></td>
+<td><p>0.051</p></td>
+<td><p>0.096</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(t_\mathrm{max}\)</span> (days)</p></td>
+<td><p>1.5</p></td>
+<td><p>2.3</p></td>
+<td><p>3.3</p></td>
+<td><p>4.2</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Outside the window the luminosity is not just less accurate: the relations diverge toward early times, and
+evaluated at <span class="math notranslate nohighlight">\(t \ll t_\mathrm{min}\)</span> they give <span class="math notranslate nohighlight">\(L_\mathrm{bol}\)</span> of order
+<span class="math notranslate nohighlight">\(10^{45}\,\mathrm{erg\,s^{-1}}\)</span> and more, which is not a physical result for a Type IIb supernova
+(see <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/issues/9">GitHub issue #9</a>). Within
+the window, the brightest epoch is the first, and it exceeds <span class="math notranslate nohighlight">\(10^{44}\,\mathrm{erg\,s^{-1}}\)</span> for
+under 2% of draws.</p>
+<p>What the SEDs return outside the window is set by the class attribute <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;zero&quot;</span></code> (the default): zero luminosity, i.e. <code class="docutils literal notranslate"><span class="pre">-inf</span></code> in the natural-log methods, an infinite AB
+magnitude, and zero band flux. An epoch the model cannot describe reads as a non-detection and cannot
+poison a minimum or maximum taken over epochs. This is a <strong>lower bound</strong>, not a prediction: a real
+event does not go dark when the model leaves its regime of validity, it is simply not described by
+it. In particular, the shock-breakout peak before <span class="math notranslate nohighlight">\(t_\mathrm{min}\)</span> and everything after
+<span class="math notranslate nohighlight">\(t_\mathrm{max}\)</span> (the model also omits the radioactive-decay peak) are missing, so yields from
+this population are conservative.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;nan&quot;</span></code>: undefined, which is more honest for plots and diagnostics.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>: evaluate the raw formulas everywhere, including where they are known to be wrong.</p></li>
+</ul>
+<p>The color temperature is <code class="docutils literal notranslate"><span class="pre">nan</span></code> outside the window unless <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>. To change the
+behavior, subclass the SED and override the attribute:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">MoragShockCoolingSED</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NanFilledShockCooling</span><span class="p">(</span><span class="n">MoragShockCoolingSED</span><span class="p">):</span>
+    <span class="n">_INVALID_FILL</span> <span class="o">=</span> <span class="s2">"nan"</span>
+</pre></div>
+</div>
+</section>
+<section id="simulated-light-curves">
 <h3>Simulated Light Curves<a class="headerlink" href="#simulated-light-curves" title="Link to this heading">#</a></h3>
 <p>The plot below draws 500 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, using the default
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a>. No comparison data is overlaid: unlike the other supernova
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a>. Each curve is drawn only inside its own regime of validity (here with <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span> <span class="pre">=</span> <span class="pre">&quot;nan&quot;</span></code>, so the
+curves end rather than drop to zero), which is why the bright, early-time divergence is absent. No comparison data is overlaid: unlike the other supernova
 populations in this package, there is not yet a curated bolometric/temperature dataset for
 shock-cooling Type IIb events under <code class="docutils literal notranslate"><span class="pre">test_data/transients</span></code>.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/40777bb460ac1489766f15b99d924c5d/shock_cooling_iib-1.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/a0224ddf66a14c65d832fa91799b595e/shock_cooling_iib-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7cea639b33261b12a4bfbba5ca6d4fe5/shock_cooling_iib-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/85f8f3b7418a3b2008167e192c49eaa2/shock_cooling_iib-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
@@ -647,7 +718,7 @@ shock-cooling Type IIb events under <code class="docutils literal notranslate"><
 than the multi-day cadences typically used for longer-lived transients. The two panels below show
 two random parameter realizations at a fixed redshift (<span class="math notranslate nohighlight">\(z=0.02\)</span>, roughly 90 Mpc), each
 observed by Rubin (<code class="docutils literal notranslate"><span class="pre">g</span></code>/<code class="docutils literal notranslate"><span class="pre">r</span></code>/<code class="docutils literal notranslate"><span class="pre">i</span></code>, 30 s visits) and UVEX (<code class="docutils literal notranslate"><span class="pre">FUV</span></code>/<code class="docutils literal notranslate"><span class="pre">NUV</span></code>, 900 s visits) on a
-shared 12-hour cadence over the first 12 days: solid curves are the noiseless theory light curves,
+shared 2.4-hour cadence over the first 4 days: solid curves are the noiseless theory light curves,
 points are simulated photometry (shot noise plus, for Rubin, its own photometric-calibration
 floor), and open triangles are <span class="math notranslate nohighlight">\(\mathrm{SNR}&lt;5\)</span> upper limits. This is meant to give a sense
 of what the model’s SEDs actually look like observationally, not a rate/yield forecast – see the
@@ -659,11 +730,11 @@ other transient pages in this section for that kind of analysis.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
-<div class="docutils container" id="id8">
+<div class="docutils container" id="id9">
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="footcite-2024mnras-528-7137m" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id7">2</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id7">2</a>,<a role="doc-backlink" href="#id8">3</a>)</span>
 <p>Jonathan Morag, Ido Irani, Nir Sapir, and Eli Waxman. Shock cooling emission from explosions of red supergiants: II. An analytic model of deviations from blackbody emission. <em>\mnras </em>, 528(4):7137–7155, March 2024. <a class="reference external" href="https://arxiv.org/abs/2307.05598">arXiv:2307.05598</a>, <a class="reference external" href="https://doi.org/10.1093/mnras/stae374">doi:10.1093/mnras/stae374</a>.</p>
 </aside>
 <aside class="footnote brackets" id="footcite-strolger2015" role="doc-footnote">
@@ -734,6 +805,7 @@ other transient pages in this section for that kind of analysis.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-facts">Quick Facts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sed-model">SED Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#regime-of-validity">Regime of Validity</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simulated-light-curves">Simulated Light Curves</a></li>
 </ul>
 </li>

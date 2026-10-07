@@ -706,14 +706,15 @@
 
 <span class="sd">    Uses `MoragShockCoolingSED` (Morag et al. 2024).</span>
 
-<span class="sd">    This models only the shock-cooling phase -- from shock breakout out to roughly a week</span>
-<span class="sd">    post-explosion, per Morag+24's own stated validity window -- not the radioactive-decay-powered</span>
-<span class="sd">    peak that dominates a typical Type IIb light curve at ~15-25 days. `DEFAULT_DURATION` is set</span>
-<span class="sd">    accordingly, well short of a full Type IIb light curve.</span>
+<span class="sd">    This models only the shock-cooling phase, not the radioactive-decay-powered peak that dominates a</span>
+<span class="sd">    typical Type IIb light curve at ~15-25 days. Morag+24's regime of validity is short for Type IIb</span>
+<span class="sd">    parameters: for the SED's default priors it ends after a median of ~1.5 days and after 5 days for</span>
+<span class="sd">    only ~0.01% of draws, and the SED is zero outside it (see `MoragShockCoolingSED`).</span>
+<span class="sd">    `DEFAULT_DURATION` is set to cover that window, well short of a full Type IIb light curve.</span>
 <span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">MoragShockCoolingSED</span>
-    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIB_FRACTION</span>

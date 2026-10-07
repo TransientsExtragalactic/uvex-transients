@@ -517,6 +517,9 @@
 <span class="c1"># Geometric prefactor (4*pi)**2 / sqrt(3) in Eq. A9 of Morag+24.</span>
 <span class="n">_LOG_A9_PREFACTOR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">))</span>
 
+<span class="n">_INVALID_FILLS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"zero"</span><span class="p">:</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="s2">"nan"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">}</span>
+<span class="sd">"""dict: Natural-log value written to a luminosity outside the regime of validity, per fill setting."""</span>
+
 
 <span class="c1"># ================================================ #</span>
 <span class="c1"># Utility / Component Functions                    #</span>
@@ -654,7 +657,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_log_morag_bolometric</span><span class="p">(</span>
     <span class="n">components</span><span class="p">:</span> <span class="n">_MoragComponents</span><span class="p">,</span>
     <span class="n">log_time</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
-    <span class="n">mask_invalid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">log_fill</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Bolometric luminosity (natural log, cgs), Eq. A1 of Morag+24, from precomputed :attr:`components`.</span>
@@ -669,9 +672,10 @@
 <span class="sd">        Precomputed scalings/break points, from :func:`_log_morag_components`.</span>
 <span class="sd">    log_time : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the time, in seconds, since the epoch of explosion.</span>
-<span class="sd">    mask_invalid : bool, optional</span>
-<span class="sd">        If ``True``, mask out invalid parameter ranges (see</span>
-<span class="sd">        :attr:`_MoragComponents.valid`) with ``nan``. Default ``False``.</span>
+<span class="sd">    log_fill : float, optional</span>
+<span class="sd">        If given, the natural-log value written wherever the model is outside its regime of validity</span>
+<span class="sd">        (see :attr:`_MoragComponents.valid`): ``-inf`` for zero luminosity, ``nan`` for undefined.</span>
+<span class="sd">        By default the formula is evaluated everywhere, including where it is known to be wrong.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -685,8 +689,8 @@
         <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_sqrt_arg</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.17</span> <span class="o">*</span> <span class="n">log_t_rel</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">mask_invalid</span><span class="p">:</span>
-        <span class="n">log_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_fill</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L</span><span class="p">,</span> <span class="n">log_fill</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">log_L</span>
 
@@ -751,7 +755,7 @@
     <span class="n">log_opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-    <span class="n">mask_invalid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">log_fill</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Specific luminosity :math:`L_\nu` from Morag+24\ :footcite:p:`2024MNRAS.528.7137M` for shock cooling IIb's.</span>
@@ -779,9 +783,10 @@
 <span class="sd">        The logarithm of the envelope mass in :math:`{\rm g}`.</span>
 <span class="sd">    log_core_mass : ~numpy.ndarray or float</span>
 <span class="sd">        The logarithm of the core mass in :math:`{\rm g}`.</span>
-<span class="sd">    mask_invalid : bool</span>
-<span class="sd">        If ``True``, then invalid parameter ranges will be masked out of the final result. Otherwise</span>
-<span class="sd">        they will be retained. By default, this is ``False``.</span>
+<span class="sd">    log_fill : float, optional</span>
+<span class="sd">        If given, the natural-log value written wherever the model is outside its regime of validity:</span>
+<span class="sd">        ``-inf`` for zero luminosity, ``nan`` for undefined. By default the formula is evaluated</span>
+<span class="sd">        everywhere, including where it is known to be wrong.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -852,8 +857,8 @@
 
     <span class="n">log_L_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">log_hnu</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">3.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_T_eV</span><span class="p">,</span> <span class="n">log_low</span><span class="p">,</span> <span class="n">log_high</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">mask_invalid</span><span class="p">:</span>
-        <span class="n">log_L_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L_nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_fill</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log_L_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L_nu</span><span class="p">,</span> <span class="n">log_fill</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">log_L_nu</span>
 
@@ -890,31 +895,70 @@
 <span class="sd">         - Rosseland mean opacity. Fixed at the electron-scattering value.</span>
 <span class="sd">       * - ``envelope_mass``</span>
 <span class="sd">         - :math:`M_E`</span>
-<span class="sd">         - Envelope mass.</span>
+<span class="sd">         - Hydrogen-rich envelope mass.</span>
 <span class="sd">       * - ``core_mass``</span>
 <span class="sd">         - :math:`M_C`</span>
 <span class="sd">         - Core mass.</span>
+
+<span class="sd">    .. rubric:: Regime of validity</span>
+
+<span class="sd">    The relations hold only between :math:`t_\mathrm{min} = \max(3R/c, t_\mathrm{bo})` and</span>
+<span class="sd">    :math:`t_\mathrm{max} = \min(t_{0.7}, t_\mathrm{tr}/2)` (Eqs. 17-18 of Morag+24). For</span>
+<span class="sd">    Type IIb-like parameters that is only about a day or two. Outside it the luminosity is not</span>
+<span class="sd">    just inaccurate: it diverges toward early times, reaching :math:`10^{45}\,\mathrm{erg\,s^{-1}}`</span>
+<span class="sd">    in the unmasked tail of the priors. What is written there is set by :attr:`_INVALID_FILL`.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    .. footbibliography::</span>
 <span class="sd">    """</span>
 
-    <span class="n">_MASK_INVALID</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_INVALID_FILL</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"zero"</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    bool: If ``True``, invalid points are masked out of the analysis.</span>
+<span class="sd">    str or None: What to write where the model is outside its regime of validity.</span>
+
+<span class="sd">    ``"zero"`` gives zero luminosity (``-inf`` in log space), so an epoch the model cannot describe reads as</span>
+<span class="sd">    a non-detection and cannot poison a minimum or maximum taken over epochs. ``"nan"`` marks it undefined, for</span>
+<span class="sd">    plots and diagnostics. ``None`` evaluates the formulas everywhere, including where they are known to be</span>
+<span class="sd">    wrong (the shock-cooling luminosity grows without bound toward early times, so this overstates the early</span>
+<span class="sd">    emission by orders of magnitude). The color temperature is always ``nan`` outside the regime of validity</span>
+<span class="sd">    unless this is ``None``.</span>
 <span class="sd">    """</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_fill</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Resolve :attr:`_INVALID_FILL` to the natural-log value written to an invalid luminosity.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or None</span>
+<span class="sd">            ``-inf``, ``nan``, or ``None`` when masking is off.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If :attr:`_INVALID_FILL` is not ``"zero"``, ``"nan"`` or ``None``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_INVALID_FILLS</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"_INVALID_FILL must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_INVALID_FILLS</span><span class="p">)</span><span class="si">}</span><span class="s2"> or None, got </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"v_star"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">10</span><span class="o">**</span><span class="mf">8.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.35</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mf">8.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Scale velocity of the shock near the stellar surface."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"v_*"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"radius"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">1e13</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">,</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.85</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">6e12</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Progenitor stellar radius."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"R"</span><span class="p">,</span>
         <span class="p">),</span>
@@ -925,14 +969,14 @@
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"envelope_mass"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Envelope mass."</span><span class="p">,</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Hydrogen-rich envelope mass."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_E"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"core_mass"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.35</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Core mass."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_C"</span><span class="p">,</span>
         <span class="p">),</span>
@@ -1000,7 +1044,8 @@
         <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
+        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
 
 
 <span class="c1"># ======================================== #</span>
@@ -1081,7 +1126,7 @@
             <span class="n">log_opacity</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">opacity</span><span class="p">),</span>
             <span class="n">log_envelope_mass</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">envelope_mass</span><span class="p">),</span>
             <span class="n">log_core_mass</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">core_mass</span><span class="p">),</span>
-            <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">,</span>
+            <span class="n">log_fill</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
@@ -1142,7 +1187,10 @@
         <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
             <span class="n">log_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">integral</span><span class="p">)</span>
 
+        <span class="c1"># With a zero fill, an invalid epoch integrates to exactly zero (log_L == -inf). Otherwise</span>
         <span class="c1"># nan wherever every frequency sample was masked invalid (integral == 0).</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="o">==</span> <span class="s2">"zero"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">log_L</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">log_L_nu</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">log_L</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div>
 
 
@@ -1188,7 +1236,7 @@
 <span class="sd">        """</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_log_morag_bolometric</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_log_morag_bolometric</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">log_fill</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">())</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
@@ -1211,7 +1259,9 @@
 <span class="sd">        """</span>
         <span class="n">log_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
         <span class="n">components</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MASK_INVALID</span><span class="p">)</span>
+        <span class="c1"># The shape is only masked for a ``nan`` fill. For a zero fill it stays finite, because the</span>
+        <span class="c1"># bolometric luminosity it is added to in `_eval` is already ``-inf``, and ``-inf + nan`` is ``nan``.</span>
+        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_log_morag_temperature_log_K</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">log_time</span><span class="p">,</span> <span class="n">mask_invalid</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="o">==</span> <span class="s2">"nan"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T</span><span class="p">))</span>
 
     <span class="nd">@classmethod</span>
