@@ -28,6 +28,19 @@ system:
     # platform-appropriate default (see uvex_transients.utils.get_cache_dir).
     cache_dir: null
 
+  # UPDATE CHECK
+  # ------------
+  # On import, warn if a newer uvex_transients release exists on GitHub (see
+  # uvex_transients.utils.updates). Importing only reads a cached answer; a stale cache is
+  # refreshed in a background thread, so a new release is reported on a later import. Setting the
+  # UVEX_TRANSIENTS_NO_UPDATE_CHECK environment variable also turns the check off.
+  update_check:
+    enabled: true
+    # How long a cached answer is trusted before the GitHub API is queried again.
+    interval_hours: 24
+    # Network timeout (seconds) for that query.
+    timeout: 3.0
+
 # ------------------------------- #
 # PHYSICS CONFIGURATION           #
 # ------------------------------- #
@@ -103,8 +116,9 @@ schedules:
     uvex_v0.3.0: https://raw.githubusercontent.com/m4opt/uvex-scheduler/refs/tags/v0.3.0/tables/plan.ecsv
     uvex_initial_082726: https://github.com/m4opt/uvex-scheduler/raw/3d9441ba3f513402b62d8596d68fc17d9b6df5f4/tables/initial-survey.ecsv
 
-  # Set the default schedule.
-  default_schedule: uvex_dev
+  # Set the default schedule. This is the latest uvex-scheduler release; it is bumped (and the
+  # new release registered above) by scripts/sync_scheduler.py. Use uvex_dev to track upstream main.
+  default_schedule: uvex_v0.5.0
 
 
 # ------------------------------- #
@@ -114,10 +128,11 @@ schedules:
 # so a new mirror or footprint file is a config change, not a code change.
 observatories:
   uvex:
-    # Base URL for the uvex-scheduler repo's survey-footprint region files. It tracks
-    # main, so an upstream fix is picked up automatically; to refresh an already cached
-    # MOC, clear it with SurveyFootprint.clear_from_cache.
-    repo_url: https://raw.githubusercontent.com/m4opt/uvex-scheduler/main
+    # Base URL for the uvex-scheduler repo's survey-footprint region files. It is pinned to
+    # the same release tag as `schedules.default_schedule` (both are bumped by
+    # scripts/sync_scheduler.py); to refresh an already cached MOC, clear it with
+    # SurveyFootprint.clear_from_cache.
+    repo_url: https://raw.githubusercontent.com/m4opt/uvex-scheduler/refs/tags/v0.5.0
     # Radius (degrees) that expands a DS9 point() target into a circle: UVEX's inscribed
     # FOV circle (fov/inscribed-circle.ds9 in uvex-scheduler).
     point_region_size: 1.83081195

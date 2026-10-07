@@ -75,3 +75,14 @@ def test_default_path_points_at_the_packaged_archive():
     archive = LightcurveArchive()
     assert archive.path.name == "lightcurves.h5"
     assert archive.path.exists()
+
+
+def test_packaged_llgrb_2006aj_bolometric_curve():
+    """The packaged archive carries the Cano+2011 bolometric light curve of GRB 060218 / SN 2006aj."""
+    table = LightcurveArchive().table("llgrb", "2006aj_cano2011", "L_bol")
+    assert len(table) == 13
+    assert table["time"].unit == u.day
+    assert table["L_bol"].unit == u.erg / u.s
+    assert table["time"][0].to_value(u.day) == pytest.approx(0.3428579833498397)
+    assert table["L_bol"].max().to_value(u.erg / u.s) == pytest.approx(4.5230054065392354e42)
+    assert table.meta["reference"] == "https://arxiv.org/abs/1104.5141"

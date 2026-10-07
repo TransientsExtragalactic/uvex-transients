@@ -94,8 +94,9 @@ def dust_map() -> PlanckGNILCQuery:
         sources[0],
     )
     path = download_file(sources[-1], cache=True, sources=sources)
+    query = PlanckGNILCQuery(path)
     logger.info("Planck GNILC dust map ready at %s.", path)
-    return PlanckGNILCQuery(path)
+    return query
 
 
 # =========================================================================== #

@@ -1,15 +1,21 @@
 """Shared pytest fixtures for the ``uvex_transients`` test suite."""
 
-import numpy as np
-import pytest
-from astropy import units as u
-from astropy.coordinates import SkyCoord
-from astropy.table import QTable
-from astropy.time import Time
-from m4opt.missions._uvex import uvex
-from regions import CircleSkyRegion
+import os
 
-from uvex_transients.surveys.base import SurveySchedule
+# Importing uvex_transients runs the update check (network, background thread); keep the suite
+# hermetic. Must be set before the first uvex_transients import below.
+os.environ.setdefault("UVEX_TRANSIENTS_NO_UPDATE_CHECK", "1")
+
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+from astropy import units as u  # noqa: E402
+from astropy.coordinates import SkyCoord  # noqa: E402
+from astropy.table import QTable  # noqa: E402
+from astropy.time import Time  # noqa: E402
+from m4opt.missions._uvex import uvex  # noqa: E402
+from regions import CircleSkyRegion  # noqa: E402
+
+from uvex_transients.surveys.base import SurveySchedule  # noqa: E402
 
 
 @pytest.fixture

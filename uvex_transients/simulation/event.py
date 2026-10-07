@@ -87,7 +87,7 @@ class Event:
         photometry_post_window: Quantity | None = None,
     ):
         """
-        Construct an `Event` and query `schedule` for its covering observations.
+        Construct an `Event`; its covering observations are queried from `schedule` lazily, on first access.
 
         Parameters
         ----------
@@ -147,11 +147,8 @@ class Event:
         )
         self._ebv = 0.0 if ebv is None else float(ebv)
 
-        # The one query this class exists to make: which scheduled observations actually
-        # covered this event, while it was active. `get_observations_of`'s own window can
-        # include a row that *started* slightly before `t_explosion` but overlaps into it
-        # (e.g. a long downlink); that row is dropped here since only observations that
-        # began at or after the explosion are ever useful for this event's lightcurve.
+        # Resolve the photometry window now, so bad values fail at construction rather than at
+        # the (deferred) schedule query.
         if photometry_post_window is None:
             photometry_post_window = transient.duration_limit
 
@@ -174,18 +171,31 @@ class Event:
 
         self._photometry_post_window = photometry_post_window
         self._photometry_pre_window = photometry_pre_window
-        candidate = schedule.get_observations_of(
-            coord, t_explosion - photometry_pre_window, t_explosion + photometry_post_window
+
+        # The schedule query is the expensive part of construction (a WCS build per call), so it is
+        # deferred until `window_observations` (or something derived from it) is first accessed;
+        # see `_resolve_observations`.
+        self._window_observations: QTable | None = None
+        self._in_model: np.ndarray | None = None
+        self._observations: QTable | None = None
+        self._background_observations: QTable | None = None
+
+    def _resolve_observations(self) -> None:
+        """Run the schedule query and split its rows, once; a no-op after the first call."""
+        if self._window_observations is not None:
+            return
+
+        t_explosion = self._t_explosion
+        post = self._photometry_post_window
+        candidate = self._schedule.get_observations_of(
+            self._coord, t_explosion - self._photometry_pre_window, t_explosion + post
         )
 
         # Determine the set of candidates that are actually observed.
-        self._window_observations = candidate
         in_model = np.logical_and(
             candidate["start_time"] >= t_explosion,
-            candidate["start_time"] + candidate["duration"] <= t_explosion + photometry_post_window,
+            candidate["start_time"] + candidate["duration"] <= t_explosion + post,
         )
-        self._in_model = np.asarray(in_model)
-        self._observations = candidate[in_model]
 
         # Everything else in the query window -- pre-explosion rows from
         # `photometry_pre_window`, plus any row whose exposure runs past
@@ -194,7 +204,10 @@ class Event:
         # (see `simulate_photometry`): some light curve shapes are only smoothly
         # *wrong* there, but others (e.g. an early-time `1/t` singularity) diverge
         # outright, so this window is masked out rather than merely deprioritized.
+        self._in_model = np.asarray(in_model)
+        self._observations = candidate[in_model]
         self._background_observations = candidate[~in_model]
+        self._window_observations = candidate
 
     def __repr__(self) -> str:
         """
@@ -207,7 +220,7 @@ class Event:
         """
         return (
             f"<Event id={self._event_id} type={self._transient_type!r} "
-            f"z={self._redshift:.4g} n_observations={len(self._observations)}>"
+            f"z={self._redshift:.4g} n_observations={self.n_observations}>"
         )
 
     # ------------------------------ #
@@ -268,6 +281,7 @@ class Event:
         -- i.e. where the spacecraft was -- ``target_coord``, ``roll``, ...). Empty if
         the survey never observed this event's position during its active window.
         """
+        self._resolve_observations()
         return self._observations
 
     @property
@@ -281,6 +295,7 @@ class Event:
         i.e. `observations` before it's narrowed to rows the transient's SED is actually
         valid for. See `observations`/`background_observations` for the split.
         """
+        self._resolve_observations()
         return self._window_observations
 
     @property
@@ -295,12 +310,13 @@ class Event:
         domain. Empty whenever `photometry_pre_window` is the default ``0 * u.day`` and
         no candidate observation overruns `photometry_post_window`.
         """
+        self._resolve_observations()
         return self._background_observations
 
     @property
     def n_observations(self) -> int:
         """int: Number of candidate observations (``len(observations)``)."""
-        return len(self._observations)
+        return len(self.observations)
 
     def in_footprint(self, footprint: SurveyFootprint | str) -> bool:
         """
@@ -641,7 +657,7 @@ class Event:
         if unknown:
             raise ValueError(f"Unknown bandpass(es) {unknown}; available: {list(detector.bandpasses)}.")
 
-        window = self._window_observations
+        window = self.window_observations
         if len(window) == 0:
             return self._empty_photometry_table()
 

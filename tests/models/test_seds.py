@@ -12,6 +12,7 @@ actually being checked.
 """
 
 import numpy as np
+import pytest
 from astropy import units as u
 
 from uvex_transients.models.arnett import ArnettDecaySED
@@ -52,18 +53,28 @@ class TestVillarCoolingBlackbodySED(SpectralModelContract):
     model_class = VillarCoolingBlackbodySED
 
 
-class TestMoragShockCoolingSED(SpectralModelContract):
-    """Narrower `t_grid` than the default: Morag+24's shock-cooling fit is only valid for a
-    fairly short early-time window (this model masks parameter draws outside it to `nan`), unlike
-    the other phenomenological SEDs here which stay finite across the full default grid."""
+class _UnmaskedMoragContract(SpectralModelContract):
+    """Run the contract on the raw Morag+24 formulas, with `_INVALID_FILL` off.
 
+    The contract asserts finite output everywhere, but with the default fill the model is zero (or ``nan``)
+    outside its regime of validity, which for Type IIb parameters is only a day or two. The masking itself is
+    covered by `test_morag_validity`. The `t_grid` is also narrower than the default, because the raw formulas
+    are only well behaved over a fairly short early-time window.
+    """
+
+    t_grid: u.Quantity = np.geomspace(3e-2, 5, 24) * u.day
+
+    @pytest.fixture(autouse=True)
+    def _disable_masking(self, monkeypatch):
+        monkeypatch.setattr(self.model_class, "_INVALID_FILL", None)
+
+
+class TestMoragShockCoolingSED(_UnmaskedMoragContract):
     model_class = MoragShockCoolingSED
-    t_grid: u.Quantity = np.geomspace(3e-2, 5, 24) * u.day
 
 
-class TestMoragShockCoolingBlackbodySED(SpectralModelContract):
+class TestMoragShockCoolingBlackbodySED(_UnmaskedMoragContract):
     model_class = MoragShockCoolingBlackbodySED
-    t_grid: u.Quantity = np.geomspace(3e-2, 5, 24) * u.day
 
 
 class TestTypeIIPSED(SpectralModelContract):

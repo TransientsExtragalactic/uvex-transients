@@ -13,6 +13,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from tqdm.auto import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
+
 from .config import cache_dir
 from .log import logger
 
@@ -104,6 +107,7 @@ def find_release(tag: str | None = None, timeout: float = 60.0) -> dict:
     LookupError
         If there are no published releases, or none carries `tag`.
     """
+    logger.info("Querying %s for the release list.", _API_URL)
     try:
         with _urlopen(_request(_API_URL), timeout) as response:
             releases = json.load(response)
@@ -137,9 +141,21 @@ def _download(url: str, dest: Path, timeout: float) -> None:
     """
     partial = dest.with_name(dest.name + ".part")
     try:
-        with _urlopen(_request(url), timeout) as response, open(partial, "wb") as f:
+        with (
+            _urlopen(_request(url), timeout) as response,
+            open(partial, "wb") as f,
+            logging_redirect_tqdm(loggers=[logger]),
+            tqdm(
+                total=int(response.headers.get("Content-Length") or 0) or None,
+                desc=f"Downloading {dest.name}",
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as pbar,
+        ):
             while chunk := response.read(_CHUNK_SIZE):
                 f.write(chunk)
+                pbar.update(len(chunk))
         partial.replace(dest)
     finally:
         partial.unlink(missing_ok=True)
@@ -234,6 +250,7 @@ def get_results(
                 )
         logger.info("Downloading %s from release %s to %s.", filename, tag, dest)
         _download(asset["browser_download_url"], dest, timeout)
+        logger.info("Downloaded %s (%d bytes).", filename, dest.stat().st_size)
         paths[name] = dest
 
     return paths

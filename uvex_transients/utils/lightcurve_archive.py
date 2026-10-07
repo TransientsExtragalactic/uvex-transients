@@ -3,10 +3,11 @@
 The archive groups every calibration light curve used by the Sphinx transient-type galleries
 (``docs/source/transients/*.rst``) under ``/<transient_type>/<transient>/<field>``, where
 ``<transient_type>`` matches one of the `uvex_transients.transients` modules (``kilonovae``,
-``lfbots``, ``supernovae``, ``tdes``), ``<transient>`` is ``<designation>_<citekey>`` (e.g.
-``gw170817_waxman``), and ``<field>`` is an observable such as ``L_bol`` or ``T_phot``. Each leaf is
-an `~astropy.table.QTable` with ``time`` and ``<field>`` columns as unit-aware `~astropy.units.Quantity`
-columns, plus a ``reference`` entry in ``.meta`` recording the source.
+``lfbots``, ``supernovae``, ``tdes``) or, for classes without one yet, is a bare group name
+(``llgrb``), ``<transient>`` is ``<designation>_<citekey>`` (e.g. ``gw170817_waxman``), and
+``<field>`` is an observable such as ``L_bol`` or ``T_phot``. Each leaf is an `~astropy.table.QTable`
+with ``time`` and ``<field>`` columns as unit-aware `~astropy.units.Quantity` columns, plus a
+``reference`` entry in ``.meta`` recording the source.
 
 Supernovae are additionally split by spectroscopic classification, so their ``<transient_type>`` is
 ``supernovae/<class>`` with ``<class>`` one of ``Ia``, ``II``, ``IIP``, ``IIb``, ``Ib``, ``Ic``,

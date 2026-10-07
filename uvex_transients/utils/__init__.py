@@ -8,12 +8,15 @@ from numpy.typing import NDArray
 from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
 from .results import get_results
+from .updates import OutdatedVersionWarning, check_for_updates
 
 __all__ = [
     "config",
     "cache_dir",
     "get_cache_dir",
     "get_results",
+    "OutdatedVersionWarning",
+    "check_for_updates",
     "logger",
     "configure_logging",
     "get_rng",

@@ -19,6 +19,7 @@ from astropy.time import Time
 from astropy.units import Quantity
 from m4opt.missions import Mission
 from tqdm.auto import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from uvex_transients.utils import logger
 
@@ -252,16 +253,21 @@ class EventCatalog:
 
         table = self.table
         event_id_col = np.asarray(table["event_id"])
+        # One sort up front, then a binary search per id, rather than rescanning the column for each id.
+        order = np.argsort(event_id_col, kind="stable")
+        sorted_ids = event_id_col[order]
+        positions = np.searchsorted(sorted_ids, id_array)
+        positions[positions == sorted_ids.size] = 0
+        found = sorted_ids[positions] == id_array
+        if not found.all():
+            raise KeyError(f"No event with id {int(id_array[~found][0])!r} in this catalog.")
+        row_indices = order[positions]
         has_distance = "luminosity_distance" in table.colnames
         has_ebv = "ebv" in table.colnames
 
         events: list[Event] = []
-        for eid in id_array:
-            matches = np.flatnonzero(event_id_col == eid)
-            if matches.size == 0:
-                raise KeyError(f"No event with id {int(eid)!r} in this catalog.")
-
-            row = table[int(matches[0])]
+        for row_index in row_indices:
+            row = table[int(row_index)]
             name = str(row["transient_type"])
             if name not in transients:
                 raise KeyError(f"No transient type {name!r} in 'transients'; available: {list(transients)}.")
@@ -335,12 +341,17 @@ class EventCatalog:
         if len(self) == 0:
             return Event._empty_photometry_table()
 
+        # `Event` queries the schedule lazily, so that cost lands inside the loop below, under the bar.
+        logger.info("Simulating photometry for %d events (bands=%s).", len(self), "all" if bands is None else bands)
         events = self.get_events(self.event_id, transients, schedule)
-        tables = [
-            event.simulate_photometry(mission, bands=bands, n_sigma=n_sigma)
-            for event in tqdm(events, desc="Simulating photometry", unit="event")
-        ]
-        return vstack(tables, metadata_conflicts="silent")
+        with logging_redirect_tqdm(loggers=[logger]):
+            tables = [
+                event.simulate_photometry(mission, bands=bands, n_sigma=n_sigma)
+                for event in tqdm(events, desc="Simulating photometry", unit="event")
+            ]
+        result = vstack(tables, metadata_conflicts="silent")
+        logger.info("Simulated photometry: %d rows for %d events.", len(result), len(events))
+        return result
 
     def compute_photometry_catalog(
         self,
@@ -431,6 +442,7 @@ class EventCatalog:
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
 
+        logger.info("Reading event catalog from %s.", path)
         table = QTable.read(path, format=table_format)
         meta = dict(table.meta)
         table.meta.clear()

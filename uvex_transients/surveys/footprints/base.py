@@ -14,7 +14,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from mocpy import MOC
 
-from uvex_transients.utils import cache_dir
+from uvex_transients.utils import cache_dir, logger
 
 __all__ = ["SurveyFootprint", "FootprintRegistry", "default_registry", "combine_MOC", "combine_footprints"]
 
@@ -135,6 +135,7 @@ class SurveyFootprint:
         TypeError
             If `generator` does not return a `~mocpy.MOC`.
         """
+        logger.info("Generating footprint %r (not in the cache); this can take a while.", self.name)
         moc = self.generator(max_order=self.MOC_max_order, **self.params)
         if not isinstance(moc, MOC):
             raise TypeError(f"Generator for {self.name!r} returned {type(moc).__name__}, not a MOC.")
@@ -143,6 +144,7 @@ class SurveyFootprint:
         if self.persist:
             self._write_cache(moc)
         self._moc = moc
+        logger.info("Footprint %r ready.", self.name)
         return moc
 
     # ------------------- #

@@ -2608,7 +2608,9 @@ class SpectralModel(_ModelBase):
         numerator = np.trapezoid(np.exp(log_flux_density) * throughput_sorted, nu_sorted, axis=-1)
         denominator = np.trapezoid(throughput_sorted, nu_sorted)
 
-        return np.log(numerator / denominator)
+        # A model that is exactly zero over the band (e.g. outside its regime of validity) gives -inf here.
+        with np.errstate(divide="ignore"):
+            return np.log(numerator / denominator)
 
     @classmethod
     def flux_band_log(
@@ -2853,7 +2855,9 @@ class SpectralModel(_ModelBase):
             **parameters,
         )
 
-        return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
+        # Zero flux is an infinitely faint magnitude, not an error.
+        with np.errstate(divide="ignore"):
+            return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
 
     @classmethod
     def mag(
@@ -2974,7 +2978,9 @@ class SpectralModel(_ModelBase):
             **parameters,
         )
 
-        return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
+        # Zero flux is an infinitely faint magnitude, not an error.
+        with np.errstate(divide="ignore"):
+            return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
 
     @classmethod
     def mag_band(

@@ -1170,7 +1170,11 @@ class SurveySchedule:
                 logger.debug("Reusing cached HEALPix coverage index for (nside=%d, order=%r).", nside, order)
                 return cached
 
-        logger.debug("Building HEALPix coverage index for (nside=%d, order=%r).", nside, order)
+        logger.info(
+            "Building HEALPix coverage index for (nside=%d, order=%r); this can be slow for a long schedule.",
+            nside,
+            order,
+        )
         observe_rows = self.observe_rows
         npix = ah.nside_to_npix(nside)
 

@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test coverage docs docs-clean clean run
+.PHONY: help install lint format test coverage docs docs-clean clean run sync-scheduler release
 
 RUN_CONFIG ?= configs/full_run.yaml
 RUN_OUT_DIR ?= results/dev/
@@ -33,3 +33,14 @@ clean: ## Remove build artifacts (see clean.sh).
 
 run: ## Run the full-population pipeline (RUN_CONFIG -> RUN_OUT_DIR; both overridable).
 	uvex-transients run $(RUN_CONFIG) --out-dir $(RUN_OUT_DIR) --overwrite
+
+sync-scheduler: ## Pin the repo to the latest uvex-scheduler release (see scripts/sync_scheduler.py).
+	python scripts/sync_scheduler.py
+
+release: ## Tag and push a release (VERSION=v0.2.1alpha); the tag triggers the build_and_release workflow.
+	@test -n "$(VERSION)" || { echo "usage: make release VERSION=vX.Y.Z[alpha]"; exit 1; }
+	@test "$$(git branch --show-current)" = main || { echo "release from main (currently on $$(git branch --show-current))"; exit 1; }
+	@git diff --quiet HEAD || { echo "working tree is not clean"; exit 1; }
+	git pull --ff-only
+	git tag -a $(VERSION) -m "$(VERSION)"
+	git push origin $(VERSION)

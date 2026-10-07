@@ -421,6 +421,7 @@ def downsample_mission(mission: Mission, *, name: str | None = None, **kwargs) -
 @functools.cache
 def _fast_mission(base: str, tol_mag: float, t_min: float, t_max: float, n_spec: int) -> Mission:
     """Build (once per distinct setting) the downsampled copy of the m4opt mission `base`."""
+    logger.debug("Building the downsampled copy of mission %r (tol_mag=%s, n_spec=%d).", base, tol_mag, n_spec)
     return downsample_mission(
         getattr(m4opt.missions, base),
         name=f"{base}_fast",
@@ -476,6 +477,7 @@ def get_mission(name: str, *, downsample: bool | None = None) -> Mission:
         raise ValueError(f"Unknown mission {name!r}; available: {list_missions()}.")
 
     settings = _downsample_settings()
+    logger.debug("Resolving mission %r (base=%r, settings=%s).", name, base, settings)
     if name in FAST_MISSIONS or (settings["enabled"] if downsample is None else downsample):
         return _fast_mission(base, settings["tol_mag"], settings["t_min"], settings["t_max"], settings["n_spec"])
     return mission
