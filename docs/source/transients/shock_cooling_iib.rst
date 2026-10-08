@@ -40,9 +40,11 @@ Quick Facts
        :attr:`~uvex_transients.transients.supernovae.ShockCoolingIIb.RATE_CI` (see
        :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
-     - :math:`z = 1`
+     - :math:`z = 1.2`
      - --
-     - Generous relative to the brief, luminous shock-cooling phase this SED targets.
+     - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+       priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded
+       up.
    * - Duration
      - 20 days
      - --

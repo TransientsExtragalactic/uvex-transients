@@ -46,9 +46,11 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.8`
+           - :math:`z = 0.51`
            - --
-           - Matched to ordinary Type IIP peak luminosities.
+           - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+             priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+             rounded up. See the observability summary below.
          * - Duration
            - 100 days
            - --
@@ -260,74 +262,35 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: Observability Summary
 
-      Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB
-      magnitudes :math:`m_\mathrm{AB}` of 3000 simulated events drawn from the priors above, with
-      the UVEX 1 Dwell limit of :math:`m<24.5` overplotted. Because the bolometric light curve does
-      not peak exactly at a single named parameter, the peak apparent magnitude is found by a
-      numerical search over each event's light curve rather than evaluated at a fixed time.
+      The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+      parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+      UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+      draw's peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+      detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+      :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
+      1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+      adopted above, :math:`z=0.51`, is its value at :math:`m=24.5`, rounded up and derived on a
+      finer grid than this plot's.
+
+      The limit bounds the fraction of the *population* that is detectable beyond it, not the
+      fraction of detected events, and it does not include Milky Way extinction or sky position.
 
       .. plot::
          :include-source: false
 
-          import numpy as np
-          import matplotlib.pyplot as plt
-          from astropy import units as u
-          from scipy.stats import gaussian_kde
+         import numpy as np
+         import matplotlib.pyplot as plt
 
-          from uvex_transients.missions import uvex_fast as uvex
-          from uvex_transients.transients.supernovae import TypeIIPSNe
-          from uvex_transients.models.supernovae import TypeIIPSED
+         from uvex_transients.missions import uvex_fast as uvex
+         from uvex_transients.transients.supernovae import TypeIIPSNe
+         from uvex_transients.utils.plotting import plot_detection_horizon
 
-          rng = np.random.default_rng(20260911)
-          n_samples = 3000
-
-          sn = TypeIIPSNe()
-          z = sn.sample_event_redshift(n_samples, rng=rng)
-          params = TypeIIPSED().sample_parameters(size=n_samples, rng=rng)
-          params_grid = {name: value[:, None] for name, value in params.items()}
-
-          # Numerically search each event's own light curve for its brightest (peak) apparent
-          # magnitude, rather than assuming a single named parameter marks the true peak.
-          t_grid_rest = np.geomspace(0.5, 200, 200) * u.day
-          t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
-          z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
-
-          bandpasses = uvex.detector.bandpasses
-          band_names = list(bandpasses)
-
-          fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
-
-          for ax, band_name in zip(axes, band_names):
-              mag_curve = TypeIIPSED.mag_bandpass(
-                  bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
-              ).to_value(u.ABmag)
-              mag = np.nanmin(mag_curve, axis=1)
-              finite = np.isfinite(mag)
-              z_finite, mag_finite = z[finite], mag[finite]
-
-              ax.scatter(z_finite, mag_finite, s=5, ec='k', fc='k', alpha=0.5, label="Simulated events")
-
-              kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
-              z_kde_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
-              mag_kde_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
-              Z_grid, Mag_grid = np.meshgrid(z_kde_grid, mag_kde_grid)
-              density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
-              ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
-
-              ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
-
-              ax.invert_yaxis()
-              ax.set_xlabel("Redshift")
-              ax.set_title(f"UVEX {band_name}")
-              ax.legend(loc="upper right", fontsize=8, frameon=False)
-
-              ax.invert_yaxis()
-              ax.set_ylim([35, 15])
-
-          axes[0].set_ylabel("Peak apparent AB magnitude")
-          fig.suptitle(f"Type IIP SNe: peak apparent magnitude vs. redshift (n={n_samples})")
-          fig.tight_layout()
-          plt.show()
+         transient = TypeIIPSNe()
+         curve, grid = transient.get_detection_horizon(
+             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+         )
+         plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+         plt.show()
 
       The anticipated rate detectable by UVEX at these limits is as follows, assuming that any
       event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and
@@ -428,10 +391,11 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :attr:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe.RATE_CI` carries
              exactly the same relative uncertainty as ordinary Type IIP's.
          * - Redshift limit
-           - :math:`z = 2`
+           - :math:`z = 1.1`
            - --
-           - Higher than ordinary Type IIP, to admit this population's brighter, more UV-luminous
-             early-cooling realizations.
+           - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+             priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+             rounded up. See the observability summary below.
          * - Duration
            - 100 days
            - --
@@ -595,72 +559,35 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: Observability Summary
 
-      Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB
-      magnitudes :math:`m_\mathrm{AB}` of 3000 simulated events drawn from the priors above, with
-      the UVEX 1 Dwell limit of :math:`m<24.5` overplotted.
+      The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+      parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+      UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+      draw's peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+      detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+      :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
+      1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+      adopted above, :math:`z=1.1`, is its value at :math:`m=24.5`, rounded up and derived on a
+      finer grid than this plot's.
+
+      The limit bounds the fraction of the *population* that is detectable beyond it, not the
+      fraction of detected events, and it does not include Milky Way extinction or sky position.
 
       .. plot::
          :include-source: false
 
-          import numpy as np
-          import matplotlib.pyplot as plt
-          from astropy import units as u
-          from scipy.stats import gaussian_kde
+         import numpy as np
+         import matplotlib.pyplot as plt
 
-          from uvex_transients.missions import uvex_fast as uvex
-          from uvex_transients.transients.supernovae import TypeIIPExcessSNe
-          from uvex_transients.models.supernovae import TypeIIPExcessSED
+         from uvex_transients.missions import uvex_fast as uvex
+         from uvex_transients.transients.supernovae import TypeIIPExcessSNe
+         from uvex_transients.utils.plotting import plot_detection_horizon
 
-          rng = np.random.default_rng(20260911)
-          n_samples = 3000
-
-          sn = TypeIIPExcessSNe()
-          z = sn.sample_event_redshift(n_samples, rng=rng)
-          params = TypeIIPExcessSED().sample_parameters(size=n_samples, rng=rng)
-          params_grid = {name: value[:, None] for name, value in params.items()}
-
-          # Numerically search each event's own light curve for its brightest (peak) apparent
-          # magnitude, rather than assuming a single named parameter marks the true peak.
-          t_grid_rest = np.geomspace(0.2, 200, 200) * u.day
-          t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
-          z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
-
-          bandpasses = uvex.detector.bandpasses
-          band_names = list(bandpasses)
-
-          fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
-
-          for ax, band_name in zip(axes, band_names):
-              mag_curve = TypeIIPExcessSED.mag_bandpass(
-                  bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
-              ).to_value(u.ABmag)
-              mag = np.nanmin(mag_curve, axis=1)
-              finite = np.isfinite(mag)
-              z_finite, mag_finite = z[finite], mag[finite]
-
-              ax.scatter(z_finite, mag_finite, s=5, ec='k', fc='k', alpha=0.5, label="Simulated events")
-
-              kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
-              z_kde_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
-              mag_kde_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
-              Z_grid, Mag_grid = np.meshgrid(z_kde_grid, mag_kde_grid)
-              density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
-              ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
-
-              ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
-
-              ax.invert_yaxis()
-              ax.set_xlabel("Redshift")
-              ax.set_title(f"UVEX {band_name}")
-              ax.legend(loc="upper right", fontsize=8, frameon=False)
-
-              ax.invert_yaxis()
-              ax.set_ylim([35, 15])
-
-          axes[0].set_ylabel("Peak apparent AB magnitude")
-          fig.suptitle(f"Type IIP + Excess SNe: peak apparent magnitude vs. redshift (n={n_samples})")
-          fig.tight_layout()
-          plt.show()
+         transient = TypeIIPExcessSNe()
+         curve, grid = transient.get_detection_horizon(
+             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+         )
+         plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+         plt.show()
 
       The anticipated rate detectable by UVEX at these limits is as follows, assuming that any
       event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and
@@ -782,9 +709,11 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
              same underlying Type IIb population, just with different SED models.
          * - Redshift limit
-           - :math:`z = 0.5`
+           - :math:`z = 0.29`
            - --
-           - Tighter than the :math:`z = 1` bound of :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`.
+           - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+             priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+             rounded up. See the observability summary below.
          * - Duration
            - 200 days
            - --
@@ -993,61 +922,35 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: Observability Summary
 
-      Below are the redshifts :math:`z` and corresponding bandpass peak apparent AB magnitudes
-      :math:`m_\mathrm{AB}` of 1000 simulated events drawn from the priors above, with the UVEX 1 Dwell
-      limit of :math:`m<24.5` overplotted. The peak apparent magnitude is found by a numerical search
-      over each event's light curve, since neither peak sits at a single named parameter once both
-      components contribute.
+      The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+      parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+      UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+      draw's peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+      detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+      :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
+      1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+      adopted above, :math:`z=0.29`, is its value at :math:`m=24.5`, rounded up and derived on a
+      finer grid than this plot's.
+
+      The limit bounds the fraction of the *population* that is detectable beyond it, not the
+      fraction of detected events, and it does not include Milky Way extinction or sky position.
 
       .. plot::
          :include-source: false
 
          import numpy as np
          import matplotlib.pyplot as plt
-         from astropy import units as u
 
          from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIIbSNe
-         from uvex_transients.models.supernovae import TypeIIbSED
+         from uvex_transients.utils.plotting import plot_detection_horizon
 
-         rng = np.random.default_rng(20260918)
-         n_samples = 1000
-
-         sn = TypeIIbSNe()
-         z = sn.sample_event_redshift(n_samples, rng=rng)
-         params = TypeIIbSED().sample_parameters(size=n_samples, rng=rng)
-         params_grid = {name: value[:, None] for name, value in params.items()}
-
-         # Numerically search each event's own light curve for its brightest (peak) apparent
-         # magnitude, since neither the early nor the main peak sits at a single named parameter.
-         t_grid_rest = np.geomspace(0.1, 200, 300) * u.day
-         t_obs_grid = t_grid_rest[None, :] * (1.0 + z)[:, None]
-         z_grid_bcast = np.broadcast_to(z[:, None], t_obs_grid.shape)
-
-         bandpasses = uvex.detector.bandpasses
-         band_names = list(bandpasses)
-
-         fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
-
-         for ax, band_name in zip(axes, band_names):
-             mag_curve = TypeIIbSED.mag_bandpass(
-                 bandpasses[band_name], t_obs_grid, redshift=z_grid_bcast, **params_grid
-             ).to_value(u.ABmag)
-             mag = np.nanmin(mag_curve, axis=1)
-             finite = np.isfinite(mag)
-
-             ax.scatter(z[finite], mag[finite], s=5, ec="k", fc="k", alpha=0.5, label="Simulated events")
-             ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
-
-             ax.invert_yaxis()
-             ax.set_xlabel("Redshift")
-             ax.set_title(f"UVEX {band_name}")
-             ax.legend(loc="upper right", fontsize=8, frameon=False)
-             ax.set_ylim([35, 15])
-
-         axes[0].set_ylabel("Peak apparent AB magnitude")
-         fig.suptitle(f"Type IIb: peak apparent magnitude vs. redshift (n={n_samples})")
-         fig.tight_layout()
+         transient = TypeIIbSNe()
+         curve, grid = transient.get_detection_horizon(
+             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+         )
+         plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+         plt.show()
 
       The anticipated rate detectable by UVEX at this limit is as follows, assuming that any event above
       the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous in

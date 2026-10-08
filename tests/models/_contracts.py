@@ -33,6 +33,8 @@ import pytest
 from astropy import units as u
 from astropy.units import Quantity
 from scipy.integrate import quad
+from synphot import SpectralElement
+from synphot.models import Box1D
 
 from uvex_transients.models._constants import AB_MAG_ZERO_POINT
 from uvex_transients.models._utils import to_cgs_value
@@ -473,6 +475,26 @@ class SpectralModelContract(ModelContract):
     def _scalar_cgs_params(self):
         params = self._sampled_params()
         return {name: to_cgs_value(value)[0] for name, value in params.items()}
+
+    # ----------------------------------- #
+    # Detection horizon                    #
+    # ----------------------------------- #
+    def test_observability_curve_is_monotone_in_depth(self):
+        band = SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA)
+        table = self.model_class().get_observability_curve(
+            [18.0, 24.0, 30.0],
+            z_grid=np.geomspace(0.01, 0.5, 4),
+            bandpasses={"NUV": band},
+            t_min=0.1 * u.day,
+            t_max=100 * u.day,
+            n_time=16,
+            n_samples=12,
+            confidence=0.5,
+            tolerance=0.2,
+            rng=self.seed,
+        )
+        z_limit = np.asarray(table["z_limit"])
+        assert np.all(z_limit[1:] >= z_limit[:-1])  # compared directly: inf - inf is nan
 
     # ----------------------------------- #
     # L_nu(nu, t)                          #

@@ -45,7 +45,7 @@ set_plot_style()
 #
 # The class's default duration only covers the first ~20 days, so we widen it to 30 days to match the
 # window we want to observe. We also cut the redshift limit down from its survey-scale default of
-# 1: shock-cooling peaks are only ~-17 to -18 mag, so at the rate-weighted typical z ~ 0.5-1 nearly every
+# 1.2: shock-cooling peaks are only ~-17 to -18 mag, so at the rate-weighted typical z ~ 0.5-1 nearly every
 # event would sit below the detection limit of either instrument and make for an empty plot.
 
 N_EVENTS = 10

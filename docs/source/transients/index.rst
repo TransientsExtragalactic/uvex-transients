@@ -42,7 +42,7 @@ underlying physics in any detail.
       anchored to the AT2017gfo/GW170817 light curve.
 
       +++
-      :math:`z \le 0.2` · 30 day window
+      :math:`z \le 0.14` · 30 day window
 
    .. grid-item-card:: Tidal Disruption Events
       :link: tdes
@@ -53,7 +53,7 @@ underlying physics in any detail.
       photosphere, optionally with a late-time magnetized-disk plateau.
 
       +++
-      :math:`z \le 2` · 200 day window
+      :math:`z \le 2.0` · 200 day window
 
    .. grid-item-card:: Luminous Fast Blue Optical Transients
       :link: lfbots
@@ -64,7 +64,7 @@ underlying physics in any detail.
       rising and declining cooling blackbody.
 
       +++
-      :math:`z \le 4` · 100 day window
+      :math:`z \le 4.3` · 100 day window
 
    .. grid-item-card:: Type II Supernovae
       :link: type_ii
@@ -76,7 +76,7 @@ underlying physics in any detail.
       double-pulse phenomenological model spanning single- and double-peaked light curves.
 
       +++
-      :math:`z \le 0.5`-:math:`1.2` · 100-200 day window
+      :math:`z \le 0.29`-:math:`1.1` · 100-200 day window
 
    .. grid-item-card:: Type I Supernovae
       :link: type_i
@@ -89,7 +89,7 @@ underlying physics in any detail.
       physics as the SLSNe-I model below.
 
       +++
-      :math:`z \le 0.5`-:math:`1` · 100-365 day window
+      :math:`z \le 0.47`-:math:`0.77` · 100-365 day window
 
 Detailed Physical Models
 --------------------------
@@ -111,7 +111,7 @@ empirical shape fit directly to observed light curves.
       radioactive-decay peak of a full Type IIb light curve.
 
       +++
-      :math:`z \le 1` · 20 day window
+      :math:`z \le 1.2` · 20 day window
 
    .. grid-item-card:: Superluminous Supernovae
       :link: slsne
@@ -122,7 +122,7 @@ empirical shape fit directly to observed light curves.
       homologously expanding ejecta, with gamma-ray leakage and a cooling blackbody photosphere.
 
       +++
-      :math:`z \le 4` · 600 day window
+      :math:`z \le 2.6` · 600 day window
 
 .. note::
 

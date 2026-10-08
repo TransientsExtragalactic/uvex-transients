@@ -26,8 +26,9 @@ class TidalDisruptionEvent(ExtragalacticTransient):
     Modeled with `VanVelzenTDESED` (a Gaussian-rise/exponential-decay light curve with a
     constant-temperature blackbody photosphere, calibrated against the ZTF TDE sample of
     Van Velzen et al. 2021), a constant volumetric rate of
-    :math:`3.1\times10^{-7}\ \mathrm{Mpc}^{-3}\,\mathrm{yr}^{-1}` out to :math:`z=2` (Yao et al.
-    2023), and a 200-day duration window.
+    :math:`3.1\times10^{-7}\ \mathrm{Mpc}^{-3}\,\mathrm{yr}^{-1}` (Yao et al. 2023) out to :math:`z=2.0`,
+    the redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+    priors are brighter than 24.5 AB in either UVEX band, and a 200-day duration window.
 
     See Also
     --------
@@ -37,7 +38,9 @@ class TidalDisruptionEvent(ExtragalacticTransient):
 
     DEFAULT_MODEL = VanVelzenTDESED
     DEFAULT_DURATION = 200 * u.day
-    DEFAULT_Z_LIM = 2
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 2.0
     RATE_CI = _TDE_RATE_CI
 
     @property

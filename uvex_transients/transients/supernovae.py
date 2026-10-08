@@ -216,7 +216,9 @@ class TypeIIPSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIIPSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 0.8
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.51
 
     RATE_FRACTION = _TYPE_IIP_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_FRACTION_ERR)
@@ -227,7 +229,9 @@ class TypeIIPExcessSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIIPExcessSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 1.2
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 1.1
 
     RATE_FRACTION = _TYPE_IIP_EXCESS_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_EXCESS_FRACTION_ERR)
@@ -247,7 +251,9 @@ class ShockCoolingIIb(_CoreCollapseSNe):
 
     DEFAULT_MODEL = MoragShockCoolingSED
     DEFAULT_DURATION = 20 * u.day
-    DEFAULT_Z_LIM = 1
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 1.2
 
     RATE_FRACTION = _TYPE_IIB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIB_FRACTION_ERR)
@@ -270,7 +276,9 @@ class TypeIIbSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIIbSED
     DEFAULT_DURATION = 200 * u.day
-    DEFAULT_Z_LIM = 0.5
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.29
 
     RATE_FRACTION = _TYPE_IIB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIB_FRACTION_ERR)
@@ -286,7 +294,9 @@ class TypeIbSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIbSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 0.5
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.47
 
     RATE_FRACTION = _TYPE_IB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IB_FRACTION_ERR)
@@ -302,7 +312,9 @@ class TypeIcSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIcSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 0.5
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.54
 
     RATE_FRACTION = _TYPE_IC_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IC_FRACTION_ERR)
@@ -318,7 +330,9 @@ class TypeIcBLSNe(_CoreCollapseSNe):
 
     DEFAULT_MODEL = TypeIcBLSED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 1.0
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.61
 
     RATE_FRACTION = _TYPE_ICBL_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_ICBL_FRACTION_ERR)
@@ -339,16 +353,22 @@ class MagnetarSLSNe(_CoreCollapseSNe):
     bright part of the decline for most events, but the slowest ones are truncated by the window and
     their faint tails are not simulated.
 
-    `DEFAULT_Z_LIM` is set from an actual `generate_events`/`filter_by_snr` run against the default
-    schedule (25 AB mag limiting-magnitude screen, SNR > 5): out to z = 8, 99.7% of detected events fall
-    below z = 4, and the detected count per redshift bin is already declining by z ~ 1.5, well inside that.
-    A lower `DEFAULT_Z_LIM` (e.g. the earlier value of 2) truncates a real, UV-bright, high-redshift tail
-    rather than one outside UVEX's reach.
+    `DEFAULT_Z_LIM` is the redshift beyond which, with 95% confidence, at most 1% of events drawn
+    from the SED's priors are brighter than 24.5 AB in either UVEX band (see
+    `ExtragalacticTransient.get_detection_horizon`), rounded up. An earlier, more generous value of 4
+    came from a `generate_events`/`filter_by_snr` run against the default schedule (25 AB
+    limiting-magnitude screen, SNR > 5), in which 99.7% of detected events fell below z = 4. The
+    two criteria differ: the limit here bounds the fraction of the *parameter population*
+    detectable beyond it, not the fraction of detected events, so a deeper magnitude limit or an
+    SNR-based selection can warrant a higher value, and a lower `DEFAULT_Z_LIM` can truncate a
+    UV-bright, high-redshift tail of detected events.
     """
 
     DEFAULT_MODEL = ArnettMagnetarSpindownSED
     DEFAULT_DURATION = 600 * u.day
-    DEFAULT_Z_LIM = 4
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 2.6
 
     RATE_FRACTION = _SLSN_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_SLSN_FRACTION_ERR)
@@ -405,17 +425,18 @@ class TypeIaSNe(ExtragalacticTransient):
     model's prior) through the decline to 1e-3 of peak for nearly the whole prior (16th--84th
     percentile ~270--325 d, rest frame).
 
-    `DEFAULT_Z_LIM` is set from an actual `sample_event_redshift`/peak-apparent-magnitude check
-    against the UVEX bandpasses (25 AB mag limiting-magnitude screen): with `redshift_limit`
-    temporarily raised to 4, no simulated event peaks above the limit beyond z ~ 0.8 in either
-    band, and the NUV-detected fraction per redshift bin has already fallen to zero by z = 1 --
-    consistent with this model's fixed, non-evolving ``kappa_gamma`` leaving no UV-bright
-    high-redshift tail the way `MagnetarSLSNe`'s magnetar engine does.
+    `DEFAULT_Z_LIM` is the redshift beyond which, with 95% confidence, at most 1% of events drawn
+    from the SED's priors are brighter than 24.5 AB in either UVEX band (see
+    `ExtragalacticTransient.get_detection_horizon`), rounded up. This model's fixed, non-evolving
+    ``kappa_gamma`` leaves no UV-bright high-redshift tail the way `MagnetarSLSNe`'s magnetar
+    engine does.
     """
 
     DEFAULT_MODEL = TypeIaSED
     DEFAULT_DURATION = 365 * u.day
-    DEFAULT_Z_LIM = 1.0
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.77
 
     RATE_CI = _TYPE_IA_RATE_CI
 
