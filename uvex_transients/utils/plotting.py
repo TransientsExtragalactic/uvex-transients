@@ -67,6 +67,7 @@ __all__ = [
     "plot_detection_funnel",
     "add_funnel_legend",
     "plot_rate_bars",
+    "plot_detection_horizon",
 ]
 
 
@@ -895,3 +896,72 @@ def plot_rate_bars(
     ax.set_xticks(x, categories)
 
     return rates
+
+
+def plot_detection_horizon(
+    transient,
+    curve,
+    grid,
+    *,
+    mag_limit: float = 24.5,
+    n_lines: int = 150,
+    fig: Figure | None = None,
+) -> Figure:
+    """
+    Plot how the redshift limit of a transient class follows from its SED.
+
+    Takes the output of
+    :meth:`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon` and draws
+    two panels. The left shows each sampled event's peak magnitude against redshift: an event is
+    detectable out to where its line crosses the magnitude limit, and the class's redshift limit
+    should lie beyond nearly all of those crossings. The right shows the redshift limit the SED
+    supports as a function of the magnitude limit, next to the class's actual redshift limit.
+
+    Parameters
+    ----------
+    transient : ~uvex_transients.transients.base.ExtragalacticTransient
+        The population. Its ``redshift_limit`` is drawn as the limit in use.
+    curve : ~astropy.table.QTable
+        The magnitude-limit table returned by ``get_detection_horizon``.
+    grid : ~uvex_transients.models.core.EffectivePeakGrid
+        The grid returned by ``get_detection_horizon``.
+    mag_limit : float, optional
+        The magnitude limit to highlight. The default is 24.5.
+    n_lines : int, optional
+        Number of sampled events to draw as lines on the left panel. The default is 150.
+    fig : matplotlib.figure.Figure, optional
+        An existing figure to draw two new panels on. If `None`, one is created.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The figure.
+    """
+    import matplotlib.pyplot as plt
+
+    if fig is None:
+        fig = plt.figure(figsize=(11, 4.2), dpi=config["plotting.dpi"])
+    ax_mag, ax_limit = fig.subplots(1, 2, gridspec_kw={"width_ratios": [1.5, 1]})
+
+    limit_in_use = transient.redshift_limit
+    ax_mag.plot(grid.z_grid, grid.m_eff[:n_lines].T, color="0.7", lw=0.5, alpha=0.6)
+    ax_mag.plot(grid.z_grid, np.nanmedian(grid.m_eff, axis=0), color="C0", lw=2, label="median")
+    ax_mag.axhline(mag_limit, color="k", ls="--", label=f"limit, {mag_limit:g} AB")
+    ax_mag.axvline(limit_in_use, color="C3", label=f"redshift limit, z = {limit_in_use:g}")
+    ax_mag.set_xscale("log")
+    ax_mag.set_ylim(np.nanpercentile(grid.m_eff[np.isfinite(grid.m_eff)], 99.5), np.nanmin(grid.m_eff))
+    ax_mag.set_xlabel("Redshift")
+    ax_mag.set_ylabel("Peak magnitude, any band (AB)")
+    ax_mag.legend(loc="lower left", fontsize=8, frameon=False)
+
+    z_limits = np.asarray(curve["z_limit"], dtype=float)
+    ax_limit.plot(curve["mag_limit"].value, z_limits, "o-", ms=4, label="derived from the SED")
+    ax_limit.axhline(limit_in_use, color="C3", label=f"redshift limit, z = {limit_in_use:g}")
+    ax_limit.axvline(mag_limit, color="k", ls="--", lw=0.8)
+    ax_limit.set_yscale("log")
+    ax_limit.set_xlabel("Magnitude limit (AB)")
+    ax_limit.set_ylabel("Redshift horizon")
+    ax_limit.legend(loc="upper left", fontsize=8, frameon=False)
+
+    fig.tight_layout()
+    return fig
