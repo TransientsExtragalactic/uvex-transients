@@ -97,7 +97,7 @@ The Schedule
 .. code-block:: yaml
 
     schedule:
-      name: uvex_initial_main    # one of the names in `schedules.schedule_urls`
+      name: uvex_v0.5.0    # one of the names in `schedules.schedule_urls`
 
     # ...or, to fetch a URL directly instead of a name registered in the package config:
     #
