@@ -531,6 +531,7 @@ def _measure_setup(n):
     """A TDE model, a sky position, and ``n`` epochs spread over 200 days, with their observing geometry."""
     model = VanVelzenTDESED()
     params = {name: value[0] for name, value in model.sample_parameters(1, rng=8).items()}
+    params["amplitude"] = 10**43.8 * u.erg / u.s  # pinned: these tests need a clearly detectable TDE, not a prior draw
     t = np.linspace(1, 200, n) * u.day
     obstime = Time("2025-01-01T00:00:00", scale="utc") + t
     return model, params, SkyCoord(ra=150 * u.deg, dec=20 * u.deg), t, obstime, uvex.observer_location(obstime)

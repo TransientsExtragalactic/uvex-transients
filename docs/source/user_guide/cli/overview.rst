@@ -175,7 +175,7 @@ overrides you want on top of its defaults:
         duration_limit: 200 day      # overrides TransientBase.duration_limit
         cosmology: !astropy_cosmology {name: Planck18}
         parameters:
-          amplitude: !prior {type: normal, mean: 43.8, sigma: 0.3}
+          amplitude: !prior {type: power_law, alpha: 2.41, lower: 1.0e+43, upper: 1.0e+46}
           sigma_rise: 1.0 day        # a bare value fixes the parameter instead
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`
