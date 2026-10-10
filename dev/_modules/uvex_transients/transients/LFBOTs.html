@@ -492,10 +492,11 @@
 
 <span class="sd">    Modeled with `LFBOTCoolingBlackbodySED` (a Gaussian-rise/power-law-decline</span>
 <span class="sd">    light curve with a smoothly cooling blackbody photosphere), a constant</span>
-<span class="sd">    volumetric rate of 10 Gpc^-3 yr^-1 out to z=3 (Perley et al. 2026; Ho &amp; Lu</span>
-<span class="sd">    et al. 2026), and a 100-day duration window -- generous relative to the</span>
-<span class="sd">    SED's own rise/decline timescales, to safely bound the slowly fading</span>
-<span class="sd">    power-law tail.</span>
+<span class="sd">    volumetric rate of 10 Gpc^-3 yr^-1 (Perley et al. 2026; Ho &amp; Lu</span>
+<span class="sd">    et al. 2026) out to z=4.3, the redshift beyond which, with 95% confidence, at most 1% of</span>
+<span class="sd">    events drawn from the SED's priors are brighter than 24.5 AB in either UVEX band, and a</span>
+<span class="sd">    100-day duration window -- generous relative to the SED's own rise/decline timescales, to</span>
+<span class="sd">    safely bound the slowly fading power-law tail.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -505,7 +506,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">LFBOTCoolingBlackbodySED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">4.3</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_LFBOT_RATE_CI</span>
 
     <span class="nd">@property</span>

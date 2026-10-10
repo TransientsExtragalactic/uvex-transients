@@ -8,7 +8,7 @@ tde = TidalDisruptionEvent()
 
 print(tde.sed)                  # the VanVelzenTDESED SED instance
 print(tde.duration_limit)       # 200.0 d
-print(tde.redshift_limit)       # 2
+print(tde.redshift_limit)       # 1.7
 
 z = np.linspace(0, tde.redshift_limit, 200)
 rate = tde.event_rate(z)

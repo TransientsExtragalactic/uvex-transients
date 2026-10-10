@@ -501,6 +501,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">cumulative_trapezoid</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EffectivePeakGrid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core._tolerance</span><span class="w"> </span><span class="kn">import</span> <span class="n">first_crossing</span><span class="p">,</span> <span class="n">tolerance_limit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">spawn_seeds</span><span class="p">,</span> <span class="n">split_root_seed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
 
@@ -1096,6 +1098,110 @@
         <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate_ci</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>
         <span class="k">return</span> <span class="p">((</span><span class="n">lower</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">upper</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ExtragalacticTransient.get_detection_horizon">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon.html#uvex_transients.transients.supernovae.ExtragalacticTransient.get_detection_horizon">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_detection_horizon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mag_limits</span><span class="p">,</span>
+        <span class="n">bandpasses</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">n_z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+        <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+        <span class="n">t_min</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+        <span class="n">z_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.003</span><span class="p">,</span>
+        <span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">QTable</span><span class="p">,</span> <span class="n">EffectivePeakGrid</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Derive the redshift beyond which this population is undetectable, for each magnitude limit.</span>
+
+<span class="sd">        A convenience over</span>
+<span class="sd">        :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve` that</span>
+<span class="sd">        supplies what only the transient knows: the time window (from `duration_limit`) and a</span>
+<span class="sd">        starting redshift range (from `redshift_limit`). The redshift grid is extended</span>
+<span class="sd">        automatically until it brackets every limit. The result is the number to use as</span>
+<span class="sd">        :attr:`redshift_limit`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mag_limits : float or array-like</span>
+<span class="sd">            AB magnitude limit(s).</span>
+<span class="sd">        bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement</span>
+<span class="sd">            The bands in which an event may be detected, for example ``mission.detector.bandpasses``.</span>
+<span class="sd">        confidence : float, optional</span>
+<span class="sd">            Probability that the limit holds. The default is 0.95.</span>
+<span class="sd">        tolerance : float, optional</span>
+<span class="sd">            Fraction of the population allowed beyond the limit. The default is 0.01.</span>
+<span class="sd">        n_samples : int, optional</span>
+<span class="sd">            Number of draws from the SED's priors. The default is 1000.</span>
+<span class="sd">        n_z : int, optional</span>
+<span class="sd">            Number of logarithmically spaced redshifts. The limit is rounded up to a grid point, so</span>
+<span class="sd">            a larger value gives a tighter result.</span>
+<span class="sd">        n_time : int, optional</span>
+<span class="sd">            Number of logarithmically spaced rest-frame times, from `t_min` to `duration_limit`.</span>
+<span class="sd">            It must be dense enough to resolve the peak of the light curve.</span>
+<span class="sd">        t_min : ~astropy.units.Quantity, optional</span>
+<span class="sd">            Earliest rest-frame time. The default is 0.001 day.</span>
+<span class="sd">        z_min : float, optional</span>
+<span class="sd">            Smallest redshift of the grid. The default is 0.003.</span>
+<span class="sd">        z_max : float, optional</span>
+<span class="sd">            Largest redshift to start from. By default, the larger of 1 and twice</span>
+<span class="sd">            `redshift_limit`. It is doubled, up to five times, while a limit remains unbracketed.</span>
+<span class="sd">        rng : numpy.random.Generator, int, or None</span>
+<span class="sd">            Random-number source. Pass an int for reproducible output.</span>
+<span class="sd">        progress : bool, optional</span>
+<span class="sd">            Whether to show a progress bar. The default is `True`.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Further arguments for</span>
+<span class="sd">            :meth:`~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,</span>
+<span class="sd">            such as ``criterion``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        curve : ~astropy.table.QTable</span>
+<span class="sd">            One row per magnitude limit. See</span>
+<span class="sd">            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`.</span>
+<span class="sd">        grid : ~uvex_transients.models.core.EffectivePeakGrid</span>
+<span class="sd">            The evaluated grid, which can be reused for further limits.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The limit covers the SED's parameter priors only, not Milky Way extinction or sky position.</span>
+<span class="sd">        """</span>
+        <span class="n">z_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">)</span> <span class="k">if</span> <span class="n">z_max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">z_max</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mag_limits</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="n">mag_limits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+        <span class="c1"># One seed for every attempt, so that extending the redshift grid does not redraw the population.</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+            <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">get_effective_peak_magnitudes</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">z_min</span><span class="p">,</span> <span class="n">z_max</span><span class="p">,</span> <span class="n">n_z</span><span class="p">),</span>
+                <span class="n">bandpasses</span><span class="p">,</span>
+                <span class="n">t_min</span><span class="o">=</span><span class="n">t_min</span><span class="p">,</span>
+                <span class="n">t_max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
+                <span class="n">n_time</span><span class="o">=</span><span class="n">n_time</span><span class="p">,</span>
+                <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
+                <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">,</span>
+                <span class="n">rng</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">z_limits</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">tolerance_limit</span><span class="p">(</span><span class="n">first_crossing</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">limit</span><span class="p">),</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="n">limits</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z_limits</span><span class="p">)):</span>
+                <span class="k">break</span>
+            <span class="n">z_max</span> <span class="o">*=</span> <span class="mf">2.0</span>
+
+        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">get_observability_curve</span><span class="p">(</span><span class="n">limits</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">curve</span><span class="p">,</span> <span class="n">grid</span></div>
+
 
 <div class="viewcode-block" id="ExtragalacticTransient.compute_all_sky_yield">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.compute_all_sky_yield.html#uvex_transients.transients.supernovae.ExtragalacticTransient.compute_all_sky_yield">[docs]</a>

@@ -66,7 +66,7 @@
     <link rel="icon" href="../../_static/trex_logo.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Surveys" href="../surveys/overview.html" />
+    <link rel="next" title="Redshift Limits" href="redshift_limits.html" />
     <link rel="prev" title="Transients" href="overview.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
@@ -434,6 +434,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Writing a Custom Transient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="redshift_limits.html">Redshift Limits</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../surveys/overview.html">Surveys</a></li>
@@ -614,9 +615,12 @@ just as short:</p>
 <a class="reference internal" href="overview.html#user-guide-transients"><span class="std std-ref">Transients</span></a> – checked at class-definition time, so a subclass that forgets one
 fails immediately at import rather than partway through a Monte Carlo run. <code class="docutils literal notranslate"><span class="pre">DEFAULT_Z_LIM</span></code> is
 new here: it overrides <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a>’s own
-default of <code class="docutils literal notranslate"><span class="pre">10</span></code> (very generous for most populations) with this class’s own redshift horizon –
-set it, like the built-in populations do, to whatever bound is generous relative to the source’s
-actual observable luminosity and your survey’s limiting magnitude.</p>
+default of <code class="docutils literal notranslate"><span class="pre">10</span></code> (very generous for most populations) with this class’s own redshift horizon.
+The built-in populations set it to the redshift beyond which, with 95% confidence, at most 1% of
+the population is detectable at the survey’s limiting magnitude; the
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon.html#uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon" title="uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_detection_horizon()</span></code></a> method derives that
+number from your SED (see <a class="reference internal" href="redshift_limits.html#user-guide-transients-redshift-limits"><span class="std std-ref">Redshift Limits</span></a> for how, and
+<a class="reference internal" href="../../auto_examples/custom_transients/plot_kilonova_detection_horizon.html#sphx-glr-auto-examples-custom-transients-plot-kilonova-detection-horizon-py"><span class="std std-ref">Setting a Kilonova Class’s Redshift Limit from its SED</span></a> for a worked example).</p>
 </section>
 <section id="declaring-a-volumetric-rate">
 <h2>Declaring a Volumetric Rate<a class="headerlink" href="#declaring-a-volumetric-rate" title="Link to this heading">#</a></h2>
@@ -818,11 +822,11 @@ calibrated priors, an observability summary – expected of one.</p>
       </div>
     </a>
     <a class="right-next"
-       href="../surveys/overview.html"
+       href="redshift_limits.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Surveys</p>
+        <p class="prev-next-title">Redshift Limits</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

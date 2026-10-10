@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Setting a Kilonova Class’s Redshift Limit from its SED &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'auto_examples/custom_transients/plot_kilonova_detection_horizon';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Working with Simulation Schedules" href="../schedules/index.html" />
+    <link rel="prev" title="Custom Transients" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Custom Transients</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">Setting a Kilonova Class’s Redshift Limit from its SED</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../schedules/index.html">Working with Simulation Schedules</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../schedules/plot_cadence.html">Cadence Diagnostics on the Default Schedule</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../simulating/index.html">Survey Transient Simulations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_peak_magnitude.html">Cut: Peak Magnitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_peak_flux.html">Cut: Peak Flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_peak_luminosity.html">Cut: Peak Luminosity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_query.html">Cut: Arbitrary Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_baseline.html">Cut: Baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_limiting_magnitude.html">Cut: Limiting Magnitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_sky_position.html">Cut: Sky Position Box</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_time_to_first_detection.html">Cut: Time to First Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_snr.html">Cut: Signal-to-Noise Ratio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_redshift.html">Cut: Redshift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_region.html">Cut: Sky Region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_cut_transient_type.html">Cut: Transient Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_action_photometry.html">Action: Synthetic Photometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_tde_end_to_end.html">TDE End-to-End Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../simulating/plot_shock_cooling_comparison.html">Shock-Cooling Models: Blackbody vs. Full SED</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../surveys/index.html">Survey Footprints</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../surveys/plot_ztf_footprint.html">ZTF Survey Footprint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../surveys/plot_uvex_footprints.html">UVEX Survey Footprints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../surveys/plot_ls4_footprints.html">LS4 SOLE Survey Footprint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../surveys/plot_lsst_footprints.html">LSST Survey Footprints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../surveys/plot_tde_rubin_overlap.html">UVEX TDEs in the Rubin Footprint</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../too_simulations/index.html">Target of Opportunity Simulations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../too_simulations/plot_too_followup.html">Target-of-Opportunity Follow-up of a TDE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../too_simulations/plot_multiband_too_followup.html">Multi-Band ToO Follow-up</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Examples</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Custom Transients</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Setting a Kilonova Class’s Redshift Limit from its SED</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-custom-transients-plot-kilonova-detection-horizon-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="setting-a-kilonova-class-s-redshift-limit-from-its-sed">
+<span id="sphx-glr-auto-examples-custom-transients-plot-kilonova-detection-horizon-py"></span><h1>Setting a Kilonova Class’s Redshift Limit from its SED<a class="headerlink" href="#setting-a-kilonova-class-s-redshift-limit-from-its-sed" title="Link to this heading">#</a></h1>
+<p>Every <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a> has a redshift limit. This
+example shows what it does, derives a good value for the kilonova class from its SED, and sets it.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">m4opt</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span><span class="w">
+</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">missions</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-missions sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.missions.downsample_mission.html#uvex_transients.missions.downsample_mission" title="uvex_transients.missions.downsample_mission"><span class="n">downsample_mission</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">models</span><span class="nn">.</span><span class="nn">kilonovae</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED" title="uvex_transients.KilonovaCoolingBlackbodySED"><span class="n">KilonovaCoolingBlackbodySED</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">transients</span><span class="nn">.</span><span class="nn">kilonovae</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova" title="uvex_transients.transients.kilonovae.Kilonova"><span class="n">Kilonova</span></a><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="nn">.</span><span class="nn">plotting</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.get_band_color.html#uvex_transients.utils.plotting.get_band_color" title="uvex_transients.utils.plotting.get_band_color"><span class="n">get_band_color</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<section id="the-redshift-limit">
+<h2>The redshift limit<a class="headerlink" href="#the-redshift-limit" title="Link to this heading">#</a></h2>
+<p>We start from the built-in kilonova class, which comes with a redshift limit.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova" title="uvex_transients.transients.kilonovae.Kilonova"><span class="n">kilonova</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.html#uvex_transients.transients.kilonovae.Kilonova" title="uvex_transients.transients.kilonovae.Kilonova"><span class="n">Kilonova</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">default redshift limit: </span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.redshift_limit.html#uvex_transients.transients.kilonovae.Kilonova.redshift_limit" title="uvex_transients.transients.kilonovae.Kilonova.redshift_limit"><span class="n">kilonova</span><span class="o">.</span><span class="n">redshift_limit</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">integrated rate:        </span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.integrated_rate.html#uvex_transients.transients.kilonovae.Kilonova.integrated_rate" title="uvex_transients.transients.kilonovae.Kilonova.integrated_rate"><span class="n">kilonova</span><span class="o">.</span><span class="n">integrated_rate</span></a><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>default redshift limit: 0.14
+integrated rate:        7.16 1 / (sr yr)
+</pre></div>
+</div>
+<p>The redshift limit is the farthest redshift out to which the class samples events. Redshifts are
+drawn from the class’s rate-weighted distribution between 0 and the limit. The comoving volume
+grows rapidly with redshift, so the sampled events are weighted toward the limit, whatever its
+value is.</p>
+<p>The limit does not decide what counts as <em>detected</em>. Every sampled event is later tested against
+the survey, through the limiting-magnitude and signal-to-noise cuts, so an event that is too
+faint is rejected there regardless. What the limit changes is the <strong>efficiency</strong>. A limit that
+is too generous fills the sample with distant events that are certain to fail those tests, and
+all of them are simulated first. A limit that is too low would be worse, since it removes events
+that would have been detected. The right value is just beyond the farthest redshift at which a
+kilonova can still be detected.</p>
+<p>That redshift depends on the kilonova SED and on how deep the survey is, so we can compute it.
+The built-in limits of every transient class were derived this way for a depth of 24.5 AB, the
+UVEX 1 Dwell limit. A deeper survey sees kilonovae farther out, so here we derive the limit for
+a depth of 25 AB.</p>
+</section>
+<section id="run-the-optimization">
+<h2>Run the optimization<a class="headerlink" href="#run-the-optimization" title="Link to this heading">#</a></h2>
+<p>We ask for the redshift beyond which at most 1% of kilonovae drawn from the SED’s priors are
+detectable, with 95% confidence. The SED is evaluated for 500 parameter draws on a grid of
+redshifts, which must extend past the answer. At each redshift a draw’s brightest magnitude over
+its light curve, in its brightest UVEX band, is recorded. We use UVEX’s downsampled bandpasses,
+which are much cheaper to evaluate than the dense tables and agree with them to within a stated
+magnitude tolerance.</p>
+<p>The evaluation is the expensive step, and it does not depend on the magnitude limit, so it is
+done once and reused for every limit.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED" title="uvex_transients.KilonovaCoolingBlackbodySED"><span class="n">sed</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-class reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED" title="uvex_transients.KilonovaCoolingBlackbodySED"><span class="n">KilonovaCoolingBlackbodySED</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><span class="n">grid</span> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.get_effective_peak_magnitudes.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.get_effective_peak_magnitudes" title="uvex_transients.KilonovaCoolingBlackbodySED.get_effective_peak_magnitudes"><span class="n">sed</span><span class="o">.</span><span class="n">get_effective_peak_magnitudes</span></a><span class="p">(</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.geomspace.html#numpy.geomspace" title="numpy.geomspace"><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span></a><span class="p">(</span><span class="mf">0.003</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span><span class="p">,</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-uvex_transients-missions sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.missions.downsample_mission.html#uvex_transients.missions.downsample_mission" title="uvex_transients.missions.downsample_mission"><span class="n">downsample_mission</span></a><span class="p">(</span><a class="sphx-glr-backref-module-m4opt-missions sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="m4opt.missions.Mission"><span class="n">uvex</span></a><span class="p">)</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">,</span><span class="w">
+</span>    <span class="n">t_min</span><span class="o">=</span><span class="mf">0.01</span> <span class="o">*</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">t_max</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <a class="sphx-glr-backref-module-astropy-units sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Unit.html#astropy.units.Unit" title="astropy.units.Unit"><span class="n">u</span><span class="o">.</span><span class="n">day</span></a><span class="p">,</span><span class="w">
+</span>    <span class="n">n_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="w">
+</span>    <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a> <span class="o">=</span> <span class="mf">25.0</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">mag_limits</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.arange.html#numpy.arange" title="numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mf">21.0</span><span class="p">,</span> <span class="mf">28.01</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients sphx-glr-backref-type-py-method reference internal" href="../../_as_gen/uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.get_observability_curve.html#uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.get_observability_curve" title="uvex_transients.KilonovaCoolingBlackbodySED.get_observability_curve"><span class="n">sed</span><span class="o">.</span><span class="n">get_observability_curve</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">mag_limits</span></a><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">z_limit</span></a> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">z_limit</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">[</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">mag_limit</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">]</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Evaluating peak magnitudes:   0%|          | 0/1170 [00:00&lt;?, ?step/s]
+Evaluating peak magnitudes:   0%|          | 2/1170 [00:00&lt;01:16, 15.29step/s]
+Evaluating peak magnitudes:   0%|          | 4/1170 [00:00&lt;01:15, 15.37step/s]
+Evaluating peak magnitudes:   1%|          | 6/1170 [00:00&lt;01:15, 15.41step/s]
+Evaluating peak magnitudes:   1%|          | 8/1170 [00:00&lt;01:15, 15.44step/s]
+Evaluating peak magnitudes:   1%|          | 10/1170 [00:00&lt;01:15, 15.46step/s]
+Evaluating peak magnitudes:   1%|          | 12/1170 [00:00&lt;01:14, 15.47step/s]
+Evaluating peak magnitudes:   1%|          | 14/1170 [00:00&lt;01:14, 15.47step/s]
+Evaluating peak magnitudes:   1%|▏         | 16/1170 [00:01&lt;01:14, 15.49step/s]
+Evaluating peak magnitudes:   2%|▏         | 18/1170 [00:01&lt;01:14, 15.45step/s]
+Evaluating peak magnitudes:   2%|▏         | 20/1170 [00:01&lt;01:14, 15.41step/s]
+Evaluating peak magnitudes:   2%|▏         | 22/1170 [00:01&lt;01:14, 15.44step/s]
+Evaluating peak magnitudes:   2%|▏         | 24/1170 [00:01&lt;01:14, 15.45step/s]
+Evaluating peak magnitudes:   2%|▏         | 26/1170 [00:01&lt;01:14, 15.45step/s]
+Evaluating peak magnitudes:   2%|▏         | 28/1170 [00:01&lt;01:13, 15.48step/s]
+Evaluating peak magnitudes:   3%|▎         | 30/1170 [00:01&lt;01:13, 15.51step/s]
+Evaluating peak magnitudes:   3%|▎         | 32/1170 [00:02&lt;01:13, 15.51step/s]
+Evaluating peak magnitudes:   3%|▎         | 34/1170 [00:02&lt;01:18, 14.56step/s]
+Evaluating peak magnitudes:   3%|▎         | 36/1170 [00:02&lt;01:16, 14.79step/s]
+Evaluating peak magnitudes:   3%|▎         | 38/1170 [00:02&lt;01:15, 15.00step/s]
+Evaluating peak magnitudes:   3%|▎         | 40/1170 [00:02&lt;01:14, 15.15step/s]
+Evaluating peak magnitudes:   4%|▎         | 42/1170 [00:02&lt;01:13, 15.25step/s]
+Evaluating peak magnitudes:   4%|▍         | 44/1170 [00:02&lt;01:13, 15.32step/s]
+Evaluating peak magnitudes:   4%|▍         | 46/1170 [00:03&lt;01:13, 15.40step/s]
+Evaluating peak magnitudes:   4%|▍         | 48/1170 [00:03&lt;01:12, 15.45step/s]
+Evaluating peak magnitudes:   4%|▍         | 50/1170 [00:03&lt;01:12, 15.47step/s]
+Evaluating peak magnitudes:   4%|▍         | 52/1170 [00:03&lt;01:12, 15.48step/s]
+Evaluating peak magnitudes:   5%|▍         | 54/1170 [00:03&lt;01:12, 15.45step/s]
+Evaluating peak magnitudes:   5%|▍         | 56/1170 [00:03&lt;01:12, 15.46step/s]
+Evaluating peak magnitudes:   5%|▍         | 58/1170 [00:03&lt;01:11, 15.47step/s]
+Evaluating peak magnitudes:   5%|▌         | 60/1170 [00:03&lt;01:11, 15.50step/s]
+Evaluating peak magnitudes:   5%|▌         | 62/1170 [00:04&lt;01:11, 15.52step/s]
+Evaluating peak magnitudes:   5%|▌         | 64/1170 [00:04&lt;01:11, 15.51step/s]
+Evaluating peak magnitudes:   6%|▌         | 66/1170 [00:04&lt;01:11, 15.45step/s]
+Evaluating peak magnitudes:   6%|▌         | 68/1170 [00:04&lt;01:11, 15.46step/s]
+Evaluating peak magnitudes:   6%|▌         | 70/1170 [00:04&lt;01:11, 15.47step/s]
+Evaluating peak magnitudes:   6%|▌         | 72/1170 [00:04&lt;01:10, 15.47step/s]
+Evaluating peak magnitudes:   6%|▋         | 74/1170 [00:04&lt;01:10, 15.46step/s]
+Evaluating peak magnitudes:   6%|▋         | 76/1170 [00:04&lt;01:10, 15.47step/s]
+Evaluating peak magnitudes:   7%|▋         | 78/1170 [00:05&lt;01:10, 15.51step/s]
+Evaluating peak magnitudes:   7%|▋         | 80/1170 [00:05&lt;01:10, 15.52step/s]
+Evaluating peak magnitudes:   7%|▋         | 82/1170 [00:05&lt;01:10, 15.51step/s]
+Evaluating peak magnitudes:   7%|▋         | 84/1170 [00:05&lt;01:10, 15.50step/s]
+Evaluating peak magnitudes:   7%|▋         | 86/1170 [00:05&lt;01:10, 15.48step/s]
+Evaluating peak magnitudes:   8%|▊         | 88/1170 [00:05&lt;01:09, 15.50step/s]
+Evaluating peak magnitudes:   8%|▊         | 90/1170 [00:05&lt;01:09, 15.52step/s]
+Evaluating peak magnitudes:   8%|▊         | 92/1170 [00:05&lt;01:09, 15.57step/s]
+Evaluating peak magnitudes:   8%|▊         | 94/1170 [00:06&lt;01:08, 15.61step/s]
+Evaluating peak magnitudes:   8%|▊         | 96/1170 [00:06&lt;01:08, 15.60step/s]
+Evaluating peak magnitudes:   8%|▊         | 98/1170 [00:06&lt;01:08, 15.61step/s]
+Evaluating peak magnitudes:   9%|▊         | 100/1170 [00:06&lt;01:08, 15.59step/s]
+Evaluating peak magnitudes:   9%|▊         | 102/1170 [00:06&lt;01:08, 15.61step/s]
+Evaluating peak magnitudes:   9%|▉         | 104/1170 [00:06&lt;01:08, 15.62step/s]
+Evaluating peak magnitudes:   9%|▉         | 106/1170 [00:06&lt;01:08, 15.58step/s]
+Evaluating peak magnitudes:   9%|▉         | 108/1170 [00:06&lt;01:08, 15.60step/s]
+Evaluating peak magnitudes:   9%|▉         | 110/1170 [00:07&lt;01:08, 15.58step/s]
+Evaluating peak magnitudes:  10%|▉         | 112/1170 [00:07&lt;01:08, 15.55step/s]
+Evaluating peak magnitudes:  10%|▉         | 114/1170 [00:07&lt;01:08, 15.34step/s]
+Evaluating peak magnitudes:  10%|▉         | 116/1170 [00:07&lt;01:08, 15.35step/s]
+Evaluating peak magnitudes:  10%|█         | 118/1170 [00:07&lt;01:08, 15.36step/s]
+Evaluating peak magnitudes:  10%|█         | 120/1170 [00:07&lt;01:08, 15.35step/s]
+Evaluating peak magnitudes:  10%|█         | 122/1170 [00:07&lt;01:08, 15.40step/s]
+Evaluating peak magnitudes:  11%|█         | 124/1170 [00:08&lt;01:07, 15.42step/s]
+Evaluating peak magnitudes:  11%|█         | 126/1170 [00:08&lt;01:08, 15.31step/s]
+Evaluating peak magnitudes:  11%|█         | 128/1170 [00:08&lt;01:07, 15.38step/s]
+Evaluating peak magnitudes:  11%|█         | 130/1170 [00:08&lt;01:07, 15.41step/s]
+Evaluating peak magnitudes:  11%|█▏        | 132/1170 [00:08&lt;01:07, 15.45step/s]
+Evaluating peak magnitudes:  11%|█▏        | 134/1170 [00:08&lt;01:06, 15.46step/s]
+Evaluating peak magnitudes:  12%|█▏        | 136/1170 [00:08&lt;01:06, 15.47step/s]
+Evaluating peak magnitudes:  12%|█▏        | 138/1170 [00:08&lt;01:06, 15.47step/s]
+Evaluating peak magnitudes:  12%|█▏        | 140/1170 [00:09&lt;01:06, 15.46step/s]
+Evaluating peak magnitudes:  12%|█▏        | 142/1170 [00:09&lt;01:07, 15.15step/s]
+Evaluating peak magnitudes:  12%|█▏        | 144/1170 [00:09&lt;01:07, 15.22step/s]
+Evaluating peak magnitudes:  12%|█▏        | 146/1170 [00:09&lt;01:07, 15.26step/s]
+Evaluating peak magnitudes:  13%|█▎        | 148/1170 [00:09&lt;01:06, 15.29step/s]
+Evaluating peak magnitudes:  13%|█▎        | 150/1170 [00:09&lt;01:06, 15.33step/s]
+Evaluating peak magnitudes:  13%|█▎        | 152/1170 [00:09&lt;01:06, 15.37step/s]
+Evaluating peak magnitudes:  13%|█▎        | 154/1170 [00:09&lt;01:05, 15.40step/s]
+Evaluating peak magnitudes:  13%|█▎        | 156/1170 [00:10&lt;01:05, 15.46step/s]
+Evaluating peak magnitudes:  14%|█▎        | 158/1170 [00:10&lt;01:05, 15.46step/s]
+Evaluating peak magnitudes:  14%|█▎        | 160/1170 [00:10&lt;01:05, 15.48step/s]
+Evaluating peak magnitudes:  14%|█▍        | 162/1170 [00:10&lt;01:05, 15.45step/s]
+Evaluating peak magnitudes:  14%|█▍        | 164/1170 [00:10&lt;01:05, 15.44step/s]
+Evaluating peak magnitudes:  14%|█▍        | 166/1170 [00:10&lt;01:04, 15.45step/s]
+Evaluating peak magnitudes:  14%|█▍        | 168/1170 [00:10&lt;01:04, 15.43step/s]
+Evaluating peak magnitudes:  15%|█▍        | 170/1170 [00:11&lt;01:04, 15.45step/s]
+Evaluating peak magnitudes:  15%|█▍        | 172/1170 [00:11&lt;01:04, 15.42step/s]
+Evaluating peak magnitudes:  15%|█▍        | 174/1170 [00:11&lt;01:04, 15.32step/s]
+Evaluating peak magnitudes:  15%|█▌        | 176/1170 [00:11&lt;01:04, 15.34step/s]
+Evaluating peak magnitudes:  15%|█▌        | 178/1170 [00:11&lt;01:04, 15.36step/s]
+Evaluating peak magnitudes:  15%|█▌        | 180/1170 [00:11&lt;01:04, 15.37step/s]
+Evaluating peak magnitudes:  16%|█▌        | 182/1170 [00:11&lt;01:04, 15.40step/s]
+Evaluating peak magnitudes:  16%|█▌        | 184/1170 [00:11&lt;01:03, 15.41step/s]
+Evaluating peak magnitudes:  16%|█▌        | 186/1170 [00:12&lt;01:03, 15.44step/s]
+Evaluating peak magnitudes:  16%|█▌        | 188/1170 [00:12&lt;01:03, 15.42step/s]
+Evaluating peak magnitudes:  16%|█▌        | 190/1170 [00:12&lt;01:03, 15.40step/s]
+Evaluating peak magnitudes:  16%|█▋        | 192/1170 [00:12&lt;01:03, 15.38step/s]
+Evaluating peak magnitudes:  17%|█▋        | 194/1170 [00:12&lt;01:03, 15.37step/s]
+Evaluating peak magnitudes:  17%|█▋        | 196/1170 [00:12&lt;01:03, 15.37step/s]
+Evaluating peak magnitudes:  17%|█▋        | 198/1170 [00:12&lt;01:03, 15.37step/s]
+Evaluating peak magnitudes:  17%|█▋        | 200/1170 [00:12&lt;01:03, 15.22step/s]
+Evaluating peak magnitudes:  17%|█▋        | 202/1170 [00:13&lt;01:03, 15.28step/s]
+Evaluating peak magnitudes:  17%|█▋        | 204/1170 [00:13&lt;01:03, 15.30step/s]
+Evaluating peak magnitudes:  18%|█▊        | 206/1170 [00:13&lt;01:02, 15.33step/s]
+Evaluating peak magnitudes:  18%|█▊        | 208/1170 [00:13&lt;01:02, 15.33step/s]
+Evaluating peak magnitudes:  18%|█▊        | 210/1170 [00:13&lt;01:02, 15.33step/s]
+Evaluating peak magnitudes:  18%|█▊        | 212/1170 [00:13&lt;01:02, 15.35step/s]
+Evaluating peak magnitudes:  18%|█▊        | 214/1170 [00:13&lt;01:02, 15.33step/s]
+Evaluating peak magnitudes:  18%|█▊        | 216/1170 [00:14&lt;01:02, 15.34step/s]
+Evaluating peak magnitudes:  19%|█▊        | 218/1170 [00:14&lt;01:01, 15.36step/s]
+Evaluating peak magnitudes:  19%|█▉        | 220/1170 [00:14&lt;01:02, 15.32step/s]
+Evaluating peak magnitudes:  19%|█▉        | 222/1170 [00:14&lt;01:01, 15.30step/s]
+Evaluating peak magnitudes:  19%|█▉        | 224/1170 [00:14&lt;01:01, 15.34step/s]
+Evaluating peak magnitudes:  19%|█▉        | 226/1170 [00:14&lt;01:01, 15.37step/s]
+Evaluating peak magnitudes:  19%|█▉        | 228/1170 [00:14&lt;01:01, 15.40step/s]
+Evaluating peak magnitudes:  20%|█▉        | 230/1170 [00:14&lt;01:01, 15.37step/s]
+Evaluating peak magnitudes:  20%|█▉        | 232/1170 [00:15&lt;01:00, 15.39step/s]
+Evaluating peak magnitudes:  20%|██        | 234/1170 [00:15&lt;01:00, 15.39step/s]
+Evaluating peak magnitudes:  20%|██        | 236/1170 [00:15&lt;01:00, 15.37step/s]
+Evaluating peak magnitudes:  20%|██        | 238/1170 [00:15&lt;01:00, 15.39step/s]
+Evaluating peak magnitudes:  21%|██        | 240/1170 [00:15&lt;01:00, 15.40step/s]
+Evaluating peak magnitudes:  21%|██        | 242/1170 [00:15&lt;01:00, 15.40step/s]
+Evaluating peak magnitudes:  21%|██        | 244/1170 [00:15&lt;01:00, 15.40step/s]
+Evaluating peak magnitudes:  21%|██        | 246/1170 [00:15&lt;00:59, 15.43step/s]
+Evaluating peak magnitudes:  21%|██        | 248/1170 [00:16&lt;00:59, 15.44step/s]
+Evaluating peak magnitudes:  21%|██▏       | 250/1170 [00:16&lt;00:59, 15.43step/s]
+Evaluating peak magnitudes:  22%|██▏       | 252/1170 [00:16&lt;00:59, 15.42step/s]
+Evaluating peak magnitudes:  22%|██▏       | 254/1170 [00:16&lt;00:59, 15.40step/s]
+Evaluating peak magnitudes:  22%|██▏       | 256/1170 [00:16&lt;00:59, 15.40step/s]
+Evaluating peak magnitudes:  22%|██▏       | 258/1170 [00:16&lt;00:59, 15.40step/s]
+Evaluating peak magnitudes:  22%|██▏       | 260/1170 [00:16&lt;00:59, 15.41step/s]
+Evaluating peak magnitudes:  22%|██▏       | 262/1170 [00:17&lt;00:58, 15.43step/s]
+Evaluating peak magnitudes:  23%|██▎       | 264/1170 [00:17&lt;00:58, 15.43step/s]
+Evaluating peak magnitudes:  23%|██▎       | 266/1170 [00:17&lt;00:58, 15.41step/s]
+Evaluating peak magnitudes:  23%|██▎       | 268/1170 [00:17&lt;00:58, 15.41step/s]
+Evaluating peak magnitudes:  23%|██▎       | 270/1170 [00:17&lt;00:58, 15.39step/s]
+Evaluating peak magnitudes:  23%|██▎       | 272/1170 [00:17&lt;00:58, 15.41step/s]
+Evaluating peak magnitudes:  23%|██▎       | 274/1170 [00:17&lt;00:58, 15.43step/s]
+Evaluating peak magnitudes:  24%|██▎       | 276/1170 [00:17&lt;00:57, 15.44step/s]
+Evaluating peak magnitudes:  24%|██▍       | 278/1170 [00:18&lt;00:57, 15.40step/s]
+Evaluating peak magnitudes:  24%|██▍       | 280/1170 [00:18&lt;00:58, 15.33step/s]
+Evaluating peak magnitudes:  24%|██▍       | 282/1170 [00:18&lt;00:57, 15.34step/s]
+Evaluating peak magnitudes:  24%|██▍       | 284/1170 [00:18&lt;00:57, 15.36step/s]
+Evaluating peak magnitudes:  24%|██▍       | 286/1170 [00:18&lt;00:57, 15.33step/s]
+Evaluating peak magnitudes:  25%|██▍       | 288/1170 [00:18&lt;00:57, 15.35step/s]
+Evaluating peak magnitudes:  25%|██▍       | 290/1170 [00:18&lt;00:57, 15.35step/s]
+Evaluating peak magnitudes:  25%|██▍       | 292/1170 [00:18&lt;00:57, 15.36step/s]
+Evaluating peak magnitudes:  25%|██▌       | 294/1170 [00:19&lt;00:56, 15.40step/s]
+Evaluating peak magnitudes:  25%|██▌       | 296/1170 [00:19&lt;00:56, 15.37step/s]
+Evaluating peak magnitudes:  25%|██▌       | 298/1170 [00:19&lt;00:56, 15.37step/s]
+Evaluating peak magnitudes:  26%|██▌       | 300/1170 [00:19&lt;00:56, 15.39step/s]
+Evaluating peak magnitudes:  26%|██▌       | 302/1170 [00:19&lt;00:56, 15.40step/s]
+Evaluating peak magnitudes:  26%|██▌       | 304/1170 [00:19&lt;00:56, 15.42step/s]
+Evaluating peak magnitudes:  26%|██▌       | 306/1170 [00:19&lt;00:55, 15.43step/s]
+Evaluating peak magnitudes:  26%|██▋       | 308/1170 [00:19&lt;00:55, 15.44step/s]
+Evaluating peak magnitudes:  26%|██▋       | 310/1170 [00:20&lt;00:55, 15.42step/s]
+Evaluating peak magnitudes:  27%|██▋       | 312/1170 [00:20&lt;00:55, 15.42step/s]
+Evaluating peak magnitudes:  27%|██▋       | 314/1170 [00:20&lt;00:55, 15.45step/s]
+Evaluating peak magnitudes:  27%|██▋       | 316/1170 [00:20&lt;00:55, 15.46step/s]
+Evaluating peak magnitudes:  27%|██▋       | 318/1170 [00:20&lt;00:55, 15.44step/s]
+Evaluating peak magnitudes:  27%|██▋       | 320/1170 [00:20&lt;00:55, 15.45step/s]
+Evaluating peak magnitudes:  28%|██▊       | 322/1170 [00:20&lt;00:55, 15.41step/s]
+Evaluating peak magnitudes:  28%|██▊       | 324/1170 [00:21&lt;00:54, 15.42step/s]
+Evaluating peak magnitudes:  28%|██▊       | 326/1170 [00:21&lt;00:54, 15.40step/s]
+Evaluating peak magnitudes:  28%|██▊       | 328/1170 [00:21&lt;00:54, 15.36step/s]
+Evaluating peak magnitudes:  28%|██▊       | 330/1170 [00:21&lt;00:54, 15.36step/s]
+Evaluating peak magnitudes:  28%|██▊       | 332/1170 [00:21&lt;00:54, 15.36step/s]
+Evaluating peak magnitudes:  29%|██▊       | 334/1170 [00:21&lt;00:54, 15.34step/s]
+Evaluating peak magnitudes:  29%|██▊       | 336/1170 [00:21&lt;00:54, 15.33step/s]
+Evaluating peak magnitudes:  29%|██▉       | 338/1170 [00:21&lt;00:54, 15.39step/s]
+Evaluating peak magnitudes:  29%|██▉       | 340/1170 [00:22&lt;00:53, 15.43step/s]
+Evaluating peak magnitudes:  29%|██▉       | 342/1170 [00:22&lt;00:53, 15.44step/s]
+Evaluating peak magnitudes:  29%|██▉       | 344/1170 [00:22&lt;00:53, 15.39step/s]
+Evaluating peak magnitudes:  30%|██▉       | 346/1170 [00:22&lt;00:53, 15.42step/s]
+Evaluating peak magnitudes:  30%|██▉       | 348/1170 [00:22&lt;00:53, 15.42step/s]
+Evaluating peak magnitudes:  30%|██▉       | 350/1170 [00:22&lt;00:53, 15.42step/s]
+Evaluating peak magnitudes:  30%|███       | 352/1170 [00:22&lt;00:53, 15.41step/s]
+Evaluating peak magnitudes:  30%|███       | 354/1170 [00:22&lt;00:52, 15.42step/s]
+Evaluating peak magnitudes:  30%|███       | 356/1170 [00:23&lt;00:52, 15.43step/s]
+Evaluating peak magnitudes:  31%|███       | 358/1170 [00:23&lt;00:52, 15.41step/s]
+Evaluating peak magnitudes:  31%|███       | 360/1170 [00:23&lt;00:52, 15.43step/s]
+Evaluating peak magnitudes:  31%|███       | 362/1170 [00:23&lt;00:52, 15.47step/s]
+Evaluating peak magnitudes:  31%|███       | 364/1170 [00:23&lt;00:52, 15.49step/s]
+Evaluating peak magnitudes:  31%|███▏      | 366/1170 [00:23&lt;00:51, 15.51step/s]
+Evaluating peak magnitudes:  31%|███▏      | 368/1170 [00:23&lt;00:51, 15.48step/s]
+Evaluating peak magnitudes:  32%|███▏      | 370/1170 [00:24&lt;00:51, 15.47step/s]
+Evaluating peak magnitudes:  32%|███▏      | 372/1170 [00:24&lt;00:51, 15.46step/s]
+Evaluating peak magnitudes:  32%|███▏      | 374/1170 [00:24&lt;00:51, 15.39step/s]
+Evaluating peak magnitudes:  32%|███▏      | 376/1170 [00:24&lt;00:51, 15.40step/s]
+Evaluating peak magnitudes:  32%|███▏      | 378/1170 [00:24&lt;00:51, 15.39step/s]
+Evaluating peak magnitudes:  32%|███▏      | 380/1170 [00:24&lt;00:51, 15.39step/s]
+Evaluating peak magnitudes:  33%|███▎      | 382/1170 [00:24&lt;00:51, 15.40step/s]
+Evaluating peak magnitudes:  33%|███▎      | 384/1170 [00:24&lt;00:51, 15.39step/s]
+Evaluating peak magnitudes:  33%|███▎      | 386/1170 [00:25&lt;00:50, 15.39step/s]
+Evaluating peak magnitudes:  33%|███▎      | 388/1170 [00:25&lt;00:50, 15.40step/s]
+Evaluating peak magnitudes:  33%|███▎      | 390/1170 [00:25&lt;00:50, 15.40step/s]
+Evaluating peak magnitudes:  34%|███▎      | 392/1170 [00:25&lt;00:50, 15.41step/s]
+Evaluating peak magnitudes:  34%|███▎      | 394/1170 [00:25&lt;00:50, 15.37step/s]
+Evaluating peak magnitudes:  34%|███▍      | 396/1170 [00:25&lt;00:50, 15.36step/s]
+Evaluating peak magnitudes:  34%|███▍      | 398/1170 [00:25&lt;00:50, 15.38step/s]
+Evaluating peak magnitudes:  34%|███▍      | 400/1170 [00:25&lt;00:50, 15.39step/s]
+Evaluating peak magnitudes:  34%|███▍      | 402/1170 [00:26&lt;00:49, 15.37step/s]
+Evaluating peak magnitudes:  35%|███▍      | 404/1170 [00:26&lt;00:49, 15.37step/s]
+Evaluating peak magnitudes:  35%|███▍      | 406/1170 [00:26&lt;00:49, 15.38step/s]
+Evaluating peak magnitudes:  35%|███▍      | 408/1170 [00:26&lt;00:49, 15.39step/s]
+Evaluating peak magnitudes:  35%|███▌      | 410/1170 [00:26&lt;00:49, 15.35step/s]
+Evaluating peak magnitudes:  35%|███▌      | 412/1170 [00:26&lt;00:49, 15.36step/s]
+Evaluating peak magnitudes:  35%|███▌      | 414/1170 [00:26&lt;00:49, 15.30step/s]
+Evaluating peak magnitudes:  36%|███▌      | 416/1170 [00:27&lt;00:49, 15.28step/s]
+Evaluating peak magnitudes:  36%|███▌      | 418/1170 [00:27&lt;00:49, 15.29step/s]
+Evaluating peak magnitudes:  36%|███▌      | 420/1170 [00:27&lt;00:49, 15.30step/s]
+Evaluating peak magnitudes:  36%|███▌      | 422/1170 [00:27&lt;00:48, 15.29step/s]
+Evaluating peak magnitudes:  36%|███▌      | 424/1170 [00:27&lt;00:49, 15.21step/s]
+Evaluating peak magnitudes:  36%|███▋      | 426/1170 [00:27&lt;00:48, 15.22step/s]
+Evaluating peak magnitudes:  37%|███▋      | 428/1170 [00:27&lt;00:48, 15.22step/s]
+Evaluating peak magnitudes:  37%|███▋      | 430/1170 [00:27&lt;00:48, 15.23step/s]
+Evaluating peak magnitudes:  37%|███▋      | 432/1170 [00:28&lt;00:48, 15.27step/s]
+Evaluating peak magnitudes:  37%|███▋      | 434/1170 [00:28&lt;00:48, 15.24step/s]
+Evaluating peak magnitudes:  37%|███▋      | 436/1170 [00:28&lt;00:48, 15.21step/s]
+Evaluating peak magnitudes:  37%|███▋      | 438/1170 [00:28&lt;00:48, 15.24step/s]
+Evaluating peak magnitudes:  38%|███▊      | 440/1170 [00:28&lt;00:47, 15.27step/s]
+Evaluating peak magnitudes:  38%|███▊      | 442/1170 [00:28&lt;00:47, 15.27step/s]
+Evaluating peak magnitudes:  38%|███▊      | 444/1170 [00:28&lt;00:47, 15.25step/s]
+Evaluating peak magnitudes:  38%|███▊      | 446/1170 [00:28&lt;00:47, 15.27step/s]
+Evaluating peak magnitudes:  38%|███▊      | 448/1170 [00:29&lt;00:47, 15.30step/s]
+Evaluating peak magnitudes:  38%|███▊      | 450/1170 [00:29&lt;00:47, 15.31step/s]
+Evaluating peak magnitudes:  39%|███▊      | 452/1170 [00:29&lt;00:46, 15.32step/s]
+Evaluating peak magnitudes:  39%|███▉      | 454/1170 [00:29&lt;00:46, 15.36step/s]
+Evaluating peak magnitudes:  39%|███▉      | 456/1170 [00:29&lt;00:46, 15.39step/s]
+Evaluating peak magnitudes:  39%|███▉      | 458/1170 [00:29&lt;00:46, 15.40step/s]
+Evaluating peak magnitudes:  39%|███▉      | 460/1170 [00:29&lt;00:46, 15.35step/s]
+Evaluating peak magnitudes:  39%|███▉      | 462/1170 [00:30&lt;00:46, 15.34step/s]
+Evaluating peak magnitudes:  40%|███▉      | 464/1170 [00:30&lt;00:45, 15.36step/s]
+Evaluating peak magnitudes:  40%|███▉      | 466/1170 [00:30&lt;00:45, 15.35step/s]
+Evaluating peak magnitudes:  40%|████      | 468/1170 [00:30&lt;00:45, 15.34step/s]
+Evaluating peak magnitudes:  40%|████      | 470/1170 [00:30&lt;00:45, 15.33step/s]
+Evaluating peak magnitudes:  40%|████      | 472/1170 [00:30&lt;00:45, 15.33step/s]
+Evaluating peak magnitudes:  41%|████      | 474/1170 [00:30&lt;00:45, 15.34step/s]
+Evaluating peak magnitudes:  41%|████      | 476/1170 [00:30&lt;00:45, 15.32step/s]
+Evaluating peak magnitudes:  41%|████      | 478/1170 [00:31&lt;00:45, 15.32step/s]
+Evaluating peak magnitudes:  41%|████      | 480/1170 [00:31&lt;00:45, 15.28step/s]
+Evaluating peak magnitudes:  41%|████      | 482/1170 [00:31&lt;00:44, 15.31step/s]
+Evaluating peak magnitudes:  41%|████▏     | 484/1170 [00:31&lt;00:44, 15.34step/s]
+Evaluating peak magnitudes:  42%|████▏     | 486/1170 [00:31&lt;00:44, 15.37step/s]
+Evaluating peak magnitudes:  42%|████▏     | 488/1170 [00:31&lt;00:44, 15.36step/s]
+Evaluating peak magnitudes:  42%|████▏     | 490/1170 [00:31&lt;00:44, 15.38step/s]
+Evaluating peak magnitudes:  42%|████▏     | 492/1170 [00:31&lt;00:44, 15.38step/s]
+Evaluating peak magnitudes:  42%|████▏     | 494/1170 [00:32&lt;00:43, 15.38step/s]
+Evaluating peak magnitudes:  42%|████▏     | 496/1170 [00:32&lt;00:43, 15.37step/s]
+Evaluating peak magnitudes:  43%|████▎     | 498/1170 [00:32&lt;00:43, 15.35step/s]
+Evaluating peak magnitudes:  43%|████▎     | 500/1170 [00:32&lt;00:43, 15.36step/s]
+Evaluating peak magnitudes:  43%|████▎     | 502/1170 [00:32&lt;00:43, 15.37step/s]
+Evaluating peak magnitudes:  43%|████▎     | 504/1170 [00:32&lt;00:43, 15.36step/s]
+Evaluating peak magnitudes:  43%|████▎     | 506/1170 [00:32&lt;00:43, 15.34step/s]
+Evaluating peak magnitudes:  43%|████▎     | 508/1170 [00:33&lt;00:43, 15.36step/s]
+Evaluating peak magnitudes:  44%|████▎     | 510/1170 [00:33&lt;00:43, 15.34step/s]
+Evaluating peak magnitudes:  44%|████▍     | 512/1170 [00:33&lt;00:42, 15.35step/s]
+Evaluating peak magnitudes:  44%|████▍     | 514/1170 [00:33&lt;00:42, 15.34step/s]
+Evaluating peak magnitudes:  44%|████▍     | 516/1170 [00:33&lt;00:42, 15.35step/s]
+Evaluating peak magnitudes:  44%|████▍     | 518/1170 [00:33&lt;00:42, 15.25step/s]
+Evaluating peak magnitudes:  44%|████▍     | 520/1170 [00:33&lt;00:42, 15.17step/s]
+Evaluating peak magnitudes:  45%|████▍     | 522/1170 [00:33&lt;00:42, 15.15step/s]
+Evaluating peak magnitudes:  45%|████▍     | 524/1170 [00:34&lt;00:42, 15.15step/s]
+Evaluating peak magnitudes:  45%|████▍     | 526/1170 [00:34&lt;00:42, 15.19step/s]
+Evaluating peak magnitudes:  45%|████▌     | 528/1170 [00:34&lt;00:42, 15.18step/s]
+Evaluating peak magnitudes:  45%|████▌     | 530/1170 [00:34&lt;00:42, 15.18step/s]
+Evaluating peak magnitudes:  45%|████▌     | 532/1170 [00:34&lt;00:41, 15.22step/s]
+Evaluating peak magnitudes:  46%|████▌     | 534/1170 [00:34&lt;00:41, 15.25step/s]
+Evaluating peak magnitudes:  46%|████▌     | 536/1170 [00:34&lt;00:41, 15.25step/s]
+Evaluating peak magnitudes:  46%|████▌     | 538/1170 [00:34&lt;00:41, 15.26step/s]
+Evaluating peak magnitudes:  46%|████▌     | 540/1170 [00:35&lt;00:41, 15.27step/s]
+Evaluating peak magnitudes:  46%|████▋     | 542/1170 [00:35&lt;00:41, 15.29step/s]
+Evaluating peak magnitudes:  46%|████▋     | 544/1170 [00:35&lt;00:40, 15.31step/s]
+Evaluating peak magnitudes:  47%|████▋     | 546/1170 [00:35&lt;00:40, 15.32step/s]
+Evaluating peak magnitudes:  47%|████▋     | 548/1170 [00:35&lt;00:40, 15.34step/s]
+Evaluating peak magnitudes:  47%|████▋     | 550/1170 [00:35&lt;00:40, 15.34step/s]
+Evaluating peak magnitudes:  47%|████▋     | 552/1170 [00:35&lt;00:40, 15.37step/s]
+Evaluating peak magnitudes:  47%|████▋     | 554/1170 [00:36&lt;00:40, 15.40step/s]
+Evaluating peak magnitudes:  48%|████▊     | 556/1170 [00:36&lt;00:39, 15.38step/s]
+Evaluating peak magnitudes:  48%|████▊     | 558/1170 [00:36&lt;00:40, 15.28step/s]
+Evaluating peak magnitudes:  48%|████▊     | 560/1170 [00:36&lt;00:40, 15.20step/s]
+Evaluating peak magnitudes:  48%|████▊     | 562/1170 [00:36&lt;00:40, 15.12step/s]
+Evaluating peak magnitudes:  48%|████▊     | 564/1170 [00:36&lt;00:39, 15.16step/s]
+Evaluating peak magnitudes:  48%|████▊     | 566/1170 [00:36&lt;00:39, 15.24step/s]
+Evaluating peak magnitudes:  49%|████▊     | 568/1170 [00:36&lt;00:39, 15.30step/s]
+Evaluating peak magnitudes:  49%|████▊     | 570/1170 [00:37&lt;00:39, 15.33step/s]
+Evaluating peak magnitudes:  49%|████▉     | 572/1170 [00:37&lt;00:38, 15.35step/s]
+Evaluating peak magnitudes:  49%|████▉     | 574/1170 [00:37&lt;00:38, 15.37step/s]
+Evaluating peak magnitudes:  49%|████▉     | 576/1170 [00:37&lt;00:38, 15.39step/s]
+Evaluating peak magnitudes:  49%|████▉     | 578/1170 [00:37&lt;00:38, 15.39step/s]
+Evaluating peak magnitudes:  50%|████▉     | 580/1170 [00:37&lt;00:38, 15.43step/s]
+Evaluating peak magnitudes:  50%|████▉     | 582/1170 [00:37&lt;00:38, 15.44step/s]
+Evaluating peak magnitudes:  50%|████▉     | 584/1170 [00:37&lt;00:37, 15.45step/s]
+Evaluating peak magnitudes:  50%|█████     | 586/1170 [00:38&lt;00:37, 15.43step/s]
+Evaluating peak magnitudes:  50%|█████     | 588/1170 [00:38&lt;00:37, 15.43step/s]
+Evaluating peak magnitudes:  50%|█████     | 590/1170 [00:38&lt;00:37, 15.41step/s]
+Evaluating peak magnitudes:  51%|█████     | 592/1170 [00:38&lt;00:37, 15.43step/s]
+Evaluating peak magnitudes:  51%|█████     | 594/1170 [00:38&lt;00:37, 15.44step/s]
+Evaluating peak magnitudes:  51%|█████     | 596/1170 [00:38&lt;00:37, 15.43step/s]
+Evaluating peak magnitudes:  51%|█████     | 598/1170 [00:38&lt;00:37, 15.42step/s]
+Evaluating peak magnitudes:  51%|█████▏    | 600/1170 [00:39&lt;00:37, 15.40step/s]
+Evaluating peak magnitudes:  51%|█████▏    | 602/1170 [00:39&lt;00:36, 15.36step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 604/1170 [00:39&lt;00:36, 15.36step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 606/1170 [00:39&lt;00:36, 15.39step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 608/1170 [00:39&lt;00:36, 15.39step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 610/1170 [00:39&lt;00:36, 15.36step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 612/1170 [00:39&lt;00:36, 15.33step/s]
+Evaluating peak magnitudes:  52%|█████▏    | 614/1170 [00:39&lt;00:36, 15.38step/s]
+Evaluating peak magnitudes:  53%|█████▎    | 616/1170 [00:40&lt;00:36, 15.30step/s]
+Evaluating peak magnitudes:  53%|█████▎    | 618/1170 [00:40&lt;00:36, 15.33step/s]
+Evaluating peak magnitudes:  53%|█████▎    | 620/1170 [00:40&lt;00:35, 15.34step/s]
+Evaluating peak magnitudes:  53%|█████▎    | 622/1170 [00:40&lt;00:35, 15.38step/s]
+Evaluating peak magnitudes:  53%|█████▎    | 624/1170 [00:40&lt;00:35, 15.40step/s]
+Evaluating peak magnitudes:  54%|█████▎    | 626/1170 [00:40&lt;00:35, 15.40step/s]
+Evaluating peak magnitudes:  54%|█████▎    | 628/1170 [00:40&lt;00:35, 15.39step/s]
+Evaluating peak magnitudes:  54%|█████▍    | 630/1170 [00:40&lt;00:35, 15.42step/s]
+Evaluating peak magnitudes:  54%|█████▍    | 632/1170 [00:41&lt;00:34, 15.43step/s]
+Evaluating peak magnitudes:  54%|█████▍    | 634/1170 [00:41&lt;00:35, 15.27step/s]
+Evaluating peak magnitudes:  54%|█████▍    | 636/1170 [00:41&lt;00:34, 15.32step/s]
+Evaluating peak magnitudes:  55%|█████▍    | 638/1170 [00:41&lt;00:34, 15.35step/s]
+Evaluating peak magnitudes:  55%|█████▍    | 640/1170 [00:41&lt;00:34, 15.34step/s]
+Evaluating peak magnitudes:  55%|█████▍    | 642/1170 [00:41&lt;00:34, 15.36step/s]
+Evaluating peak magnitudes:  55%|█████▌    | 644/1170 [00:41&lt;00:34, 15.36step/s]
+Evaluating peak magnitudes:  55%|█████▌    | 646/1170 [00:42&lt;00:34, 15.34step/s]
+Evaluating peak magnitudes:  55%|█████▌    | 648/1170 [00:42&lt;00:33, 15.36step/s]
+Evaluating peak magnitudes:  56%|█████▌    | 650/1170 [00:42&lt;00:33, 15.39step/s]
+Evaluating peak magnitudes:  56%|█████▌    | 652/1170 [00:42&lt;00:33, 15.41step/s]
+Evaluating peak magnitudes:  56%|█████▌    | 654/1170 [00:42&lt;00:33, 15.39step/s]
+Evaluating peak magnitudes:  56%|█████▌    | 656/1170 [00:42&lt;00:33, 15.38step/s]
+Evaluating peak magnitudes:  56%|█████▌    | 658/1170 [00:42&lt;00:33, 15.41step/s]
+Evaluating peak magnitudes:  56%|█████▋    | 660/1170 [00:42&lt;00:33, 15.44step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 662/1170 [00:43&lt;00:33, 15.38step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 664/1170 [00:43&lt;00:32, 15.36step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 666/1170 [00:43&lt;00:32, 15.38step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 668/1170 [00:43&lt;00:32, 15.40step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 670/1170 [00:43&lt;00:32, 15.41step/s]
+Evaluating peak magnitudes:  57%|█████▋    | 672/1170 [00:43&lt;00:32, 15.41step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 674/1170 [00:43&lt;00:32, 15.43step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 676/1170 [00:43&lt;00:32, 15.41step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 678/1170 [00:44&lt;00:31, 15.44step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 680/1170 [00:44&lt;00:31, 15.38step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 682/1170 [00:44&lt;00:31, 15.42step/s]
+Evaluating peak magnitudes:  58%|█████▊    | 684/1170 [00:44&lt;00:31, 15.44step/s]
+Evaluating peak magnitudes:  59%|█████▊    | 686/1170 [00:44&lt;00:31, 15.42step/s]
+Evaluating peak magnitudes:  59%|█████▉    | 688/1170 [00:44&lt;00:31, 15.44step/s]
+Evaluating peak magnitudes:  59%|█████▉    | 690/1170 [00:44&lt;00:31, 15.44step/s]
+Evaluating peak magnitudes:  59%|█████▉    | 692/1170 [00:45&lt;00:30, 15.47step/s]
+Evaluating peak magnitudes:  59%|█████▉    | 694/1170 [00:45&lt;00:30, 15.49step/s]
+Evaluating peak magnitudes:  59%|█████▉    | 696/1170 [00:45&lt;00:30, 15.46step/s]
+Evaluating peak magnitudes:  60%|█████▉    | 698/1170 [00:45&lt;00:30, 15.47step/s]
+Evaluating peak magnitudes:  60%|█████▉    | 700/1170 [00:45&lt;00:30, 15.47step/s]
+Evaluating peak magnitudes:  60%|██████    | 702/1170 [00:45&lt;00:30, 15.44step/s]
+Evaluating peak magnitudes:  60%|██████    | 704/1170 [00:45&lt;00:30, 15.45step/s]
+Evaluating peak magnitudes:  60%|██████    | 706/1170 [00:45&lt;00:30, 15.46step/s]
+Evaluating peak magnitudes:  61%|██████    | 708/1170 [00:46&lt;00:29, 15.45step/s]
+Evaluating peak magnitudes:  61%|██████    | 710/1170 [00:46&lt;00:29, 15.46step/s]
+Evaluating peak magnitudes:  61%|██████    | 712/1170 [00:46&lt;00:29, 15.46step/s]
+Evaluating peak magnitudes:  61%|██████    | 714/1170 [00:46&lt;00:29, 15.41step/s]
+Evaluating peak magnitudes:  61%|██████    | 716/1170 [00:46&lt;00:29, 15.38step/s]
+Evaluating peak magnitudes:  61%|██████▏   | 718/1170 [00:46&lt;00:29, 15.38step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 720/1170 [00:46&lt;00:29, 15.39step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 722/1170 [00:46&lt;00:29, 15.37step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 724/1170 [00:47&lt;00:28, 15.39step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 726/1170 [00:47&lt;00:28, 15.35step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 728/1170 [00:47&lt;00:28, 15.34step/s]
+Evaluating peak magnitudes:  62%|██████▏   | 730/1170 [00:47&lt;00:28, 15.36step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 732/1170 [00:47&lt;00:28, 15.39step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 734/1170 [00:47&lt;00:28, 15.39step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 736/1170 [00:47&lt;00:28, 15.41step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 738/1170 [00:47&lt;00:28, 15.29step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 740/1170 [00:48&lt;00:28, 15.17step/s]
+Evaluating peak magnitudes:  63%|██████▎   | 742/1170 [00:48&lt;00:28, 15.13step/s]
+Evaluating peak magnitudes:  64%|██████▎   | 744/1170 [00:48&lt;00:28, 15.19step/s]
+Evaluating peak magnitudes:  64%|██████▍   | 746/1170 [00:48&lt;00:27, 15.23step/s]
+Evaluating peak magnitudes:  64%|██████▍   | 748/1170 [00:48&lt;00:27, 15.26step/s]
+Evaluating peak magnitudes:  64%|██████▍   | 750/1170 [00:48&lt;00:27, 15.32step/s]
+Evaluating peak magnitudes:  64%|██████▍   | 752/1170 [00:48&lt;00:27, 15.34step/s]
+Evaluating peak magnitudes:  64%|██████▍   | 754/1170 [00:49&lt;00:27, 15.37step/s]
+Evaluating peak magnitudes:  65%|██████▍   | 756/1170 [00:49&lt;00:26, 15.33step/s]
+Evaluating peak magnitudes:  65%|██████▍   | 758/1170 [00:49&lt;00:26, 15.36step/s]
+Evaluating peak magnitudes:  65%|██████▍   | 760/1170 [00:49&lt;00:26, 15.35step/s]
+Evaluating peak magnitudes:  65%|██████▌   | 762/1170 [00:49&lt;00:26, 15.38step/s]
+Evaluating peak magnitudes:  65%|██████▌   | 764/1170 [00:49&lt;00:26, 15.40step/s]
+Evaluating peak magnitudes:  65%|██████▌   | 766/1170 [00:49&lt;00:26, 15.41step/s]
+Evaluating peak magnitudes:  66%|██████▌   | 768/1170 [00:49&lt;00:26, 15.41step/s]
+Evaluating peak magnitudes:  66%|██████▌   | 770/1170 [00:50&lt;00:26, 15.36step/s]
+Evaluating peak magnitudes:  66%|██████▌   | 772/1170 [00:50&lt;00:25, 15.33step/s]
+Evaluating peak magnitudes:  66%|██████▌   | 774/1170 [00:50&lt;00:25, 15.36step/s]
+Evaluating peak magnitudes:  66%|██████▋   | 776/1170 [00:50&lt;00:25, 15.38step/s]
+Evaluating peak magnitudes:  66%|██████▋   | 778/1170 [00:50&lt;00:25, 15.36step/s]
+Evaluating peak magnitudes:  67%|██████▋   | 780/1170 [00:50&lt;00:25, 15.38step/s]
+Evaluating peak magnitudes:  67%|██████▋   | 782/1170 [00:50&lt;00:25, 15.36step/s]
+Evaluating peak magnitudes:  67%|██████▋   | 784/1170 [00:50&lt;00:25, 15.40step/s]
+Evaluating peak magnitudes:  67%|██████▋   | 786/1170 [00:51&lt;00:24, 15.43step/s]
+Evaluating peak magnitudes:  67%|██████▋   | 788/1170 [00:51&lt;00:24, 15.40step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 790/1170 [00:51&lt;00:24, 15.44step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 792/1170 [00:51&lt;00:24, 15.44step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 794/1170 [00:51&lt;00:24, 15.41step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 796/1170 [00:51&lt;00:24, 15.42step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 798/1170 [00:51&lt;00:24, 15.39step/s]
+Evaluating peak magnitudes:  68%|██████▊   | 800/1170 [00:52&lt;00:24, 15.34step/s]
+Evaluating peak magnitudes:  69%|██████▊   | 802/1170 [00:52&lt;00:24, 15.22step/s]
+Evaluating peak magnitudes:  69%|██████▊   | 804/1170 [00:52&lt;00:24, 15.16step/s]
+Evaluating peak magnitudes:  69%|██████▉   | 806/1170 [00:52&lt;00:24, 15.11step/s]
+Evaluating peak magnitudes:  69%|██████▉   | 808/1170 [00:52&lt;00:23, 15.13step/s]
+Evaluating peak magnitudes:  69%|██████▉   | 810/1170 [00:52&lt;00:23, 15.24step/s]
+Evaluating peak magnitudes:  69%|██████▉   | 812/1170 [00:52&lt;00:23, 15.32step/s]
+Evaluating peak magnitudes:  70%|██████▉   | 814/1170 [00:52&lt;00:23, 15.36step/s]
+Evaluating peak magnitudes:  70%|██████▉   | 816/1170 [00:53&lt;00:23, 15.39step/s]
+Evaluating peak magnitudes:  70%|██████▉   | 818/1170 [00:53&lt;00:22, 15.39step/s]
+Evaluating peak magnitudes:  70%|███████   | 820/1170 [00:53&lt;00:22, 15.43step/s]
+Evaluating peak magnitudes:  70%|███████   | 822/1170 [00:53&lt;00:22, 15.43step/s]
+Evaluating peak magnitudes:  70%|███████   | 824/1170 [00:53&lt;00:22, 15.36step/s]
+Evaluating peak magnitudes:  71%|███████   | 826/1170 [00:53&lt;00:22, 15.35step/s]
+Evaluating peak magnitudes:  71%|███████   | 828/1170 [00:53&lt;00:22, 15.20step/s]
+Evaluating peak magnitudes:  71%|███████   | 830/1170 [00:53&lt;00:22, 15.22step/s]
+Evaluating peak magnitudes:  71%|███████   | 832/1170 [00:54&lt;00:22, 15.15step/s]
+Evaluating peak magnitudes:  71%|███████▏  | 834/1170 [00:54&lt;00:22, 15.17step/s]
+Evaluating peak magnitudes:  71%|███████▏  | 836/1170 [00:54&lt;00:21, 15.26step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 838/1170 [00:54&lt;00:21, 15.31step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 840/1170 [00:54&lt;00:21, 15.35step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 842/1170 [00:54&lt;00:21, 15.37step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 844/1170 [00:54&lt;00:21, 15.37step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 846/1170 [00:55&lt;00:21, 15.37step/s]
+Evaluating peak magnitudes:  72%|███████▏  | 848/1170 [00:55&lt;00:20, 15.37step/s]
+Evaluating peak magnitudes:  73%|███████▎  | 850/1170 [00:55&lt;00:20, 15.36step/s]
+Evaluating peak magnitudes:  73%|███████▎  | 852/1170 [00:55&lt;00:20, 15.41step/s]
+Evaluating peak magnitudes:  73%|███████▎  | 854/1170 [00:55&lt;00:20, 15.42step/s]
+Evaluating peak magnitudes:  73%|███████▎  | 856/1170 [00:55&lt;00:20, 15.39step/s]
+Evaluating peak magnitudes:  73%|███████▎  | 858/1170 [00:55&lt;00:20, 15.41step/s]
+Evaluating peak magnitudes:  74%|███████▎  | 860/1170 [00:55&lt;00:20, 15.42step/s]
+Evaluating peak magnitudes:  74%|███████▎  | 862/1170 [00:56&lt;00:19, 15.42step/s]
+Evaluating peak magnitudes:  74%|███████▍  | 864/1170 [00:56&lt;00:19, 15.41step/s]
+Evaluating peak magnitudes:  74%|███████▍  | 866/1170 [00:56&lt;00:19, 15.41step/s]
+Evaluating peak magnitudes:  74%|███████▍  | 868/1170 [00:56&lt;00:19, 15.40step/s]
+Evaluating peak magnitudes:  74%|███████▍  | 870/1170 [00:56&lt;00:19, 15.40step/s]
+Evaluating peak magnitudes:  75%|███████▍  | 872/1170 [00:56&lt;00:19, 15.38step/s]
+Evaluating peak magnitudes:  75%|███████▍  | 874/1170 [00:56&lt;00:19, 15.40step/s]
+Evaluating peak magnitudes:  75%|███████▍  | 876/1170 [00:56&lt;00:19, 15.38step/s]
+Evaluating peak magnitudes:  75%|███████▌  | 878/1170 [00:57&lt;00:18, 15.39step/s]
+Evaluating peak magnitudes:  75%|███████▌  | 880/1170 [00:57&lt;00:18, 15.41step/s]
+Evaluating peak magnitudes:  75%|███████▌  | 882/1170 [00:57&lt;00:18, 15.41step/s]
+Evaluating peak magnitudes:  76%|███████▌  | 884/1170 [00:57&lt;00:18, 15.38step/s]
+Evaluating peak magnitudes:  76%|███████▌  | 886/1170 [00:57&lt;00:18, 15.32step/s]
+Evaluating peak magnitudes:  76%|███████▌  | 888/1170 [00:57&lt;00:18, 15.31step/s]
+Evaluating peak magnitudes:  76%|███████▌  | 890/1170 [00:57&lt;00:18, 15.30step/s]
+Evaluating peak magnitudes:  76%|███████▌  | 892/1170 [00:58&lt;00:18, 15.29step/s]
+Evaluating peak magnitudes:  76%|███████▋  | 894/1170 [00:58&lt;00:18, 15.25step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 896/1170 [00:58&lt;00:17, 15.23step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 898/1170 [00:58&lt;00:17, 15.25step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 900/1170 [00:58&lt;00:17, 15.31step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 902/1170 [00:58&lt;00:17, 15.34step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 904/1170 [00:58&lt;00:17, 15.34step/s]
+Evaluating peak magnitudes:  77%|███████▋  | 906/1170 [00:58&lt;00:17, 15.33step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 908/1170 [00:59&lt;00:17, 15.33step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 910/1170 [00:59&lt;00:16, 15.31step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 912/1170 [00:59&lt;00:16, 15.30step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 914/1170 [00:59&lt;00:16, 15.34step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 916/1170 [00:59&lt;00:16, 15.37step/s]
+Evaluating peak magnitudes:  78%|███████▊  | 918/1170 [00:59&lt;00:16, 15.39step/s]
+Evaluating peak magnitudes:  79%|███████▊  | 920/1170 [00:59&lt;00:16, 15.38step/s]
+Evaluating peak magnitudes:  79%|███████▉  | 922/1170 [00:59&lt;00:16, 15.39step/s]
+Evaluating peak magnitudes:  79%|███████▉  | 924/1170 [01:00&lt;00:16, 15.30step/s]
+Evaluating peak magnitudes:  79%|███████▉  | 926/1170 [01:00&lt;00:16, 15.13step/s]
+Evaluating peak magnitudes:  79%|███████▉  | 928/1170 [01:00&lt;00:16, 14.98step/s]
+Evaluating peak magnitudes:  79%|███████▉  | 930/1170 [01:00&lt;00:16, 14.82step/s]
+Evaluating peak magnitudes:  80%|███████▉  | 932/1170 [01:00&lt;00:16, 14.75step/s]
+Evaluating peak magnitudes:  80%|███████▉  | 934/1170 [01:00&lt;00:16, 14.66step/s]
+Evaluating peak magnitudes:  80%|████████  | 936/1170 [01:00&lt;00:15, 14.64step/s]
+Evaluating peak magnitudes:  80%|████████  | 938/1170 [01:01&lt;00:15, 14.62step/s]
+Evaluating peak magnitudes:  80%|████████  | 940/1170 [01:01&lt;00:15, 14.64step/s]
+Evaluating peak magnitudes:  81%|████████  | 942/1170 [01:01&lt;00:15, 14.59step/s]
+Evaluating peak magnitudes:  81%|████████  | 944/1170 [01:01&lt;00:15, 14.59step/s]
+Evaluating peak magnitudes:  81%|████████  | 946/1170 [01:01&lt;00:15, 14.60step/s]
+Evaluating peak magnitudes:  81%|████████  | 948/1170 [01:01&lt;00:15, 14.60step/s]
+Evaluating peak magnitudes:  81%|████████  | 950/1170 [01:01&lt;00:15, 14.59step/s]
+Evaluating peak magnitudes:  81%|████████▏ | 952/1170 [01:02&lt;00:14, 14.62step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 954/1170 [01:02&lt;00:14, 14.61step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 956/1170 [01:02&lt;00:14, 14.62step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 958/1170 [01:02&lt;00:14, 14.62step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 960/1170 [01:02&lt;00:14, 14.63step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 962/1170 [01:02&lt;00:14, 14.67step/s]
+Evaluating peak magnitudes:  82%|████████▏ | 964/1170 [01:02&lt;00:14, 14.71step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 966/1170 [01:02&lt;00:13, 14.74step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 968/1170 [01:03&lt;00:13, 14.81step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 970/1170 [01:03&lt;00:13, 14.89step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 972/1170 [01:03&lt;00:13, 15.02step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 974/1170 [01:03&lt;00:12, 15.14step/s]
+Evaluating peak magnitudes:  83%|████████▎ | 976/1170 [01:03&lt;00:12, 15.21step/s]
+Evaluating peak magnitudes:  84%|████████▎ | 978/1170 [01:03&lt;00:12, 15.27step/s]
+Evaluating peak magnitudes:  84%|████████▍ | 980/1170 [01:03&lt;00:12, 15.31step/s]
+Evaluating peak magnitudes:  84%|████████▍ | 982/1170 [01:04&lt;00:12, 15.36step/s]
+Evaluating peak magnitudes:  84%|████████▍ | 984/1170 [01:04&lt;00:12, 15.35step/s]
+Evaluating peak magnitudes:  84%|████████▍ | 986/1170 [01:04&lt;00:11, 15.34step/s]
+Evaluating peak magnitudes:  84%|████████▍ | 988/1170 [01:04&lt;00:11, 15.35step/s]
+Evaluating peak magnitudes:  85%|████████▍ | 990/1170 [01:04&lt;00:11, 15.37step/s]
+Evaluating peak magnitudes:  85%|████████▍ | 992/1170 [01:04&lt;00:11, 15.40step/s]
+Evaluating peak magnitudes:  85%|████████▍ | 994/1170 [01:04&lt;00:11, 15.38step/s]
+Evaluating peak magnitudes:  85%|████████▌ | 996/1170 [01:04&lt;00:11, 15.38step/s]
+Evaluating peak magnitudes:  85%|████████▌ | 998/1170 [01:05&lt;00:11, 15.42step/s]
+Evaluating peak magnitudes:  85%|████████▌ | 1000/1170 [01:05&lt;00:11, 15.41step/s]
+Evaluating peak magnitudes:  86%|████████▌ | 1002/1170 [01:05&lt;00:10, 15.41step/s]
+Evaluating peak magnitudes:  86%|████████▌ | 1004/1170 [01:05&lt;00:10, 15.42step/s]
+Evaluating peak magnitudes:  86%|████████▌ | 1006/1170 [01:05&lt;00:10, 15.39step/s]
+Evaluating peak magnitudes:  86%|████████▌ | 1008/1170 [01:05&lt;00:10, 15.39step/s]
+Evaluating peak magnitudes:  86%|████████▋ | 1010/1170 [01:05&lt;00:10, 15.38step/s]
+Evaluating peak magnitudes:  86%|████████▋ | 1012/1170 [01:05&lt;00:10, 15.40step/s]
+Evaluating peak magnitudes:  87%|████████▋ | 1014/1170 [01:06&lt;00:10, 15.39step/s]
+Evaluating peak magnitudes:  87%|████████▋ | 1016/1170 [01:06&lt;00:10, 15.36step/s]
+Evaluating peak magnitudes:  87%|████████▋ | 1018/1170 [01:06&lt;00:09, 15.38step/s]
+Evaluating peak magnitudes:  87%|████████▋ | 1020/1170 [01:06&lt;00:09, 15.39step/s]
+Evaluating peak magnitudes:  87%|████████▋ | 1022/1170 [01:06&lt;00:09, 15.39step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1024/1170 [01:06&lt;00:09, 15.43step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1026/1170 [01:06&lt;00:09, 15.42step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1028/1170 [01:07&lt;00:09, 15.44step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1030/1170 [01:07&lt;00:09, 15.42step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1032/1170 [01:07&lt;00:08, 15.35step/s]
+Evaluating peak magnitudes:  88%|████████▊ | 1034/1170 [01:07&lt;00:08, 15.30step/s]
+Evaluating peak magnitudes:  89%|████████▊ | 1036/1170 [01:07&lt;00:08, 15.34step/s]
+Evaluating peak magnitudes:  89%|████████▊ | 1038/1170 [01:07&lt;00:08, 15.37step/s]
+Evaluating peak magnitudes:  89%|████████▉ | 1040/1170 [01:07&lt;00:08, 15.34step/s]
+Evaluating peak magnitudes:  89%|████████▉ | 1042/1170 [01:07&lt;00:08, 15.34step/s]
+Evaluating peak magnitudes:  89%|████████▉ | 1044/1170 [01:08&lt;00:08, 15.36step/s]
+Evaluating peak magnitudes:  89%|████████▉ | 1046/1170 [01:08&lt;00:08, 15.34step/s]
+Evaluating peak magnitudes:  90%|████████▉ | 1048/1170 [01:08&lt;00:07, 15.37step/s]
+Evaluating peak magnitudes:  90%|████████▉ | 1050/1170 [01:08&lt;00:07, 15.40step/s]
+Evaluating peak magnitudes:  90%|████████▉ | 1052/1170 [01:08&lt;00:07, 15.39step/s]
+Evaluating peak magnitudes:  90%|█████████ | 1054/1170 [01:08&lt;00:07, 15.39step/s]
+Evaluating peak magnitudes:  90%|█████████ | 1056/1170 [01:08&lt;00:07, 15.40step/s]
+Evaluating peak magnitudes:  90%|█████████ | 1058/1170 [01:08&lt;00:07, 15.40step/s]
+Evaluating peak magnitudes:  91%|█████████ | 1060/1170 [01:09&lt;00:07, 15.37step/s]
+Evaluating peak magnitudes:  91%|█████████ | 1062/1170 [01:09&lt;00:07, 14.88step/s]
+Evaluating peak magnitudes:  91%|█████████ | 1064/1170 [01:09&lt;00:07, 15.05step/s]
+Evaluating peak magnitudes:  91%|█████████ | 1066/1170 [01:09&lt;00:06, 15.13step/s]
+Evaluating peak magnitudes:  91%|█████████▏| 1068/1170 [01:09&lt;00:06, 15.20step/s]
+Evaluating peak magnitudes:  91%|█████████▏| 1070/1170 [01:09&lt;00:06, 15.26step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1072/1170 [01:09&lt;00:06, 15.30step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1074/1170 [01:10&lt;00:06, 15.29step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1076/1170 [01:10&lt;00:06, 15.33step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1078/1170 [01:10&lt;00:05, 15.36step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1080/1170 [01:10&lt;00:05, 15.40step/s]
+Evaluating peak magnitudes:  92%|█████████▏| 1082/1170 [01:10&lt;00:05, 15.39step/s]
+Evaluating peak magnitudes:  93%|█████████▎| 1084/1170 [01:10&lt;00:05, 15.40step/s]
+Evaluating peak magnitudes:  93%|█████████▎| 1086/1170 [01:10&lt;00:05, 15.42step/s]
+Evaluating peak magnitudes:  93%|█████████▎| 1088/1170 [01:10&lt;00:05, 15.41step/s]
+Evaluating peak magnitudes:  93%|█████████▎| 1090/1170 [01:11&lt;00:05, 15.43step/s]
+Evaluating peak magnitudes:  93%|█████████▎| 1092/1170 [01:11&lt;00:05, 15.41step/s]
+Evaluating peak magnitudes:  94%|█████████▎| 1094/1170 [01:11&lt;00:04, 15.37step/s]
+Evaluating peak magnitudes:  94%|█████████▎| 1096/1170 [01:11&lt;00:04, 15.39step/s]
+Evaluating peak magnitudes:  94%|█████████▍| 1098/1170 [01:11&lt;00:04, 15.40step/s]
+Evaluating peak magnitudes:  94%|█████████▍| 1100/1170 [01:11&lt;00:04, 15.40step/s]
+Evaluating peak magnitudes:  94%|█████████▍| 1102/1170 [01:11&lt;00:04, 15.40step/s]
+Evaluating peak magnitudes:  94%|█████████▍| 1104/1170 [01:11&lt;00:04, 15.37step/s]
+Evaluating peak magnitudes:  95%|█████████▍| 1106/1170 [01:12&lt;00:04, 15.37step/s]
+Evaluating peak magnitudes:  95%|█████████▍| 1108/1170 [01:12&lt;00:04, 15.36step/s]
+Evaluating peak magnitudes:  95%|█████████▍| 1110/1170 [01:12&lt;00:03, 15.37step/s]
+Evaluating peak magnitudes:  95%|█████████▌| 1112/1170 [01:12&lt;00:03, 15.33step/s]
+Evaluating peak magnitudes:  95%|█████████▌| 1114/1170 [01:12&lt;00:03, 15.35step/s]
+Evaluating peak magnitudes:  95%|█████████▌| 1116/1170 [01:12&lt;00:03, 15.35step/s]
+Evaluating peak magnitudes:  96%|█████████▌| 1118/1170 [01:12&lt;00:03, 15.37step/s]
+Evaluating peak magnitudes:  96%|█████████▌| 1120/1170 [01:13&lt;00:03, 15.39step/s]
+Evaluating peak magnitudes:  96%|█████████▌| 1122/1170 [01:13&lt;00:03, 15.40step/s]
+Evaluating peak magnitudes:  96%|█████████▌| 1124/1170 [01:13&lt;00:02, 15.38step/s]
+Evaluating peak magnitudes:  96%|█████████▌| 1126/1170 [01:13&lt;00:02, 15.39step/s]
+Evaluating peak magnitudes:  96%|█████████▋| 1128/1170 [01:13&lt;00:02, 15.39step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1130/1170 [01:13&lt;00:02, 15.38step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1132/1170 [01:13&lt;00:02, 15.40step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1134/1170 [01:13&lt;00:02, 15.43step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1136/1170 [01:14&lt;00:02, 15.44step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1138/1170 [01:14&lt;00:02, 15.43step/s]
+Evaluating peak magnitudes:  97%|█████████▋| 1140/1170 [01:14&lt;00:01, 15.45step/s]
+Evaluating peak magnitudes:  98%|█████████▊| 1145/1170 [01:14&lt;00:01, 22.98step/s]
+Evaluating peak magnitudes:  98%|█████████▊| 1150/1170 [01:14&lt;00:00, 28.62step/s]
+Evaluating peak magnitudes:  99%|█████████▊| 1155/1170 [01:14&lt;00:00, 32.74step/s]
+Evaluating peak magnitudes:  99%|█████████▉| 1160/1170 [01:14&lt;00:00, 35.71step/s]
+Evaluating peak magnitudes: 100%|█████████▉| 1165/1170 [01:14&lt;00:00, 37.84step/s]
+Evaluating peak magnitudes: 100%|██████████| 1170/1170 [01:15&lt;00:00, 39.35step/s]
+Evaluating peak magnitudes: 100%|██████████| 1170/1170 [01:15&lt;00:00, 15.60step/s]
+mag_limit       z_limit        n_censored
+ mag(AB)
+--------- -------------------- ----------
+     21.0  0.03925874651026943          0
+     21.5 0.048641208901480236          0
+     22.0  0.06026598945991675          0
+     22.5  0.07466898063613439          0
+     23.0  0.09251414801623194          0
+     23.5  0.11462413856802268          0
+     24.0  0.11462413856802268          0
+     24.5  0.14201820396331205          0
+     25.0  0.17595918720903359          0
+     25.5   0.2180117386307893          0
+     26.0  0.27011444491589176          0
+     26.5  0.27011444491589176          0
+     27.0  0.33466919630315783          0
+     27.5  0.41465191167054094          0
+     28.0  0.41465191167054094          0
+</pre></div>
+</div>
+<p>Each thin line below is one draw’s peak magnitude against redshift, and the draw is detected out
+to where its line crosses the magnitude limit. The histogram collects those crossing redshifts.
+The red line is the derived limit: the second largest crossing redshift of the 500 draws, which
+the 95% confidence level at 1% tolerance allows in place of the largest.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure"><span class="n">fig</span></a><span class="p">,</span> <span class="p">(</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes"><span class="n">ax_mag</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes"><span class="n">ax_hist</span></a><span class="p">)</span> <span class="o">=</span> <a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">)</span><span class="p">,</span> <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;</span><span class="s2">width_ratios</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="p">}</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot"><span class="n">ax_mag</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span></a><span class="p">[</span><span class="p">:</span><span class="mi">120</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">0.7</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot"><span class="n">ax_mag</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.median.html#numpy.median" title="numpy.median"><span class="n">np</span><span class="o">.</span><span class="n">median</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span></a><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.get_band_color.html#uvex_transients.utils.plotting.get_band_color" title="uvex_transients.utils.plotting.get_band_color"><span class="n">get_band_color</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">FUV</span><span class="s2">&quot;</span><span class="p">)</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">median</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axhline.html#matplotlib.axes.Axes.axhline" title="matplotlib.axes.Axes.axhline"><span class="n">ax_mag</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">k</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">--</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">limit, </span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> AB</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axvline.html#matplotlib.axes.Axes.axvline" title="matplotlib.axes.Axes.axvline"><span class="n">ax_mag</span><span class="o">.</span><span class="n">axvline</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">z_limit</span></a><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">C3</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">derived limit, z = </span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">z_limit</span></a><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xscale.html#matplotlib.axes.Axes.set_xscale" title="matplotlib.axes.Axes.set_xscale"><span class="n">ax_mag</span><span class="o">.</span><span class="n">set_xscale</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">log</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylim.html#matplotlib.axes.Axes.set_ylim" title="matplotlib.axes.Axes.set_ylim"><span class="n">ax_mag</span><span class="o">.</span><span class="n">set_ylim</span></a><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel"><span class="n">ax_mag</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Redshift</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel"><span class="n">ax_mag</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Peak magnitude, any band (AB)</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html#matplotlib.axes.Axes.legend" title="matplotlib.axes.Axes.legend"><span class="n">ax_mag</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">lower right</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">z_crossing</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.min.html#numpy.min" title="numpy.min"><span class="n">np</span><span class="o">.</span><span class="n">min</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.where.html#numpy.where" title="numpy.where"><span class="n">np</span><span class="o">.</span><span class="n">where</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span></a> <span class="o">&gt;</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">np</span><span class="o">.</span><span class="n">inf</span></a><span class="p">)</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.hist.html#matplotlib.axes.Axes.hist" title="matplotlib.axes.Axes.hist"><span class="n">ax_hist</span><span class="o">.</span><span class="n">hist</span></a><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray"><span class="n">z_crossing</span></a><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.geomspace.html#numpy.geomspace" title="numpy.geomspace"><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span></a><span class="p">(</span><span class="mf">0.003</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">0.6</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axvline.html#matplotlib.axes.Axes.axvline" title="matplotlib.axes.Axes.axvline"><span class="n">ax_hist</span><span class="o">.</span><span class="n">axvline</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">z_limit</span></a><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">C3</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xscale.html#matplotlib.axes.Axes.set_xscale" title="matplotlib.axes.Axes.set_xscale"><span class="n">ax_hist</span><span class="o">.</span><span class="n">set_xscale</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">log</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel"><span class="n">ax_hist</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">Redshift at which a draw falls below </span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> AB</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel"><span class="n">ax_hist</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Draws</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_kilonova_detection_horizon_001.png" srcset="../../_images/sphx_glr_plot_kilonova_detection_horizon_001.png" alt="plot kilonova detection horizon" class = "sphx-glr-single-img"/><p>The grid gives the limit for any survey depth at no extra cost, and the limit grows quickly with
+depth. The default limit sits at the 24.5 AB point of the curve, so it is right for that depth but
+too low for 25 AB and anything deeper, where it would cut off detectable kilonovae. The curve is
+a staircase because each limit is rounded up to the next grid redshift, which keeps it
+conservative.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure"><span class="n">fig</span></a><span class="p">,</span> <a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes"><span class="n">ax</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">)</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot"><span class="n">ax</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">mag_limit</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">curve</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">z_limit</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">o-</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">derived limit</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axhline.html#matplotlib.axes.Axes.axhline" title="matplotlib.axes.Axes.axhline"><span class="n">ax</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.redshift_limit.html#uvex_transients.transients.kilonovae.Kilonova.redshift_limit" title="uvex_transients.transients.kilonovae.Kilonova.redshift_limit"><span class="n">kilonova</span><span class="o">.</span><span class="n">redshift_limit</span></a><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">0.4</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">:</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">default, z = </span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.redshift_limit.html#uvex_transients.transients.kilonovae.Kilonova.redshift_limit" title="uvex_transients.transients.kilonovae.Kilonova.redshift_limit"><span class="n">kilonova</span><span class="o">.</span><span class="n">redshift_limit</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axvline.html#matplotlib.axes.Axes.axvline" title="matplotlib.axes.Axes.axvline"><span class="n">ax</span><span class="o">.</span><span class="n">axvline</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">MAG_LIMIT</span></a><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">k</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">--</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_yscale.html#matplotlib.axes.Axes.set_yscale" title="matplotlib.axes.Axes.set_yscale"><span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">log</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Magnitude limit (AB)</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="s2">Redshift limit</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html#matplotlib.axes.Axes.legend" title="matplotlib.axes.Axes.legend"><span class="n">ax</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<img src="../../_images/sphx_glr_plot_kilonova_detection_horizon_002.png" srcset="../../_images/sphx_glr_plot_kilonova_detection_horizon_002.png" alt="plot kilonova detection horizon" class = "sphx-glr-single-img"/></section>
+<section id="assign-the-limit">
+<h2>Assign the limit<a class="headerlink" href="#assign-the-limit" title="Link to this heading">#</a></h2>
+<p>We assign the limit derived for 25 AB to the instance. It is rounded up to a clean number, which
+only makes it more conservative, and setting it discards the class’s cached rate grid so the new
+value takes effect immediately. The integrated rate grows because the class now samples a larger
+volume, which is the price of not clipping the kilonovae that a 25 AB survey can see.</p>
+<p>The derived limit covers the SED’s parameter priors only. It does not include Milky Way
+extinction or sky position.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.redshift_limit.html#uvex_transients.transients.kilonovae.Kilonova.redshift_limit" title="uvex_transients.transients.kilonovae.Kilonova.redshift_limit"><span class="n">kilonova</span><span class="o">.</span><span class="n">redshift_limit</span></a> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc"><span class="n">np</span><span class="o">.</span><span class="n">ceil</span></a><span class="p">(</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="float"><span class="n">z_limit</span></a> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">new redshift limit: </span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.redshift_limit.html#uvex_transients.transients.kilonovae.Kilonova.redshift_limit" title="uvex_transients.transients.kilonovae.Kilonova.redshift_limit"><span class="n">kilonova</span><span class="o">.</span><span class="n">redshift_limit</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="s2">integrated rate:    </span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-transients-kilonovae sphx-glr-backref-type-py-property reference internal" href="../../_as_gen/uvex_transients.transients.kilonovae.Kilonova.integrated_rate.html#uvex_transients.transients.kilonovae.Kilonova.integrated_rate" title="uvex_transients.transients.kilonovae.Kilonova.integrated_rate"><span class="n">kilonova</span><span class="o">.</span><span class="n">integrated_rate</span></a><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
+</span></pre></div></div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>new redshift limit: 0.18
+integrated rate:    14.4 1 / (sr yr)
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 16.889 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-custom-transients-plot-kilonova-detection-horizon-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/3dc7c3389cf39e7d8f2c9ef5c7f5275c/plot_kilonova_detection_horizon.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_kilonova_detection_horizon.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/8f11a2f94a6512523618c1b6cf92dca0/plot_kilonova_detection_horizon.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_kilonova_detection_horizon.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/542583830f4da9c7bad1ec8d15338fc7/plot_kilonova_detection_horizon.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">plot_kilonova_detection_horizon.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Custom Transients</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../schedules/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Working with Simulation Schedules</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-redshift-limit">The redshift limit</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-the-optimization">Run the optimization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assign-the-limit">Assign the limit</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/auto_examples/custom_transients/plot_kilonova_detection_horizon.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

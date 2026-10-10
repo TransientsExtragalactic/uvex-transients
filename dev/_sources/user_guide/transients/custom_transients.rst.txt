@@ -106,9 +106,12 @@ just as short:
 :ref:`user_guide_transients` -- checked at class-definition time, so a subclass that forgets one
 fails immediately at import rather than partway through a Monte Carlo run. ``DEFAULT_Z_LIM`` is
 new here: it overrides :class:`~uvex_transients.transients.base.ExtragalacticTransient`'s own
-default of ``10`` (very generous for most populations) with this class's own redshift horizon --
-set it, like the built-in populations do, to whatever bound is generous relative to the source's
-actual observable luminosity and your survey's limiting magnitude.
+default of ``10`` (very generous for most populations) with this class's own redshift horizon.
+The built-in populations set it to the redshift beyond which, with 95% confidence, at most 1% of
+the population is detectable at the survey's limiting magnitude; the
+:meth:`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon` method derives that
+number from your SED (see :ref:`user_guide_transients_redshift_limits` for how, and
+:ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` for a worked example).
 
 Declaring a Volumetric Rate
 -------------------------------

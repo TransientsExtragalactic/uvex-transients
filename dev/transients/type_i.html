@@ -561,12 +561,11 @@ is evaluated by calling <cite>supernovae_Ia_rate</cite> directly at that normali
 <a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 1\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.77\)</span></p></td>
 <td><p>–</p></td>
-<td><p>Set from an actual <code class="docutils literal notranslate"><span class="pre">sample_event_redshift</span></code>/peak-apparent-magnitude check against
-the UVEX bandpasses (25 AB mag limiting-magnitude screen): no simulated event peaks
-above the limit beyond <span class="math notranslate nohighlight">\(z\approx0.8\)</span> in either band, and the NUV-detected
-fraction per redshift bin has already fallen to zero by <span class="math notranslate nohighlight">\(z=1\)</span>.</p></td>
+<td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
+priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+rounded up. See the observability summary below.</p></td>
 </tr>
 <tr class="row-even"><td><p>Duration</p></td>
 <td><p>365 days</p></td>
@@ -662,17 +661,24 @@ bottom panel is unadorned.</p>
 <img alt="../_images/type_i-1.png" class="plot-directive" src="../_images/type_i-1.png" />
 </figure>
 <p class="rubric">Observability Summary</p>
-<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
-<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 2000 simulated events drawn from the priors above (with
-<cite>redshift_limit</cite> temporarily raised to 4 to show the falloff), with the UVEX 1 Dwell limit
-of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted. This justifies the <span class="math notranslate nohighlight">\(z=1\)</span> redshift limit adopted above.</p>
+<p>The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+draw’s peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+<span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
+1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+adopted above, <span class="math notranslate nohighlight">\(z=0.77\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+finer grid than this plot’s.</p>
+<p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
+fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/fb3828a21ecff9f850e4cb19dba86215/type_i-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/45df007dda2629dbc8ff5f8c933cf2cc/type_i-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/dcfea48bd0bb42800bdd92e0d813b5d4/type_i-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e7711f1f25d159289b85be1a095c0f9a/type_i-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-2.png" class="plot-directive" src="../_images/type_i-2.png" />
 </figure>
 <p>The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
 that any event above the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is
-isotropic and homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=1\)</span>:</p>
+isotropic and homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=0.77\)</span>:</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/b9fa6a55dad88a56cea22ff3120e25d4/type_i-3.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/2eca9dfbefe7472dc50b02e0e6d88ae3/type_i-3.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/dd1152758ebb54bf30743a9467f7a543/type_i-3.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/319e84271c89410b78af528834f0a4d4/type_i-3.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-3.png" class="plot-directive" src="../_images/type_i-3.png" />
@@ -713,11 +719,11 @@ Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-s
 <a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 0.5\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.47\)</span></p></td>
 <td><p>–</p></td>
-<td><p>Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
-in the UV: in the observability check below, no simulated event beyond
-<span class="math notranslate nohighlight">\(z \approx 0.3\)</span> clears the UVEX limit.</p></td>
+<td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
+priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+rounded up. See the observability summary below.</p></td>
 </tr>
 <tr class="row-even"><td><p>Duration</p></td>
 <td><p>100 days</p></td>
@@ -816,9 +822,17 @@ shifted to time since explosion using the tabulated <span class="math notranslat
 <img alt="../_images/type_i-4.png" class="plot-directive" src="../_images/type_i-4.png" />
 </figure>
 <p class="rubric">Observability Summary</p>
-<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
-<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
-Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+draw’s peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+<span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
+1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+adopted above, <span class="math notranslate nohighlight">\(z=0.47\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+finer grid than this plot’s.</p>
+<p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
+fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/9f9001765cde5651d8d2fb4c7862ef1b/type_i-5.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/08323bfd79fe444001a432ee2b89b144/type_i-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/129aeb3da3f4e5c37af89f24806718a6/type_i-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e12bfcf6d88d443ca70481ef29d32cc2/type_i-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-5.png" class="plot-directive" src="../_images/type_i-5.png" />
@@ -866,11 +880,11 @@ Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-s
 <a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>).</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 0.5\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.54\)</span></p></td>
 <td><p>–</p></td>
-<td><p>Below the Type IIP and IIb limits, since these events peak at lower luminosity and are cool
-in the UV: in the observability check below, no simulated event beyond
-<span class="math notranslate nohighlight">\(z \approx 0.5\)</span> clears the UVEX limit.</p></td>
+<td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
+priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+rounded up. See the observability summary below.</p></td>
 </tr>
 <tr class="row-even"><td><p>Duration</p></td>
 <td><p>100 days</p></td>
@@ -956,9 +970,17 @@ shifted to time since explosion using the tabulated <span class="math notranslat
 <img alt="../_images/type_i-7.png" class="plot-directive" src="../_images/type_i-7.png" />
 </figure>
 <p class="rubric">Observability Summary</p>
-<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
-<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
-Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+draw’s peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+<span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
+1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+adopted above, <span class="math notranslate nohighlight">\(z=0.54\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+finer grid than this plot’s.</p>
+<p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
+fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/522c4d407f9e2c3a64a5d43bdb817b8c/type_i-8.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/11718245424cb2d2355e93c7a10d9787/type_i-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/564329b5f05c7c827d4926dcc2cee94e/type_i-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/90793011b2aa077691d54ae37f1ded2c/type_i-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-8.png" class="plot-directive" src="../_images/type_i-8.png" />
@@ -1015,11 +1037,11 @@ fraction is itself consistent with zero, so the combined lower <cite>RATE_CI</ci
 slightly negative; treat the lower bound as effectively zero rather than literally.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 1\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.61\)</span></p></td>
 <td><p>–</p></td>
-<td><p>Wider than the Type Ib/Type Ic limit, to cover this population’s higher ejecta
-velocities and kinetic energies; in the observability check below, no simulated event
-beyond <span class="math notranslate nohighlight">\(z \approx 0.55\)</span> clears the UVEX limit.</p></td>
+<td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
+priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
+rounded up. See the observability summary below.</p></td>
 </tr>
 <tr class="row-even"><td><p>Duration</p></td>
 <td><p>100 days</p></td>
@@ -1119,9 +1141,17 @@ so the bottom panel is unadorned.</p>
 <img alt="../_images/type_i-10.png" class="plot-directive" src="../_images/type_i-10.png" />
 </figure>
 <p class="rubric">Observability Summary</p>
-<p>Below are the redshifts <span class="math notranslate nohighlight">\(z\)</span> and corresponding bandpass peak apparent AB magnitudes
-<span class="math notranslate nohighlight">\(m_\mathrm{AB}\)</span> of 1000 simulated events drawn from the priors above, with the UVEX 1
-Dwell limit of <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> overplotted.</p>
+<p>The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
+parameters from the priors above and evaluate each of them across a grid of redshifts, in the
+UVEX FUV and NUV bands, over the whole rest-frame light curve. The left panel shows each
+draw’s peak apparent AB magnitude, in whichever band is brighter, against redshift: a draw is
+detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
+<span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
+1% of the population is detectable, as a function of the magnitude limit. The redshift limit
+adopted above, <span class="math notranslate nohighlight">\(z=0.61\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+finer grid than this plot’s.</p>
+<p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
+fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/6dd5c8cd93f318be8cd387efb88e3594/type_i-11.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/1d157a35e934bced85a8e34dab4cbf2a/type_i-11.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/7c3eeb3bfc56f9096f2bec28a5505a5e/type_i-11.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/70cc16c4a00d6c461566111c050da442/type_i-11.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-11.png" class="plot-directive" src="../_images/type_i-11.png" />

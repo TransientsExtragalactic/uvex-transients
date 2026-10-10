@@ -678,7 +678,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.51</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIP_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IIP_FRACTION_ERR</span><span class="p">)</span></div>
@@ -692,7 +694,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPExcessSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.2</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.1</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIP_EXCESS_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IIP_EXCESS_FRACTION_ERR</span><span class="p">)</span></div>
@@ -716,6 +720,7 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">MoragShockCoolingSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="c1"># Not derived from the SED with `ExtragalacticTransient.get_detection_horizon`, unlike most classes.</span>
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIB_FRACTION</span>
@@ -742,7 +747,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIbSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.29</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIB_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IIB_FRACTION_ERR</span><span class="p">)</span></div>
@@ -761,7 +768,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIbSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.47</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IB_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IB_FRACTION_ERR</span><span class="p">)</span></div>
@@ -780,7 +789,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIcSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.54</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IC_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IC_FRACTION_ERR</span><span class="p">)</span></div>
@@ -799,7 +810,9 @@
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIcBLSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.61</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_ICBL_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_ICBL_FRACTION_ERR</span><span class="p">)</span></div>
@@ -823,16 +836,22 @@
 <span class="sd">    bright part of the decline for most events, but the slowest ones are truncated by the window and</span>
 <span class="sd">    their faint tails are not simulated.</span>
 
-<span class="sd">    `DEFAULT_Z_LIM` is set from an actual `generate_events`/`filter_by_snr` run against the default</span>
-<span class="sd">    schedule (25 AB mag limiting-magnitude screen, SNR &gt; 5): out to z = 8, 99.7% of detected events fall</span>
-<span class="sd">    below z = 4, and the detected count per redshift bin is already declining by z ~ 1.5, well inside that.</span>
-<span class="sd">    A lower `DEFAULT_Z_LIM` (e.g. the earlier value of 2) truncates a real, UV-bright, high-redshift tail</span>
-<span class="sd">    rather than one outside UVEX's reach.</span>
+<span class="sd">    `DEFAULT_Z_LIM` is the redshift beyond which, with 95% confidence, at most 1% of events drawn</span>
+<span class="sd">    from the SED's priors are brighter than 24.5 AB in either UVEX band (see</span>
+<span class="sd">    `ExtragalacticTransient.get_detection_horizon`), rounded up. An earlier, more generous value of 4</span>
+<span class="sd">    came from a `generate_events`/`filter_by_snr` run against the default schedule (25 AB</span>
+<span class="sd">    limiting-magnitude screen, SNR &gt; 5), in which 99.7% of detected events fell below z = 4. The</span>
+<span class="sd">    two criteria differ: the limit here bounds the fraction of the *parameter population*</span>
+<span class="sd">    detectable beyond it, not the fraction of detected events, so a deeper magnitude limit or an</span>
+<span class="sd">    SNR-based selection can warrant a higher value, and a lower `DEFAULT_Z_LIM` can truncate a</span>
+<span class="sd">    UV-bright, high-redshift tail of detected events.</span>
 <span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">ArnettMagnetarSpindownSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">2.6</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_SLSN_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_SLSN_FRACTION_ERR</span><span class="p">)</span></div>
@@ -892,17 +911,18 @@
 <span class="sd">    model's prior) through the decline to 1e-3 of peak for nearly the whole prior (16th--84th</span>
 <span class="sd">    percentile ~270--325 d, rest frame).</span>
 
-<span class="sd">    `DEFAULT_Z_LIM` is set from an actual `sample_event_redshift`/peak-apparent-magnitude check</span>
-<span class="sd">    against the UVEX bandpasses (25 AB mag limiting-magnitude screen): with `redshift_limit`</span>
-<span class="sd">    temporarily raised to 4, no simulated event peaks above the limit beyond z ~ 0.8 in either</span>
-<span class="sd">    band, and the NUV-detected fraction per redshift bin has already fallen to zero by z = 1 --</span>
-<span class="sd">    consistent with this model's fixed, non-evolving ``kappa_gamma`` leaving no UV-bright</span>
-<span class="sd">    high-redshift tail the way `MagnetarSLSNe`'s magnetar engine does.</span>
+<span class="sd">    `DEFAULT_Z_LIM` is the redshift beyond which, with 95% confidence, at most 1% of events drawn</span>
+<span class="sd">    from the SED's priors are brighter than 24.5 AB in either UVEX band (see</span>
+<span class="sd">    `ExtragalacticTransient.get_detection_horizon`), rounded up. This model's fixed, non-evolving</span>
+<span class="sd">    ``kappa_gamma`` leaves no UV-bright high-redshift tail the way `MagnetarSLSNe`'s magnetar</span>
+<span class="sd">    engine does.</span>
 <span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIaSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">365</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
+    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.77</span>
 
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_TYPE_IA_RATE_CI</span>
 

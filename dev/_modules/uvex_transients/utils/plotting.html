@@ -530,6 +530,7 @@
     <span class="s2">"plot_detection_funnel"</span><span class="p">,</span>
     <span class="s2">"add_funnel_legend"</span><span class="p">,</span>
     <span class="s2">"plot_rate_bars"</span><span class="p">,</span>
+    <span class="s2">"plot_detection_horizon"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1399,6 +1400,85 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rates</span></div>
+
+
+
+<div class="viewcode-block" id="plot_detection_horizon">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.plotting.plot_detection_horizon.html#uvex_transients.utils.plotting.plot_detection_horizon">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_detection_horizon</span><span class="p">(</span>
+    <span class="n">transient</span><span class="p">,</span>
+    <span class="n">curve</span><span class="p">,</span>
+    <span class="n">grid</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">mag_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">24.5</span><span class="p">,</span>
+    <span class="n">n_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Figure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Plot how the redshift limit of a transient class follows from its SED.</span>
+
+<span class="sd">    Takes the output of</span>
+<span class="sd">    :meth:`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon` and draws</span>
+<span class="sd">    two panels. The left shows each sampled event's peak magnitude against redshift: an event is</span>
+<span class="sd">    detectable out to where its line crosses the magnitude limit, and the class's redshift limit</span>
+<span class="sd">    should lie beyond nearly all of those crossings. The right shows the redshift limit the SED</span>
+<span class="sd">    supports as a function of the magnitude limit, next to the class's actual redshift limit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transient : ~uvex_transients.transients.base.ExtragalacticTransient</span>
+<span class="sd">        The population. Its ``redshift_limit`` is drawn as the limit in use.</span>
+<span class="sd">    curve : ~astropy.table.QTable</span>
+<span class="sd">        The magnitude-limit table returned by ``get_detection_horizon``.</span>
+<span class="sd">    grid : ~uvex_transients.models.core.EffectivePeakGrid</span>
+<span class="sd">        The grid returned by ``get_detection_horizon``.</span>
+<span class="sd">    mag_limit : float, optional</span>
+<span class="sd">        The magnitude limit to highlight. The default is 24.5.</span>
+<span class="sd">    n_lines : int, optional</span>
+<span class="sd">        Number of sampled events to draw as lines on the left panel. The default is 150.</span>
+<span class="sd">    fig : matplotlib.figure.Figure, optional</span>
+<span class="sd">        An existing figure to draw two new panels on. If `None`, one is created.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.figure.Figure</span>
+<span class="sd">        The figure.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.ticker</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogLocator</span><span class="p">,</span> <span class="n">NullFormatter</span><span class="p">,</span> <span class="n">ScalarFormatter</span>
+
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">"plotting.dpi"</span><span class="p">])</span>
+    <span class="n">ax_mag</span><span class="p">,</span> <span class="n">ax_limit</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">"width_ratios"</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+
+    <span class="n">limit_in_use</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">redshift_limit</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">[:</span><span class="n">n_lines</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.7"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"median"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mag_limit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"limit, </span><span class="si">{</span><span class="n">mag_limit</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> AB"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">limit_in_use</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C3"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"redshift limit, z = </span><span class="si">{</span><span class="n">limit_in_use</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">)],</span> <span class="mf">99.5</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">))</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Redshift"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Peak magnitude, any band (AB)"</span><span class="p">)</span>
+    <span class="n">ax_mag</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"lower left"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">z_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">curve</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">curve</span><span class="p">[</span><span class="s2">"mag_limit"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">z_limits</span><span class="p">,</span> <span class="s2">"o-"</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"derived from the SED"</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">limit_in_use</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C3"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"redshift limit, z = </span><span class="si">{</span><span class="n">limit_in_use</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">mag_limit</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">"log"</span><span class="p">)</span>
+    <span class="c1"># The redshift axes span well under two decades, where the default log labels (powers of ten) are</span>
+    <span class="c1"># too sparse or crowd.</span>
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ax_mag</span><span class="o">.</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">ax_limit</span><span class="o">.</span><span class="n">yaxis</span><span class="p">):</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">LogLocator</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">subs</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)))</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ScalarFormatter</span><span class="p">())</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">NullFormatter</span><span class="p">())</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Magnitude limit (AB)"</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Redshift horizon"</span><span class="p">)</span>
+    <span class="n">ax_limit</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 
 </pre></div>
 
