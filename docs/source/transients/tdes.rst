@@ -181,7 +181,9 @@ The plot below draws 1000 random parameter realizations of the default
 :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` model from the priors above and
 shows the resulting bolometric light curves, recentered on each realization's own peak time to
 match the peak-relative observed bolometric light curves of five optical/UV TDEs from
-:footcite:t:`2021ApJ...908....4V`.
+:footcite:t:`2021ApJ...908....4V`. Also shown, in grey, are the 33 ZTF TDEs of
+:footcite:t:`yao2023`, rebuilt from that work's Gaussian-rise/power-law-decline fits to the
+half-maximum rise and decline timescales (the plateau and secondary-peak terms are omitted).
 
 .. plot::
    :include-source: false
@@ -218,10 +220,20 @@ match the peak-relative observed bolometric light curves of five optical/UV TDEs
         ("2019mha_vanvelzen", "AT2019mha (van Velzen+2021)", "v", "mediumpurple"),
     ]
 
+    yao_tdes = [name for name in archive.events("tdes") if name.endswith("_yao2023")]
+
     fig, ax_L = plt.subplots(figsize=(6.4, 4.8))
 
     for row in range(n_samples):
         ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
+
+    for i, name in enumerate(yao_tdes):
+        lbol_yao = archive.table("tdes", name, "L_bol")
+        ax_L.plot(
+            lbol_yao["time"].to_value(u.day), lbol_yao["L_bol"].to_value(u.erg / u.s),
+            color="0.45", lw=0.8, alpha=0.6, zorder=3,
+            label=f"Yao+2023 (n={len(yao_tdes)})" if i == 0 else None,
+        )
 
     for suffix, label, marker, color in observed_tdes:
         lbol_obs = archive.table("tdes", suffix, "L_bol")
@@ -233,11 +245,54 @@ match the peak-relative observed bolometric light curves of five optical/UV TDEs
 
     ax_L.set_xlim(-30, 200)
     ax_L.set_yscale("log")
-    ax_L.set_ylim(1e41, 1e45)
+    ax_L.set_ylim(1e41, 1e46)
     ax_L.set_xlabel("Time since peak [days]")
     ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
     ax_L.set_title("Tidal disruption events: simulated bolometric light curves (n=1000)")
     ax_L.legend(loc="upper right", fontsize=8, frameon=False)
+
+    fig.tight_layout()
+    plt.show()
+
+The temperature prior can be checked the same way. The plot below compares the
+:math:`\log_{10} T` of 10000 draws from the ``temperature`` prior with the (constant) blackbody
+temperatures fit to each of the 33 TDEs of :footcite:t:`yao2023`, both normalized to unit area.
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+
+    from uvex_transients.transients.TDEs import TidalDisruptionEvent
+    from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+
+    rng = np.random.default_rng(20260912)
+
+    TDEs = TidalDisruptionEvent()
+    params = TDEs.sed.sample_parameters(size=10000, rng=rng)
+    log_T_draws = np.log10(params["temperature"].to_value(u.K))
+
+    archive = LightcurveArchive()
+    log_T_yao = np.array([
+        np.log10(archive.table("tdes", name, "T_phot")["T_phot"].to_value(u.K)[0])
+        for name in archive.events("tdes") if name.endswith("_yao2023")
+    ])
+
+    bins = np.linspace(3.9, 4.7, 13)
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.0))
+    ax.hist(log_T_draws, bins=bins, density=True, color="C0", alpha=0.55, label="Prior draws (n=10000)")
+    ax.hist(
+        log_T_yao, bins=bins, density=True, histtype="step", color="k", lw=1.6,
+        label=f"Yao+2023 (n={len(log_T_yao)})",
+    )
+
+    ax.set_xlabel(r"$\log_{10}(T/\mathrm{K})$")
+    ax.set_ylabel("Probability density")
+    ax.set_title("Tidal disruption events: photospheric temperature")
+    ax.legend(loc="upper right", fontsize=8, frameon=False)
 
     fig.tight_layout()
     plt.show()
