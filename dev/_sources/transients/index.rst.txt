@@ -42,7 +42,7 @@ underlying physics in any detail.
       anchored to the AT2017gfo/GW170817 light curve.
 
       +++
-      :math:`z \le 0.14` · 30 day window
+      :math:`z \le 0.19` · 30 day window
 
    .. grid-item-card:: Tidal Disruption Events
       :link: tdes
