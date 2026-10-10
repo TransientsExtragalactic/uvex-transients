@@ -690,6 +690,7 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.html">uvex_transients.transients.TDEs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.transients.TDEs.luminosity_function_yao23.html">uvex_transients.transients.TDEs.luminosity_function_yao23</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.html">TidalDisruptionEvent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci</a></li>
@@ -1680,12 +1681,14 @@ late-time photometry.</p>
 <td><p><span class="math notranslate nohighlight">\(L_0\)</span></p></td>
 <td><p>Peak bolometric luminosity of the early-time component,
 <span class="math notranslate nohighlight">\(L_0 = L_\mathrm{bol}^\mathrm{early}(t_\mathrm{peak})\)</span>.
-<span class="math notranslate nohighlight">\(\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)\)</span>.</p></td>
+<span class="math notranslate nohighlight">\(p(L_0) \propto L_0^{-2.41}\)</span> for <span class="math notranslate nohighlight">\(L_0 \ge 10^{43}\ \mathrm{erg\,s^{-1}}\)</span>
+(unbounded above), i.e. <span class="math notranslate nohighlight">\(dN/d\log L_0 \propto L_0^{-1.41}\)</span>
+<a class="footnote-reference brackets" href="#footcite-yao2023" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>, normalized explicitly to unit area.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(T\)</span></p></td>
 <td><p>Early-time photospheric blackbody temperature.
-<span class="math notranslate nohighlight">\(\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)\)</span>.</p></td>
+<span class="math notranslate nohighlight">\(\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.15^2)\)</span>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sigma_rise</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(\sigma\)</span></p></td>
@@ -1719,13 +1722,13 @@ late-time photometry.</p>
 for <span class="math notranslate nohighlight">\(t - t_\mathrm{peak} \gg \tau_\mathrm{p}\)</span>.
 <span class="math notranslate nohighlight">\(\alpha_\mathrm{p} \sim \mathrm{Uniform}(0, 2)\)</span>, a wide prior bracketing the
 magnetized-disk prediction <span class="math notranslate nohighlight">\(\alpha_\mathrm{p}=5/6\)</span> of
-Alush and Stone<a class="footnote-reference brackets" href="#footcite-2025arxiv250303811a" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p></td>
+Alush and Stone<a class="footnote-reference brackets" href="#footcite-2025arxiv250303811a" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">References</p>
-<div class="docutils container" id="id5">
+<div class="docutils container" id="id6">
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="footcite-2025arxiv251024696a" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
@@ -1734,8 +1737,12 @@ Alush and Stone<a class="footnote-reference brackets" href="#footcite-2025arxiv2
 </aside>
 <aside class="footnote brackets" id="footcite-2025arxiv250303811a" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id4">2</a>)</span>
+<span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id5">2</a>)</span>
 <p>Yael Alush and Nicholas C. Stone. Late-time evolution of magnetized disks in tidal disruption events. <em>arXiv e-prints</em>, 2025. <a class="reference external" href="https://arxiv.org/abs/2503.03811">arXiv:2503.03811</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-yao2023" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p>Yuhan Yao, Vikram Ravi, Suvi Gezari, Sjoert van Velzen, Wenbin Lu, Steve Schulze, Jean J. Somalwar, S. R. Kulkarni, Erica Hammerstein, Matt Nicholl, Matthew J. Graham, Daniel A. Perley, S. Bradley Cenko, and Robert Stein. Tidal disruption event demographics with the zwicky transient facility: volumetric rates, luminosity function, and implications for the local black hole mass function. <em>The Astrophysical Journal Letters</em>, 955(1):L6, 2023. <a class="reference external" href="https://arxiv.org/abs/2303.06523">arXiv:2303.06523</a>.</p>
 </aside>
 </aside>
 </div>

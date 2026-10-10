@@ -690,6 +690,7 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.html">uvex_transients.transients.TDEs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.transients.TDEs.luminosity_function_yao23.html">uvex_transients.transients.TDEs.luminosity_function_yao23</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.html">TidalDisruptionEvent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci</a></li>
@@ -1648,13 +1649,15 @@ Composed from <a class="reference internal" href="uvex_transients.models.lightcu
 <a class="reference internal" href="uvex_transients.models.spectra.thermal.BlackbodySpectrum.html#uvex_transients.models.spectra.thermal.BlackbodySpectrum" title="uvex_transients.models.spectra.thermal.BlackbodySpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackbodySpectrum</span></code></a>; see
 <a class="reference internal" href="uvex_transients.models.core.base.ComposedSpectralModel.html#uvex_transients.models.core.base.ComposedSpectralModel" title="uvex_transients.models.core.base.ComposedSpectralModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ComposedSpectralModel</span></code></a> for how the two
 are combined.</p>
-<p>The default priors are informed by the log-normal fits to the ZTF TDE sample
-reported by van Velzen <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2021apj-908-4v" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (their Section 4.1 / Table 4),
-though the values below have since been hand-tuned away from those exact fits
-and are not currently a literal reproduction of them: log-normal in
-<span class="math notranslate nohighlight">\(L_0\)</span>, <span class="math notranslate nohighlight">\(T\)</span>, <span class="math notranslate nohighlight">\(\sigma\)</span>, and <span class="math notranslate nohighlight">\(\tau\)</span>, each parameterized
-here via a base-10 log transform on a
-<a class="reference internal" href="uvex_transients.models.core.priors.NormalPrior.html#uvex_transients.models.core.priors.NormalPrior" title="uvex_transients.models.core.priors.NormalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalPrior</span></code></a>.</p>
+<p>The default priors for <span class="math notranslate nohighlight">\(\sigma\)</span> and <span class="math notranslate nohighlight">\(\tau\)</span> are informed by the log-normal fits to the
+ZTF TDE sample reported by van Velzen <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2021apj-908-4v" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> (their Section 4.1 / Table 4),
+though the values below have since been hand-tuned away from those exact fits and are not
+currently a literal reproduction of them. The <span class="math notranslate nohighlight">\(T\)</span> prior is likewise log-normal, with its mean
+and scatter matched to <span class="math notranslate nohighlight">\(\log_{10} T\)</span> for the 33 TDEs of Yao <em>et al.</em><a class="footnote-reference brackets" href="#footcite-yao2023" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. Each of these
+is parameterized here via a base-10 log transform on a
+<a class="reference internal" href="uvex_transients.models.core.priors.NormalPrior.html#uvex_transients.models.core.priors.NormalPrior" title="uvex_transients.models.core.priors.NormalPrior"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalPrior</span></code></a>. The <span class="math notranslate nohighlight">\(L_0\)</span> prior is instead the
+blackbody luminosity function of Yao <em>et al.</em><a class="footnote-reference brackets" href="#footcite-yao2023" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, a power law above
+<span class="math notranslate nohighlight">\(10^{43}\ \mathrm{erg\,s^{-1}}\)</span>, normalized explicitly to unit area (see the table below).</p>
 <p class="rubric">Parameters</p>
 <p>The model parameters are summarized below.</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -1673,7 +1676,9 @@ here via a base-10 log transform on a
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">amplitude</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(L_0\)</span></p></td>
 <td><p>Peak bolometric luminosity, <span class="math notranslate nohighlight">\(L_0 = L_\mathrm{bol}(t_\mathrm{peak})\)</span>.
-<span class="math notranslate nohighlight">\(\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)\)</span>.</p></td>
+<span class="math notranslate nohighlight">\(p(L_0) \propto L_0^{-2.41}\)</span> for <span class="math notranslate nohighlight">\(L_0 \ge 10^{43}\ \mathrm{erg\,s^{-1}}\)</span>
+(unbounded above), i.e. <span class="math notranslate nohighlight">\(dN/d\log L_0 \propto L_0^{-1.41}\)</span>
+<a class="footnote-reference brackets" href="#footcite-yao2023" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>, normalized explicitly to unit area.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sigma_rise</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(\sigma\)</span></p></td>
@@ -1688,18 +1693,23 @@ here via a base-10 log transform on a
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(T\)</span></p></td>
 <td><p>Photospheric blackbody temperature.
-<span class="math notranslate nohighlight">\(\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)\)</span>.</p></td>
+<span class="math notranslate nohighlight">\(\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.15^2)\)</span>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">References</p>
-<div class="docutils container" id="id3">
+<div class="docutils container" id="id6">
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="footcite-2021apj-908-4v" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
 <p>Sjoert van Velzen, Suvi Gezari, Erica Hammerstein, Nathaniel Roth, Sara Frederick, Charlotte Ward, Tiara Hung, S. Bradley Cenko, Robert Stein, Daniel A. Perley, Kirsty Taggart, Jesper Sollerman, Igor Andreoni, Eric C. Bellm, Kishalay De, Richard Dekany, Ryan J. Foley, Christoffer Fremling, Anna Y. Q. Ho, Mansi M. Kasliwal, and Shrinivas R. Kulkarni. Seventeen tidal disruption events from the first half of ZTF survey observations: entering a new era of population studies. <em>The Astrophysical Journal</em>, 908(1):4, 2021. <a class="reference external" href="https://arxiv.org/abs/2001.01409">arXiv:2001.01409</a>, <a class="reference external" href="https://doi.org/10.3847/1538-4357/abc258">doi:10.3847/1538-4357/abc258</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-yao2023" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id4">2</a>,<a role="doc-backlink" href="#id5">3</a>)</span>
+<p>Yuhan Yao, Vikram Ravi, Suvi Gezari, Sjoert van Velzen, Wenbin Lu, Steve Schulze, Jean J. Somalwar, S. R. Kulkarni, Erica Hammerstein, Matt Nicholl, Matthew J. Graham, Daniel A. Perley, S. Bradley Cenko, and Robert Stein. Tidal disruption event demographics with the zwicky transient facility: volumetric rates, luminosity function, and implications for the local black hole mass function. <em>The Astrophysical Journal Letters</em>, 955(1):L6, 2023. <a class="reference external" href="https://arxiv.org/abs/2303.06523">arXiv:2303.06523</a>.</p>
 </aside>
 </aside>
 </div>

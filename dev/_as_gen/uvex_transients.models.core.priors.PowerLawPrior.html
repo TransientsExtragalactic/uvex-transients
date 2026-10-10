@@ -690,6 +690,7 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.html">uvex_transients.transients.TDEs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.transients.TDEs.luminosity_function_yao23.html">uvex_transients.transients.TDEs.luminosity_function_yao23</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.html">TidalDisruptionEvent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci.html">uvex_transients.transients.TDEs.TidalDisruptionEvent.compute_all_sky_yield_ci</a></li>
@@ -1629,14 +1630,15 @@
 <dd><p>Continuous power-law prior.</p>
 <p>The probability density is</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}p(x) \\propto x^{-\\alpha},\end{split}\]</div>
+\[p(x) \propto x^{-\alpha},\]</div>
 <p>over the interval <code class="docutils literal notranslate"><span class="pre">[lower,</span> <span class="pre">upper]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Power-law index.</p></li>
 <li><p><strong>lower</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Lower bound.</p></li>
-<li><p><strong>upper</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Upper bound.</p></li>
+<li><p><strong>upper</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Upper bound. May be <code class="docutils literal notranslate"><span class="pre">np.inf</span></code> only if <code class="docutils literal notranslate"><span class="pre">alpha</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, since the density is not
+normalizable on an unbounded interval otherwise.</p></li>
 </ul>
 </dd>
 </dl>

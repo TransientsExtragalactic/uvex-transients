@@ -9,9 +9,10 @@ and disrupting it; roughly half of the stellar debris remains bound and eventual
 the black hole, powering a luminous, months-long flare. Optically/UV-selected TDEs, the class
 UVEX is sensitive to, are observed to radiate as blue, roughly constant-temperature thermal
 sources with characteristic blackbody temperatures of a few :math:`\times10^4` K
-:footcite:p:`2021ApJ...908....4V`, and this SED's default priors are built from the empirical
-rise/decline/temperature statistics of that work's homogeneously-analyzed sample of 39 optical/UV
-TDEs.
+:footcite:p:`2021ApJ...908....4V`. This SED's default priors are built from two homogeneously
+analyzed samples: the rise and decline timescales of :footcite:t:`2021ApJ...908....4V`'s 39
+optical/UV TDEs, and the peak-luminosity function and photospheric temperatures of
+:footcite:t:`yao2023`'s 33 ZTF TDEs.
 
 This population is implemented by :class:`~uvex_transients.transients.TDEs.TidalDisruptionEvent`,
 pairing :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` with the rate/duration
@@ -89,13 +90,16 @@ late-time disk plateau discussed below is faint and rarely detected.
      - Notes / Source
    * - ``amplitude``
      - :math:`L_0`
-     - LogNormal(:math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}})`; mean=43.8, :math:`\sigma`\=0.3)
-     - Peak bolometric luminosity, :math:`L_0=L_\mathrm{bol}(t_\mathrm{peak})`
-       :footcite:p:`2021ApJ...908....4V`.
+     - PowerLaw(:math:`L_0/\mathrm{erg\,s^{-1}}`; :math:`\alpha`\=2.41, lower=:math:`10^{43}`, upper=:math:`\infty`)
+     - Peak bolometric luminosity, :math:`L_0=L_\mathrm{bol}(t_\mathrm{peak})`. The blackbody
+       luminosity function of :footcite:t:`yao2023`, :math:`dN/d\log L_0\propto L_0^{-1.41}`
+       above :math:`10^{43}\ \mathrm{erg\,s^{-1}}`, which is a power law of index
+       :math:`1.41+1=2.41` per unit :math:`L_0`. Explicitly normalized to unit area (see below).
    * - ``temperature``
      - :math:`T`
-     - LogNormal(:math:`\log_{10}(T/\mathrm{K})`; mean=4.3, :math:`\sigma`\=0.1)
-     - Photospheric temperature, :math:`\approx2\times10^4` K :footcite:p:`2021ApJ...908....4V`.
+     - LogNormal(:math:`\log_{10}(T/\mathrm{K})`; mean=4.3, :math:`\sigma`\=0.15)
+     - Photospheric temperature, :math:`\approx2\times10^4` K :footcite:p:`2021ApJ...908....4V`. Mean and
+       scatter match the 33 TDEs of :footcite:t:`yao2023` (:math:`\log_{10}T=4.30\pm0.15`).
    * - ``sigma_rise``
      - :math:`\sigma`
      - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=0.91, :math:`\sigma`\=0.25)
@@ -104,6 +108,26 @@ late-time disk plateau discussed below is faint and rarely detected.
      - :math:`\tau`
      - LogNormal(:math:`\log_{10}(\tau/\mathrm{d})`; mean=1.7, :math:`\sigma`\=0.2)
      - Exponential decline timescale after peak :footcite:p:`2021ApJ...908....4V`.
+
+Luminosity normalization
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``amplitude`` prior is the blackbody luminosity function of :footcite:t:`yao2023`, explicitly
+normalized to a probability density over the luminosities it describes,
+:math:`L_0 \ge L_\mathrm{min} = 10^{43}\ \mathrm{erg\,s^{-1}}`:
+
+.. math::
+
+    p(L_0) = \frac{1.41}{L_\mathrm{min}} \left(\frac{L_0}{L_\mathrm{min}}\right)^{-2.41},
+    \qquad \int_{L_\mathrm{min}}^{\infty} p(L_0)\,dL_0 = 1.
+
+The absolute number of events is not carried by this prior. It comes from the separate volumetric
+rate in the Quick Facts table, so the two together describe one population. As a consistency check,
+integrating the luminosity function itself above :math:`L_\mathrm{min}` gives
+:math:`R/(1.41\ln 10) = 2.9\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}}`, within 7% of the quoted
+:math:`3.1\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}}` and well inside its 90% confidence interval.
+The rate is not derived from that integral, and TDEs fainter than :math:`L_\mathrm{min}` are neither
+counted in it nor drawn by the prior.
 
 Plateau visibility: AlushStoneTDESED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,12 +166,14 @@ late-time decline persisting for decades to centuries.
      - Notes / Source
    * - ``amplitude``
      - :math:`L_0`
-     - LogNormal(:math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}})`; mean=43.8, :math:`\sigma`\=0.3)
-     - Early-time peak bolometric luminosity :footcite:p:`2021ApJ...908....4V`.
+     - PowerLaw(:math:`L_0/\mathrm{erg\,s^{-1}}`; :math:`\alpha`\=2.41, lower=:math:`10^{43}`, upper=:math:`\infty`)
+     - Early-time peak bolometric luminosity, with the same luminosity function as the default
+       model :footcite:p:`yao2023`.
    * - ``temperature``
      - :math:`T`
-     - LogNormal(:math:`\log_{10}(T/\mathrm{K})`; mean=4.3, :math:`\sigma`\=0.1)
+     - LogNormal(:math:`\log_{10}(T/\mathrm{K})`; mean=4.3, :math:`\sigma`\=0.15)
      - Early-time photospheric temperature, :math:`\approx2\times10^4` K :footcite:p:`2021ApJ...908....4V`.
+       Same as the default model, matched to :footcite:t:`yao2023`.
    * - ``sigma_rise``
      - :math:`\sigma`
      - LogNormal(:math:`\log_{10}(\sigma/\mathrm{d})`; mean=0.91, :math:`\sigma`\=0.25)
@@ -181,7 +207,9 @@ The plot below draws 1000 random parameter realizations of the default
 :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED` model from the priors above and
 shows the resulting bolometric light curves, recentered on each realization's own peak time to
 match the peak-relative observed bolometric light curves of five optical/UV TDEs from
-:footcite:t:`2021ApJ...908....4V`.
+:footcite:t:`2021ApJ...908....4V`. Also shown, in grey, are the 33 ZTF TDEs of
+:footcite:t:`yao2023`, rebuilt from that work's Gaussian-rise/power-law-decline fits to the
+half-maximum rise and decline timescales (the plateau and secondary-peak terms are omitted).
 
 .. plot::
    :include-source: false
@@ -195,7 +223,7 @@ match the peak-relative observed bolometric light curves of five optical/UV TDEs
     from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
     rng = np.random.default_rng(20260910)
-    n_samples = 1000
+    n_samples = 10000
 
     TDEs = TidalDisruptionEvent()
     params = TDEs.sed.sample_parameters(size=n_samples, rng=rng)
@@ -218,10 +246,20 @@ match the peak-relative observed bolometric light curves of five optical/UV TDEs
         ("2019mha_vanvelzen", "AT2019mha (van Velzen+2021)", "v", "mediumpurple"),
     ]
 
+    yao_tdes = [name for name in archive.events("tdes") if name.endswith("_yao2023")]
+
     fig, ax_L = plt.subplots(figsize=(6.4, 4.8))
 
     for row in range(n_samples):
-        ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
+        ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.006)
+
+    for i, name in enumerate(yao_tdes):
+        lbol_yao = archive.table("tdes", name, "L_bol")
+        ax_L.plot(
+            lbol_yao["time"].to_value(u.day), lbol_yao["L_bol"].to_value(u.erg / u.s),
+            color="0.45", lw=0.8, alpha=0.6, zorder=3,
+            label=f"Yao+2023 (n={len(yao_tdes)})" if i == 0 else None,
+        )
 
     for suffix, label, marker, color in observed_tdes:
         lbol_obs = archive.table("tdes", suffix, "L_bol")
@@ -233,11 +271,54 @@ match the peak-relative observed bolometric light curves of five optical/UV TDEs
 
     ax_L.set_xlim(-30, 200)
     ax_L.set_yscale("log")
-    ax_L.set_ylim(1e41, 1e45)
+    ax_L.set_ylim(1e41, 1e46)
     ax_L.set_xlabel("Time since peak [days]")
     ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
-    ax_L.set_title("Tidal disruption events: simulated bolometric light curves (n=1000)")
+    ax_L.set_title("Tidal disruption events: simulated bolometric light curves (n=10000)")
     ax_L.legend(loc="upper right", fontsize=8, frameon=False)
+
+    fig.tight_layout()
+    plt.show()
+
+The temperature prior can be checked the same way. The plot below compares the
+:math:`\log_{10} T` of 10000 draws from the ``temperature`` prior with the (constant) blackbody
+temperatures fit to each of the 33 TDEs of :footcite:t:`yao2023`, both normalized to unit area.
+
+.. plot::
+   :include-source: false
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from astropy import units as u
+
+    from uvex_transients.transients.TDEs import TidalDisruptionEvent
+    from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+
+    rng = np.random.default_rng(20260912)
+
+    TDEs = TidalDisruptionEvent()
+    params = TDEs.sed.sample_parameters(size=10000, rng=rng)
+    log_T_draws = np.log10(params["temperature"].to_value(u.K))
+
+    archive = LightcurveArchive()
+    log_T_yao = np.array([
+        np.log10(archive.table("tdes", name, "T_phot")["T_phot"].to_value(u.K)[0])
+        for name in archive.events("tdes") if name.endswith("_yao2023")
+    ])
+
+    bins = np.linspace(3.9, 4.7, 13)
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.0))
+    ax.hist(log_T_draws, bins=bins, density=True, color="C0", alpha=0.55, label="Prior draws (n=10000)")
+    ax.hist(
+        log_T_yao, bins=bins, density=True, histtype="step", color="k", lw=1.6,
+        label=f"Yao+2023 (n={len(log_T_yao)})",
+    )
+
+    ax.set_xlabel(r"$\log_{10}(T/\mathrm{K})$")
+    ax.set_ylabel("Probability density")
+    ax.set_title("Tidal disruption events: photospheric temperature")
+    ax.legend(loc="upper right", fontsize=8, frameon=False)
 
     fig.tight_layout()
     plt.show()

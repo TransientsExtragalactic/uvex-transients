@@ -479,6 +479,56 @@
 <span class="n">_TDE_RATE_CI</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="mf">3.1e-7</span> <span class="o">-</span> <span class="mf">1.0e-7</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.1e-7</span><span class="p">,</span> <span class="p">(</span><span class="mf">3.1e-7</span> <span class="o">+</span> <span class="mf">0.6e-7</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.1e-7</span><span class="p">)</span>
 
 
+<span class="c1"># ======================================= #</span>
+<span class="c1"># Utility Functions                       #</span>
+<span class="c1"># ======================================= #</span>
+<div class="viewcode-block" id="luminosity_function_yao23">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.TDEs.luminosity_function_yao23.html#uvex_transients.transients.TDEs.luminosity_function_yao23">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">luminosity_function_yao23</span><span class="p">(</span><span class="n">log_L</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Evaluate the TDE blackbody luminosity function of :footcite:t:`yao2023`.</span>
+
+<span class="sd">    The luminosity function :math:`\phi(L_\mathrm{bb})` is the volumetric rate per unit logarithmic</span>
+<span class="sd">    (base 10) interval in the peak blackbody luminosity, a power law of the form</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \phi(L_\mathrm{bb}) = R \left(\frac{L_\mathrm{bb}}{L_0}\right)^{-\alpha},</span>
+
+<span class="sd">    with :math:`R = 9.43\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}\,dex^{-1}}`,</span>
+<span class="sd">    :math:`L_0 = 10^{43}\ \mathrm{erg\,s^{-1}}`, and :math:`\alpha = 1.41`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_L : ~numpy.ndarray</span>
+<span class="sd">        Natural logarithm of the blackbody luminosity :math:`L_\mathrm{bb}` in CGS units</span>
+<span class="sd">        (:math:`\ln(L_\mathrm{bb}/\mathrm{erg\,s^{-1}})`). A base-10 logarithm will silently give</span>
+<span class="sd">        wrong values, since :math:`\ln L_0 = 99.0112` is used internally.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~numpy.ndarray</span>
+<span class="sd">        The differential rate :math:`\phi(L_\mathrm{bb})` in units of</span>
+<span class="sd">        :math:`\mathrm{Mpc^{-3}\,yr^{-1}\,dex^{-1}}`, with the same shape as `log_L`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Because :math:`\alpha &gt; 0`, this power law diverges toward low luminosity, so it cannot be</span>
+<span class="sd">    integrated to a total rate without a lower luminosity cutoff. Above</span>
+<span class="sd">    :math:`L_\mathrm{min} = 10^{43}\ \mathrm{erg\,s^{-1}}` the integral is</span>
+<span class="sd">    :math:`R / (\alpha \ln 10) \approx 2.9\times10^{-7}\ \mathrm{Mpc^{-3}\,yr^{-1}}`, close to the</span>
+<span class="sd">    quoted total TDE rate. The default TDE SEDs use this function, normalized to unit area above</span>
+<span class="sd">    :math:`L_\mathrm{min}`, as their peak-luminosity prior (a power law of index</span>
+<span class="sd">    :math:`\alpha + 1` per unit :math:`L`, since this function is per dex).</span>
+<span class="sd">    """</span>
+    <span class="n">log_A</span> <span class="o">=</span> <span class="o">-</span><span class="mf">13.87420</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.41</span>
+    <span class="n">log_x</span> <span class="o">=</span> <span class="n">log_L</span> <span class="o">-</span> <span class="mf">99.0112</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_A</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">log_x</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="TidalDisruptionEvent">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.TDEs.TidalDisruptionEvent.html#uvex_transients.transients.TDEs.TidalDisruptionEvent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TidalDisruptionEvent</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
@@ -489,7 +539,9 @@
 <span class="sd">    constant-temperature blackbody photosphere, calibrated against the ZTF TDE sample of</span>
 <span class="sd">    Van Velzen et al. 2021), a constant volumetric rate of</span>
 <span class="sd">    :math:`3.1\times10^{-7}\ \mathrm{Mpc}^{-3}\,\mathrm{yr}^{-1}` out to :math:`z=2` (Yao et al.</span>
-<span class="sd">    2023), and a 200-day duration window.</span>
+<span class="sd">    2023), and a 200-day duration window. The SED's peak-luminosity prior is the Yao et al. 2023</span>
+<span class="sd">    luminosity function (see `luminosity_function_yao23`), normalized explicitly to unit area above</span>
+<span class="sd">    :math:`10^{43}\ \mathrm{erg\,s^{-1}}`; the overall event count comes from the rate alone.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>

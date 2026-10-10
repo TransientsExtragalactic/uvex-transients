@@ -7,7 +7,7 @@ from uvex_transients.models.lightcurves.generic import GREDLightcurve
 from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
 rng = np.random.default_rng(20260910)
-n_samples = 1000
+n_samples = 10000
 
 TDEs = TidalDisruptionEvent()
 params = TDEs.sed.sample_parameters(size=n_samples, rng=rng)
@@ -30,10 +30,20 @@ observed_tdes = [
     ("2019mha_vanvelzen", "AT2019mha (van Velzen+2021)", "v", "mediumpurple"),
 ]
 
+yao_tdes = [name for name in archive.events("tdes") if name.endswith("_yao2023")]
+
 fig, ax_L = plt.subplots(figsize=(6.4, 4.8))
 
 for row in range(n_samples):
-    ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.06)
+    ax_L.plot(t_rel.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.006)
+
+for i, name in enumerate(yao_tdes):
+    lbol_yao = archive.table("tdes", name, "L_bol")
+    ax_L.plot(
+        lbol_yao["time"].to_value(u.day), lbol_yao["L_bol"].to_value(u.erg / u.s),
+        color="0.45", lw=0.8, alpha=0.6, zorder=3,
+        label=f"Yao+2023 (n={len(yao_tdes)})" if i == 0 else None,
+    )
 
 for suffix, label, marker, color in observed_tdes:
     lbol_obs = archive.table("tdes", suffix, "L_bol")
@@ -45,10 +55,10 @@ for suffix, label, marker, color in observed_tdes:
 
 ax_L.set_xlim(-30, 200)
 ax_L.set_yscale("log")
-ax_L.set_ylim(1e41, 1e45)
+ax_L.set_ylim(1e41, 1e46)
 ax_L.set_xlabel("Time since peak [days]")
 ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
-ax_L.set_title("Tidal disruption events: simulated bolometric light curves (n=1000)")
+ax_L.set_title("Tidal disruption events: simulated bolometric light curves (n=10000)")
 ax_L.legend(loc="upper right", fontsize=8, frameon=False)
 
 fig.tight_layout()

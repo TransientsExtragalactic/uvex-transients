@@ -1,70 +1,52 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
+from scipy.stats import gaussian_kde
 
 from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
-from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
-
 
 rng = np.random.default_rng(20260911)
 n_samples = 3000
 
-# Sample the TDE population.
 tde = TidalDisruptionEvent()
-redshift = tde.sample_event_redshift(n_samples, rng=rng)
+z = tde.sample_event_redshift(n_samples, rng=rng)
 params = tde.sed.sample_parameters(size=n_samples, rng=rng)
 
-# The all-sky rate, with no survey footprint applied.
-all_sky_rate = tde.all_sky_rate
+# Observed-frame time of rest-frame peak (5 sigma_rise into the Gaussian rise), i.e.
+# where each event is brightest as seen by UVEX.
+t_obs_peak = 5 * params["sigma_rise"] * (1.0 + z)
 
-# Observed-frame time corresponding to the rest-frame peak.
-t_peak_obs = 5 * params["sigma_rise"] * (1 + redshift)
+bandpasses = uvex.detector.bandpasses
+band_names = list(bandpasses)
 
-detection_limits = {
-    "FUV": 24.5 * u.ABmag,
-    "NUV": 24.5 * u.ABmag,
-}
+fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
 
-# Compute the number of the n_samples draws visible in each band.
-visible_counts = {}
+for ax, band_name in zip(axes, band_names):
+    mag = tde.sed.mag_bandpass(bandpasses[band_name], t_obs_peak, redshift=z, **params).to_value(u.ABmag)
+    finite = np.isfinite(mag)
+    z_finite, mag_finite = z[finite], mag[finite]
 
-for band_name, bandpass in uvex.detector.bandpasses.items():
-    magnitudes = tde.sed.mag_bandpass(
-        bandpass,
-        t_peak_obs,
-        redshift=redshift,
-        **params,
-    ).to_value(u.ABmag)
+    ax.scatter(z_finite, mag_finite, s=5, ec='k', fc='k', alpha=0.5, label="Simulated events")
 
-    visible = magnitudes < detection_limits[band_name].to_value(u.ABmag)
-    visible_counts[band_name] = int(np.count_nonzero(visible))
+    kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
+    z_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
+    mag_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
+    Z_grid, Mag_grid = np.meshgrid(z_grid, mag_grid)
+    density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
+    ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
 
-    print(
-        f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
-        f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
-    )
+    ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
 
-# Plot all-sky visible rates, with MC (statistical) and rate (systematic) uncertainty --
-# see uvex_transients.utils.plotting.plot_rate_bars.
-band_names = list(visible_counts)
+    ax.invert_yaxis()
+    ax.set_xlabel("Redshift")
+    ax.set_title(f"UVEX {band_name}")
+    ax.legend(loc="upper right", fontsize=8, frameon=False)
 
-fig, ax = plt.subplots(figsize=(5, 4))
+    ax.invert_yaxis()
+    ax.set_ylim([32, 15])
 
-plot_rate_bars(
-    ax,
-    band_names,
-    [visible_counts[band] for band in band_names],
-    n_samples,
-    all_sky_rate,
-    rate_ci=tde.RATE_CI,
-    color=[get_band_color(band) for band in band_names],
-)
-
-ax.set_yscale("log")
-ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
-ax.set_title("Peak-visible TDE rate")
-add_funnel_legend(ax, loc="lower right")
-
+axes[0].set_ylabel("Peak apparent AB magnitude")
+fig.suptitle(f"TDEs: peak apparent magnitude vs. redshift (n={n_samples})")
 fig.tight_layout()
 plt.show()

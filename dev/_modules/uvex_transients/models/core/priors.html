@@ -1663,7 +1663,7 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        p(x) \\propto x^{-\\alpha},</span>
+<span class="sd">        p(x) \propto x^{-\alpha},</span>
 
 <span class="sd">    over the interval ``[lower, upper]``.</span>
 
@@ -1674,7 +1674,8 @@
 <span class="sd">    lower : float</span>
 <span class="sd">        Lower bound.</span>
 <span class="sd">    upper : float</span>
-<span class="sd">        Upper bound.</span>
+<span class="sd">        Upper bound. May be ``np.inf`` only if ``alpha &gt; 1``, since the density is not</span>
+<span class="sd">        normalizable on an unbounded interval otherwise.</span>
 <span class="sd">    """</span>
 
     <span class="n">DISTRIBUTION_NAME</span> <span class="o">=</span> <span class="s2">"power_law"</span>
@@ -1684,12 +1685,15 @@
     <span class="n">upper</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Check that :attr:`lower` is positive and ``upper &gt; lower``."""</span>
+<span class="w">        </span><span class="sd">"""Check that :attr:`lower` is positive, ``upper &gt; lower``, and an infinite `upper` has ``alpha &gt; 1``."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`lower` must be positive."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`upper` must exceed `lower`."</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"An infinite `upper` requires `alpha &gt; 1`, otherwise the prior is not normalizable."</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">support</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
