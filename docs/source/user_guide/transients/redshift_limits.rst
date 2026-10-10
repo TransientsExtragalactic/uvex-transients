@@ -186,8 +186,8 @@ the draws across redshift, and that does not depend on the limit. The grid is al
 that further limits, confidences, or tolerances can be tried without redoing it.
 
 The number to adopt is the table's value at 24.5 AB, rounded up to two significant figures. That
-is the value stored in each class's ``DEFAULT_Z_LIM``. The quick run above gives about 0.15 for the
-kilonovae, a little above the 0.14 the class uses. The difference comes from the grid of 30
+is the value stored in each class's ``DEFAULT_Z_LIM``. The quick run above gives about 0.20 for the
+kilonovae, a little above the 0.19 the class uses. The difference comes from the grid of 30
 redshifts, since rounding each draw up to the next grid point can overestimate the limit by a whole
 grid step, about 10% here. The script ``scripts/derive_redshift_limits.py`` removes most of that. It repeats the
 calculation on a finer grid around the first answer, and it reproduces the values of the built-in

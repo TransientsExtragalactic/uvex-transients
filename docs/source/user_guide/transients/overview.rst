@@ -114,7 +114,7 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
    * - :class:`~uvex_transients.transients.kilonovae.Kilonova`
      - :class:`~uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED`
      - 30 d
-     - 0.14
+     - 0.19
    * - :class:`~uvex_transients.transients.TDEs.TidalDisruptionEvent`
      - :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED`
      - 200 d

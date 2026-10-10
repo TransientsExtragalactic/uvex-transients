@@ -31,7 +31,7 @@ Quick Facts
        kilonova -- a simplifying assumption made for this simulation, not one asserted by
        :footcite:t:`fishbach2026` itself. No redshift evolution is assumed.
    * - Redshift limit
-     - :math:`z = 0.14`
+     - :math:`z = 0.19`
      - --
      - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
        priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up.
@@ -69,8 +69,10 @@ floor :math:`T_\mathrm{floor}`. The functional forms are
 This is a deliberately phenomenological choice: the rise of AT2017gfo was never actually observed
 (hence the Gaussian rise is unconstrained by data and merely provides a smooth turn-on), but the
 broken-power-law decline in bolometric luminosity and the power-law-to-floor cooling in
-temperature both broadly track the behavior reported by :footcite:t:`waxman2018`, with the
-normalization of both anchored to the :footcite:t:`cowperthwaite2017` measurement at 0.6 days.
+temperature both broadly track the behavior reported by :footcite:t:`waxman2018`. The luminosity
+normalization is anchored to the :footcite:t:`cowperthwaite2017` measurement at 0.6 days, while the
+temperature priors are set so that the median cooling curve runs through the photospheric
+temperatures of :footcite:t:`waxman2018`.
 
 .. list-table::
    :header-rows: 1
@@ -102,16 +104,16 @@ normalization of both anchored to the :footcite:t:`cowperthwaite2017` measuremen
      - Time the decline steepens from :math:`\alpha_1` to :math:`\alpha_2` :footcite:p:`waxman2018`.
    * - ``T0``
      - :math:`T_0`
-     - LogNormal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=3.9, :math:`\sigma`\=0.1)
-     - :math:`\approx7900` K, anchored to :footcite:t:`cowperthwaite2017`'s :math:`T\approx8300` K at 0.6 d.
+     - LogNormal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.2, :math:`\sigma`\=0.1)
+     - :math:`\approx16000` K. Median cooling curve centred on the :footcite:t:`waxman2018` temperatures.
    * - ``T_floor``
      - :math:`T_\mathrm{floor}`
-     - LogNormal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.4, :math:`\sigma`\=0.08)
-     - :math:`\approx2500` K asymptotic floor :footcite:p:`waxman2018`.
+     - LogNormal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.2, :math:`\sigma`\=0.08)
+     - :math:`\approx1600` K asymptotic floor, near the coolest temperatures of :footcite:p:`waxman2018`.
    * - ``alpha_T``
      - :math:`\alpha_T`
-     - Uniform(0.3, 0.7)
-     - Early-time cooling index, :math:`T\sim t^{-\alpha_T}` :footcite:p:`waxman2018`.
+     - Uniform(0.8, 1.3)
+     - Cooling index, :math:`T-T_\mathrm{floor}\sim t^{-\alpha_T}`, centred on the best fit to :footcite:p:`waxman2018`.
 
 Simulated Light Curves
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,7 +196,7 @@ bands, over the whole rest-frame light curve. The left panel shows each draw's p
 magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
 where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
 beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
-magnitude limit. The redshift limit adopted above, :math:`z=0.14`, is its value at :math:`m=24.5`,
+magnitude limit. The redshift limit adopted above, :math:`z=0.19`, is its value at :math:`m=24.5`,
 rounded up and derived on a finer grid than this plot's.
 
 The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
@@ -225,7 +227,7 @@ detected events, and it does not include Milky Way extinction or sky position.
 
 The anticipated rate of kilonovae detectable by UVEX at these limits is as follows assuming that
 any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
-in comoving volume out to :math:`z=0.14`:
+in comoving volume out to :math:`z=0.19`:
 
 .. plot::
    :include-source: false

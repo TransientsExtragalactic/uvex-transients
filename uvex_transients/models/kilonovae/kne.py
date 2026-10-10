@@ -78,7 +78,7 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             prior=LogNormalPrior(mean=0.0, sigma=0.3),
             scale=0.6 * u.day,
             description="Time of peak luminosity since merger. Anchored near the 0.6 d epoch "
-            "used to normalize amplitude/T0, with broad scatter since the rise itself was "
+            "used to normalize amplitude, with broad scatter since the rise itself was "
             "never observed for GW170817 (Cowperthwaite et al. 2017).",
             latex=r"t_\mathrm{peak}",
         ),
@@ -104,12 +104,12 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             latex=r"t_\mathrm{break}",
         ),
         "T0": Parameter(
-            prior=NormalPrior(mean=4.1, sigma=0.1),
+            prior=NormalPrior(mean=4.2, sigma=0.1),
             scale=1.0 * u.K,
             transform="log10",
             description="Photospheric temperature at t=0 (the T(t) -> T0 limit, not literally "
-            "T at peak). log10(T0/K) ~ N(3.9, 0.1^2), ~7900 K, anchored to Cowperthwaite et al. "
-            "2017's GW170817 measurement of T ~ 8300 K at 0.6 d.",
+            "T at peak). log10(T0/K) ~ N(4.2, 0.1^2), ~16000 K, set so that the median cooling "
+            "curve runs through the GW170817 photospheric temperatures of Waxman et al. 2018.",
             latex=r"T_0",
         ),
         "T_floor": Parameter(
@@ -117,14 +117,16 @@ class KilonovaCoolingBlackbodySED(SpectralModel):
             scale=1.0 * u.K,
             transform="log10",
             description="Asymptotic late-time photospheric temperature (T(t) -> T_floor as "
-            "t -> infinity). log10(T_floor/K) ~ N(3.4, 0.08^2), ~2500 K (Waxman et al. 2018).",
+            "t -> infinity). log10(T_floor/K) ~ N(3.2, 0.08^2), ~1600 K, near the coolest "
+            "temperatures reported by Waxman et al. 2018.",
             latex=r"T_\mathrm{floor}",
         ),
         "alpha_T": Parameter(
-            prior=UniformPrior(1, 2),
+            prior=UniformPrior(0.8, 1.3),
             scale=1.0 * u.dimensionless_unscaled,
-            description="Early-time photospheric cooling power-law index; "
-            "T ~ t^-alpha_T for t << t_peak/5. ~0.5 (Waxman et al. 2018).",
+            description="Photospheric cooling power-law index; T - T_floor ~ t^-alpha_T for "
+            "t >> t_peak. Centred on ~1.05, the value that best matches Waxman et al. 2018 "
+            "with T_floor held at ~1600 K.",
             latex=r"\alpha_T",
         ),
     }
