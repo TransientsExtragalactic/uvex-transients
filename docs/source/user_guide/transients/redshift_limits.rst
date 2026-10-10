@@ -148,9 +148,12 @@ Running It
 
 :meth:`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon` does all of
 the above for a transient class. It takes the magnitude limits to evaluate and the bandpasses an
-event can be detected in, and reads the time window and starting redshift range from the class
-itself. It returns a table of limits, one row per magnitude limit, and the grid of effective peak
-magnitudes it was built from. We use the kilonova class here because it is quick to evaluate.
+event can be detected in, and reads the time window from the class itself. We also say which
+redshifts to cover. The grid below spans a factor of 16 around the class's current limit, which is
+wide enough to bracket the answer for any depth between 22 and 27 AB, without spending points at
+redshifts where nothing is happening. The call returns a table of limits, one row per magnitude
+limit, and the grid of effective peak magnitudes it was built from. We use the kilonova class here
+because it is quick to evaluate.
 
 .. plot::
    :include-source: true
@@ -165,8 +168,10 @@ magnitudes it was built from. We use the kilonova class here because it is quick
 
    kilonova = Kilonova()
    curve, grid = kilonova.get_detection_horizon(
-       np.arange(21.0, 28.01, 0.5),
+       np.arange(22.0, 27.01, 0.5),
        uvex.detector.bandpasses,
+       z_min=kilonova.redshift_limit / 4,
+       z_max=4 * kilonova.redshift_limit,
        n_samples=500,
        rng=0,
        progress=False,
@@ -181,10 +186,10 @@ the draws across redshift, and that does not depend on the limit. The grid is al
 that further limits, confidences, or tolerances can be tried without redoing it.
 
 The number to adopt is the table's value at 24.5 AB, rounded up to two significant figures. That
-is the value stored in each class's ``DEFAULT_Z_LIM``. The quick run above gives about 0.165 for the
-kilonovae, a little above the 0.14 the class uses. The difference comes from the coarse grid of 30
+is the value stored in each class's ``DEFAULT_Z_LIM``. The quick run above gives about 0.15 for the
+kilonovae, a little above the 0.14 the class uses. The difference comes from the grid of 30
 redshifts, since rounding each draw up to the next grid point can overestimate the limit by a whole
-grid step. The script ``scripts/derive_redshift_limits.py`` removes most of that. It repeats the
+grid step, about 10% here. The script ``scripts/derive_redshift_limits.py`` removes most of that. It repeats the
 calculation on a finer grid around the first answer, and it reproduces the values of the built-in
 classes. Re-run it whenever an SED's priors, a class's duration, or the survey depth change, and copy
 the printed values into the classes.

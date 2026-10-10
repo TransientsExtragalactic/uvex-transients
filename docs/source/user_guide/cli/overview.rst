@@ -171,7 +171,7 @@ overrides you want on top of its defaults:
     transients:
       tde:
         class: TidalDisruptionEvent
-        z_limit: 2.0                 # overrides ExtragalacticTransient.redshift_limit
+        z_limit: 1.7                 # overrides ExtragalacticTransient.redshift_limit
         duration_limit: 200 day      # overrides TransientBase.duration_limit
         cosmology: !astropy_cosmology {name: Planck18}
         parameters:

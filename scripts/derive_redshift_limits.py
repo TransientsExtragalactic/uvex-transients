@@ -104,10 +104,13 @@ def derive(name: str, mag_limit: float) -> tuple[str, float, float]:
     transient = getattr(importlib.import_module(module), class_name)()
     bandpasses = downsample_mission(uvex).detector.bandpasses
 
-    # Coarse pass: where is the limit, roughly? The grid extends itself until it brackets it.
+    # Coarse pass: where is the limit, roughly? The grid spans a factor of 16 around the class's current limit,
+    # and extends itself upward if that does not bracket the answer.
     curve, _ = transient.get_detection_horizon(
         mag_limit,
         bandpasses,
+        z_min=transient.redshift_limit / 4,
+        z_max=4 * transient.redshift_limit,
         confidence=CONFIDENCE,
         tolerance=TOLERANCE,
         n_samples=N_SAMPLES,

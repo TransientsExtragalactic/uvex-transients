@@ -108,8 +108,11 @@ Observability Summary
 
 1. The redshift limit derived from the SED, drawn with
    `~uvex_transients.utils.plotting.plot_detection_horizon`. Call
-   ``transient.get_detection_horizon(mag_limits, uvex.detector.bandpasses, n_z=45, rng=0, progress=False)``
-   for a range of magnitude limits (the docs use ``np.arange(21.0, 28.01, 0.5)``), then pass the
+   ``transient.get_detection_horizon(mag_limits, uvex.detector.bandpasses, z_min=transient.redshift_limit / 4,
+   z_max=4 * transient.redshift_limit, n_z=45, rng=0, progress=False)``
+   for a range of magnitude limits (the docs use ``np.arange(22.0, 27.01, 0.5)``, centered on 24.5; the
+   redshift grid spans a factor of 16 around the class's limit, so it samples the region where the
+   horizon actually lies), then pass the
    transient and the two results it returns to the plotting function with ``mag_limit=24.5``. The
    left panel shows each draw's peak apparent magnitude against redshift, with the UVEX 1-Dwell
    limit (:math:`m<24.5`) overplotted; the right panel shows the redshift beyond which, with 95%

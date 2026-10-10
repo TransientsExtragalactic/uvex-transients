@@ -938,6 +938,7 @@ def plot_detection_horizon(
         The figure.
     """
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import LogLocator, NullFormatter, ScalarFormatter
 
     if fig is None:
         fig = plt.figure(figsize=(11, 4.2), dpi=config["plotting.dpi"])
@@ -959,6 +960,12 @@ def plot_detection_horizon(
     ax_limit.axhline(limit_in_use, color="C3", label=f"redshift limit, z = {limit_in_use:g}")
     ax_limit.axvline(mag_limit, color="k", ls="--", lw=0.8)
     ax_limit.set_yscale("log")
+    # The redshift axes span well under two decades, where the default log labels (powers of ten) are
+    # too sparse or crowd.
+    for axis in (ax_mag.xaxis, ax_limit.yaxis):
+        axis.set_major_locator(LogLocator(base=10, subs=(1.0, 2.0, 3.0, 5.0)))
+        axis.set_major_formatter(ScalarFormatter())
+        axis.set_minor_formatter(NullFormatter())
     ax_limit.set_xlabel("Magnitude limit (AB)")
     ax_limit.set_ylabel("Redshift horizon")
     ax_limit.legend(loc="upper left", fontsize=8, frameon=False)

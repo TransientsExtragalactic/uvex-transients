@@ -43,7 +43,7 @@ any of the built-in populations, so this page uses
 
    print(tde.sed)                  # the VanVelzenTDESED SED instance
    print(tde.duration_limit)       # 200.0 d
-   print(tde.redshift_limit)       # 2.0
+   print(tde.redshift_limit)       # 1.7
 
    z = np.linspace(0, tde.redshift_limit, 200)
    rate = tde.event_rate(z)
@@ -118,7 +118,7 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
    * - :class:`~uvex_transients.transients.TDEs.TidalDisruptionEvent`
      - :class:`~uvex_transients.models.tdes.van_velzen.VanVelzenTDESED`
      - 200 d
-     - 2.0
+     - 1.7
    * - :class:`~uvex_transients.transients.LFBOTs.LuminousFastBlueOpticalTransient`
      - :class:`~uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED`
      - 100 d

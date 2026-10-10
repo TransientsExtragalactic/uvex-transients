@@ -41,7 +41,7 @@ Quick Facts
        :attr:`~uvex_transients.transients.TDEs.TidalDisruptionEvent.RATE_CI` (see
        :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
-     - :math:`z = 2.0`
+     - :math:`z = 1.7`
      - --
      - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
        priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up.
@@ -336,7 +336,7 @@ bands, over the whole rest-frame light curve. The left panel shows each draw's p
 magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
 where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
 beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
-magnitude limit. The redshift limit adopted above, :math:`z=2.0`, is its value at :math:`m=24.5`,
+magnitude limit. The redshift limit adopted above, :math:`z=1.7`, is its value at :math:`m=24.5`,
 rounded up and derived on a finer grid than this plot's.
 
 The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
@@ -354,14 +354,20 @@ detected events, and it does not include Milky Way extinction or sky position.
 
    transient = TidalDisruptionEvent()
    curve, grid = transient.get_detection_horizon(
-       np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+       np.arange(22.0, 27.01, 0.5),
+       uvex.detector.bandpasses,
+       z_min=transient.redshift_limit / 4,
+       z_max=4 * transient.redshift_limit,
+       n_z=45,
+       rng=0,
+       progress=False,
    )
    plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
    plt.show()
 
 The anticipated rate of TDEs detectable by UVEX at these limits is as follows assuming that
 any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
-in comoving volume out to :math:`z=2.0`:
+in comoving volume out to :math:`z=1.7`:
 
 .. plot::
    :include-source: false

@@ -228,7 +228,13 @@ are implemented as sibling transient classes below.
 
          transient = TypeIaSNe()
          curve, grid = transient.get_detection_horizon(
-             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+             np.arange(22.0, 27.01, 0.5),
+             uvex.detector.bandpasses,
+             z_min=transient.redshift_limit / 4,
+             z_max=4 * transient.redshift_limit,
+             n_z=45,
+             rng=0,
+             progress=False,
          )
          plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
          plt.show()
@@ -511,7 +517,13 @@ are implemented as sibling transient classes below.
 
          transient = TypeIbSNe()
          curve, grid = transient.get_detection_horizon(
-             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+             np.arange(22.0, 27.01, 0.5),
+             uvex.detector.bandpasses,
+             z_min=transient.redshift_limit / 4,
+             z_max=4 * transient.redshift_limit,
+             n_z=45,
+             rng=0,
+             progress=False,
          )
          plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
          plt.show()
@@ -783,7 +795,13 @@ are implemented as sibling transient classes below.
 
          transient = TypeIcSNe()
          curve, grid = transient.get_detection_horizon(
-             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+             np.arange(22.0, 27.01, 0.5),
+             uvex.detector.bandpasses,
+             z_min=transient.redshift_limit / 4,
+             z_max=4 * transient.redshift_limit,
+             n_z=45,
+             rng=0,
+             progress=False,
          )
          plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
          plt.show()
@@ -1060,7 +1078,13 @@ are implemented as sibling transient classes below.
 
          transient = TypeIcBLSNe()
          curve, grid = transient.get_detection_horizon(
-             np.arange(21.0, 28.01, 0.5), uvex.detector.bandpasses, n_z=45, rng=0, progress=False
+             np.arange(22.0, 27.01, 0.5),
+             uvex.detector.bandpasses,
+             z_min=transient.redshift_limit / 4,
+             z_max=4 * transient.redshift_limit,
+             n_z=45,
+             rng=0,
+             progress=False,
          )
          plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
          plt.show()

@@ -53,7 +53,7 @@ underlying physics in any detail.
       photosphere, optionally with a late-time magnetized-disk plateau.
 
       +++
-      :math:`z \le 2.0` · 200 day window
+      :math:`z \le 1.7` · 200 day window
 
    .. grid-item-card:: Luminous Fast Blue Optical Transients
       :link: lfbots
