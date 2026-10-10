@@ -30,10 +30,11 @@ class LuminousFastBlueOpticalTransient(ExtragalacticTransient):
 
     Modeled with `LFBOTCoolingBlackbodySED` (a Gaussian-rise/power-law-decline
     light curve with a smoothly cooling blackbody photosphere), a constant
-    volumetric rate of 10 Gpc^-3 yr^-1 out to z=3 (Perley et al. 2026; Ho & Lu
-    et al. 2026), and a 100-day duration window -- generous relative to the
-    SED's own rise/decline timescales, to safely bound the slowly fading
-    power-law tail.
+    volumetric rate of 10 Gpc^-3 yr^-1 (Perley et al. 2026; Ho & Lu
+    et al. 2026) out to z=4.3, the redshift beyond which, with 95% confidence, at most 1% of
+    events drawn from the SED's priors are brighter than 24.5 AB in either UVEX band, and a
+    100-day duration window -- generous relative to the SED's own rise/decline timescales, to
+    safely bound the slowly fading power-law tail.
 
     See Also
     --------
@@ -43,7 +44,9 @@ class LuminousFastBlueOpticalTransient(ExtragalacticTransient):
 
     DEFAULT_MODEL = LFBOTCoolingBlackbodySED
     DEFAULT_DURATION = 100 * u.day
-    DEFAULT_Z_LIM = 3
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 4.3
     RATE_CI = _LFBOT_RATE_CI
 
     @property

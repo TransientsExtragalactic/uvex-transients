@@ -42,7 +42,9 @@ Quick Facts
    * - Redshift limit
      - :math:`z = 1`
      - --
-     - Generous relative to the brief, luminous shock-cooling phase this SED targets.
+     - Generous relative to the brief, luminous shock-cooling phase this SED targets. Unlike most
+       populations, this limit has not been derived from the SED (see
+       :ref:`user_guide_transients_redshift_limits`).
    * - Duration
      - 5 days
      - --

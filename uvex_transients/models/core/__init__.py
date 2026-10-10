@@ -2,6 +2,7 @@
 
 __all__ = [
     "ComposedSpectralModel",
+    "EffectivePeakGrid",
     "Lightcurve",
     "Parameter",
     "SpectralModel",
@@ -14,5 +15,6 @@ from .priors import *
 
 __all__.extend(priors.__all__)
 
+from ._tolerance import EffectivePeakGrid
 from .base import ComposedSpectralModel, Lightcurve, SpectralModel, Spectrum
 from .parameters import Parameter

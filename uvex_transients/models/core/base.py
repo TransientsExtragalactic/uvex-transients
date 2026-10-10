@@ -45,8 +45,9 @@ combines one of each into a full :class:`SpectralModel`, with
 :math:`L_\nu(\nu, t) = L_\mathrm{bol}(t) \cdot S(\nu) / \int S(\nu')\,d\nu'`.
 """
 
+import warnings
 from abc import ABC, abstractmethod
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from copy import copy, deepcopy
 from dataclasses import replace
 from typing import ClassVar, Self
@@ -63,6 +64,8 @@ from m4opt.synphot import Detector
 from scipy.integrate import quad_vec
 from synphot import SourceSpectrum, SpectralElement
 from synphot import units as synphot_units
+from tqdm.auto import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from uvex_transients.dust import attenuation_callable
 from uvex_transients.utils import get_rng, logger
@@ -98,6 +101,17 @@ from .._utils import (
     resolve_bands,
     to_cgs_value,
 )
+from ._tolerance import (
+    Criterion,
+    EffectivePeakGrid,
+    first_crossing,
+    min_samples,
+    reduce_bands,
+    resolve_bandpasses,
+    resolve_time_grid,
+    tolerance_limit,
+    wilks_rank,
+)
 from .parameters import Parameter
 
 __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
@@ -105,6 +119,9 @@ __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
 # Loose enough that it only fires on genuine `quad_vec` non-convergence (its own default
 # `epsrel` is 1e-8), not routine floating-point noise -- see `_warn_if_not_converged`.
 _QUAD_VEC_WARN_RTOL = 1e-4
+
+# Target size of the largest intermediate array in `get_effective_peak_magnitudes`.
+_CHUNK_BYTES = 8_000_000
 
 
 def _warn_if_not_converged(context: str, integral: FloatArray, err: float) -> None:
@@ -3471,6 +3488,326 @@ class SpectralModel(_ModelBase):
         sample_parameters : The underlying sampling.
         """
         return self.eval(nu, t, **self.sample_parameters(size=size, rng=rng))
+
+    # -------------------------------------- #
+    # Observability (Detection Horizon)       #
+    # -------------------------------------- #
+    def get_effective_peak_magnitudes(
+        self,
+        z_grid: NumericalInput,
+        bandpasses: Mapping[str, SpectralElement] | Sequence[SpectralElement],
+        *,
+        t_rest: Quantity | None = None,
+        t_min: Quantity | None = None,
+        t_max: Quantity | None = None,
+        n_time: int = 200,
+        criterion: Criterion = "any",
+        k: int | None = None,
+        n_samples: int = 1000,
+        cosmology: FLRW | None = None,
+        chunk_size: int | None = None,
+        progress: bool = True,
+        rng: RNGInput = None,
+    ) -> EffectivePeakGrid:
+        r"""
+        Evaluate a sampled population's peak magnitude at every redshift of a grid.
+
+        This is the expensive half of the detection-horizon calculation. It does not depend on any
+        magnitude limit, so its result can be reused for many limits with
+        :meth:`get_observability_curve`.
+
+        Draw `n_samples` parameter sets :math:`\Theta_i` from this model's priors. Evaluate every
+        one of them at every redshift of `z_grid`: the light curve is computed on a rest-frame
+        time grid in each band, reduced to its brightest point (the minimum magnitude over time),
+        and the bands are combined as `criterion` says. The result has one number per
+        :math:`(\Theta_i, z)` pair.
+
+        Parameters
+        ----------
+        z_grid : array-like
+            Redshifts to evaluate, shape ``(Z,)``, strictly increasing and positive. Zero is not
+            allowed because the luminosity distance vanishes there. The grid must reach past the
+            horizon you care about, or :meth:`get_observability_curve` cannot bracket it.
+        bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement
+            The bands to evaluate, for example ``detector.bandpasses``. A sequence is named
+            ``band0``, ``band1``, and so on. A band with fewer frequency samples is much
+            cheaper: see :func:`~uvex_transients.missions.downsample_mission`.
+        t_rest : ~astropy.units.Quantity, optional
+            Rest-frame times since explosion at which to evaluate the light curve. Rest-frame
+            times are the right choice here, since time dilation moves the peak in observed time
+            but does not change its magnitude, so any observing cadence is irrelevant.
+        t_min, t_max : ~astropy.units.Quantity, optional
+            If `t_rest` is omitted, the ends of a logarithmically spaced grid of `n_time` points
+            (``0 < t_min < t_max``). One of the two ways of giving a time grid is required,
+            because a model has no notion of its own duration.
+        n_time : int, optional
+            Number of points of the logarithmic grid. Make it dense enough to resolve the peak:
+            a grid that misses the peak makes every event look fainter than it is, and so the
+            horizon too close, which is not the conservative direction.
+        criterion : {"any", "all", "k_of_n"}, optional
+            How bands combine into one effective peak magnitude. ``"any"``: detected in at least
+            one band (the minimum over bands). ``"all"``: detected in every band (the maximum of
+            the per-band peaks). ``"k_of_n"``: detected in at least `k` bands (the `k`-th smallest).
+        k : int, optional
+            The number of bands required for ``"k_of_n"``, from 1 to the number of bands.
+        n_samples : int, optional
+            Number of parameter draws, ``M``. :meth:`get_observability_curve` needs at least
+            299 for 95% confidence at 1% tolerance.
+        cosmology : ~astropy.cosmology.FLRW, optional
+            Cosmology for the luminosity distances. Defaults to the configured cosmology.
+        chunk_size : int, optional
+            Number of parameter draws evaluated per call. If `None` (the default), it is chosen
+            so the largest intermediate array stays near 8 MB. That size fits in cache and
+            benchmarks fastest, so raising it only costs speed and memory.
+        progress : bool, optional
+            Whether to show a progress bar. The default is `True`.
+        rng : numpy.random.Generator, int, or None
+            Random-number source for the parameter draws. Pass an int for reproducible output.
+
+        Returns
+        -------
+        ~uvex_transients.models.core.EffectivePeakGrid
+            The ``(n_samples, Z)`` array of effective peak magnitudes, with the grids and the
+            sampled parameters that produced it.
+
+        Raises
+        ------
+        ValueError
+            If `z_grid` is not a 1-d, strictly increasing array of positive redshifts, if no
+            time grid or bandpass is given, or if `criterion` and `k` are inconsistent.
+
+        See Also
+        --------
+        get_observability_curve : Turn the grid into a horizon for each magnitude limit.
+
+        Notes
+        -----
+        The redshift is a grid every :math:`\Theta_i` is evaluated on, not a random draw. A
+        single random redshift per draw would give each transient one magnitude at one distance,
+        and so no horizon to speak of. The horizon of a draw, the redshift at which it drops
+        below a limit, only exists if the draw is followed across redshift.
+
+        The time minimum is taken separately at every redshift, not once for the whole grid,
+        because redshift shifts the bands across the spectrum (the K-correction) and so changes
+        which epoch is brightest in a band.
+
+        The full ``(n_samples, Z, T, B)`` array is never built. Time and bands are reduced as soon
+        as they are computed, one chunk of draws at a time, and only the ``(n_samples, Z)`` result
+        is kept. The cost is linear in each of ``n_samples``, ``Z``, ``n_time`` and the number
+        of frequency samples across all bands.
+
+        Milky Way extinction and sky position are not included. The result covers the SED's
+        parameter priors only.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from astropy import units as u
+        >>> from m4opt.missions import uvex
+        >>> from uvex_transients.missions import (
+        ...     downsample_mission,
+        ... )
+        >>> from uvex_transients.models.kilonovae import (
+        ...     KilonovaCoolingBlackbodySED,
+        ... )
+        >>> grid = KilonovaCoolingBlackbodySED().get_effective_peak_magnitudes(
+        ...     np.geomspace(0.003, 1.5, 30),
+        ...     downsample_mission(uvex).detector.bandpasses,
+        ...     t_min=0.01 * u.day,
+        ...     t_max=30 * u.day,
+        ...     n_samples=500,
+        ...     rng=0,
+        ... )  # doctest: +SKIP
+        """
+        z_grid = np.asarray(z_grid, dtype=np.float64)
+        if z_grid.ndim != 1 or z_grid.size == 0 or z_grid[0] <= 0 or np.any(np.diff(z_grid) <= 0):
+            raise ValueError("'z_grid' must be a 1-d, strictly increasing array of positive redshifts.")
+        t_rest_s = resolve_time_grid(t_rest, t_min, t_max, n_time)
+        band_names, band_grids = resolve_bandpasses(bandpasses)
+        reduce_bands(np.zeros(len(band_grids)), criterion, k)  # fail now on a bad criterion or k
+
+        # Everything the loop below needs, converted once: distances for every grid redshift,
+        # and the sampled parameters as plain cgs numbers.
+        luminosity_distance = resolve_cosmological_distances(redshift=z_grid, cosmology=cosmology)[
+            "luminosity_distance"
+        ].cgs.value
+        samples = self.sample_parameters(size=n_samples, rng=rng)
+        cgs_samples = {name: to_cgs_value(value) for name, value in samples.items()}
+
+        if chunk_size is None:
+            widest_band = max(len(nu) for nu, _ in band_grids)
+            chunk_size = int(np.clip(_CHUNK_BYTES // (8 * t_rest_s.size * widest_band), 1, n_samples))
+        n_chunks = -(-n_samples // chunk_size)
+
+        m_eff = np.empty((n_samples, z_grid.size))
+        peak_by_band = np.empty((chunk_size, len(band_grids)))  # reused for every (chunk, z)
+        with (
+            tqdm(
+                total=n_chunks * z_grid.size, desc="Evaluating peak magnitudes", unit="step", disable=not progress
+            ) as pbar,
+            logging_redirect_tqdm(loggers=[logger]),
+        ):
+            for start in range(0, n_samples, chunk_size):
+                stop = min(start + chunk_size, n_samples)
+                n_rows = stop - start
+                # Parameters get a trailing axis so they broadcast against the time axis: (n_rows, 1).
+                chunk = {name: value[start:stop, np.newaxis] for name, value in cgs_samples.items()}
+
+                for j, (z, d_l) in enumerate(zip(z_grid, luminosity_distance)):
+                    # The model takes observed times, which are the rest-frame ones stretched by (1 + z).
+                    t_obs = (t_rest_s * (1.0 + z))[np.newaxis, :]
+                    for b, (nu, throughput) in enumerate(band_grids):
+                        with np.errstate(divide="ignore"):  # zero flux is an infinitely faint magnitude
+                            mags = self.mag_band_cgs(nu, throughput, t_obs, z, d_l, **chunk)  # (n_rows, T)
+                        # Some models return NaN outside their validity window. Those epochs are
+                        # skipped; a draw with no valid epoch at all stays NaN (handled below).
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", RuntimeWarning)  # "All-NaN slice"
+                            peak_by_band[:n_rows, b] = np.nanmin(mags, axis=1)  # brightest valid epoch
+                    m_eff[start:stop, j] = reduce_bands(peak_by_band[:n_rows], criterion, k)
+                    pbar.update(1)
+
+        if np.isnan(m_eff).any():
+            logger.warning(
+                "%d of %d effective peak magnitudes are NaN because the model has no valid epoch on the time "
+                "grid for that draw, redshift and band. They are treated as undetectable.",
+                int(np.isnan(m_eff).sum()),
+                m_eff.size,
+            )
+
+        return EffectivePeakGrid(
+            m_eff=m_eff,
+            z_grid=z_grid,
+            criterion=criterion,
+            k=k,
+            bands=band_names,
+            t_rest=t_rest_s,
+            parameters=samples,
+        )
+
+    def get_observability_curve(
+        self,
+        mag_limits: NumericalInput,
+        *,
+        grid: EffectivePeakGrid | None = None,
+        confidence: float = 0.95,
+        tolerance: float = 0.01,
+        interpolate: bool = False,
+        **grid_kwargs,
+    ) -> QTable:
+        r"""
+        Bound the redshift beyond which a population is undetectable, for each magnitude limit.
+
+        For each parameter draw :math:`\Theta_i` in the grid, its detection redshift
+        :math:`z_{\mathrm{det},i}` is the first grid redshift where its effective peak magnitude
+        is fainter than the limit. Sorting those values and taking the :math:`r`-th largest gives
+        a limit with a distribution-free guarantee (Wilks 1941): with probability `confidence`,
+        at most a fraction `tolerance` of the population has a detection redshift above it. The
+        rank :math:`r` is the largest one that still meets `confidence`, which gives the
+        tightest valid limit, and grows with the number of draws.
+
+        This is the number to use as a population's redshift limit: sampling beyond it wastes
+        effort on events that are, with the stated confidence, not detectable.
+
+        Parameters
+        ----------
+        mag_limits : float or array-like
+            AB magnitude limit(s). Tabulating many is almost free once the grid exists.
+        grid : ~uvex_transients.models.core.EffectivePeakGrid, optional
+            A grid from :meth:`get_effective_peak_magnitudes`. If omitted, one is built from
+            `grid_kwargs`.
+        confidence : float, optional
+            Probability that the guarantee holds, in (0, 1). The default is 0.95.
+        tolerance : float, optional
+            Fraction of the population allowed to lie beyond the limit, in (0, 1). The default
+            is 0.01.
+        interpolate : bool, optional
+            If `False` (the default), each detection redshift is rounded *up* to the first grid
+            redshift where the draw is too faint. That can only overestimate the horizon, so the
+            guarantee stays valid, and it is coarse by up to one grid step. If `True`, the
+            crossing is interpolated linearly in magnitude against :math:`\log(1+z)`, which is
+            tighter but no longer guaranteed to be an overestimate.
+        **grid_kwargs
+            Arguments for :meth:`get_effective_peak_magnitudes`, required (`z_grid`, `bandpasses`
+            and a time grid) when `grid` is omitted, and not allowed otherwise.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per magnitude limit, with columns
+
+            ``mag_limit``
+                The AB magnitude limit.
+            ``z_limit``
+                The upper limit on the detection redshift. It is ``inf``, with a warning, if the
+                grid does not reach the limit, in which case `z_grid` must be extended.
+            ``n_censored``
+                How many draws never dropped below the limit inside the grid.
+
+            ``meta`` records ``confidence``, ``tolerance``, ``n_samples``, ``rank``,
+            ``criterion`` and ``bands``.
+
+        Raises
+        ------
+        ValueError
+            If there are too few draws for the requested `confidence` and `tolerance`. The
+            sample maximum is only a valid limit from ``ln(1 - confidence) / ln(1 - tolerance)``
+            draws on, 299 for the defaults. This is checked before the expensive grid is built.
+        TypeError
+            If `grid` and `grid_kwargs` are both given.
+
+        See Also
+        --------
+        get_effective_peak_magnitudes : The expensive grid this reads.
+
+        Notes
+        -----
+        The statement covers the SED's parameter priors only. Milky Way extinction and sky
+        position are not included, so leave a margin for dusty fields.
+
+        Examples
+        --------
+        >>> table = sed.get_observability_curve(
+        ...     [24.0, 25.0, 26.0],
+        ...     grid=grid,
+        ...     confidence=0.95,
+        ...     tolerance=0.01,
+        ... )  # doctest: +SKIP
+        >>> table["z_limit"]  # doctest: +SKIP
+        """
+        if grid is None:
+            n_samples = grid_kwargs.get("n_samples", 1000)
+            if n_samples < min_samples(confidence, tolerance):
+                wilks_rank(n_samples, confidence, tolerance)  # raises, naming the required minimum
+            grid = self.get_effective_peak_magnitudes(**grid_kwargs)
+        elif grid_kwargs:
+            raise TypeError(f"Unexpected arguments with a precomputed 'grid': {sorted(grid_kwargs)}.")
+
+        limits = np.atleast_1d(np.asarray(getattr(mag_limits, "value", mag_limits), dtype=np.float64))
+        z_limit = np.empty(limits.size)
+        n_censored = np.empty(limits.size, dtype=int)
+        for i, mag_limit in enumerate(limits):
+            z_det = first_crossing(grid.m_eff, grid.z_grid, mag_limit, interpolate=interpolate)
+            z_limit[i], rank, n_censored[i] = tolerance_limit(z_det, confidence, tolerance)
+
+        if np.any(np.isinf(z_limit)):
+            logger.warning(
+                "The redshift grid (z <= %.3g) is too short to bracket the limit for mag_limit = %s; extend 'z_grid'.",
+                grid.z_grid[-1],
+                limits[np.isinf(z_limit)],
+            )
+
+        return QTable(
+            {"mag_limit": limits * u.ABmag, "z_limit": z_limit, "n_censored": n_censored},
+            meta={
+                "confidence": confidence,
+                "tolerance": tolerance,
+                "n_samples": grid.n_samples,
+                "rank": rank,
+                "criterion": grid.criterion,
+                "bands": grid.bands,
+            },
+        )
 
 
 class ComposedSpectralModel(SpectralModel):
