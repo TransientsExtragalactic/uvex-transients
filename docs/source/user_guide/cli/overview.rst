@@ -97,7 +97,7 @@ The Schedule
 .. code-block:: yaml
 
     schedule:
-      name: uvex_initial_main    # one of the names in `schedules.schedule_urls`
+      name: uvex_v0.5.0    # one of the names in `schedules.schedule_urls`
 
     # ...or, to fetch a URL directly instead of a name registered in the package config:
     #
@@ -171,11 +171,11 @@ overrides you want on top of its defaults:
     transients:
       tde:
         class: TidalDisruptionEvent
-        z_limit: 2.0                 # overrides ExtragalacticTransient.redshift_limit
+        z_limit: 1.7                 # overrides ExtragalacticTransient.redshift_limit
         duration_limit: 200 day      # overrides TransientBase.duration_limit
         cosmology: !astropy_cosmology {name: Planck18}
         parameters:
-          amplitude: !prior {type: normal, mean: 43.8, sigma: 0.3}
+          amplitude: !prior {type: power_law, alpha: 2.41, lower: 1.0e+43, upper: 1.0e+46}
           sigma_rise: 1.0 day        # a bare value fixes the parameter instead
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`

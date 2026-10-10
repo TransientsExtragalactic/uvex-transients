@@ -28,6 +28,7 @@ from uvex_transients.utils.plotting import (
     get_default_cmap,
     plot_band_light_curve,
     plot_detection_funnel,
+    plot_detection_horizon,
     plot_footprints,
     plot_healpix_map,
     plot_histogram,
@@ -500,3 +501,31 @@ class TestPlotRateBars:
         plt.close(fig)
 
         assert np.allclose(rates_per_day, (rates_per_year / u.yr).to_value(1 / u.day))
+
+
+class TestPlotDetectionHorizon:
+    """`plot_detection_horizon` draws the grid and the limit curve for a transient class."""
+
+    def _inputs(self):
+        from types import SimpleNamespace
+
+        z_grid = np.geomspace(0.01, 1.0, 10)
+        rng = np.random.default_rng(0)
+        m_eff = 18.0 + 8.0 * np.log10(z_grid)[None, :] + rng.normal(0, 0.5, (30, 1))
+        grid = SimpleNamespace(z_grid=z_grid, m_eff=m_eff)
+        curve = QTable({"mag_limit": np.array([22.0, 24.5, 27.0]) * u.ABmag, "z_limit": [0.1, 0.3, 0.9]})
+        return SimpleNamespace(redshift_limit=0.5), curve, grid
+
+    def test_returns_a_figure_with_two_panels(self):
+        transient, curve, grid = self._inputs()
+        fig = plot_detection_horizon(transient, curve, grid)
+        assert isinstance(fig, Figure)
+        assert len(fig.axes) == 2
+        plt.close(fig)
+
+    def test_marks_the_limit_in_use_on_both_panels(self):
+        transient, curve, grid = self._inputs()
+        fig = plot_detection_horizon(transient, curve, grid)
+        for ax in fig.axes:
+            assert any("redshift limit, z = 0.5" in text.get_text() for text in ax.get_legend().get_texts())
+        plt.close(fig)

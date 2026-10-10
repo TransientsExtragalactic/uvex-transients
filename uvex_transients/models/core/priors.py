@@ -1156,7 +1156,7 @@ class PowerLawPrior(Prior):
 
     .. math::
 
-        p(x) \\propto x^{-\\alpha},
+        p(x) \propto x^{-\alpha},
 
     over the interval ``[lower, upper]``.
 
@@ -1167,7 +1167,8 @@ class PowerLawPrior(Prior):
     lower : float
         Lower bound.
     upper : float
-        Upper bound.
+        Upper bound. May be ``np.inf`` only if ``alpha > 1``, since the density is not
+        normalizable on an unbounded interval otherwise.
     """
 
     DISTRIBUTION_NAME = "power_law"
@@ -1177,12 +1178,15 @@ class PowerLawPrior(Prior):
     upper: float
 
     def _validate(self) -> None:
-        """Check that :attr:`lower` is positive and ``upper > lower``."""
+        """Check that :attr:`lower` is positive, ``upper > lower``, and an infinite `upper` has ``alpha > 1``."""
         if self.lower <= 0:
             raise ValueError("`lower` must be positive.")
 
         if self.upper <= self.lower:
             raise ValueError("`upper` must exceed `lower`.")
+
+        if np.isinf(self.upper) and self.alpha <= 1:
+            raise ValueError("An infinite `upper` requires `alpha > 1`, otherwise the prior is not normalizable.")
 
     @property
     def support(self) -> tuple[float, float]:

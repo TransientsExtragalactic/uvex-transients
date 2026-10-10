@@ -104,23 +104,24 @@ Observability Summary
 ----------------------
 
 <Two ``.. plot::`` blocks, using the corresponding `~uvex_transients.transients.<module>.<TransientClass>`
-(not just the SED class) to draw a Monte Carlo realization of the population via
-`sample_event_redshift`/`sample_parameters`, and `m4opt.missions.uvex.detector.bandpasses` for the
-UVEX FUV/NUV bandpasses:
+(not just the SED class), and `uvex_transients.missions.uvex_fast` for the UVEX FUV/NUV bandpasses:
 
-1. Peak apparent AB magnitude vs. redshift, per band, with a scatter of simulated events, a
-   Gaussian KDE contour, and the UVEX 1-Dwell limit (:math:`m<24.5`) overplotted. Note in the
-   intro text what redshift limit this justifies confidence in.
-
-   To find each event's peak apparent magnitude: if the SED has a single parameter (or fixed
-   combination, e.g. LFBOTs' ``t_peak`` or TDEs' ``5 * sigma_rise``) that is *exactly* the
-   bolometric peak by construction, evaluate at that one observed-frame time
-   (``t_obs_peak = t_peak_rest * (1 + z)``) as in kilonovae.rst/lfbots.rst/tdes.rst. If no such
-   parameter exists -- e.g. a multi-component model where a named "reference" time is not the
-   true peak, or a plateau/excess light curve -- numerically search a time grid instead (evaluate
-   `mag_bandpass` over a broadcasted ``(n_events, n_times)`` grid and take ``np.nanmin`` over the
-   time axis), as in supernovae.rst. Don't guess which applies: check the `Lightcurve` class's own
-   docstring for whether its peak time is exact.
+1. The redshift limit derived from the SED, drawn with
+   `~uvex_transients.utils.plotting.plot_detection_horizon`. Call
+   ``transient.get_detection_horizon(mag_limits, uvex.detector.bandpasses, z_min=transient.redshift_limit / 4,
+   z_max=4 * transient.redshift_limit, n_z=45, rng=0, progress=False)``
+   for a range of magnitude limits (the docs use ``np.arange(22.0, 27.01, 0.5)``, centered on 24.5; the
+   redshift grid spans a factor of 16 around the class's limit, so it samples the region where the
+   horizon actually lies), then pass the
+   transient and the two results it returns to the plotting function with ``mag_limit=24.5``. The
+   left panel shows each draw's peak apparent magnitude against redshift, with the UVEX 1-Dwell
+   limit (:math:`m<24.5`) overplotted; the right panel shows the redshift beyond which, with 95%
+   confidence, at most 1% of the population is detectable, against magnitude limit. The class's
+   ``DEFAULT_Z_LIM`` is that horizon at :math:`m=24.5`, rounded up. Derive it on a finer grid than
+   the plot's (more redshift points, in a window around the answer, and more time points), which
+   the intro text says; no scatter plot of simulated events is needed. State in the intro text
+   that the limit bounds the fraction of the *population* detectable beyond it, not the fraction
+   of detected events, and that it excludes Milky Way extinction and sky position.
 
 2. An all-sky "peak-visible rate" bar chart per band, assuming any event above :math:`m<24.5` is
    detectable and the population is isotropic/homogeneous in comoving volume out to its redshift

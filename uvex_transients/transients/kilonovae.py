@@ -31,17 +31,17 @@ class Kilonova(ExtragalacticTransient):
     Modeled with `KilonovaCoolingBlackbodySED` (a Gaussian-rise/broken-power-law-decline
     light curve with a cooling blackbody photosphere, calibrated against GW170817), a
     constant volumetric rate of :math:`110\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` out to
-    :math:`z=0.2`, and a 30-day duration window. This rate is Fishbach et al. 2026's total
+    :math:`z=0.19`, and a 30-day duration window. This rate is Fishbach et al. 2026's total
     BNS merger rate, not just their GW170817-like mass-bin sub-rate, so every BNS merger
     sampled here is assumed to be feasibly GW170817-like: a simplifying assumption of this
     simulation, not a claim made by that paper.
 
-    The :math:`z=0.2` redshift limit is conservative: a source with bolometric luminosity
-    below :math:`10^{43}\ \mathrm{erg\,s^{-1}}` (well above anything reported in the
-    literature) would still remain detectable at UVEX's :math:`m<27` band limit out to
-    :math:`z=2`, assuming a flat spectrum and no K-correction. The 30-day duration is a
-    conservative upper bound on the total light curve; the blue/early kilonova component
-    this SED targets fades below detectability closer to :math:`\sim10` days.
+    The :math:`z=0.19` redshift limit is the redshift beyond which, with 95% confidence, at
+    most 1% of kilonovae drawn from the SED's priors are brighter than :math:`m=24.5` AB in
+    either UVEX band (see `ExtragalacticTransient.get_detection_horizon`), rounded up. The
+    30-day duration is a conservative upper bound on the total light curve; the blue/early
+    kilonova component this SED targets fades below detectability closer to
+    :math:`\sim10` days.
 
     See Also
     --------
@@ -51,7 +51,9 @@ class Kilonova(ExtragalacticTransient):
 
     DEFAULT_MODEL = KilonovaCoolingBlackbodySED
     DEFAULT_DURATION = 30 * u.day
-    DEFAULT_Z_LIM = 0.2
+    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
+    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
+    DEFAULT_Z_LIM = 0.19
 
     RATE_CI = _KNE_RATE_CI
 

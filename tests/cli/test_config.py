@@ -37,7 +37,7 @@ def test_schedule_path_and_fov_path_round_trip(tmp_path, make_schedule):
 
 def test_schedule_rejects_more_than_one_source():
     """Giving both `name:` and `url:` (or any two of the three groups) raises."""
-    config = _config_from("schedule:\n  name: uvex_initial_main\n  url: https://example.com/x.ecsv\n")
+    config = _config_from("schedule:\n  name: uvex_v0.5.0\n  url: https://example.com/x.ecsv\n")
     with pytest.raises(ValueError, match="at most one of"):
         _ = config.schedule
 

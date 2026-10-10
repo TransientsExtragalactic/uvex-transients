@@ -11,7 +11,7 @@ from astropy import units as u
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import NormalPrior, UniformPrior
+from uvex_transients.models.core.priors import NormalPrior, PowerLawPrior, UniformPrior
 from uvex_transients.models.lightcurves.generic import GREDLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
 
@@ -79,11 +79,13 @@ class AlushStoneTDESED(SpectralModel):
          - :math:`L_0`
          - Peak bolometric luminosity of the early-time component,
            :math:`L_0 = L_\mathrm{bol}^\mathrm{early}(t_\mathrm{peak})`.
-           :math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)`.
+           :math:`p(L_0) \propto L_0^{-2.41}` for :math:`L_0 \ge 10^{43}\ \mathrm{erg\,s^{-1}}`
+           (unbounded above), i.e. :math:`dN/d\log L_0 \propto L_0^{-1.41}`
+           :footcite:p:`yao2023`, normalized explicitly to unit area.
        * - ``temperature``
          - :math:`T`
          - Early-time photospheric blackbody temperature.
-           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)`.
+           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.15^2)`.
        * - ``sigma_rise``
          - :math:`\sigma`
          - Gaussian width of the pre-peak rise.
@@ -119,18 +121,19 @@ class AlushStoneTDESED(SpectralModel):
     """
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
+        # Yao et al. 2023 luminosity function: dN/dlogL ~ L^-1.41 above 1e43 erg/s. Per unit L that is
+        # a power law of index 1.41 + 1 = 2.41. No transform: the latent variable is L itself.
         "amplitude": Parameter(
-            prior=NormalPrior(mean=43.8, sigma=0.3),
+            prior=PowerLawPrior(alpha=2.41, lower=1.0e43, upper=np.inf),
             scale=1.0 * u.erg / u.s,
-            transform="log10",
-            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.3^2).",
+            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). p(L_0) ~ L_0^-2.41 for L_0 >= 1e43 erg/s.",
             latex=r"L_0",
         ),
         "temperature": Parameter(
-            prior=NormalPrior(mean=4.3, sigma=0.1),
+            prior=NormalPrior(mean=4.3, sigma=0.15),
             scale=1.0 * u.K,
             transform="log10",
-            description="Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.1^2).",
+            description="Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.15^2).",
             latex=r"T",
         ),
         "sigma_rise": Parameter(

@@ -17,6 +17,7 @@ from astropy import units as u
 
 from uvex_transients.models.arnett import ArnettDecaySED
 from uvex_transients.models.core.base import ComposedSpectralModel, SpectralModel
+from uvex_transients.models.core.priors import PowerLawPrior
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from uvex_transients.models.supernovae import (
@@ -107,6 +108,17 @@ class TestVanVelzenTDESED(SpectralModelContract):
 
 class TestAlushStoneTDESED(SpectralModelContract):
     model_class = AlushStoneTDESED
+
+
+@pytest.mark.parametrize("model_class", [VanVelzenTDESED, AlushStoneTDESED])
+def test_tde_amplitude_prior_is_the_yao_luminosity_function(model_class):
+    """The TDE peak-luminosity prior is dN/dlogL ~ L^-1.41 above 1e43 erg/s, i.e. p(L) ~ L^-2.41."""
+    prior = model_class()["amplitude"].prior
+    assert prior == PowerLawPrior(alpha=2.41, lower=1.0e43, upper=np.inf)
+
+    L = model_class().sample_parameters(size=200_000, rng=0)["amplitude"].to_value(u.erg / u.s)
+    assert L.min() >= 1.0e43
+    assert np.median(L) == pytest.approx(1.0e43 * 2.0 ** (1.0 / 1.41), rel=0.02)
 
 
 class TestLFBOTCoolingBlackbodySED(SpectralModelContract):

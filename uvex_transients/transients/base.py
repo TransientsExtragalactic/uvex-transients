@@ -41,6 +41,8 @@ from numpy.typing import NDArray
 from scipy.integrate import cumulative_trapezoid
 
 from uvex_transients.models import SpectralModel
+from uvex_transients.models.core import EffectivePeakGrid
+from uvex_transients.models.core._tolerance import first_crossing, tolerance_limit
 from uvex_transients.utils import get_rng, get_seed_sequence, logger, spawn_seeds, split_root_seed
 from uvex_transients.utils.cosmology import get_cosmology
 
@@ -628,6 +630,107 @@ class ExtragalacticTransient(TransientBase, ABC):
         lower, upper = self.integrated_rate_ci
         factor = 4 * np.pi * u.sr
         return ((lower * factor).to(u.yr**-1), (upper * factor).to(u.yr**-1))
+
+    def get_detection_horizon(
+        self,
+        mag_limits,
+        bandpasses,
+        *,
+        confidence: float = 0.95,
+        tolerance: float = 0.01,
+        n_samples: int = 1000,
+        n_z: int = 30,
+        n_time: int = 60,
+        t_min: Quantity = 1e-3 * u.day,
+        z_min: float = 0.003,
+        z_max: float | None = None,
+        rng=None,
+        progress: bool = True,
+        **kwargs,
+    ) -> tuple[QTable, EffectivePeakGrid]:
+        r"""
+        Derive the redshift beyond which this population is undetectable, for each magnitude limit.
+
+        A convenience over
+        :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve` that
+        supplies what only the transient knows: the time window (from `duration_limit`) and a
+        starting redshift range (from `redshift_limit`). The redshift grid is extended
+        automatically until it brackets every limit. The result is the number to use as
+        :attr:`redshift_limit`.
+
+        Parameters
+        ----------
+        mag_limits : float or array-like
+            AB magnitude limit(s).
+        bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement
+            The bands in which an event may be detected, for example ``mission.detector.bandpasses``.
+        confidence : float, optional
+            Probability that the limit holds. The default is 0.95.
+        tolerance : float, optional
+            Fraction of the population allowed beyond the limit. The default is 0.01.
+        n_samples : int, optional
+            Number of draws from the SED's priors. The default is 1000.
+        n_z : int, optional
+            Number of logarithmically spaced redshifts. The limit is rounded up to a grid point, so
+            a larger value gives a tighter result.
+        n_time : int, optional
+            Number of logarithmically spaced rest-frame times, from `t_min` to `duration_limit`.
+            It must be dense enough to resolve the peak of the light curve.
+        t_min : ~astropy.units.Quantity, optional
+            Earliest rest-frame time. The default is 0.001 day.
+        z_min : float, optional
+            Smallest redshift of the grid. The default is 0.003.
+        z_max : float, optional
+            Largest redshift to start from. By default, the larger of 1 and twice
+            `redshift_limit`. It is doubled, up to five times, while a limit remains unbracketed.
+        rng : numpy.random.Generator, int, or None
+            Random-number source. Pass an int for reproducible output.
+        progress : bool, optional
+            Whether to show a progress bar. The default is `True`.
+        **kwargs
+            Further arguments for
+            :meth:`~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,
+            such as ``criterion``.
+
+        Returns
+        -------
+        curve : ~astropy.table.QTable
+            One row per magnitude limit. See
+            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`.
+        grid : ~uvex_transients.models.core.EffectivePeakGrid
+            The evaluated grid, which can be reused for further limits.
+
+        Notes
+        -----
+        The limit covers the SED's parameter priors only, not Milky Way extinction or sky position.
+        """
+        z_max = max(1.0, 2.0 * self.redshift_limit) if z_max is None else z_max
+        limits = np.atleast_1d(np.asarray(getattr(mag_limits, "value", mag_limits), dtype=np.float64))
+        # One seed for every attempt, so that extending the redshift grid does not redraw the population.
+        seed = int(get_rng(rng).integers(2**32))
+
+        for _ in range(6):
+            grid = self.sed.get_effective_peak_magnitudes(
+                np.geomspace(z_min, z_max, n_z),
+                bandpasses,
+                t_min=t_min,
+                t_max=self.duration_limit,
+                n_time=n_time,
+                n_samples=n_samples,
+                progress=progress,
+                rng=seed,
+                **kwargs,
+            )
+            z_limits = [
+                tolerance_limit(first_crossing(grid.m_eff, grid.z_grid, limit), confidence, tolerance)[0]
+                for limit in limits
+            ]
+            if np.all(np.isfinite(z_limits)):
+                break
+            z_max *= 2.0
+
+        curve = self.sed.get_observability_curve(limits, grid=grid, confidence=confidence, tolerance=tolerance)
+        return curve, grid
 
     def compute_all_sky_yield(self, duration: Quantity) -> float:
         r"""
