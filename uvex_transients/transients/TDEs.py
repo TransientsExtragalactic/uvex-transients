@@ -11,6 +11,8 @@ from uvex_transients.models.tdes import VanVelzenTDESED
 
 from .base import ExtragalacticTransient
 
+__all__ = ["TidalDisruptionEvent"]
+
 # Yao et al. 2023 value, taken as constant with redshift: 3.1e-7 Mpc^-3 yr^-1.
 _TDE_RATE: Quantity = 3.1e-7 / (u.Mpc**3 * u.yr)
 

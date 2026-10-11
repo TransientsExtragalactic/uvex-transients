@@ -11,6 +11,8 @@ from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 
 from .base import ExtragalacticTransient
 
+__all__ = ["Kilonova"]
+
 # Total BNS merger rate (all mass bins, not just the GW170817-like ~1.3+1.3 Msun
 # bin), Fishbach et al. 2026: 110 (+192/-82) Gpc^-3 yr^-1. Taken as constant with
 # redshift. Using the total BNS rate here means every BNS merger is assumed to

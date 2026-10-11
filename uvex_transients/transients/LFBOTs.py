@@ -11,6 +11,8 @@ from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 
 from .base import ExtragalacticTransient
 
+__all__ = ["LuminousFastBlueOpticalTransient"]
+
 # Constant (redshift-independent) volumetric rate, Perley et al. 2026 / Ho & Lu
 # et al. 2026: 10 Gpc^-3 yr^-1.
 _LFBOT_RATE: Quantity = 10 / (u.Gpc**3 * u.yr)

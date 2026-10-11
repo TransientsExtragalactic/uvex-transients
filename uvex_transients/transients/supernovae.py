@@ -28,6 +28,17 @@ from uvex_transients.utils.cosmology import (
 
 from .base import ExtragalacticTransient
 
+__all__ = [
+    "TypeIIPSNe",
+    "TypeIIPExcessSNe",
+    "TypeIIbSNe",
+    "TypeIaSNe",
+    "TypeIbSNe",
+    "TypeIcSNe",
+    "TypeIcBLSNe",
+    "MagnetarSLSNe",
+]
+
 # ============================================== #
 # Core-Collapse Rate Demographics                #
 # ============================================== #
