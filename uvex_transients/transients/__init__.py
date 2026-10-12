@@ -13,6 +13,7 @@ from .kilonovae import *
 __all__ += kilonovae.__all__
 
 from . import supernovae
+from .supernovae import *
 
 __all__ += supernovae.__all__
 
