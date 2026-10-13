@@ -3,15 +3,18 @@
 import io
 from pathlib import Path
 
+import numpy as np
 import pytest
 from astropy import units as u
 from astropy.cosmology import FLRW
+from astropy.table import QTable
 from m4opt.missions._uvex import uvex
 
 import uvex_transients.transients as transients_pkg
 from uvex_transients.cli.config import _KNOWN_TRANSIENT_MODULES, RunConfig
 from uvex_transients.cli.yaml_tags import get_run_yaml
 from uvex_transients.models.core.priors import NormalPrior
+from uvex_transients.transients.horizon import HorizonCurve
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
 
@@ -95,6 +98,49 @@ transients:
     assert transient.redshift_limit == 0.5
     assert transient.sed["sigma_rise"].fixed_value == 2.0 * u.day
     assert transient.sed["amplitude"].prior == NormalPrior(mean=44.0, sigma=0.1)
+
+
+def _stub_curve():
+    """Build a tiny horizon curve: z = 0.1 at 22 AB and 0.4 at 24 AB."""
+    return HorizonCurve(QTable({"mag_limit": [22.0, 24.0] * u.ABmag, "z_limit": [0.1, 0.4]}))
+
+
+def test_z_limit_mag_limit_reads_the_horizon_curve(monkeypatch):
+    """`z_limit: {mag_limit: m}` sets the redshift limit from the transient's horizon curve."""
+    monkeypatch.setattr(TidalDisruptionEvent, "horizon_curve", property(lambda self: _stub_curve()))
+    doc = "transients:\n  tde:\n    class: TidalDisruptionEvent\n    z_limit: {mag_limit: 23.0}\n"
+    transient = _config_from(doc).transients["tde"]
+    assert transient.redshift_limit == pytest.approx(np.sqrt(0.1 * 0.4))
+
+
+def test_z_limit_mag_limit_is_read_after_the_other_overrides(monkeypatch):
+    """The curve is asked for after `duration_limit:` and `parameters:`, which it depends on."""
+    seen = []
+
+    def curve(self):
+        seen.append((self.duration_limit, self.sed["sigma_rise"].fixed_value))
+        return _stub_curve()
+
+    monkeypatch.setattr(TidalDisruptionEvent, "horizon_curve", property(curve))
+    doc = """
+transients:
+  tde:
+    class: TidalDisruptionEvent
+    z_limit: {mag_limit: 23.0}
+    duration_limit: 50 day
+    parameters:
+      sigma_rise: 2.0 day
+"""
+    _ = _config_from(doc).transients
+    assert seen == [(50 * u.day, 2.0 * u.day)]
+
+
+@pytest.mark.parametrize("spec", ["{depth: 23.0}", "{mag_limit: 23.0, extra: 1}"])
+def test_z_limit_mapping_must_be_exactly_mag_limit(spec):
+    """A `z_limit:` mapping with any key other than `mag_limit` raises."""
+    doc = f"transients:\n  tde:\n    class: TidalDisruptionEvent\n    z_limit: {spec}\n"
+    with pytest.raises(ValueError, match="must be a number or"):
+        _ = _config_from(doc).transients
 
 
 def test_transients_unknown_class_raises():
@@ -341,7 +387,9 @@ def test_known_transient_modules_matches_the_package_directory():
     register (see `_import_known_transients`'s docstring) -- this fails loudly instead.
     """
     package_dir = Path(transients_pkg.__file__).parent
-    actual_modules = {path.stem for path in package_dir.glob("*.py") if path.stem not in {"__init__", "base"}}
+    actual_modules = {
+        path.stem for path in package_dir.glob("*.py") if path.stem not in {"__init__", "base", "horizon"}
+    }
     assert actual_modules == set(_KNOWN_TRANSIENT_MODULES)
 
 
