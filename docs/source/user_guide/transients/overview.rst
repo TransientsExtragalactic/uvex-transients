@@ -136,7 +136,7 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - 200 d
      - 0.29
    * - :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`
-     - :class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED`
+     - :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
      - 5 d
      - 1
    * - :class:`~uvex_transients.transients.supernovae.TypeIbSNe`

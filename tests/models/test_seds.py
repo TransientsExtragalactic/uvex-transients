@@ -20,10 +20,15 @@ from uvex_transients.models.core.base import ComposedSpectralModel, SpectralMode
 from uvex_transients.models.core.priors import PowerLawPrior
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
-from uvex_transients.models.supernovae import (
-    ArnettMagnetarSpindownSED,
+from uvex_transients.models.shock_cooling import (
+    MoragShockCoolingArnettSED,
     MoragShockCoolingBlackbodySED,
     MoragShockCoolingSED,
+    PiroShockCoolingSED,
+)
+from uvex_transients.models.shock_cooling.morag import _UncutMoragShockCoolingSED
+from uvex_transients.models.supernovae import (
+    ArnettMagnetarSpindownSED,
     TypeIaSED,
     TypeIbSED,
     TypeIcBLSED,
@@ -76,6 +81,14 @@ class TestMoragShockCoolingSED(_UnmaskedMoragContract):
 
 class TestMoragShockCoolingBlackbodySED(_UnmaskedMoragContract):
     model_class = MoragShockCoolingBlackbodySED
+
+
+class TestMoragShockCoolingArnettSED(SpectralModelContract):
+    model_class = MoragShockCoolingArnettSED
+
+
+class TestPiroShockCoolingSED(SpectralModelContract):
+    model_class = PiroShockCoolingSED
 
 
 class TestTypeIIPSED(SpectralModelContract):
@@ -140,4 +153,4 @@ def test_all_seds_covered():
         for name, cls in globals().items()
         if name.startswith("Test") and issubclass(cls, SpectralModelContract)
     }
-    assert_full_coverage(SpectralModel, tested, exclude={ComposedSpectralModel})
+    assert_full_coverage(SpectralModel, tested, exclude={ComposedSpectralModel, _UncutMoragShockCoolingSED})

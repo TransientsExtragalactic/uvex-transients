@@ -9,9 +9,9 @@ from astropy.units import Quantity
 from numpy.typing import NDArray
 
 from uvex_transients.models._utils import convert_CI_to_fractional
+from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 from uvex_transients.models.supernovae import (
     ArnettMagnetarSpindownSED,
-    MoragShockCoolingSED,
     TypeIaSED,
     TypeIbSED,
     TypeIcBLSED,

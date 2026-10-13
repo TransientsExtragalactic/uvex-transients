@@ -4,8 +4,8 @@ Shock-Cooling Models: Blackbody vs. Full SED
 
 The Morag+24 shock-cooling emission of Type IIb supernovae comes in two flavors that share the same
 physical parameters and the same bolometric-luminosity/color-temperature evolution, but differ in
-the *shape* of the spectrum: :class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED`
-is a pure blackbody (Eq. A8), while :class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED`
+the *shape* of the spectrum: :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingBlackbodySED`
+is a pure blackbody (Eq. A8), while :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
 adds the UV line suppression and free-free correction of Eq. A7. Since UVEX observes precisely in
 the UV where those two disagree the most, it's a useful test case for a follow-up campaign.
 
@@ -27,7 +27,7 @@ from m4opt.synphot.background import GalacticBackground, SkyBackground
 from matplotlib import pyplot as plt
 
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
-from uvex_transients.models.supernovae import MoragShockCoolingBlackbodySED
+from uvex_transients.models.shock_cooling import MoragShockCoolingBlackbodySED
 from uvex_transients.transients.supernovae import ShockCoolingIIb
 from uvex_transients.utils.plotting import get_band_color, set_plot_style
 
