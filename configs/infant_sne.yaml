@@ -1,0 +1,147 @@
+# ============================================================================ #
+# uvex_transients CLI: infant supernova run                                    #
+# ============================================================================ #
+# A secondary run-config for the `uvex-transients` CLI, published alongside the
+# primary `configs/full_run.yaml` run. It asks how many supernovae UVEX detects
+# within 72 hours of explosion, which is the regime that constrains progenitor
+# radii, shock breakout and shock cooling, and that makes the best targets for
+# early spectroscopic follow-up. Run it directly with:
+#
+#     uvex-transients run configs/infant_sne.yaml --out-dir results/infant_sne/
+#
+# or `make run RUN_CONFIG=configs/infant_sne.yaml RUN_OUT_DIR=results/infant_sne/`.
+#
+# Two settings on every supernova class below make this cheap and set what
+# "infant" means:
+#
+#   * `duration_limit: 3 day` is the window the survey is sampled and the SNR
+#     cut is evaluated over. Only observations within 3 days (observer frame) of
+#     explosion can count as a detection, and the sampleable sky footprint shrinks
+#     with it, so far fewer events are generated than in `full_run.yaml`.
+#   * `photometry_post_window: 100 day` is decoupled from that selection window.
+#     It only controls how far past explosion the photometry action evaluates the
+#     SED for the events that survive the cuts, so the published photometry
+#     covers their full evolution rather than only the first 3 days.
+#
+# `ShockCoolingIIb` is deliberately left out, as in `full_run.yaml`: it is an
+# alternative description of the same Type IIb population `TypeIIbSNe` covers,
+# not an additional one.
+#
+# The magnitude screen is loose (23) on purpose. The brighter selection needed
+# for spectroscopic follow-up (peak magnitude <= 20) is applied later, to the
+# event summary table, so slightly fainter events stay available for analysis.
+#
+# The files this run writes (`final_catalog.ecsv`, `exposure.ecsv`,
+# `photometry.ecsv` and `event_summary.ecsv`) are packaged into
+# `infant_sne.zip` and attached to each GitHub release, where
+# `uvex_transients.utils.get_results(..., simulation="infant_sne")` fetches them.
+
+# Pinned to the latest uvex-scheduler release so the data products are reproducible. The
+# `.github/workflows/sync_scheduler.yml` workflow bumps this line when a new release appears.
+schedule:
+  name: uvex_v0.5.0
+
+mission: uvex_fast
+
+# The same supernova populations as `full_run.yaml`, each with the 3 day
+# selection window and 100 day photometry window described above.
+#
+# `z_limit` is re-derived for that window and the 23 AB magnitude screen below,
+# because the class defaults assume the full light curve and a 24.5 AB limit: it
+# is the redshift beyond which, with 95% confidence, at most 1% of events are
+# brighter than 23 AB in either UVEX band within the first 3 days, rounded up to
+# two significant figures. These supernovae are much fainter at 3 days than at
+# peak, so the limits are well below the class defaults. Reproduce them with
+#
+#     python scripts/derive_redshift_limits.py TypeIIP TypeIIPExcess TypeIIb \
+#         TypeIb TypeIc TypeIcBL MagnetarSLSNe TypeIa --mag-limit 23 --duration-limit 3
+#
+# and re-run it if the magnitude screen, a window or an SED's priors change. A
+# rerun can move the last digit by one grid step.
+transients:
+  iip_sne:
+    class: TypeIIPSNe
+    z_limit: 0.08
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  iip_excess_sne:
+    class: TypeIIPExcessSNe
+    z_limit: 0.47
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  iib_sne:
+    class: TypeIIbSNe
+    z_limit: 0.18
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  ib_sne:
+    class: TypeIbSNe
+    z_limit: 0.2
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  ic_sne:
+    class: TypeIcSNe
+    z_limit: 0.27
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  icbl_sne:
+    class: TypeIcBLSNe
+    z_limit: 0.35
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  slsne:
+    class: MagnetarSLSNe
+    z_limit: 0.64
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+  ia_sne:
+    class: TypeIaSNe
+    z_limit: 0.3
+    duration_limit: 3 day
+    photometry_post_window: 100 day
+
+# No `downsample`: the 3 day window already shrinks the sampled footprint, so
+# every population is generated at its true rate. `time_bins` matches
+# `full_run.yaml`; tighter bins would trim wasted samples further.
+generate:
+  time_bins: 200
+  seed: 42
+
+steps:
+  - id: mag_screen
+    type: cut
+    cut: limiting_magnitude
+    input: baseline
+    params:
+      mag_limit: 23.0
+
+  - id: snr_screen
+    type: cut
+    cut: snr
+    input: mag_screen
+    params:
+      snr_threshold: 5.0
+      exclude_first_visit_detections: true
+    checkpoint: final_catalog.ecsv
+
+  - id: phot
+    type: action
+    action: photometry
+    inputs:
+      catalog: snr_screen
+    params:
+      bands: [FUV, NUV]
+    checkpoint: photometry.ecsv
+
+  - id: summary
+    type: action
+    action: event_summary
+    inputs:
+      catalog: snr_screen
+      exposure: exposure
+      photometry: phot
+    params:
+      snr_threshold: 5.0
+    checkpoint: event_summary.ecsv
+
+keep_intermediate: false
