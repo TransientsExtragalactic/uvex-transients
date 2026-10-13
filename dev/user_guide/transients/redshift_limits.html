@@ -659,14 +659,12 @@ because it is quick to evaluate.</p>
 <p>Evaluating many magnitude limits at once is nearly free, because the expensive step is following
 the draws across redshift, and that does not depend on the limit. The grid is also returned so
 that further limits, confidences, or tolerances can be tried without redoing it.</p>
-<p>The number to adopt is the table’s value at 24.5 AB, rounded up to two significant figures. That
-is the value stored in each class’s <code class="docutils literal notranslate"><span class="pre">DEFAULT_Z_LIM</span></code>. The quick run above gives about 0.20 for the
-kilonovae, a little above the 0.19 the class uses. The difference comes from the grid of 30
-redshifts, since rounding each draw up to the next grid point can overestimate the limit by a whole
-grid step, about 10% here. The script <code class="docutils literal notranslate"><span class="pre">scripts/derive_redshift_limits.py</span></code> removes most of that. It repeats the
-calculation on a finer grid around the first answer, and it reproduces the values of the built-in
-classes. Re-run it whenever an SED’s priors, a class’s duration, or the survey depth change, and copy
-the printed values into the classes.</p>
+<p>The number the shipped classes use is the table’s value at 24.5 AB, rounded up to two significant
+figures. That is the value stored in each class’s <code class="docutils literal notranslate"><span class="pre">DEFAULT_Z_LIM</span></code>, a plain number that the class
+does not recompute. The quick run above gives about 0.20 for the kilonovae, a little above the 0.19
+the class uses. The difference comes from the grid of 30 redshifts, since rounding each draw up to
+the next grid point can overestimate the limit by a whole grid step, about 10% here. Interpolating the crossing between grid points removes most of that, which
+is what the stored curves use (see <a class="reference internal" href="#horizon-curves"><span class="std std-ref">Horizon Curves</span></a>).</p>
 </section>
 <section id="checking-the-result">
 <h2>Checking the Result<a class="headerlink" href="#checking-the-result" title="Link to this heading">#</a></h2>
@@ -712,6 +710,70 @@ could never pass.</p></li>
 <li><p>Only the first crossing of the limit counts. If a K-correction makes an event brighten again at
 a still larger redshift, that second appearance is ignored.</p></li>
 </ul>
+</section>
+<section id="horizon-curves">
+<span id="id1"></span><h2>Horizon Curves<a class="headerlink" href="#horizon-curves" title="Link to this heading">#</a></h2>
+<p>Evaluating the calculation at many depths gives the limit as a function of depth, and that
+function is what a user usually wants: “what redshift limit does a 23 AB single-visit depth
+correspond to?” Every <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.html#uvex_transients.transients.base.ExtragalacticTransient" title="uvex_transients.transients.base.ExtragalacticTransient"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code></a> carries
+this function as its
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.horizon_curve.html#uvex_transients.transients.base.ExtragalacticTransient.horizon_curve" title="uvex_transients.transients.base.ExtragalacticTransient.horizon_curve"><code class="xref py py-attr docutils literal notranslate"><span class="pre">horizon_curve</span></code></a>, a
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.horizon.HorizonCurve.html#uvex_transients.transients.horizon.HorizonCurve" title="uvex_transients.transients.horizon.HorizonCurve"><code class="xref py py-class docutils literal notranslate"><span class="pre">HorizonCurve</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.TDEs</span><span class="w"> </span><span class="kn">import</span> <span class="n">TidalDisruptionEvent</span>
+
+<span class="n">tde</span> <span class="o">=</span> <span class="n">TidalDisruptionEvent</span><span class="p">()</span>
+<span class="n">tde</span><span class="o">.</span><span class="n">horizon_curve</span>                              <span class="c1"># HorizonCurve(TidalDisruptionEvent: 21 to 27 AB, ...)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">tde</span><span class="o">.</span><span class="n">horizon_curve</span><span class="o">.</span><span class="n">z_limit</span><span class="p">(</span><span class="mf">23.0</span><span class="p">)</span>            <span class="c1"># interpolated in log z against magnitude</span>
+<span class="n">tde</span><span class="o">.</span><span class="n">redshift_limit</span> <span class="o">=</span> <span class="n">z</span>                         <span class="c1"># what to do with it is up to you</span>
+</pre></div>
+</div>
+<p>In a run configuration, the same lookup is written as a mapping in place of a number:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">transients</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tde</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TidalDisruptionEvent</span>
+<span class="w">    </span><span class="nt">z_limit</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">mag_limit</span><span class="p">:</span><span class="w"> </span><span class="nv">23.0</span><span class="p p-Indicator">}</span><span class="w">   </span><span class="c1"># or a plain number, z_limit: 1.7</span>
+</pre></div>
+</div>
+<p>The curve always describes <strong>one UVEX visit</strong> in either band, with the same 95% confidence and 1%
+tolerance as above. It knows nothing about the schedule, so it is not the right depth for a
+selection that needs several visits. A magnitude shallower than the first tabulated one (21 AB)
+returns that point’s redshift, which is an overestimate and so safe. A magnitude deeper than the
+last one (27 AB) raises, because the curve cannot bound the population there.</p>
+<p><strong>Where the curve comes from.</strong> The property is lazy. For a class shipped with the package, in its
+default state, the curve is read from <code class="docutils literal notranslate"><span class="pre">uvex_transients/transients/horizon_curves/&lt;ClassName&gt;.ecsv</span></code>,
+a small text table that is committed to the repository. For any other class, the curve is generated
+the first time it is asked for, which takes seconds to a minute, and kept on the instance. Nothing generated
+this way is written to disk.</p>
+<p><strong>When a stored curve is not used.</strong> Each stored curve records a <em>fingerprint</em> of the transient it was
+made for: its duration and a fixed-seed draw from the SED’s priors. Every access recomputes the
+fingerprint for the live transient, which is instant, and compares. Changing a prior, pinning a
+parameter or changing <code class="docutils literal notranslate"><span class="pre">duration_limit</span></code> therefore makes the stored curve unusable, and the next
+access generates a new one. The check is on use, not on assignment, so none of those setters needs
+to know about curves. Nothing else is checked: a change to the SED’s code, the cosmology or the
+<code class="docutils literal notranslate"><span class="pre">uvex_fast</span></code> bands does not invalidate a curve by itself.</p>
+<p><strong>Classes without a stored curve.</strong> A class that exists for bespoke analysis, whose redshift limit is
+chosen by hand and not derived from its SED, sets <code class="docutils literal notranslate"><span class="pre">HAS_STORED_HORIZON_CURVE</span> <span class="pre">=</span> <span class="pre">False</span></code>. The package
+then ships no file for it: the build script and the test skip it. Nothing stops anyone from asking
+it for a curve, which is generated on demand like a custom class’s. <code class="docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code> is the one
+shipped example. Its model is only valid for a few days after explosion, and the brightest draws of
+its priors stay detectable far beyond any redshift where that model is meaningful, so a statistical
+horizon is not a number we want to ship, and it takes minutes to compute.</p>
+<p><strong>Keeping the stored curves current.</strong> This is for maintainers. A shipped class’s stored curve
+goes stale when its priors or duration change. The test
+<code class="docutils literal notranslate"><span class="pre">tests/transients/test_horizon_curve.py::test_stored_curves_match_their_classes</span></code> runs the same
+fingerprint check for every shipped class and fails, naming the stale ones. Rebuild them with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>horizons<span class="w">                              </span><span class="c1"># every shipped class</span>
+make<span class="w"> </span>horizons<span class="w"> </span><span class="nv">CLASSES</span><span class="o">=</span><span class="s2">"TypeIaSNe TDE"</span><span class="w">      </span><span class="c1"># chosen classes (by class name)</span>
+</pre></div>
+</div>
+<p>which runs <code class="docutils literal notranslate"><span class="pre">scripts/build_horizon_curves.py</span></code>, and commit the changed <code class="docutils literal notranslate"><span class="pre">.ecsv</span></code> files. Each class
+takes seconds to a minute and the classes run in parallel. Only the default state is stored; there is no
+option to build a curve for another duration or depth range into the package, since a user who
+needs one can simply ask the instance, which generates it. If a class is added, the same command
+creates its file, and the test fails until it exists. The curves do not feed <code class="docutils literal notranslate"><span class="pre">DEFAULT_Z_LIM</span></code>,
+which stays a plain number, but the script prints both so they can be compared.</p>
+<p>Because the fingerprint covers only the duration and the priors, editing an SED’s code (as opposed
+to its priors) does not make the test fail. Rebuild the affected classes by hand after such a change.</p>
 </section>
 </section>
 
@@ -769,6 +831,7 @@ a still larger redshift, that second appearance is ignored.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-it">Running It</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-result">Checking the Result</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-limit-does-not-cover">What the Limit Does Not Cover</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#horizon-curves">Horizon Curves</a></li>
 </ul>
   </nav></div>
 

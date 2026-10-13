@@ -620,7 +620,11 @@ The built-in populations set it to the redshift beyond which, with 95% confidenc
 the population is detectable at the survey’s limiting magnitude; the
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon.html#uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon" title="uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_detection_horizon()</span></code></a> method derives that
 number from your SED (see <a class="reference internal" href="redshift_limits.html#user-guide-transients-redshift-limits"><span class="std std-ref">Redshift Limits</span></a> for how, and
-<a class="reference internal" href="../../auto_examples/custom_transients/plot_kilonova_detection_horizon.html#sphx-glr-auto-examples-custom-transients-plot-kilonova-detection-horizon-py"><span class="std std-ref">Setting a Kilonova Class’s Redshift Limit from its SED</span></a> for a worked example).</p>
+<a class="reference internal" href="../../auto_examples/custom_transients/plot_kilonova_detection_horizon.html#sphx-glr-auto-examples-custom-transients-plot-kilonova-detection-horizon-py"><span class="std std-ref">Setting a Kilonova Class’s Redshift Limit from its SED</span></a> for a worked example).
+For a custom class, the quickest way to get that number at any depth is its
+<a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.horizon_curve.html#uvex_transients.transients.base.ExtragalacticTransient.horizon_curve" title="uvex_transients.transients.base.ExtragalacticTransient.horizon_curve"><code class="xref py py-attr docutils literal notranslate"><span class="pre">horizon_curve</span></code></a>, which is generated the
+first time it is asked for (it takes seconds to a minute) and then kept: <code class="docutils literal notranslate"><span class="pre">MyTransient().horizon_curve.z_limit(24.5)</span></code>.
+See <a class="reference internal" href="redshift_limits.html#horizon-curves"><span class="std std-ref">Horizon Curves</span></a>.</p>
 </section>
 <section id="declaring-a-volumetric-rate">
 <h2>Declaring a Volumetric Rate<a class="headerlink" href="#declaring-a-volumetric-rate" title="Link to this heading">#</a></h2>

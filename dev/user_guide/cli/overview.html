@@ -697,6 +697,7 @@ overrides you want on top of its defaults:</p>
 <span class="w">  </span><span class="nt">tde</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TidalDisruptionEvent</span>
 <span class="w">    </span><span class="nt">z_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.7</span><span class="w">                 </span><span class="c1"># overrides ExtragalacticTransient.redshift_limit</span>
+<span class="w">                                 </span><span class="c1"># (or z_limit: {mag_limit: 23.0} to look it up from the horizon curve)</span>
 <span class="w">    </span><span class="nt">duration_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200 day</span><span class="w">      </span><span class="c1"># overrides TransientBase.duration_limit</span>
 <span class="w">    </span><span class="nt">cosmology</span><span class="p">:</span><span class="w"> </span><span class="kt">!astropy_cosmology</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="nv">Planck18</span><span class="p p-Indicator">}</span>
 <span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
@@ -783,9 +784,13 @@ raise at load time, naming the line the problem is on.</p>
 Required.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">z_limit</span></code></p></td>
-<td><p>float</p></td>
+<td><p>float or mapping</p></td>
 <td><p>Overrides <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.redshift_limit.html#uvex_transients.transients.base.ExtragalacticTransient.redshift_limit" title="uvex_transients.transients.base.ExtragalacticTransient.redshift_limit"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift_limit</span></code></a>.
-Optional.</p></td>
+Either a redshift, or <code class="docutils literal notranslate"><span class="pre">{mag_limit:</span> <span class="pre">&lt;AB</span> <span class="pre">magnitude&gt;}</span></code> to read the redshift off the
+transient’s <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.horizon_curve.html#uvex_transients.transients.base.ExtragalacticTransient.horizon_curve" title="uvex_transients.transients.base.ExtragalacticTransient.horizon_curve"><code class="xref py py-attr docutils literal notranslate"><span class="pre">horizon_curve</span></code></a>
+at that single-visit depth (see <a class="reference internal" href="../transients/redshift_limits.html#horizon-curves"><span class="std std-ref">Horizon Curves</span></a>). The lookup uses the transient’s
+<code class="docutils literal notranslate"><span class="pre">duration_limit</span></code>, <code class="docutils literal notranslate"><span class="pre">cosmology</span></code> and <code class="docutils literal notranslate"><span class="pre">parameters</span></code> overrides, and a curve for a
+non-default combination is generated on the spot, which takes seconds to a minute. Optional.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">duration_limit</span></code></p></td>
 <td><p>str or number</p></td>

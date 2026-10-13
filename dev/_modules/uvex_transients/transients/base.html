@@ -503,6 +503,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EffectivePeakGrid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core._tolerance</span><span class="w"> </span><span class="kn">import</span> <span class="n">first_crossing</span><span class="p">,</span> <span class="n">tolerance_limit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.horizon</span><span class="w"> </span><span class="kn">import</span> <span class="n">HorizonCurve</span><span class="p">,</span> <span class="n">curve_path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">spawn_seeds</span><span class="p">,</span> <span class="n">split_root_seed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
 
@@ -860,6 +861,14 @@
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_Z_GRID_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
 
+    <span class="n">HAS_STORED_HORIZON_CURVE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">"""bool: Whether the package ships a stored `horizon_curve` file for this class.</span>
+
+<span class="sd">    Set it to `False` on a class that exists for bespoke analysis, whose redshift limit is chosen by hand and not</span>
+<span class="sd">    derived from its SED's priors (for example because the model is only valid at low redshift). The build script</span>
+<span class="sd">    and the staleness test then skip it. `horizon_curve` still works: it is generated on demand, like any custom class.</span>
+<span class="sd">    """</span>
+
     <span class="n">RATE_CI</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""tuple[float, float] | None: Multiplicative (lower, upper) 90% confidence factors on `rate`.</span>
 
@@ -887,6 +896,9 @@
         <span class="c1"># Assign the z grid parameters.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_Z_LIM</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_Z_GRID_SIZE</span>
+
+        <span class="c1"># Loaded or generated on first use; see `horizon_curve`.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_horizon_curve</span><span class="p">:</span> <span class="n">HorizonCurve</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Ensure that the rate cache is cleared before proceeding. This</span>
         <span class="c1"># also generates the appropriate attributes of the class for the</span>
@@ -1099,6 +1111,34 @@
         <span class="n">factor</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span>
         <span class="k">return</span> <span class="p">((</span><span class="n">lower</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">upper</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">))</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">horizon_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HorizonCurve</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        HorizonCurve: The redshift limit of this population as a function of single-dwell depth.</span>
+
+<span class="sd">        Look up the redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's</span>
+<span class="sd">        priors are brighter than a given AB magnitude in either UVEX band, for example</span>
+<span class="sd">        ``transient.horizon_curve.z_limit(23.0)``.</span>
+
+<span class="sd">        The curve is built lazily and kept. For a transient class shipped with the package, in its default</span>
+<span class="sd">        state, it is read from the file stored next to :mod:`uvex_transients.transients.horizon`. Otherwise</span>
+<span class="sd">        (a custom class, or a shipped class whose priors or duration were changed) it is generated on first</span>
+<span class="sd">        access, which takes seconds to a minute. Nothing is written to disk. The curve is checked against the</span>
+<span class="sd">        transient's duration and priors on every access, so changing either afterwards makes the next access</span>
+<span class="sd">        generate a new one. Nothing else is checked: not the SED's code, the cosmology or the bands.</span>
+
+<span class="sd">        A class with `HAS_STORED_HORIZON_CURVE` set to `False` has no stored file, so its curve is always generated.</span>
+
+<span class="sd">        See :ref:`user_guide_transients_redshift_limits`.</span>
+<span class="sd">        """</span>
+        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horizon_curve</span>
+        <span class="k">if</span> <span class="n">curve</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">curve</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">curve</span> <span class="o">=</span> <span class="n">HorizonCurve</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">curve_path</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">HAS_STORED_HORIZON_CURVE</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">curve</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">curve</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">curve</span> <span class="o">=</span> <span class="n">HorizonCurve</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_horizon_curve</span> <span class="o">=</span> <span class="n">curve</span>
+        <span class="k">return</span> <span class="n">curve</span>
+
 <div class="viewcode-block" id="ExtragalacticTransient.get_detection_horizon">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon.html#uvex_transients.transients.supernovae.ExtragalacticTransient.get_detection_horizon">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_detection_horizon</span><span class="p">(</span>
@@ -1116,6 +1156,7 @@
         <span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">QTable</span><span class="p">,</span> <span class="n">EffectivePeakGrid</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1157,6 +1198,12 @@
 <span class="sd">            Random-number source. Pass an int for reproducible output.</span>
 <span class="sd">        progress : bool, optional</span>
 <span class="sd">            Whether to show a progress bar. The default is `True`.</span>
+<span class="sd">        interpolate : bool, optional</span>
+<span class="sd">            If `False` (the default), each draw's detection redshift is rounded up to a grid point, which can</span>
+<span class="sd">            only overestimate the limit, by up to one grid step. If `True`, the crossing is interpolated between</span>
+<span class="sd">            grid points (see</span>
+<span class="sd">            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`), which is far more</span>
+<span class="sd">            accurate for a given `n_z` but no longer guaranteed to be an overestimate.</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            Further arguments for</span>
 <span class="sd">            :meth:`~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,</span>
@@ -1199,7 +1246,9 @@
                 <span class="k">break</span>
             <span class="n">z_max</span> <span class="o">*=</span> <span class="mf">2.0</span>
 
-        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">get_observability_curve</span><span class="p">(</span><span class="n">limits</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="n">curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">get_observability_curve</span><span class="p">(</span>
+            <span class="n">limits</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">confidence</span><span class="o">=</span><span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="n">interpolate</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">curve</span><span class="p">,</span> <span class="n">grid</span></div>
 
 
