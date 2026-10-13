@@ -263,8 +263,10 @@ class ShockCoolingIIb(_CoreCollapseSNe):
 
     DEFAULT_MODEL = MoragShockCoolingSED
     DEFAULT_DURATION = 5 * u.day
-    # Not derived from the SED with `ExtragalacticTransient.get_detection_horizon`, unlike most classes.
     DEFAULT_Z_LIM = 1
+    HAS_STORED_HORIZON_CURVE = False
+    # We don't do a horizon curve for this class because it is
+    # incomplete.
 
     RATE_FRACTION = _TYPE_IIB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIB_FRACTION_ERR)

@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test coverage docs docs-clean clean run sync-scheduler release
+.PHONY: help install lint format test coverage docs docs-clean clean run horizons sync-scheduler release
 
 RUN_CONFIG ?= configs/full_run.yaml
 RUN_OUT_DIR ?= results/dev/
@@ -33,6 +33,9 @@ clean: ## Remove build artifacts (see clean.sh).
 
 run: ## Run the full-population pipeline (RUN_CONFIG -> RUN_OUT_DIR; both overridable).
 	uvex-transients run $(RUN_CONFIG) --out-dir $(RUN_OUT_DIR) --overwrite
+
+horizons: ## Rebuild the stored detection-horizon curves (CLASSES="TypeIaSNe TDE" for chosen classes; takes seconds to a minute each).
+	python scripts/build_horizon_curves.py $(CLASSES)
 
 sync-scheduler: ## Pin the repo to the latest uvex-scheduler release (see scripts/sync_scheduler.py).
 	python scripts/sync_scheduler.py

@@ -112,6 +112,10 @@ the population is detectable at the survey's limiting magnitude; the
 :meth:`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon` method derives that
 number from your SED (see :ref:`user_guide_transients_redshift_limits` for how, and
 :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` for a worked example).
+For a custom class, the quickest way to get that number at any depth is its
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`, which is generated the
+first time it is asked for (it takes seconds to a minute) and then kept: ``MyTransient().horizon_curve.z_limit(24.5)``.
+See :ref:`horizon_curves`.
 
 Declaring a Volumetric Rate
 -------------------------------
