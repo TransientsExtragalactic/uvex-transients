@@ -185,14 +185,12 @@ Evaluating many magnitude limits at once is nearly free, because the expensive s
 the draws across redshift, and that does not depend on the limit. The grid is also returned so
 that further limits, confidences, or tolerances can be tried without redoing it.
 
-The number to adopt is the table's value at 24.5 AB, rounded up to two significant figures. That
-is the value stored in each class's ``DEFAULT_Z_LIM``. The quick run above gives about 0.20 for the
-kilonovae, a little above the 0.19 the class uses. The difference comes from the grid of 30
-redshifts, since rounding each draw up to the next grid point can overestimate the limit by a whole
-grid step, about 10% here. The script ``scripts/derive_redshift_limits.py`` removes most of that. It repeats the
-calculation on a finer grid around the first answer, and it reproduces the values of the built-in
-classes. Re-run it whenever an SED's priors, a class's duration, or the survey depth change, and copy
-the printed values into the classes.
+The number the shipped classes use is the table's value at 24.5 AB, rounded up to two significant
+figures. That is the value stored in each class's ``DEFAULT_Z_LIM``, a plain number that the class
+does not recompute. The quick run above gives about 0.20 for the kilonovae, a little above the 0.19
+the class uses. The difference comes from the grid of 30 redshifts, since rounding each draw up to
+the next grid point can overestimate the limit by a whole grid step, about 10% here. Interpolating the crossing between grid points removes most of that, which
+is what the stored curves use (see :ref:`horizon_curves`).
 
 Checking the Result
 ----------------------
@@ -239,3 +237,81 @@ The statement is narrower than it may sound, and it helps to know where its edge
   could never pass.
 - Only the first crossing of the limit counts. If a K-correction makes an event brighten again at
   a still larger redshift, that second appearance is ignored.
+
+.. _horizon_curves:
+
+Horizon Curves
+----------------
+
+Evaluating the calculation at many depths gives the limit as a function of depth, and that
+function is what a user usually wants: "what redshift limit does a 23 AB single-visit depth
+correspond to?" Every :class:`~uvex_transients.transients.base.ExtragalacticTransient` carries
+this function as its
+:attr:`~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`, a
+:class:`~uvex_transients.transients.horizon.HorizonCurve`:
+
+.. code-block:: python
+
+    from uvex_transients.transients.TDEs import TidalDisruptionEvent
+
+    tde = TidalDisruptionEvent()
+    tde.horizon_curve                              # HorizonCurve(TidalDisruptionEvent: 21 to 27 AB, ...)
+    z = tde.horizon_curve.z_limit(23.0)            # interpolated in log z against magnitude
+    tde.redshift_limit = z                         # what to do with it is up to you
+
+In a run configuration, the same lookup is written as a mapping in place of a number:
+
+.. code-block:: yaml
+
+    transients:
+      tde:
+        class: TidalDisruptionEvent
+        z_limit: {mag_limit: 23.0}   # or a plain number, z_limit: 1.7
+
+The curve always describes **one UVEX visit** in either band, with the same 95% confidence and 1%
+tolerance as above. It knows nothing about the schedule, so it is not the right depth for a
+selection that needs several visits. A magnitude shallower than the first tabulated one (21 AB)
+returns that point's redshift, which is an overestimate and so safe. A magnitude deeper than the
+last one (27 AB) raises, because the curve cannot bound the population there.
+
+**Where the curve comes from.** The property is lazy. For a class shipped with the package, in its
+default state, the curve is read from ``uvex_transients/transients/horizon_curves/<ClassName>.ecsv``,
+a small text table that is committed to the repository. For any other class, the curve is generated
+the first time it is asked for, which takes seconds to a minute, and kept on the instance. Nothing generated
+this way is written to disk.
+
+**When a stored curve is not used.** Each stored curve records a *fingerprint* of the transient it was
+made for: its duration and a fixed-seed draw from the SED's priors. Every access recomputes the
+fingerprint for the live transient, which is instant, and compares. Changing a prior, pinning a
+parameter or changing ``duration_limit`` therefore makes the stored curve unusable, and the next
+access generates a new one. The check is on use, not on assignment, so none of those setters needs
+to know about curves. Nothing else is checked: a change to the SED's code, the cosmology or the
+``uvex_fast`` bands does not invalidate a curve by itself.
+
+**Classes without a stored curve.** A class that exists for bespoke analysis, whose redshift limit is
+chosen by hand and not derived from its SED, sets ``HAS_STORED_HORIZON_CURVE = False``. The package
+then ships no file for it: the build script and the test skip it. Nothing stops anyone from asking
+it for a curve, which is generated on demand like a custom class's. ``ShockCoolingIIb`` is the one
+shipped example. Its model is only valid for a few days after explosion, and the brightest draws of
+its priors stay detectable far beyond any redshift where that model is meaningful, so a statistical
+horizon is not a number we want to ship, and it takes minutes to compute.
+
+**Keeping the stored curves current.** This is for maintainers. A shipped class's stored curve
+goes stale when its priors or duration change. The test
+``tests/transients/test_horizon_curve.py::test_stored_curves_match_their_classes`` runs the same
+fingerprint check for every shipped class and fails, naming the stale ones. Rebuild them with
+
+.. code-block:: bash
+
+    make horizons                              # every shipped class
+    make horizons CLASSES="TypeIaSNe TDE"      # chosen classes (by class name)
+
+which runs ``scripts/build_horizon_curves.py``, and commit the changed ``.ecsv`` files. Each class
+takes seconds to a minute and the classes run in parallel. Only the default state is stored; there is no
+option to build a curve for another duration or depth range into the package, since a user who
+needs one can simply ask the instance, which generates it. If a class is added, the same command
+creates its file, and the test fails until it exists. The curves do not feed ``DEFAULT_Z_LIM``,
+which stays a plain number, but the script prints both so they can be compared.
+
+Because the fingerprint covers only the duration and the priors, editing an SED's code (as opposed
+to its priors) does not make the test fail. Rebuild the affected classes by hand after such a change.

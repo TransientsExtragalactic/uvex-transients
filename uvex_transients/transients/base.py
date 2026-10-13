@@ -43,6 +43,7 @@ from scipy.integrate import cumulative_trapezoid
 from uvex_transients.models import SpectralModel
 from uvex_transients.models.core import EffectivePeakGrid
 from uvex_transients.models.core._tolerance import first_crossing, tolerance_limit
+from uvex_transients.transients.horizon import HorizonCurve, curve_path
 from uvex_transients.utils import get_rng, get_seed_sequence, logger, spawn_seeds, split_root_seed
 from uvex_transients.utils.cosmology import get_cosmology
 
@@ -392,6 +393,14 @@ class ExtragalacticTransient(TransientBase, ABC):
     DEFAULT_Z_LIM = 10
     DEFAULT_Z_GRID_SIZE = 100
 
+    HAS_STORED_HORIZON_CURVE: ClassVar[bool] = True
+    """bool: Whether the package ships a stored `horizon_curve` file for this class.
+
+    Set it to `False` on a class that exists for bespoke analysis, whose redshift limit is chosen by hand and not
+    derived from its SED's priors (for example because the model is only valid at low redshift). The build script
+    and the staleness test then skip it. `horizon_curve` still works: it is generated on demand, like any custom class.
+    """
+
     RATE_CI: ClassVar[tuple[float, float] | None] = None
     """tuple[float, float] | None: Multiplicative (lower, upper) 90% confidence factors on `rate`.
 
@@ -419,6 +428,9 @@ class ExtragalacticTransient(TransientBase, ABC):
         # Assign the z grid parameters.
         self._redshift_limit = self.DEFAULT_Z_LIM
         self._redshift_grid_size = self.DEFAULT_Z_GRID_SIZE
+
+        # Loaded or generated on first use; see `horizon_curve`.
+        self._horizon_curve: HorizonCurve | None = None
 
         # Ensure that the rate cache is cleared before proceeding. This
         # also generates the appropriate attributes of the class for the
@@ -631,6 +643,34 @@ class ExtragalacticTransient(TransientBase, ABC):
         factor = 4 * np.pi * u.sr
         return ((lower * factor).to(u.yr**-1), (upper * factor).to(u.yr**-1))
 
+    @property
+    def horizon_curve(self) -> HorizonCurve:
+        r"""
+        HorizonCurve: The redshift limit of this population as a function of single-dwell depth.
+
+        Look up the redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+        priors are brighter than a given AB magnitude in either UVEX band, for example
+        ``transient.horizon_curve.z_limit(23.0)``.
+
+        The curve is built lazily and kept. For a transient class shipped with the package, in its default
+        state, it is read from the file stored next to :mod:`uvex_transients.transients.horizon`. Otherwise
+        (a custom class, or a shipped class whose priors or duration were changed) it is generated on first
+        access, which takes seconds to a minute. Nothing is written to disk. The curve is checked against the
+        transient's duration and priors on every access, so changing either afterwards makes the next access
+        generate a new one. Nothing else is checked: not the SED's code, the cosmology or the bands.
+
+        A class with `HAS_STORED_HORIZON_CURVE` set to `False` has no stored file, so its curve is always generated.
+
+        See :ref:`user_guide_transients_redshift_limits`.
+        """
+        curve = self._horizon_curve
+        if curve is None or not curve.matches(self):
+            curve = HorizonCurve.read(curve_path(type(self).__name__)) if self.HAS_STORED_HORIZON_CURVE else None
+            if curve is None or not curve.matches(self):
+                curve = HorizonCurve.generate(self)
+            self._horizon_curve = curve
+        return curve
+
     def get_detection_horizon(
         self,
         mag_limits,
@@ -646,6 +686,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         z_max: float | None = None,
         rng=None,
         progress: bool = True,
+        interpolate: bool = False,
         **kwargs,
     ) -> tuple[QTable, EffectivePeakGrid]:
         r"""
@@ -687,6 +728,12 @@ class ExtragalacticTransient(TransientBase, ABC):
             Random-number source. Pass an int for reproducible output.
         progress : bool, optional
             Whether to show a progress bar. The default is `True`.
+        interpolate : bool, optional
+            If `False` (the default), each draw's detection redshift is rounded up to a grid point, which can
+            only overestimate the limit, by up to one grid step. If `True`, the crossing is interpolated between
+            grid points (see
+            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`), which is far more
+            accurate for a given `n_z` but no longer guaranteed to be an overestimate.
         **kwargs
             Further arguments for
             :meth:`~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,
@@ -729,7 +776,9 @@ class ExtragalacticTransient(TransientBase, ABC):
                 break
             z_max *= 2.0
 
-        curve = self.sed.get_observability_curve(limits, grid=grid, confidence=confidence, tolerance=tolerance)
+        curve = self.sed.get_observability_curve(
+            limits, grid=grid, confidence=confidence, tolerance=tolerance, interpolate=interpolate
+        )
         return curve, grid
 
     def compute_all_sky_yield(self, duration: Quantity) -> float:

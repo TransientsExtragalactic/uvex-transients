@@ -51,13 +51,17 @@ mission: uvex_fast
 # is the redshift beyond which, with 95% confidence, at most 1% of events are
 # brighter than 23 AB in either UVEX band within the first 3 days, rounded up to
 # two significant figures. These supernovae are much fainter at 3 days than at
-# peak, so the limits are well below the class defaults. Reproduce them with
+# peak, so the limits are well below the class defaults. They were derived with
+# `scripts/derive_redshift_limits.py`, which has since been replaced by the
+# transients' `horizon_curve`. The equivalent for one class is
 #
-#     python scripts/derive_redshift_limits.py TypeIIP TypeIIPExcess TypeIIb \
-#         TypeIb TypeIc TypeIcBL MagnetarSLSNe TypeIa --mag-limit 23 --duration-limit 3
+#     transient = TypeIIPSNe()
+#     transient.duration_limit = 3 * u.day
+#     transient.horizon_curve.z_limit(23.0)
 #
-# and re-run it if the magnitude screen, a window or an SED's priors change. A
-# rerun can move the last digit by one grid step.
+# (seconds to a minute per class, since a 3 day window has no stored curve), and
+# `z_limit: {mag_limit: 23.0}` does the same lookup inside this file. Re-derive
+# them if the magnitude screen, a window or an SED's priors change.
 transients:
   iip_sne:
     class: TypeIIPSNe

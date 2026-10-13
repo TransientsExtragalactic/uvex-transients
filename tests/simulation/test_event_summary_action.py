@@ -324,8 +324,9 @@ class TestPerBandReduction:
 # --------------------------------------------------------------------------- #
 # The action, on a small synthetic catalog                                     #
 # --------------------------------------------------------------------------- #
-@pytest.fixture
+@pytest.fixture(scope="module")
 def setup(make_schedule, hot_spot):
+    """Run the cut and photometry once for the whole module. Tests must not mutate what it returns."""
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=40)
     catalog = _make_catalog(transient, hot_spot, n_events=20, seed=3)[0]
@@ -553,9 +554,9 @@ def test_rejects_non_event_catalogs(setup):
         sim.run_event_summary_action(QTable(), _exposure({"tde": 1.0}), photometry, uvex, snr_threshold=5.0)
 
 
-def test_catalog_without_pre_cut_counts_raises(setup):
+def test_catalog_without_pre_cut_counts_raises(setup, monkeypatch):
     sim, catalog, detected, photometry = setup
-    detected.pre_cut_counts = None
+    monkeypatch.setattr(detected, "pre_cut_counts", None)
     with pytest.raises(ValueError, match="pre_cut_counts"):
         _summarize(sim, catalog, detected, photometry)
 
@@ -568,9 +569,9 @@ def test_missing_exposure_for_a_type_raises(setup):
         )
 
 
-def test_pre_cut_type_unknown_to_the_simulator_raises(setup):
+def test_pre_cut_type_unknown_to_the_simulator_raises(setup, monkeypatch):
     sim, catalog, detected, photometry = setup
-    detected.pre_cut_counts = {"tde": len(catalog), "mystery": 5}
+    monkeypatch.setattr(detected, "pre_cut_counts", {"tde": len(catalog), "mystery": 5})
     with pytest.raises(KeyError, match="mystery"):
         _summarize(sim, catalog, detected, photometry)
 

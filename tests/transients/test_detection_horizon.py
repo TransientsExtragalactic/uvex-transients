@@ -6,10 +6,12 @@ from astropy import units as u
 from synphot import SpectralElement
 from synphot.models import Box1D
 
+from uvex_transients.missions import downsample_bandpass
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.transients.base import ExtragalacticTransient
 
-BANDS = {"NUV": SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA)}
+# A `Box1D` is tabulated on ~50,000 wavelengths, which every SED evaluation integrates over; downsampled it has ~60.
+BANDS = {"NUV": downsample_bandpass(SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA))}
 SMALL = {"n_samples": 40, "n_z": 8, "n_time": 20, "confidence": 0.5, "tolerance": 0.1, "progress": False}
 
 

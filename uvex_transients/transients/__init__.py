@@ -1,9 +1,11 @@
 """Transient population base classes composing a TransientSED with rate/metadata."""
 
 from .base import ExtragalacticTransient, TransientBase
+from .horizon import HorizonCurve
 
 __all__ = [
     "ExtragalacticTransient",
+    "HorizonCurve",
     "TransientBase",
 ]
 

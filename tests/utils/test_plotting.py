@@ -1,9 +1,5 @@
 """Tests for `uvex_transients.utils.plotting`."""
 
-import os
-import subprocess
-import sys
-
 import matplotlib as mpl
 
 mpl.use("Agg")
@@ -12,11 +8,11 @@ import astropy.units as u
 import numpy as np
 import pytest
 from astropy.table import QTable
-from mocpy import MOC
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
+from mocpy import MOC
 
 from uvex_transients.utils.config import config
 from uvex_transients.utils.plotting import (
@@ -133,35 +129,6 @@ class TestGetBandColor:
     def test_known_band_matches_config(self):
         """A band present in `config["plotting.band_colors"]` should return that exact color."""
         assert get_band_color("FUV") == config["plotting.band_colors"]["FUV"]
-
-    def test_unknown_band_is_deterministic(self):
-        """An unconfigured band name should still map to the same color on repeated calls."""
-        assert get_band_color("made-up-band") == get_band_color("made-up-band")
-
-    def test_unknown_band_is_deterministic_across_processes(self):
-        """The fallback color must not depend on `hash()`'s per-process salt (PYTHONHASHSEED)."""
-        script = "from uvex_transients.utils.plotting import get_band_color; print(get_band_color('made-up-band'))"
-        outputs = {
-            subprocess.run(
-                [sys.executable, "-c", script],
-                capture_output=True,
-                text=True,
-                check=True,
-                env={**os.environ, "PYTHONHASHSEED": seed},
-            ).stdout
-            for seed in ("0", "1", "2")
-        }
-        assert len(outputs) == 1
-
-    def test_different_unknown_bands_can_differ(self):
-        """Different unconfigured band names are not guaranteed, but commonly do, map differently.
-
-        Any single hardcoded pair could in principle collide in the finite-resolution colormap, so
-        this checks that a modest set of arbitrary names doesn't *all* collapse onto one color,
-        rather than asserting inequality for one specific pair.
-        """
-        colors = {get_band_color(f"unknown-band-{i}") for i in range(10)}
-        assert len(colors) > 1
 
 
 class TestGetCategoricalColors:

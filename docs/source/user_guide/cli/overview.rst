@@ -172,6 +172,7 @@ overrides you want on top of its defaults:
       tde:
         class: TidalDisruptionEvent
         z_limit: 1.7                 # overrides ExtragalacticTransient.redshift_limit
+                                     # (or z_limit: {mag_limit: 23.0} to look it up from the horizon curve)
         duration_limit: 200 day      # overrides TransientBase.duration_limit
         cosmology: !astropy_cosmology {name: Planck18}
         parameters:
@@ -236,9 +237,13 @@ model's parameters actually are.
      - A registered :class:`~uvex_transients.transients.base.TransientBase` subclass name.
        Required.
    * - ``z_limit``
-     - float
+     - float or mapping
      - Overrides :attr:`~uvex_transients.transients.base.ExtragalacticTransient.redshift_limit`.
-       Optional.
+       Either a redshift, or ``{mag_limit: <AB magnitude>}`` to read the redshift off the
+       transient's :attr:`~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`
+       at that single-visit depth (see :ref:`horizon_curves`). The lookup uses the transient's
+       ``duration_limit``, ``cosmology`` and ``parameters`` overrides, and a curve for a
+       non-default combination is generated on the spot, which takes seconds to a minute. Optional.
    * - ``duration_limit``
      - str or number
      - Overrides :attr:`~uvex_transients.transients.base.TransientBase.duration_limit` (a unit
