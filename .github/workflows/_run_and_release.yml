@@ -1,0 +1,96 @@
+# .github/workflows/_run_and_release.yml
+# ------------------------------------------------------------- #
+# Reusable workflow: run one simulation and attach its outputs    #
+# ------------------------------------------------------------- #
+# Runs `uvex-transients run <config>` on its own runner and uploads the data
+# products to an existing GitHub Release (created beforehand by
+# `build_and_release.yml`'s `create_release` job, so parallel callers never race
+# to create it). Not triggered directly, only via `workflow_call`.
+#
+# The primary run (`package: false`) uploads its four files flat, which is what
+# `uvex_transients.utils.get_results` and the docs build expect. Every
+# secondary run (`package: true`) zips the same four files into
+# `<name>.zip` first, so the release page gains one asset per simulation rather
+# than four, and `get_results(..., simulation="<name>")` fetches individual
+# files out of the archive with HTTP range requests.
+name: (Reusable) Run Simulation and Release Outputs
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        description: Path to the run-config YAML, relative to the repository root.
+        required: true
+        type: string
+      name:
+        description: Short simulation name. Names the output directory and, when `package` is true, the `<name>.zip` asset.
+        required: true
+        type: string
+      release_tag:
+        description: Tag of the (already existing, possibly draft) release to upload to.
+        required: true
+        type: string
+      package:
+        description: Zip the outputs into `<name>.zip` before uploading, instead of uploading them flat.
+        required: false
+        type: boolean
+        default: false
+      runner:
+        description: Runner label to run on.
+        required: false
+        type: string
+        default: ubuntu-latest
+      timeout_minutes:
+        description: Job timeout in minutes (GitHub-hosted runners allow at most 360).
+        required: false
+        type: number
+        default: 360
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    name: Run ${{ inputs.name }}
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Run pipeline
+        run: uvex-transients run "${{ inputs.config }}" --out-dir "results/${{ inputs.name }}" --overwrite
+
+      - name: Check the expected data products exist
+        run: |
+          for f in final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv; do
+            test -s "results/${{ inputs.name }}/$f" || { echo "missing output: $f"; exit 1; }
+          done
+          ls -lh "results/${{ inputs.name }}"
+
+      - name: Package outputs into a zip archive
+        if: ${{ inputs.package }}
+        run: |
+          cd "results/${{ inputs.name }}"
+          zip -j "../${{ inputs.name }}.zip" final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv
+          ls -lh "../${{ inputs.name }}.zip"
+
+      - name: Attach data products to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "${{ inputs.package }}" = "true" ]; then
+            gh release upload "${{ inputs.release_tag }}" "results/${{ inputs.name }}.zip" --clobber
+          else
+            gh release upload "${{ inputs.release_tag }}" results/${{ inputs.name }}/*.ecsv --clobber
+          fi
