@@ -12,6 +12,7 @@
 #
 import os
 import sys
+from pathlib import Path
 
 import matplotlib
 
@@ -21,6 +22,11 @@ import matplotlib
 matplotlib.use("Agg")
 
 sys.path.insert(0, os.path.abspath("."))
+
+from _report_runs import discover_runs  # noqa: E402  (needs the sys.path entry above)
+
+# The simulation runs on the Report page, one directory of `report_examples/` each (see `_report_runs.py`).
+REPORT_RUNS = discover_runs(Path(__file__).parent / "report_examples")
 # -- Project information -----------------------------------------------------
 
 project = "UVEX Transients"
@@ -137,12 +143,13 @@ suppress_warnings = ["toc.not_included"]
 # Configure the sphinx galleries. These are contained in the
 # /examples gallery.
 #
-# The second gallery holds the report's examples (see `_report_gen.py`). They download the latest
-# release's data, so its output directory is deliberately left out of the CI cache of
-# `auto_examples` and is rebuilt, and the examples re-run, on every documentation build.
+# Every run on the Report page gets a gallery of its own, built from its directory of `report_examples/`
+# into `report/<run>/` (see `_report_runs.py`; adding a run needs no change here). Those examples download
+# the latest release's data, so their output directories are deliberately left out of the CI cache of
+# `auto_examples` and are rebuilt, and the examples re-run, on every documentation build.
 sphinx_gallery_conf = {
-    "examples_dirs": ["./galleries", "./report_examples"],
-    "gallery_dirs": ["auto_examples", "report/auto_examples"],
+    "examples_dirs": ["./galleries"] + [f"./report_examples/{run.key}" for run in REPORT_RUNS],
+    "gallery_dirs": ["auto_examples"] + [f"report/{run.key}" for run in REPORT_RUNS],
     # Do not abort the build if an individual gallery example fails.
     "abort_on_example_error": False,
     # Report failing examples as warnings instead of failing the build at the end. The release-data
