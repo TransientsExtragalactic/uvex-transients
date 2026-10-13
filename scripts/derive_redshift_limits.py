@@ -24,6 +24,12 @@ Usage::
     python scripts/derive_redshift_limits.py                    # every class
     python scripts/derive_redshift_limits.py Kilonova TypeIa    # chosen classes
     python scripts/derive_redshift_limits.py --mag-limit 25.0
+    python scripts/derive_redshift_limits.py TypeIa --mag-limit 23.0 --duration-limit 3
+
+``--duration-limit`` (in days) replaces each class's duration, for a run-config that overrides ``duration_limit``
+such as ``configs/infant_sne.yaml``. The limit is then the redshift beyond which events are rarely brighter than
+the magnitude limit within that window. The coarse grid no longer starts from the class's own limit, which was
+derived for its default window and can lie well above the answer for a short one.
 """
 
 import argparse
@@ -75,7 +81,7 @@ def round_up(value: float, significant: int = 2) -> float:
     return round(float(np.ceil(value / scale - 1e-9) * scale), 10)
 
 
-def derive(name: str, mag_limit: float) -> tuple[str, float, float]:
+def derive(name: str, mag_limit: float, duration_limit: float | None = None) -> tuple[str, float, float]:
     """
     Derive the redshift limit of one transient class.
 
@@ -85,6 +91,8 @@ def derive(name: str, mag_limit: float) -> tuple[str, float, float]:
         Key of the class in ``CLASSES``.
     mag_limit : float
         The AB magnitude limit, in either UVEX band.
+    duration_limit : float, optional
+        Replaces the class's duration, in days. The default keeps the class's own.
 
     Returns
     -------
@@ -102,14 +110,18 @@ def derive(name: str, mag_limit: float) -> tuple[str, float, float]:
     logging.disable(logging.INFO)
     module, class_name = CLASSES[name]
     transient = getattr(importlib.import_module(module), class_name)()
+    if duration_limit is not None:
+        transient.duration_limit = duration_limit * u.day
     bandpasses = downsample_mission(uvex).detector.bandpasses
 
     # Coarse pass: where is the limit, roughly? The grid spans a factor of 16 around the class's current limit,
-    # and extends itself upward if that does not bracket the answer.
+    # and extends itself upward if that does not bracket the answer. With a replaced duration the current limit says
+    # nothing about the answer, so the grid starts from the method's own default minimum instead.
+    z_min = transient.redshift_limit / 4 if duration_limit is None else 0.003
     curve, _ = transient.get_detection_horizon(
         mag_limit,
         bandpasses,
-        z_min=transient.redshift_limit / 4,
+        z_min=z_min,
         z_max=4 * transient.redshift_limit,
         confidence=CONFIDENCE,
         tolerance=TOLERANCE,
@@ -147,14 +159,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("classes", nargs="*", choices=list(CLASSES), help="classes to derive (default: all)")
     parser.add_argument("--mag-limit", type=float, default=24.5, help="AB magnitude limit (default: 24.5)")
+    parser.add_argument("--duration-limit", type=float, help="replace each class's duration, in days")
     parser.add_argument("--workers", type=int, default=8, help="parallel classes (default: 8)")
     args = parser.parse_args()
 
     names = args.classes or list(CLASSES)
     with ProcessPoolExecutor(args.workers) as pool:
-        results = list(pool.map(derive, names, [args.mag_limit] * len(names)))
+        results = list(pool.map(derive, names, [args.mag_limit] * len(names), [args.duration_limit] * len(names)))
 
-    print(f"\nRedshift limits at {args.mag_limit:g} AB ({CONFIDENCE:.0%} confidence, {TOLERANCE:.0%} tolerance)")
+    window = "" if args.duration_limit is None else f", {args.duration_limit:g} d window"
+    print(
+        f"\nRedshift limits at {args.mag_limit:g} AB ({CONFIDENCE:.0%} confidence, {TOLERANCE:.0%} tolerance{window})"
+    )
     print(f"{'class':<18}{'coarse':>10}{'fine':>10}{'rounded up':>12}")
     for name, coarse, fine in results:
         print(f"{name:<18}{coarse:>10.3f}{fine:>10.3f}{round_up(fine):>12g}")
