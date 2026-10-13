@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -1593,6 +1593,7 @@
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.RESULT_ASSETS.html">uvex_transients.utils.results.RESULT_ASSETS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.find_release.html">uvex_transients.utils.results.find_release</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.get_results.html">uvex_transients.utils.results.get_results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.list_simulations.html">uvex_transients.utils.results.list_simulations</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.utils.summary_report.html">uvex_transients.utils.summary_report</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1701,8 +1702,8 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="uvex_transients.simulation.event.Event.flux">
 <span class="sig-prename descclassname"><span class="pre">Event.</span></span><span class="sig-name descname"><span class="pre">flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><span class="pre">Quantity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mission</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><span class="pre">Mission</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">band</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable" title="(in Python v3.15)"><span class="pre">Hashable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.units.Quantity.html#astropy.units.Quantity" title="(in Astropy v8.0)"><span class="pre">Quantity</span></a></span></span><a class="reference internal" href="../_modules/uvex_transients/simulation/event.html#Event.flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#uvex_transients.simulation.event.Event.flux" title="Link to this definition">#</a></dt>
-<dd><p>Theoretical (noiseless) observed flux density of this event’s SED, at <cite>band</cite>’s pivot wavelength.</p>
-<p>Same inputs, and the same pivot-wavelength-plus-dust definition matching
+<dd><p>Theoretical (noiseless) observed flux density of this event’s SED, averaged over <cite>band</cite>’s throughput.</p>
+<p>Same inputs, and the same photon-weighted-bandpass-plus-dust definition matching
 <a class="reference internal" href="uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> exactly, as <a class="reference internal" href="uvex_transients.simulation.event.Event.mag.html#uvex_transients.simulation.event.Event.mag" title="uvex_transients.simulation.event.Event.mag"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag()</span></code></a> – see its docstring.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

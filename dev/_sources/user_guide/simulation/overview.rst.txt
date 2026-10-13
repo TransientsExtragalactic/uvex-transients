@@ -633,7 +633,7 @@ steps do). There are two:
        in the catalog at once.
    * - ``event_summary``
      - ``catalog``, ``exposure``, ``photometry``, **snr_threshold**; optional ``rise_sigma``,
-       ``processing_delay``, ``lookback``, ``bands``, ``footprints``, ``color_bands``
+       ``rise_mags``, ``processing_delay``, ``lookback``, ``bands``, ``footprints``, ``color_bands``
      - One plain :class:`~astropy.table.QTable` with a row per event of ``catalog``, carrying
        everything needed to study detection timing and turn a selection into a yield.
 
@@ -692,6 +692,21 @@ changes it, which makes it the denominator of every later detection fraction.
    * - ``t_last_constraining_nondet``
      - The last non-detection whose rise to the first detection is significant to at least
        ``rise_sigma`` (default 3), i.e. one that actually constrains the explosion time.
+   * - ``t_rise_1mag``, ``t_rise_2mag``, ``t_rise_3mag``
+     - The first detection at least 1, 2 or 3 magnitudes brighter than the detection limit
+       (``snr_threshold`` times the uncertainty) at the last non-detection, so
+       ``t_rise_Nmag - t_last_nondet`` brackets a rise of N magnitudes as an observer would see it. Any
+       detection can be the one, not only the first. The magnitudes are ``rise_mags`` (default
+       ``(1, 2, 3)``). This is the earliest of the per-band rises below, each against its own band's
+       limit. Masked if no band gets that far above a limit.
+   * - ``n_det_<band>``, ``t_first_det_<band>``, ``t_last_det_<band>``, ``t_last_nondet_<band>``,
+       ``last_nondet_snr_<band>``, ``t_last_constraining_nondet_<band>``, ``t_rise_<N>mag_<band>``
+     - The same detection quantities from one band's measurements alone (for example ``t_rise_2mag_FUV``),
+       one set for each band in ``bands`` (all of the mission's by default). A band's first detection is
+       its own, so its last non-detection is the last epoch before that where *that band* was at or below
+       the threshold, which can come after the any-band first detection. The unsuffixed columns above
+       treat an epoch as a detection if any band is one. ``n_obs``, ``field_id`` and ``t_alert`` are not
+       split by band.
    * - ``peak_snr``, ``peak_mag``, ``peak_color``, ``peak_time``
      - Peak behavior from ``photometry``; ``peak_color`` is ``color_bands[0] - color_bands[1]``
        (default FUV - NUV). Masked for an event with no photometry rows.
@@ -724,9 +739,8 @@ that would mix independent Monte Carlo errors with a shared rate uncertainty.
 Reconstructing and Simulating Events
 ----------------------------------------
 
-Every screening step above works with cheap, batched approximations -- a shared phase grid, a
-single flux point at each band's pivot wavelength. Getting a real, per-observation synthetic
-light curve for one particular event means reconstructing it as a full
+Every screening step above works with cheap, batched approximations, such as a shared phase grid.
+Getting a real, per-observation synthetic light curve for one particular event means reconstructing it as a full
 :class:`~uvex_transients.simulation.event.Event`, via
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.get_events`. Because an
 ``EventCatalog`` holds no live reference to the schedule or the transients it came from (see
@@ -762,7 +776,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
     t = np.linspace(0, tde.duration_limit.to_value(u.day), 300) * u.day
 
     event.mag(t, mission, band="NUV")     # apparent AB magnitude
-    event.flux(t, mission, band="NUV")    # observed flux density, at the band's pivot wavelength
+    event.flux(t, mission, band="NUV")    # observed flux density, averaged over the band's throughput
     event.luminosity(t)                   # rest-frame bolometric L_bol(t)
 
 Synthetic Photometry

@@ -73,7 +73,7 @@ bands.
  .. code-block:: none
 
     E(B-V) at target: 0.007
-    SED parameters: {'amplitude': '2.36e+43 erg / s', 'sigma_rise': '3.58 d', 'tau_decline': '26 d', 'temperature': '1.44e+04 K'}
+    SED parameters: {'amplitude': '1.2e+43 erg / s', 'sigma_rise': '3.58 d', 'tau_decline': '26 d', 'temperature': '1.22e+04 K'}
 
 
 
@@ -214,15 +214,15 @@ doesn't, so its points stay pure shot noise.
     Rubin u/g: 20 visits, one every 10.0 d.
     Rubin r/i/z/y: 40 visits, one every 5.0 d.
     UVEX FUV/NUV: 10 visits, one every 20.0 d.
-     t  instrument band          snr                 ab_mag      
-     d                                                           
-    --- ---------- ---- ---------------------- ------------------
-    0.0       UVEX  FUV 0.00013221681436506683  28.99481738028228
-    0.0       UVEX  NUV  0.0006738824614370495                nan
-    0.0      Rubin    g  0.0015027763939941836                nan
-    0.0      Rubin    i  0.0006517172496378308                nan
-    0.0      Rubin    r  0.0008886615886936758 29.203724142556172
-    0.0      Rubin    u  0.0006981291295000424 28.824280282178023
+     t  instrument band         snr               ab_mag      
+     d                                                        
+    --- ---------- ---- ------------------- ------------------
+    0.0       UVEX  FUV 0.12574923561115076 28.575793140609655
+    0.0       UVEX  NUV -0.6230461642601263                nan
+    0.0      Rubin    g -0.1276267391871685                nan
+    0.0      Rubin    i -1.2586137325663054                nan
+    0.0      Rubin    r  0.1263171603439869  29.20532819708436
+    0.0      Rubin    u 0.12610583197607897 28.832289624116747
 
 
 
@@ -232,13 +232,13 @@ doesn't, so its points stay pure shot noise.
 The light curves
 -------------------
 
-The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag`,
-evaluated at each band's pivot wavelength) alongside the simulated visits from both
+The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag_bandpass`,
+averaged over each band's throughput) alongside the simulated visits from both
 instruments: detections above SNR=5 as points with error bars, fainter visits as
 downward-pointing upper limits -- the same plotting convention used at the end of
 :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-199
+.. GENERATED FROM PYTHON SOURCE LINES 159-200
 
 .. code-block:: Python
 
@@ -253,9 +253,10 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
     fig, ax = resolve_fig_axes(fig_size=(9, 5))
     for band, detector in band_detectors.items():
-        nu = detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
-        theory_mag = tde.sed.mag(
-            nu,
+        bandpass = detector.bandpasses[band]
+        nu = bandpass.waveset.to(u.Hz, equivalencies=u.spectral())
+        theory_mag = tde.sed.mag_bandpass(
+            bandpass,
             t_theory,
             redshift=redshift,
             luminosity_distance=luminosity_distance,
@@ -297,7 +298,7 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.455 seconds)
+   **Total running time of the script:** (0 minutes 0.678 seconds)
 
 
 .. _sphx_glr_download_auto_examples_too_simulations_plot_multiband_too_followup.py:

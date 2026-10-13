@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -809,7 +809,9 @@ defaults to no pre-explosion photometry.</p></td>
 <td><p>Overrides <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.photometry_post_window.html#uvex_transients.transients.base.TransientBase.photometry_post_window" title="uvex_transients.transients.base.TransientBase.photometry_post_window"><code class="xref py py-attr docutils literal notranslate"><span class="pre">photometry_post_window</span></code></a> –
 how far after explosion <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Event.simulate_photometry</span></code></a> evaluates the transient’s SED
 before falling back to background/non-detection photometry (a unit string or a bare number
-of days). Optional; defaults to <code class="docutils literal notranslate"><span class="pre">duration_limit</span></code>.</p></td>
+of days). Optional; defaults to <code class="docutils literal notranslate"><span class="pre">duration_limit</span></code>. Setting it separately lets a short
+<code class="docutils literal notranslate"><span class="pre">duration_limit</span></code> define the detection window while the photometry of the events that
+survive still covers their full evolution (see <code class="docutils literal notranslate"><span class="pre">configs/infant_sne.yaml</span></code>).</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cosmology</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">!astropy_cosmology</span></code></p></td>
@@ -1120,7 +1122,7 @@ arguments.</p>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">event_summary</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code> (default <code class="docutils literal notranslate"><span class="pre">3</span></code>), <code class="docutils literal notranslate"><span class="pre">processing_delay</span></code> (hours, default <code class="docutils literal notranslate"><span class="pre">0</span></code>), <code class="docutils literal notranslate"><span class="pre">lookback</span></code>,
+<td><p><code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code> (default <code class="docutils literal notranslate"><span class="pre">3</span></code>), <code class="docutils literal notranslate"><span class="pre">rise_mags</span></code> (default <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]</span></code>), <code class="docutils literal notranslate"><span class="pre">processing_delay</span></code> (hours, default <code class="docutils literal notranslate"><span class="pre">0</span></code>), <code class="docutils literal notranslate"><span class="pre">lookback</span></code>,
 <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">footprints</span></code>, <code class="docutils literal notranslate"><span class="pre">color_bands</span></code></p></td>
 </tr>
 </tbody>
@@ -1133,7 +1135,10 @@ expected number of real events it stands for, so summing it over a selection giv
 selection’s expected yield), the first and last observation and detection times, the time of the first
 downlink after the first detection (<code class="docutils literal notranslate"><span class="pre">t_alert</span></code>), the last non-detection before the first
 detection (<code class="docutils literal notranslate"><span class="pre">t_last_nondet</span></code> and its <code class="docutils literal notranslate"><span class="pre">last_nondet_snr</span></code>, plus <code class="docutils literal notranslate"><span class="pre">t_last_constraining_nondet</span></code>,
-the last one whose rise to the first detection is at least <code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code>), and the peak SNR,
+the last one whose rise to the first detection is at least <code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code>), <code class="docutils literal notranslate"><span class="pre">t_rise_1mag</span></code>,
+<code class="docutils literal notranslate"><span class="pre">t_rise_2mag</span></code> and <code class="docutils literal notranslate"><span class="pre">t_rise_3mag</span></code> (the first detection that many magnitudes above a band’s
+detection limit at its last non-detection), a copy of the detection quantities for each band
+(<code class="docutils literal notranslate"><span class="pre">t_first_det_FUV</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_nondet_NUV</span></code>, <code class="docutils literal notranslate"><span class="pre">t_rise_2mag_FUV</span></code>, and so on), and the peak SNR,
 magnitude, FUV-NUV color, and time from <code class="docutils literal notranslate"><span class="pre">photometry</span></code>. <code class="docutils literal notranslate"><span class="pre">catalog</span></code> is typically the SNR-cut
 catalog. Its <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code> (the number of events of each type when the baseline was generated,
 which no cut changes) and the <code class="docutils literal notranslate"><span class="pre">exposure</span></code> and rate factors of each type are stored in the table’s

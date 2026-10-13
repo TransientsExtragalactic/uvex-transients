@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -66,7 +66,7 @@
     <link rel="icon" href="../_static/trex_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Analyses of the Latest Release" href="auto_examples/index.html" />
+    <link rel="next" title="Full Population Run" href="full_run/index.html" />
     <link rel="prev" title="Multi-Band ToO Follow-up" href="../auto_examples/too_simulations/plot_multiband_too_followup.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
@@ -422,11 +422,15 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="auto_examples/index.html">Analyses of the Latest Release</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_release_data.html">Loading the Release Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="full_run/index.html">Full Population Run</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="full_run/plot_release_data.html">Loading the Release Data</a></li>
 </ul>
 </details></li>
 
+<li class="toctree-l1 has-children"><a class="reference internal" href="infant_sne/index.html">Infant Supernovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="infant_sne/plot_rise_brackets.html">Rise Time Brackets</a></li>
+</ul>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -485,7 +489,7 @@
                 <article class="bd-article">
                   
   <section id="transient-yield-report">
-<h1>Transient Yield Report<a class="headerlink" href="#transient-yield-report" title="Link to this heading">#</a></h1>
+<span id="report-page"></span><h1>Transient Yield Report<a class="headerlink" href="#transient-yield-report" title="Link to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This page is generated automatically from the latest published release,
@@ -495,7 +499,7 @@ lag between releases.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>Every data product from this run (the event catalog, photometry, exposure, and per-event
+<p>Every data product from these runs (the event catalog, photometry, exposure, and per-event
 summary) is attached to the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.3.0alpha">v0.3.0alpha release page</a> on GitHub, and
 <code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code> downloads them into a local cache. Earlier
 releases are listed on the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases">releases page</a>.</p>
@@ -503,8 +507,8 @@ releases are listed on the <a class="reference external" href="https://github.co
 </section>
 <section id="summary">
 <h1>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h1>
-<p>For each transient type, the fraction of simulated events that UVEX detects and the expected
-number of real events that corresponds to. The first uncertainty on each value is the
+<p>For each transient type of the primary run, the fraction of simulated events that UVEX detects and
+the expected number of real events that corresponds to. The first uncertainty on each value is the
 90% Clopper-Pearson interval from the finite Monte Carlo sample, and the second, on the
 expected detections only, is the uncertainty on the event rate.</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -568,19 +572,43 @@ expected detections only, is the uncertainty on the event rate.</p>
 </table>
 </div>
 </section>
-<section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h1>
-<p>The examples below download this release’s data products with
-<code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code> and analyze them: the event catalog that survived the
-cuts, the exposure catalog, the per-event summary table, and the synthetic photometry. The
-Transient Summaries section has one page per transient family, with its detection funnel, expected
-number of events and the distributions of its selected events. Each page is rebuilt with the docs,
-so they follow the latest release.</p>
+<section id="simulation-runs">
+<h1>Simulation Runs<a class="headerlink" href="#simulation-runs" title="Link to this heading">#</a></h1>
+<p>Each run is its own simulation, with its own population, selection and data products, and has a
+gallery of the analyses done on it. Every example downloads its run’s data from the latest release
+with <code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code> (cached after the first download), and the pages are
+rebuilt with the docs, so they follow the latest release.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-3 sd-g-xs-3 sd-g-sm-3 sd-g-md-3 sd-g-lg-3 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-border-1 run-card docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg version="1.1" width="1.3em" height="1.3em" class="sd-octicon sd-octicon-telescope sd-text-primary" viewBox="0 0 16 16" aria-hidden="true"><path d="M14.184 1.143v-.001l1.422 2.464a1.75 1.75 0 0 1-.757 2.451L3.104 11.713a1.75 1.75 0 0 1-2.275-.702l-.447-.775a1.75 1.75 0 0 1 .53-2.32L11.682.573a1.748 1.748 0 0 1 2.502.57Zm-4.709 9.32h-.001l2.644 3.863a.75.75 0 1 1-1.238.848l-1.881-2.75v2.826a.75.75 0 0 1-1.5 0v-2.826l-1.881 2.75a.75.75 0 1 1-1.238-.848l2.049-2.992a.746.746 0 0 1 .293-.253l1.809-.87a.749.749 0 0 1 .944.252ZM9.436 3.92h-.001l-4.97 3.39.942 1.63 5.42-2.61Zm3.091-2.108h.001l-1.85 1.26 1.505 2.605 2.016-.97a.247.247 0 0 0 .13-.151.247.247 0 0 0-.022-.199l-1.422-2.464a.253.253 0 0 0-.161-.119.254.254 0 0 0-.197.038ZM1.756 9.157a.25.25 0 0 0-.075.33l.447.775a.25.25 0 0 0 .325.1l1.598-.769-.83-1.436-1.465 1Z"></path></svg> Full Population Run</div>
+<p class="sd-card-text">Every registered transient class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale against the UVEX schedule. This is the run behind the summary table above.</p>
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Kilonovae</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">TDEs</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">LFBOTs</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SNe</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SLSNe</span></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">Primary run</span> · 7 analyses · <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml">configs/full_run.yaml</a></p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="full_run/index.html"><span class="doc">Full Population Run</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-border-1 run-card docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg version="1.1" width="1.3em" height="1.3em" class="sd-octicon sd-octicon-zap sd-text-primary" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.504.43a1.516 1.516 0 0 1 2.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.249 1.249 0 0 1-.871.354h-.302a1.25 1.25 0 0 1-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.429Zm1.047 1.074L3.286 8.571A.25.25 0 0 0 3.462 9H6.75a.75.75 0 0 1 .694 1.034l-1.713 4.188 6.982-6.793A.25.25 0 0 0 12.538 7H9.25a.75.75 0 0 1-.683-1.06l2.008-4.418.003-.006a.036.036 0 0 0-.004-.009l-.006-.006-.008-.001c-.003 0-.006.002-.009.004Z"></path></svg> Infant Supernovae</div>
+<p class="sd-card-text">Supernovae detected within 72 hours of explosion, the regime that constrains progenitor radii, shock breakout and shock cooling, and that makes the best targets for early spectroscopy.</p>
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type Ia</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type II</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type Ib/c</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SLSNe</span></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text">1 analysis · <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/infant_sne.yaml">configs/infant_sne.yaml</a></p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="infant_sne/index.html"><span class="doc">Infant Supernovae</span></a></div>
+</div>
+</div>
+</div>
 <div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Analyses of the Latest Release</a></li>
-<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html#transient-summaries">Transient Summaries</a></li>
-</ul>
 </div>
 </section>
 
@@ -604,11 +632,11 @@ so they follow the latest release.</p>
       </div>
     </a>
     <a class="right-next"
-       href="auto_examples/index.html"
+       href="full_run/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Analyses of the Latest Release</p>
+        <p class="prev-next-title">Full Population Run</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -633,7 +661,7 @@ so they follow the latest release.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Transient Yield Report</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#simulation-runs">Simulation Runs</a></li>
 </ul>
 
   </nav></div>

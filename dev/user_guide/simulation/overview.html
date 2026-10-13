@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -1167,7 +1167,7 @@ in the catalog at once.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">event_summary</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>, <code class="docutils literal notranslate"><span class="pre">exposure</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>, <strong>snr_threshold</strong>; optional <code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code>,
-<code class="docutils literal notranslate"><span class="pre">processing_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">lookback</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">footprints</span></code>, <code class="docutils literal notranslate"><span class="pre">color_bands</span></code></p></td>
+<code class="docutils literal notranslate"><span class="pre">rise_mags</span></code>, <code class="docutils literal notranslate"><span class="pre">processing_delay</span></code>, <code class="docutils literal notranslate"><span class="pre">lookback</span></code>, <code class="docutils literal notranslate"><span class="pre">bands</span></code>, <code class="docutils literal notranslate"><span class="pre">footprints</span></code>, <code class="docutils literal notranslate"><span class="pre">color_bands</span></code></p></td>
 <td><p>One plain <a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a> with a row per event of <code class="docutils literal notranslate"><span class="pre">catalog</span></code>, carrying
 everything needed to study detection timing and turn a selection into a yield.</p></td>
 </tr>
@@ -1238,6 +1238,23 @@ for its type. Summing it over any selection gives that selection’s expected yi
 <td><p>The last non-detection whose rise to the first detection is significant to at least
 <code class="docutils literal notranslate"><span class="pre">rise_sigma</span></code> (default 3), i.e. one that actually constrains the explosion time.</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_rise_1mag</span></code>, <code class="docutils literal notranslate"><span class="pre">t_rise_2mag</span></code>, <code class="docutils literal notranslate"><span class="pre">t_rise_3mag</span></code></p></td>
+<td><p>The first detection at least 1, 2 or 3 magnitudes brighter than the detection limit
+(<code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code> times the uncertainty) at the last non-detection, so
+<code class="docutils literal notranslate"><span class="pre">t_rise_Nmag</span> <span class="pre">-</span> <span class="pre">t_last_nondet</span></code> brackets a rise of N magnitudes as an observer would see it. Any
+detection can be the one, not only the first. The magnitudes are <code class="docutils literal notranslate"><span class="pre">rise_mags</span></code> (default
+<code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3)</span></code>). This is the earliest of the per-band rises below, each against its own band’s
+limit. Masked if no band gets that far above a limit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">n_det_&lt;band&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">t_first_det_&lt;band&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_det_&lt;band&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_nondet_&lt;band&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">last_nondet_snr_&lt;band&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">t_last_constraining_nondet_&lt;band&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">t_rise_&lt;N&gt;mag_&lt;band&gt;</span></code></p></td>
+<td><p>The same detection quantities from one band’s measurements alone (for example <code class="docutils literal notranslate"><span class="pre">t_rise_2mag_FUV</span></code>),
+one set for each band in <code class="docutils literal notranslate"><span class="pre">bands</span></code> (all of the mission’s by default). A band’s first detection is
+its own, so its last non-detection is the last epoch before that where <em>that band</em> was at or below
+the threshold, which can come after the any-band first detection. The unsuffixed columns above
+treat an epoch as a detection if any band is one. <code class="docutils literal notranslate"><span class="pre">n_obs</span></code>, <code class="docutils literal notranslate"><span class="pre">field_id</span></code> and <code class="docutils literal notranslate"><span class="pre">t_alert</span></code> are not
+split by band.</p></td>
+</tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">peak_snr</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_mag</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_color</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_time</span></code></p></td>
 <td><p>Peak behavior from <code class="docutils literal notranslate"><span class="pre">photometry</span></code>; <code class="docutils literal notranslate"><span class="pre">peak_color</span></code> is <code class="docutils literal notranslate"><span class="pre">color_bands[0]</span> <span class="pre">-</span> <span class="pre">color_bands[1]</span></code>
 (default FUV - NUV). Masked for an event with no photometry rows.</p></td>
@@ -1268,9 +1285,8 @@ that would mix independent Monte Carlo errors with a shared rate uncertainty.</p
 </section>
 <section id="reconstructing-and-simulating-events">
 <span id="user-guide-simulation-events"></span><h2>Reconstructing and Simulating Events<a class="headerlink" href="#reconstructing-and-simulating-events" title="Link to this heading">#</a></h2>
-<p>Every screening step above works with cheap, batched approximations – a shared phase grid, a
-single flux point at each band’s pivot wavelength. Getting a real, per-observation synthetic
-light curve for one particular event means reconstructing it as a full
+<p>Every screening step above works with cheap, batched approximations, such as a shared phase grid.
+Getting a real, per-observation synthetic light curve for one particular event means reconstructing it as a full
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.html#uvex_transients.simulation.event.Event" title="uvex_transients.simulation.event.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">Event</span></code></a>, via
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.get_events.html#uvex_transients.simulation.event_catalog.EventCatalog.get_events" title="uvex_transients.simulation.event_catalog.EventCatalog.get_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_events()</span></code></a>. Because an
 <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> holds no live reference to the schedule or the transients it came from (see
@@ -1299,7 +1315,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tde</span><span class="o">.</span><span class="n">duration_limit</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="mi">300</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
 
 <span class="n">event</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="o">=</span><span class="s2">"NUV"</span><span class="p">)</span>     <span class="c1"># apparent AB magnitude</span>
-<span class="n">event</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="o">=</span><span class="s2">"NUV"</span><span class="p">)</span>    <span class="c1"># observed flux density, at the band's pivot wavelength</span>
+<span class="n">event</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="o">=</span><span class="s2">"NUV"</span><span class="p">)</span>    <span class="c1"># observed flux density, averaged over the band's throughput</span>
 <span class="n">event</span><span class="o">.</span><span class="n">luminosity</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                   <span class="c1"># rest-frame bolometric L_bol(t)</span>
 </pre></div>
 </div>

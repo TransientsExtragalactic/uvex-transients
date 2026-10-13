@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -465,15 +465,20 @@
 <span class="sd">Downloading the published simulation results attached to UVEX Transients GitHub releases.</span>
 
 <span class="sd">Every tagged release runs ``configs/full_run.yaml`` and attaches the outputs to the release as</span>
-<span class="sd">assets. They are not part of the pip-installed package, so `get_results` fetches them on demand,</span>
-<span class="sd">keeps them in the package cache, and returns local paths for the usual ``from_disk`` loaders.</span>
+<span class="sd">assets. Secondary simulations (for example ``configs/infant_sne.yaml``) are attached too, each as one</span>
+<span class="sd">``&lt;simulation&gt;.zip`` holding the same four files. They are not part of the pip-installed package, so</span>
+<span class="sd">`get_results` fetches them on demand, keeps them in the package cache, and returns local paths for</span>
+<span class="sd">the usual ``from_disk`` loaders. Only the requested files are downloaded from a simulation's archive.</span>
 <span class="sd">"""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ssl</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.error</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
@@ -504,6 +509,8 @@
 
 <span class="n">_API_URL</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://api.github.com/repos/</span><span class="si">{</span><span class="n">GITHUB_REPO</span><span class="si">}</span><span class="s2">/releases"</span>
 <span class="n">_CHUNK_SIZE</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span>
+<span class="n">_RANGE_BLOCK</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span>
+<span class="n">_ARCHIVE_SUFFIX</span> <span class="o">=</span> <span class="s2">".zip"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
@@ -531,7 +538,41 @@
         <span class="n">context</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">create_default_context</span><span class="p">(</span><span class="n">cafile</span><span class="o">=</span><span class="n">certifi</span><span class="o">.</span><span class="n">where</span><span class="p">())</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="n">context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">opener</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">build_opener</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPSHandler</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">),</span> <span class="n">_SameHostAuthRedirect</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_SameHostAuthRedirect</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">HTTPRedirectHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Follow redirects, but drop the ``Authorization`` header when they leave the original host."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">redirect_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the redirected request, without credentials if it goes to a different host.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        req : urllib.request.Request</span>
+<span class="sd">            The original request.</span>
+<span class="sd">        fp : file-like</span>
+<span class="sd">            The response body of the redirect.</span>
+<span class="sd">        code : int</span>
+<span class="sd">            The redirect's HTTP status code.</span>
+<span class="sd">        msg : str</span>
+<span class="sd">            The redirect's HTTP status message.</span>
+<span class="sd">        headers : http.client.HTTPMessage</span>
+<span class="sd">            The redirect's response headers.</span>
+<span class="sd">        newurl : str</span>
+<span class="sd">            The URL being redirected to.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        urllib.request.Request or None</span>
+<span class="sd">            The request to follow, or `None` if the redirect should not be followed.</span>
+<span class="sd">        """</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">redirect_request</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">newurl</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">newurl</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span> <span class="o">!=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">full_url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span><span class="p">:</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">remove_header</span><span class="p">(</span><span class="s2">"Authorization"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_request</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">:</span>
@@ -550,8 +591,8 @@
 <span class="sd">    Look up one published GitHub release.</span>
 
 <span class="sd">    With no `tag`, the newest published release is used. The releases list is read rather than</span>
-<span class="sd">    the ``/releases/latest`` endpoint, since the latter excludes prereleases and every UVEX</span>
-<span class="sd">    Transients release so far is one.</span>
+<span class="sd">    the ``/releases/latest`` endpoint, since the latter excludes prereleases, which some UVEX</span>
+<span class="sd">    Transients releases are.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -627,6 +668,276 @@
         <span class="n">partial</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_RangeUnsupported</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The server answered a ``Range`` request with a full body, so partial reads are not possible."""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_RangeFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">RawIOBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A read-only, seekable file over a remote URL, fetched with HTTP ``Range`` requests.</span>
+
+<span class="sd">    Lets `zipfile.ZipFile` read a remote archive's central directory and individual members</span>
+<span class="sd">    without downloading the rest of it. Wrap in an `io.BufferedReader` so that the many small</span>
+<span class="sd">    reads `zipfile` makes become a few large requests.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The file's download URL. Redirects are followed on every request, so the short-lived signed</span>
+<span class="sd">        URL that release assets redirect to never needs to be cached.</span>
+<span class="sd">    size : int</span>
+<span class="sd">        The file's size in bytes (known from the release metadata).</span>
+<span class="sd">    timeout : float</span>
+<span class="sd">        Network timeout in seconds, per request.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">readable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Report that the file can be read.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Always `True`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">seekable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Report that the file supports random access.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Always `True`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">tell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the current read position.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The offset, in bytes from the start of the file.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">whence</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Move the read position. No request is made until the next read.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        offset : int</span>
+<span class="sd">            The offset in bytes, relative to `whence`.</span>
+<span class="sd">        whence : int, optional</span>
+<span class="sd">            `io.SEEK_SET` (from the start of the file, the default), `io.SEEK_CUR` (from the current</span>
+<span class="sd">            position) or `io.SEEK_END` (from the end of the file).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The new position, in bytes from the start of the file.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `whence` is not one of the three above, or the new position is negative.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_CUR</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid whence (</span><span class="si">{</span><span class="n">whence</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"negative seek position"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="k">return</span> <span class="n">pos</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">readinto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Read bytes at the current position into `buffer`, with one ``Range`` request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        buffer : bytearray or memoryview</span>
+<span class="sd">            Writable buffer to fill. At most ``len(buffer)`` bytes are requested, fewer near the end of the file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of bytes read, 0 at the end of the file.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        _RangeUnsupported</span>
+<span class="sd">            If the server answers with the whole file instead of the requested range.</span>
+<span class="sd">        """</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">view</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_url</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s2">"Range"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"bytes=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">_urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">206</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_RangeUnsupported</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_url</span><span class="si">}</span><span class="s2"> ignored a Range request (HTTP </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">view</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_archive_name</span><span class="p">(</span><span class="n">simulation</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the release asset name of `simulation`'s archive."""</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">simulation</span><span class="si">}{</span><span class="n">_ARCHIVE_SUFFIX</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_simulation_names</span><span class="p">(</span><span class="n">release</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return the sorted simulation names among `release`'s ``&lt;simulation&gt;.zip`` assets."""</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">asset</span><span class="p">[</span><span class="s2">"name"</span><span class="p">][:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">_ARCHIVE_SUFFIX</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="n">release</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"assets"</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">asset</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_ARCHIVE_SUFFIX</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="list_simulations">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.results.list_simulations.html#uvex_transients.utils.results.list_simulations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_simulations</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    List the secondary simulations attached to a published release.</span>
+
+<span class="sd">    Each is a ``&lt;simulation&gt;.zip`` asset; pass the name to `get_results` as ``simulation``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        The release tag. The default is the newest published release.</span>
+<span class="sd">    timeout : float, optional</span>
+<span class="sd">        Network timeout in seconds. The default is 60.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        The simulation names, sorted.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ConnectionError</span>
+<span class="sd">        If the GitHub releases API cannot be reached.</span>
+<span class="sd">    LookupError</span>
+<span class="sd">        If there are no published releases, or none carries `tag`.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_simulation_names</span><span class="p">(</span><span class="n">find_release</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">timeout</span><span class="p">))</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_member</span><span class="p">(</span><span class="n">archive</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipInfo</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Stream one archive member to `dest` through a ``.part`` file, so a failure never leaves a truncated `dest`."""</span>
+    <span class="n">partial</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">".part"</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">,</span>
+            <span class="nb">open</span><span class="p">(</span><span class="n">partial</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span>
+            <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+            <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">total</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">file_size</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Extracting </span><span class="si">{</span><span class="n">dest</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="s2">"B"</span><span class="p">,</span>
+                <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">while</span> <span class="n">chunk</span> <span class="o">:=</span> <span class="n">source</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">_CHUNK_SIZE</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+        <span class="n">partial</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">partial</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_simulation_results</span><span class="p">(</span>
+    <span class="n">release</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">simulation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">assets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Fetch the requested files of one simulation's archive into `out_dir`, downloading only those members.</span>
+
+<span class="sd">    See `get_results`, which resolves `release` and `out_dir` and documents the other arguments.</span>
+<span class="sd">    """</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">release</span><span class="p">[</span><span class="s2">"tag_name"</span><span class="p">]</span>
+    <span class="n">archive_name</span> <span class="o">=</span> <span class="n">_archive_name</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="p">{</span><span class="n">asset</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]:</span> <span class="n">asset</span> <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="n">release</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"assets"</span><span class="p">,</span> <span class="p">[])}</span>
+    <span class="k">if</span> <span class="n">archive_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Release </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> has no simulation </span><span class="si">{</span><span class="n">simulation</span><span class="si">!r}</span><span class="s2"> (no asset </span><span class="si">{</span><span class="n">archive_name</span><span class="si">!r}</span><span class="s2">). "</span>
+            <span class="sa">f</span><span class="s2">"Available simulations: </span><span class="si">{</span><span class="n">_simulation_names</span><span class="p">(</span><span class="n">release</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="n">asset</span> <span class="o">=</span> <span class="n">available</span><span class="p">[</span><span class="n">archive_name</span><span class="p">]</span>
+
+    <span class="n">remote</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BufferedReader</span><span class="p">(</span><span class="n">_RangeFile</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s2">"browser_download_url"</span><span class="p">],</span> <span class="n">asset</span><span class="p">[</span><span class="s2">"size"</span><span class="p">],</span> <span class="n">timeout</span><span class="p">),</span> <span class="n">_RANGE_BLOCK</span><span class="p">)</span>
+    <span class="n">fallback</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">archive</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">remote</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">_RangeUnsupported</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"The server does not support Range requests; downloading all of </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">archive_name</span><span class="p">)</span>
+            <span class="n">fallback</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">archive_name</span> <span class="o">+</span> <span class="s2">".download"</span><span class="p">)</span>
+            <span class="n">_download</span><span class="p">(</span><span class="n">asset</span><span class="p">[</span><span class="s2">"browser_download_url"</span><span class="p">],</span> <span class="n">fallback</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="n">archive</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">fallback</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">archive</span><span class="p">:</span>
+            <span class="n">members</span> <span class="o">=</span> <span class="p">{</span><span class="n">info</span><span class="o">.</span><span class="n">filename</span><span class="p">:</span> <span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">archive</span><span class="o">.</span><span class="n">infolist</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()}</span>
+            <span class="n">requested</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="k">if</span> <span class="n">assets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">assets</span><span class="p">)</span>
+            <span class="n">filenames</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">RESULT_ASSETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">requested</span><span class="p">}</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">members</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Simulation </span><span class="si">{</span><span class="n">simulation</span><span class="si">!r}</span><span class="s2"> of release </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> has no file(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">. "</span>
+                    <span class="sa">f</span><span class="s2">"Available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">members</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span>
+                <span class="n">dest</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="n">filename</span>
+                <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="n">info</span><span class="o">.</span><span class="n">file_size</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Results file </span><span class="si">%s</span><span class="s2"> already present at </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+                        <span class="n">paths</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2"> differs in size from </span><span class="si">{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2">'s </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> in release </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">; "</span>
+                            <span class="s2">"pass overwrite=True to replace it."</span>
+                        <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Extracting </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2"> of release </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">archive_name</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+                <span class="n">_extract_member</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+                <span class="n">paths</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">remote</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fallback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fallback</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">paths</span>
+
+
 <div class="viewcode-block" id="get_results">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.results.get_results.html#uvex_transients.utils.results.get_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_results</span><span class="p">(</span>
@@ -635,6 +946,7 @@
     <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">simulation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Download assets of a published release and return their local paths.</span>
@@ -648,9 +960,9 @@
 <span class="sd">    ----------</span>
 <span class="sd">    assets : list of str, optional</span>
 <span class="sd">        What to fetch, each either a key of `RESULT_ASSETS` (``"events"``, ``"exposure"``,</span>
-<span class="sd">        ``"photometry"``, ``"summary"``) or an asset file name. The default is every asset of the</span>
-<span class="sd">        release, including the large photometry table, so asking for only what you need is</span>
-<span class="sd">        usually better.</span>
+<span class="sd">        ``"photometry"``, ``"summary"``) or a file name. The default is every file of the</span>
+<span class="sd">        release (or of the `simulation`), including the large photometry table, so asking for only</span>
+<span class="sd">        what you need is usually better.</span>
 <span class="sd">    tag : str, optional</span>
 <span class="sd">        The release tag to fetch. The default is the newest published release.</span>
 <span class="sd">    directory : str or os.PathLike, optional</span>
@@ -661,6 +973,12 @@
 <span class="sd">        silently overwritten.</span>
 <span class="sd">    timeout : float, optional</span>
 <span class="sd">        Network timeout in seconds, per request. The default is 60.</span>
+<span class="sd">    simulation : str, optional</span>
+<span class="sd">        Fetch from a secondary simulation (see `list_simulations`, for example ``"infant_sne"``)</span>
+<span class="sd">        instead of the release's primary run. Each is attached as ``&lt;simulation&gt;.zip`` holding the</span>
+<span class="sd">        same files as the primary run, under the same `RESULT_ASSETS` keys. Only the requested</span>
+<span class="sd">        files are downloaded from the archive, using HTTP range requests. Files are cached in</span>
+<span class="sd">        ``&lt;cache_dir&gt;/results/&lt;tag&gt;/&lt;simulation&gt;/``. The default is the primary run.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -672,8 +990,8 @@
 <span class="sd">    ConnectionError</span>
 <span class="sd">        If the GitHub releases API cannot be reached.</span>
 <span class="sd">    LookupError</span>
-<span class="sd">        If there are no published releases, `tag` does not exist, or a requested asset is not on</span>
-<span class="sd">        the release.</span>
+<span class="sd">        If there are no published releases, `tag` does not exist, `simulation` is not on the</span>
+<span class="sd">        release, or a requested asset is not on the release (or in the simulation).</span>
 <span class="sd">    FileExistsError</span>
 <span class="sd">        If a file already exists with a different size than the release asset and `overwrite` is</span>
 <span class="sd">        False.</span>
@@ -689,12 +1007,24 @@
 
 <span class="sd">        paths = get_results(["events", "summary"])</span>
 <span class="sd">        events = EventCatalog.from_disk(paths["events"])</span>
+
+<span class="sd">        # The same files from a secondary simulation.</span>
+<span class="sd">        infant = get_results(</span>
+<span class="sd">            ["summary"], simulation="infant_sne"</span>
+<span class="sd">        )</span>
 <span class="sd">    """</span>
     <span class="n">release</span> <span class="o">=</span> <span class="n">find_release</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
     <span class="n">tag</span> <span class="o">=</span> <span class="n">release</span><span class="p">[</span><span class="s2">"tag_name"</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">simulation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">default_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">"results"</span> <span class="o">/</span> <span class="n">tag</span> <span class="o">/</span> <span class="n">simulation</span>
+        <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="k">if</span> <span class="n">directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">default_dir</span>
+        <span class="n">out_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_get_simulation_results</span><span class="p">(</span><span class="n">release</span><span class="p">,</span> <span class="n">simulation</span><span class="p">,</span> <span class="n">assets</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
     <span class="n">available</span> <span class="o">=</span> <span class="p">{</span><span class="n">asset</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]:</span> <span class="n">asset</span> <span class="k">for</span> <span class="n">asset</span> <span class="ow">in</span> <span class="n">release</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"assets"</span><span class="p">,</span> <span class="p">[])}</span>
 
-    <span class="n">requested</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">available</span><span class="p">)</span> <span class="k">if</span> <span class="n">assets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">assets</span><span class="p">)</span>
+    <span class="n">requested</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">available</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_ARCHIVE_SUFFIX</span><span class="p">)]</span> <span class="k">if</span> <span class="n">assets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">assets</span><span class="p">)</span>
     <span class="n">filenames</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">RESULT_ASSETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">requested</span><span class="p">}</span>
     <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>

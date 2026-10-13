@@ -238,15 +238,15 @@ both SEDs so that any difference between them is down to the model, not the nois
 
  .. code-block:: none
 
-     t   instrument band         snr               ab_mag      
-     d                                                         
-    ---- ---------- ---- ------------------- ------------------
-    0.05       UVEX  FUV  1.0287892031113242 26.116342061489874
-    0.05       UVEX  NUV   0.350023788414141 27.829171465330667
-    0.05      Rubin    g  0.8974797778502643 27.514455638700106
-    0.05      Rubin    i 0.47490010288885814  27.60535090970201
-    0.05      Rubin    r  0.9572344510044923 27.008002140811417
-    0.05      Rubin    u  0.9844588041683561  26.58958729260391
+     t   instrument band        snr               ab_mag      
+     d                                                        
+    ---- ---------- ---- ------------------ ------------------
+    0.05       UVEX  FUV  1.028789203111324 26.132560657182545
+    0.05       UVEX  NUV 0.3500237884141409 27.828765597575007
+    0.05      Rubin    g 0.8974797778502643 27.503710019322916
+    0.05      Rubin    i  0.474900102888858 27.602500354536645
+    0.05      Rubin    r 0.9572344510044924 27.001262174732204
+    0.05      Rubin    u  0.984458804168356 26.588389853944008
 
 
 
@@ -271,7 +271,7 @@ blackbody. Only visits with SNR > 5 are drawn as points.
     band_detectors = dict.fromkeys(RUBIN_CADENCES, rubin.detector) | {"FUV": uvex.detector, "NUV": uvex.detector}
     band_colors = {band: get_band_color(band) for band in band_detectors}
     band_nu = {
-        band: detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
+        band: detector.bandpasses[band].waveset.to(u.Hz, equivalencies=u.spectral())
         for band, detector in band_detectors.items()
     }
 
@@ -280,8 +280,8 @@ blackbody. Only visits with SNR > 5 are drawn as points.
         for band, color in band_colors.items():
             nu = band_nu[band]
             for sed, linestyle in ((sed_full, "-"), (sed_bb, "--")):
-                theory = sed.mag(
-                    nu,
+                theory = sed.mag_bandpass(
+                    band_detectors[band].bandpasses[band],
                     t_theory,
                     redshift=event["z"],
                     luminosity_distance=event["d_L"],
@@ -337,7 +337,7 @@ blackbody. Only visits with SNR > 5 are drawn as points.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 7.645 seconds)
+   **Total running time of the script:** (0 minutes 30.553 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_shock_cooling_comparison.py:

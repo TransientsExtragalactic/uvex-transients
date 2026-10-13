@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -872,13 +872,13 @@
             <span class="sa">f</span><span class="s2">"one of them: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bandpass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_band_grid_and_log_attenuation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bandpass</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return `bandpass`'s pivot frequency and this event's own dust attenuation there.</span>
+<span class="sd">        Return `bandpass`'s frequency grid and throughput, and this event's own dust attenuation on that grid.</span>
 
-<span class="sd">        The same single-wavelength approximation `simulate_photometry` uses for its</span>
-<span class="sd">        noiseless flux (`SpectralElement.pivot`), not a full bandpass-throughput</span>
-<span class="sd">        integral -- see :meth:`mag`'s docstring for why that distinction matters here.</span>
+<span class="sd">        What `simulate_photometry` measures is the flux averaged over the full bandpass (see</span>
+<span class="sd">        `~uvex_transients.models._utils.measure_bands`), so the noiseless `mag` and `flux` integrate over the</span>
+<span class="sd">        same throughput curve, with the dust applied at every sample of it rather than at one wavelength.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -887,12 +887,14 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        tuple of (~astropy.units.Quantity, numpy.ndarray)</span>
-<span class="sd">            `bandpass`'s pivot frequency, and the natural log of this event's</span>
-<span class="sd">            dust attenuation there (see :func:`~uvex_transients.dust.log_attenuation`).</span>
+<span class="sd">        tuple of (~astropy.units.Quantity, numpy.ndarray, numpy.ndarray)</span>
+<span class="sd">            `bandpass`'s observed frequency grid, its dimensionless throughput on that grid, and the natural</span>
+<span class="sd">            log of this event's dust attenuation on that grid (see :func:`~uvex_transients.dust.log_attenuation`).</span>
 <span class="sd">        """</span>
-        <span class="n">nu</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">pivot</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
-        <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">log_attenuation</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">)</span>
+        <span class="n">wave</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">waveset</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
+        <span class="n">throughput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bandpass</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">log_attenuation</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Event.mag">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.mag.html#uvex_transients.simulation.event.Event.mag">[docs]</a>
@@ -902,13 +904,13 @@
 
 <span class="sd">        This is the literal noiseless curve :meth:`simulate_photometry`'s noisy points</span>
 <span class="sd">        scatter around, not merely a physically similar but numerically different</span>
-<span class="sd">        quantity: like that method, the flux is evaluated at `band`'s pivot</span>
-<span class="sd">        wavelength (`~synphot.SpectralElement.pivot`), *not* integrated across the</span>
-<span class="sd">        full bandpass throughput, and this event's own foreground dust (`ebv`) is</span>
-<span class="sd">        applied, in addition to its `redshift`/`luminosity_distance`/SED parameters</span>
-<span class="sd">        (see :meth:`sample_parameters`) -- so only a time grid and a mission/band are</span>
-<span class="sd">        needed. Useful for plotting a theory curve alongside real observations, not</span>
-<span class="sd">        for simulating a detection.</span>
+<span class="sd">        quantity: like that method, the flux is the photon-weighted average over the full</span>
+<span class="sd">        bandpass throughput (`~uvex_transients.models.core.base.SpectralModel.flux_band`),</span>
+<span class="sd">        *not* the flux at the bandpass's pivot wavelength, and this event's own foreground</span>
+<span class="sd">        dust (`ebv`) is applied across the band, in addition to its</span>
+<span class="sd">        `redshift`/`luminosity_distance`/SED parameters (see :meth:`sample_parameters`) --</span>
+<span class="sd">        so only a time grid and a mission/band are needed. Useful for plotting a theory</span>
+<span class="sd">        curve alongside real observations, not for simulating a detection.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -927,9 +929,10 @@
 <span class="sd">            with `t`'s shape.</span>
 <span class="sd">        """</span>
         <span class="n">bandpass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_bandpass</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-        <span class="n">nu</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">mag</span><span class="p">(</span>
+        <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_grid_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">mag_band</span><span class="p">(</span>
             <span class="n">nu</span><span class="p">,</span>
+            <span class="n">throughput</span><span class="p">,</span>
             <span class="n">t</span><span class="p">,</span>
             <span class="n">redshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">,</span>
             <span class="n">luminosity_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span><span class="p">,</span>
@@ -942,9 +945,9 @@
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.event.Event.flux.html#uvex_transients.simulation.event.Event.flux">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="n">band</span><span class="p">:</span> <span class="n">Hashable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Theoretical (noiseless) observed flux density of this event's SED, at `band`'s pivot wavelength.</span>
+<span class="sd">        Theoretical (noiseless) observed flux density of this event's SED, averaged over `band`'s throughput.</span>
 
-<span class="sd">        Same inputs, and the same pivot-wavelength-plus-dust definition matching</span>
+<span class="sd">        Same inputs, and the same photon-weighted-bandpass-plus-dust definition matching</span>
 <span class="sd">        :meth:`simulate_photometry` exactly, as :meth:`mag` -- see its docstring.</span>
 
 <span class="sd">        Parameters</span>
@@ -963,9 +966,10 @@
 <span class="sd">            The observed flux density, with `t`'s shape.</span>
 <span class="sd">        """</span>
         <span class="n">bandpass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_bandpass</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="n">band</span><span class="p">)</span>
-        <span class="n">nu</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pivot_nu_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span>
+        <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">attenuation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_grid_and_log_attenuation</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="o">.</span><span class="n">flux_band</span><span class="p">(</span>
             <span class="n">nu</span><span class="p">,</span>
+            <span class="n">throughput</span><span class="p">,</span>
             <span class="n">t</span><span class="p">,</span>
             <span class="n">redshift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift</span><span class="p">,</span>
             <span class="n">luminosity_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_luminosity_distance</span><span class="p">,</span>

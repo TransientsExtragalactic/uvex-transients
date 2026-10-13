@@ -182,7 +182,7 @@ t_theory = np.linspace(T_START.value, DURATION.value, 300) * u.day
 band_detectors = dict.fromkeys(RUBIN_CADENCES, rubin.detector) | {"FUV": uvex.detector, "NUV": uvex.detector}
 band_colors = {band: get_band_color(band) for band in band_detectors}
 band_nu = {
-    band: detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
+    band: detector.bandpasses[band].waveset.to(u.Hz, equivalencies=u.spectral())
     for band, detector in band_detectors.items()
 }
 
@@ -191,8 +191,8 @@ for ax, event, table_full, table_bb in zip(axes.flat, events, phot_full, phot_bb
     for band, color in band_colors.items():
         nu = band_nu[band]
         for sed, linestyle in ((sed_full, "-"), (sed_bb, "--")):
-            theory = sed.mag(
-                nu,
+            theory = sed.mag_bandpass(
+                band_detectors[band].bandpasses[band],
                 t_theory,
                 redshift=event["z"],
                 luminosity_distance=event["d_L"],

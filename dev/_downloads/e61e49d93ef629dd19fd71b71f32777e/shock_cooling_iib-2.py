@@ -58,9 +58,10 @@ for ax, params in zip(axes, param_draws):
     t_theory = np.linspace(0.02, DURATION.to_value(u.day), 300) * u.day
     for band, color in band_colors.items():
         detector = band_detectors[band]
-        nu = detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
-        theory_mag = sed.mag(
-            nu, t_theory, redshift=redshift, luminosity_distance=distance,
+        bandpass = detector.bandpasses[band]
+        nu = bandpass.waveset.to(u.Hz, equivalencies=u.spectral())
+        theory_mag = sed.mag_bandpass(
+            bandpass, t_theory, redshift=redshift, luminosity_distance=distance,
             log_attenuation=log_attenuation(nu, ebv), **params,
         )
         ax.plot(t_theory.value, theory_mag.value, color=color, lw=1.2, alpha=0.6)

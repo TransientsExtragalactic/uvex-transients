@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -762,8 +762,10 @@ analogs of <code class="docutils literal notranslate"><span class="pre">eval</sp
 spectrum over some bandpass. <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.flux_band.html#uvex_transients.models.core.base.SpectralModel.flux_band" title="uvex_transients.models.core.base.SpectralModel.flux_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flux_band()</span></code></a> and
 <a class="reference internal" href="../../_as_gen/uvex_transients.models.core.base.SpectralModel.mag_band.html#uvex_transients.models.core.base.SpectralModel.mag_band" title="uvex_transients.models.core.base.SpectralModel.mag_band"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mag_band()</span></code></a> do exactly that: give them a
 frequency grid and the (dimensionless) throughput at each point, and they return the
-throughput-weighted flux density, or its AB magnitude, over that band. Here we build a simple
-Gaussian bandpass by hand to stand in for a real UV filter:</p>
+photon-weighted flux density, or its AB magnitude, over that band. That is the flux density of a
+flat-<span class="math notranslate nohighlight">\(F_\nu\)</span> (AB) source that would give a photon-counting detector the same counts,
+<span class="math notranslate nohighlight">\(\int F_\nu T\,d\nu/\nu \,/ \int T\,d\nu/\nu\)</span>. Here we build a simple Gaussian bandpass by hand to
+stand in for a real UV filter:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>

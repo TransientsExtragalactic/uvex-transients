@@ -1,3 +1,5 @@
+.. _report_page:
+
 Transient Yield Report
 =======================
 
@@ -10,7 +12,7 @@ Transient Yield Report
 
 .. seealso::
 
-   Every data product from this run (the event catalog, photometry, exposure, and per-event
+   Every data product from these runs (the event catalog, photometry, exposure, and per-event
    summary) is attached to the `v0.3.0alpha release page <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.3.0alpha>`__ on GitHub, and
    :func:`~uvex_transients.utils.get_results` downloads them into a local cache. Earlier
    releases are listed on the `releases page <https://github.com/TransientsExtragalactic/uvex-transients/releases>`__.
@@ -18,8 +20,8 @@ Transient Yield Report
 Summary
 =======
 
-For each transient type, the fraction of simulated events that UVEX detects and the expected
-number of real events that corresponds to. The first uncertainty on each value is the
+For each transient type of the primary run, the fraction of simulated events that UVEX detects and
+the expected number of real events that corresponds to. The first uncertainty on each value is the
 90% Clopper-Pearson interval from the finite Monte Carlo sample, and the second, on the
 expected detections only, is the uncertainty on the event rate.
 
@@ -64,18 +66,45 @@ expected detections only, is the uncertainty on the event rate.
      - :math:`0.122^{+0.00766}_{-0.00735}`
      - :math:`12,768^{+801}_{-768}\,{}^{+2,471}_{-4,119}`
 
-Examples
-========
+Simulation Runs
+===============
 
-The examples below download this release's data products with
-:func:`~uvex_transients.utils.get_results` and analyze them: the event catalog that survived the
-cuts, the exposure catalog, the per-event summary table, and the synthetic photometry. The
-Transient Summaries section has one page per transient family, with its detection funnel, expected
-number of events and the distributions of its selected events. Each page is rebuilt with the docs,
-so they follow the latest release.
+Each run is its own simulation, with its own population, selection and data products, and has a
+gallery of the analyses done on it. Every example downloads its run's data from the latest release
+with :func:`~uvex_transients.utils.get_results` (cached after the first download), and the pages are
+rebuilt with the docs, so they follow the latest release.
+
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: :octicon:`telescope;1.3em;sd-text-primary` Full Population Run
+      :link: full_run/index
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1 run-card
+
+      Every registered transient class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale against the UVEX schedule. This is the run behind the summary table above.
+
+      :bdg-secondary-line:`Kilonovae` :bdg-secondary-line:`TDEs` :bdg-secondary-line:`LFBOTs` :bdg-secondary-line:`SNe` :bdg-secondary-line:`SLSNe`
+
+      +++
+      :bdg-primary:`Primary run` · 7 analyses · `configs/full_run.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml>`__
+
+   .. grid-item-card:: :octicon:`zap;1.3em;sd-text-primary` Infant Supernovae
+      :link: infant_sne/index
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1 run-card
+
+      Supernovae detected within 72 hours of explosion, the regime that constrains progenitor radii, shock breakout and shock cooling, and that makes the best targets for early spectroscopy.
+
+      :bdg-secondary-line:`Type Ia` :bdg-secondary-line:`Type II` :bdg-secondary-line:`Type Ib/c` :bdg-secondary-line:`SLSNe`
+
+      +++
+      1 analysis · `configs/infant_sne.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/infant_sne.yaml>`__
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
 
-   auto_examples/index
+   full_run/index
+   infant_sne/index
 

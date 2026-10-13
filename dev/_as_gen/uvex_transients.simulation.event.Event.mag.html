@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e30ec542" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d86e327e" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -1593,6 +1593,7 @@
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.RESULT_ASSETS.html">uvex_transients.utils.results.RESULT_ASSETS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.find_release.html">uvex_transients.utils.results.find_release</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.get_results.html">uvex_transients.utils.results.get_results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.results.list_simulations.html">uvex_transients.utils.results.list_simulations</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.utils.summary_report.html">uvex_transients.utils.summary_report</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1704,13 +1705,13 @@
 <dd><p>Theoretical (noiseless) apparent AB magnitude of this event’s SED at time(s) <cite>t</cite>.</p>
 <p>This is the literal noiseless curve <a class="reference internal" href="uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a>’s noisy points
 scatter around, not merely a physically similar but numerically different
-quantity: like that method, the flux is evaluated at <cite>band</cite>’s pivot
-wavelength (<cite>~synphot.SpectralElement.pivot</cite>), <em>not</em> integrated across the
-full bandpass throughput, and this event’s own foreground dust (<cite>ebv</cite>) is
-applied, in addition to its <cite>redshift</cite>/<cite>luminosity_distance</cite>/SED parameters
-(see <a class="reference internal" href="uvex_transients.simulation.event.Event.sample_parameters.html#uvex_transients.simulation.event.Event.sample_parameters" title="uvex_transients.simulation.event.Event.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a>) – so only a time grid and a mission/band are
-needed. Useful for plotting a theory curve alongside real observations, not
-for simulating a detection.</p>
+quantity: like that method, the flux is the photon-weighted average over the full
+bandpass throughput (<cite>~uvex_transients.models.core.base.SpectralModel.flux_band</cite>),
+<em>not</em> the flux at the bandpass’s pivot wavelength, and this event’s own foreground
+dust (<cite>ebv</cite>) is applied across the band, in addition to its
+<cite>redshift</cite>/<cite>luminosity_distance</cite>/SED parameters (see <a class="reference internal" href="uvex_transients.simulation.event.Event.sample_parameters.html#uvex_transients.simulation.event.Event.sample_parameters" title="uvex_transients.simulation.event.Event.sample_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_parameters()</span></code></a>) –
+so only a time grid and a mission/band are needed. Useful for plotting a theory
+curve alongside real observations, not for simulating a detection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

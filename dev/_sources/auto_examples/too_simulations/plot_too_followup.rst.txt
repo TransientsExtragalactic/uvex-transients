@@ -90,7 +90,7 @@ TDE happens to be observed.
  .. code-block:: none
 
     E(B-V) at target: 0.007
-    SED parameters: {'amplitude': '2.36e+43 erg / s', 'sigma_rise': '3.58 d', 'tau_decline': '26 d', 'temperature': '1.44e+04 K'}
+    SED parameters: {'amplitude': '1.2e+43 erg / s', 'sigma_rise': '3.58 d', 'tau_decline': '26 d', 'temperature': '1.22e+04 K'}
 
 
 
@@ -171,15 +171,15 @@ own docstring for exactly when that placeholder default is (and isn't) safe.
 
  .. code-block:: none
 
-     t   band        snr               ab_mag      
-     d                                             
-    ---- ---- ------------------ ------------------
-     0.0  FUV 0.1324916381743145 28.509866001127584
-     0.0  NUV 0.2564373626284134  28.47135713361507
-     7.0  FUV  8.487093494133576 23.410170949254887
-     7.0  NUV  23.27132039691111 22.295042312015934
-    14.0  FUV  82.22508541001523 18.947905416400523
-    14.0  NUV 196.44507566861085  17.81308039765945
+     t   band         snr               ab_mag      
+     d                                              
+    ---- ---- ------------------- ------------------
+     0.0  FUV 0.12777293884208749  28.55818299831677
+     0.0  NUV   0.236334140816305 28.575101852271324
+     7.0  FUV   3.409821732759805 24.743187374015932
+     7.0  NUV   14.31037044738681 23.216402575634717
+    14.0  FUV   45.03621733645027  20.24936120509542
+    14.0  NUV  130.79888738453997  18.70711231418177
 
 
 
@@ -189,13 +189,13 @@ own docstring for exactly when that placeholder default is (and isn't) safe.
 The light curves
 -------------------
 
-The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag`,
-evaluated at each band's pivot wavelength) alongside the simulated weekly visits:
+The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag_bandpass`,
+averaged over each band's throughput) alongside the simulated weekly visits:
 detections above SNR=5 as points with error bars, fainter visits as
 downward-pointing upper limits -- the same plotting convention used at the end of
 :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-147
+.. GENERATED FROM PYTHON SOURCE LINES 112-148
 
 .. code-block:: Python
 
@@ -205,9 +205,10 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
     fig, ax = resolve_fig_axes(fig_size=(7, 4))
     for band in ("FUV", "NUV"):
-        nu = uvex.detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
-        theory_mag = tde.sed.mag(
-            nu,
+        bandpass = uvex.detector.bandpasses[band]
+        nu = bandpass.waveset.to(u.Hz, equivalencies=u.spectral())
+        theory_mag = tde.sed.mag_bandpass(
+            bandpass,
             t_theory,
             redshift=redshift,
             luminosity_distance=luminosity_distance,
@@ -246,7 +247,7 @@ downward-pointing upper limits -- the same plotting convention used at the end o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-159
+.. GENERATED FROM PYTHON SOURCE LINES 149-160
 
 Bonus: what zodiacal light would have cost
 -----------------------------------------------
@@ -260,7 +261,7 @@ background, Galactic *and* zodiacal light together, and now real
 :attr:`~m4opt.missions.Mission.observer_location`) are needed too, since zodiacal
 light actually depends on both.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-182
+.. GENERATED FROM PYTHON SOURCE LINES 160-183
 
 .. code-block:: Python
 
@@ -295,8 +296,8 @@ light actually depends on both.
 
  .. code-block:: none
 
-    FUV: median SNR 18.7 (Galactic only) vs 18.7 (+ zodiacal)
-    NUV: median SNR 48.4 (Galactic only) vs 48.0 (+ zodiacal)
+    FUV: median SNR 8.8 (Galactic only) vs 8.8 (+ zodiacal)
+    NUV: median SNR 31.6 (Galactic only) vs 31.1 (+ zodiacal)
 
 
 
