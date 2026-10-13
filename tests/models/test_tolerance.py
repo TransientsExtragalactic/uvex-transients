@@ -7,6 +7,7 @@ from astropy.table import QTable
 from synphot import SpectralElement
 from synphot.models import Box1D
 
+from uvex_transients.missions import downsample_bandpass
 from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core._tolerance import (
     first_crossing,
@@ -169,10 +170,14 @@ def sed():
 
 @pytest.fixture(scope="module")
 def bands():
-    """Two simple top-hat bands (far- and near-UV-like)."""
+    """Two simple top-hat bands (far- and near-UV-like), downsampled.
+
+    A `Box1D` is tabulated on ~30,000 wavelengths, and every SED evaluation integrates over all of them, which made
+    these tests take minutes. The downsampled tables have ~60 points and agree to better than 0.001 mag.
+    """
     return {
-        "FUV": SpectralElement(Box1D, amplitude=1.0, x_0=1550 * u.AA, width=300 * u.AA),
-        "NUV": SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA),
+        "FUV": downsample_bandpass(SpectralElement(Box1D, amplitude=1.0, x_0=1550 * u.AA, width=300 * u.AA)),
+        "NUV": downsample_bandpass(SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA)),
     }
 
 
