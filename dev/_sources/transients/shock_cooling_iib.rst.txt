@@ -13,7 +13,7 @@ semi-analytic diffusion-envelope model of :footcite:t:`2024MNRAS.528.7137M`.
 
 This population is implemented by
 :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb`, pairing
-:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED` with the rate/duration
+:class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED` with the rate/duration
 metadata described below. It is deliberately **not** a full Type IIb light curve model -- see
 Quick Facts below for why its duration window is so much shorter than the other supernova
 populations in this package.
@@ -61,11 +61,11 @@ There are two shock-cooling SED models available, sharing one set of physical pa
 velocity scale, progenitor radius, envelope/core mass, and an opacity fixed at the
 electron-scattering value):
 
-- :class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED` (the default) implements
+- :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED` (the default) implements
   Morag+24's full frequency-dependent SED: a blackbody at the photospheric color temperature,
   reshaped by UV line suppression above :math:`\sim3.5\,T_\mathrm{col}` and a separate
   diffusion-limited/free-free prescription below it.
-- :class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED` implements the
+- :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingBlackbodySED` implements the
   simpler alternative: a pure blackbody at the same color temperature, with no frequency reshaping.
 
 Both share the same bolometric luminosity and color-temperature evolution, a closed-form,
@@ -84,9 +84,9 @@ themselves closed-form combinations of the physical parameters below; see
 (its Eqs. A1-A12) -- the details are intentionally not reproduced here.
 
 The two models' bolometric luminosities are physically identical, but only
-:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED`'s emergent spectrum integrates back to it exactly: a
+:class:`~uvex_transients.models.shock_cooling.MoragShockCoolingBlackbodySED`'s emergent spectrum integrates back to it exactly: a
 blackbody conserves its own normalization by construction, while the UV-suppressed reshaping in
-:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED` does not (by as much as ~15-20%, depending on epoch) -- an artifact of
+:class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED` does not (by as much as ~15-20%, depending on epoch) -- an artifact of
 how Morag+24 construct the two pieces independently, not a bug in either implementation.
 
 .. dropdown:: Parameter priors
@@ -184,7 +184,7 @@ behavior, subclass the SED and override the attribute:
 
 .. code-block:: python
 
-    from uvex_transients.models.supernovae import MoragShockCoolingSED
+    from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 
 
     class NanFilledShockCooling(MoragShockCoolingSED):
@@ -195,7 +195,7 @@ Simulated Light Curves
 
 The plot below draws 500 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, using the default
-:class:`~uvex_transients.models.supernovae.IIb.MoragShockCoolingSED`. Each curve is drawn only inside its own regime of validity (here with ``_INVALID_FILL = "nan"``, so the
+:class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`. Each curve is drawn only inside its own regime of validity (here with ``_INVALID_FILL = "nan"``, so the
 curves end rather than drop to zero), which is why the bright, early-time divergence is absent. No comparison data is overlaid: unlike the other supernova
 populations in this package, there is not yet a curated bolometric/temperature dataset for
 shock-cooling Type IIb events under ``test_data/transients``.
@@ -207,7 +207,7 @@ shock-cooling Type IIb events under ``test_data/transients``.
    import matplotlib.pyplot as plt
    from astropy import units as u
 
-   from uvex_transients.models.supernovae import MoragShockCoolingSED
+   from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 
 
    class SEDClass(MoragShockCoolingSED):
@@ -270,7 +270,7 @@ other transient pages in this section for that kind of analysis.
    import matplotlib.pyplot as plt
 
    from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
-   from uvex_transients.models.supernovae import MoragShockCoolingSED
+   from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 
    sed = MoragShockCoolingSED()
    coord = SkyCoord(ra=195.3 * u.deg, dec=27.8 * u.deg)

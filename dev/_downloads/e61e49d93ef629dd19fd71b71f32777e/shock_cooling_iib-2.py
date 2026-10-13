@@ -7,7 +7,7 @@ from m4opt.synphot.background import GalacticBackground, SkyBackground
 import matplotlib.pyplot as plt
 
 from uvex_transients.dust import dust_map, log_attenuation, resolve_ebv
-from uvex_transients.models.supernovae import MoragShockCoolingSED
+from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 
 sed = MoragShockCoolingSED()
 coord = SkyCoord(ra=195.3 * u.deg, dec=27.8 * u.deg)

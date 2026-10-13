@@ -500,7 +500,7 @@ models only the first of those two components: the early shock-cooling emission,
 semi-analytic diffusion-envelope model of Morag <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2024mnras-528-7137m" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <p>This population is implemented by
 <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.html#uvex_transients.transients.supernovae.ShockCoolingIIb" title="uvex_transients.transients.supernovae.ShockCoolingIIb"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code></a>, pairing
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a> with the rate/duration
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code> with the rate/duration
 metadata described below. It is deliberately <strong>not</strong> a full Type IIb light curve model – see
 Quick Facts below for why its duration window is so much shorter than the other supernova
 populations in this package.</p>
@@ -558,11 +558,11 @@ window are zero rather than extrapolated.</p></td>
 velocity scale, progenitor radius, envelope/core mass, and an opacity fixed at the
 electron-scattering value):</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a> (the default) implements
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code> (the default) implements
 Morag+24’s full frequency-dependent SED: a blackbody at the photospheric color temperature,
 reshaped by UV line suppression above <span class="math notranslate nohighlight">\(\sim3.5\,T_\mathrm{col}\)</span> and a separate
 diffusion-limited/free-free prescription below it.</p></li>
-<li><p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingBlackbodySED</span></code></a> implements the
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingBlackbodySED</span></code> implements the
 simpler alternative: a pure blackbody at the same color temperature, with no frequency reshaping.</p></li>
 </ul>
 <p>Both share the same bolometric luminosity and color-temperature evolution, a closed-form,
@@ -577,9 +577,9 @@ themselves closed-form combinations of the physical parameters below; see
 Morag <em>et al.</em><a class="footnote-reference brackets" href="#footcite-2024mnras-528-7137m" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> for their exact form and for the full frequency-dependent SED
 (its Eqs. A1-A12) – the details are intentionally not reproduced here.</p>
 <p>The two models’ bolometric luminosities are physically identical, but only
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingBlackbodySED</span></code></a>’s emergent spectrum integrates back to it exactly: a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingBlackbodySED</span></code>’s emergent spectrum integrates back to it exactly: a
 blackbody conserves its own normalization by construction, while the UV-suppressed reshaping in
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a> does not (by as much as ~15-20%, depending on epoch) – an artifact of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code> does not (by as much as ~15-20%, depending on epoch) – an artifact of
 how Morag+24 construct the two pieces independently, not a bug in either implementation.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -692,7 +692,7 @@ this population are conservative.</p></li>
 </ul>
 <p>The color temperature is <code class="docutils literal notranslate"><span class="pre">nan</span></code> outside the window unless <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>. To change the
 behavior, subclass the SED and override the attribute:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae</span><span class="w"> </span><span class="kn">import</span> <span class="n">MoragShockCoolingSED</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.shock_cooling</span><span class="w"> </span><span class="kn">import</span> <span class="n">MoragShockCoolingSED</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">NanFilledShockCooling</span><span class="p">(</span><span class="n">MoragShockCoolingSED</span><span class="p">):</span>
@@ -704,7 +704,7 @@ behavior, subclass the SED and override the attribute:</p>
 <h3>Simulated Light Curves<a class="headerlink" href="#simulated-light-curves" title="Link to this heading">#</a></h3>
 <p>The plot below draws 500 random parameter realizations from the priors above and shows the
 resulting bolometric light curves and photospheric temperatures, using the default
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIb.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED" title="uvex_transients.models.supernovae.IIb.MoragShockCoolingSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></a>. Each curve is drawn only inside its own regime of validity (here with <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span> <span class="pre">=</span> <span class="pre">&quot;nan&quot;</span></code>, so the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code>. Each curve is drawn only inside its own regime of validity (here with <code class="docutils literal notranslate"><span class="pre">_INVALID_FILL</span> <span class="pre">=</span> <span class="pre">&quot;nan&quot;</span></code>, so the
 curves end rather than drop to zero), which is why the bright, early-time divergence is absent. No comparison data is overlaid: unlike the other supernova
 populations in this package, there is not yet a curated bolometric/temperature dataset for
 shock-cooling Type IIb events under <code class="docutils literal notranslate"><span class="pre">test_data/transients</span></code>.</p>

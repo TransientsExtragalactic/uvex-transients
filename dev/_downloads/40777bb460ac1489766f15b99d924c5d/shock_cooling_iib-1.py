@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from uvex_transients.models.supernovae import MoragShockCoolingSED
+from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 
 
 class SEDClass(MoragShockCoolingSED):
