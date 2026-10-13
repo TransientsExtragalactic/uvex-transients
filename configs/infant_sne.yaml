@@ -46,61 +46,61 @@ mission: uvex_fast
 # The same supernova populations as `full_run.yaml`, each with the 3 day
 # selection window and 100 day photometry window described above.
 #
-# `z_limit` is re-derived for that window and the 23 AB magnitude screen below,
-# because the class defaults assume the full light curve and a 24.5 AB limit: it
-# is the redshift beyond which, with 95% confidence, at most 1% of events are
-# brighter than 23 AB in either UVEX band within the first 3 days, rounded up to
-# two significant figures. These supernovae are much fainter at 3 days than at
-# peak, so the limits are well below the class defaults. They were derived with
-# `scripts/derive_redshift_limits.py`, which has since been replaced by the
-# transients' `horizon_curve`. The equivalent for one class is
+# `z_limit` is set for that window and the 23 AB magnitude screen below, because
+# the class defaults assume the full light curve and a 24.5 AB limit. Each value
+# is the transient's horizon curve at 23 AB for a 3 day window: the redshift
+# beyond which, with 95% confidence, at most 1% of events are brighter than
+# 23 AB in either UVEX band within the first 3 days. These supernovae are much
+# fainter at 3 days than at peak, so the limits are well below the class
+# defaults. They are written as numbers so that the run does not regenerate the
+# curves (seconds to a minute per class, since a 3 day window has no stored
+# curve). The same lookup can be written inline as `z_limit: {mag_limit: 23.0}`,
+# or reproduced for one class with
 #
 #     transient = TypeIIPSNe()
 #     transient.duration_limit = 3 * u.day
 #     transient.horizon_curve.z_limit(23.0)
 #
-# (seconds to a minute per class, since a 3 day window has no stored curve), and
-# `z_limit: {mag_limit: 23.0}` does the same lookup inside this file. Re-derive
-# them if the magnitude screen, a window or an SED's priors change.
+# Re-derive them if the magnitude screen, a window or an SED's priors change.
 transients:
   iip_sne:
     class: TypeIIPSNe
-    z_limit: 0.08
+    z_limit: 0.127
     duration_limit: 3 day
     photometry_post_window: 100 day
   iip_excess_sne:
     class: TypeIIPExcessSNe
-    z_limit: 0.47
+    z_limit: 0.473
     duration_limit: 3 day
     photometry_post_window: 100 day
   iib_sne:
     class: TypeIIbSNe
-    z_limit: 0.18
+    z_limit: 0.173
     duration_limit: 3 day
     photometry_post_window: 100 day
   ib_sne:
     class: TypeIbSNe
-    z_limit: 0.2
+    z_limit: 0.171
     duration_limit: 3 day
     photometry_post_window: 100 day
   ic_sne:
     class: TypeIcSNe
-    z_limit: 0.27
+    z_limit: 0.304
     duration_limit: 3 day
     photometry_post_window: 100 day
   icbl_sne:
     class: TypeIcBLSNe
-    z_limit: 0.35
+    z_limit: 0.346
     duration_limit: 3 day
     photometry_post_window: 100 day
   slsne:
     class: MagnetarSLSNe
-    z_limit: 0.64
+    z_limit: 0.644
     duration_limit: 3 day
     photometry_post_window: 100 day
   ia_sne:
     class: TypeIaSNe
-    z_limit: 0.3
+    z_limit: 0.273
     duration_limit: 3 day
     photometry_post_window: 100 day
 
