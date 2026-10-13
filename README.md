@@ -61,6 +61,9 @@ See the file itself for what each section does, and `uvex-transients --help` for
 [`configs/full_run.yaml`](configs/full_run.yaml) is a full-scale config covering every registered
 transient class at once; run it directly or via `make run` (see the [`Makefile`](Makefile) --
 `make help` lists every target).
+[`configs/infant_sne.yaml`](configs/infant_sne.yaml) is a secondary run for supernovae detected within
+72 hours of explosion; it is attached to each release as its own `infant_sne.zip`, and
+`get_results(..., simulation="infant_sne")` fetches individual files from it.
 
 For the results of that run, the documentation's report page has a summary of every transient family
 (kilonovae, TDEs, LFBOTs, Type I and Type II supernovae, SLSNe): its detection funnel, expected

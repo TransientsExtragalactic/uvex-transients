@@ -2,11 +2,11 @@
 Generates the "Report" docs page from the latest published GitHub Release.
 
 The page shows one pre-computed table, the expected yield of every transient type, computed from
-the release's ``event_summary.ecsv`` with `~uvex_transients.simulation.rates.estimate_yield`,
-followed by the gallery of examples in ``report_examples/``. Those examples download the same
-release data through `~uvex_transients.utils.get_results` and do whatever analysis they like with
-it. ``configs/full_run.yaml`` and ``.github/workflows/build_and_release.yml`` produce and attach
-the assets.
+the primary run's ``event_summary.ecsv`` with `~uvex_transients.simulation.rates.estimate_yield`,
+followed by one card per simulation run (see ``_report_runs.py``), each linking to a gallery of that
+run's analyses built from ``report_examples/<run>/``. Those examples download the run's release data
+through `~uvex_transients.utils.get_results` and do whatever analysis they like with it.
+``configs/*.yaml`` and ``.github/workflows/build_and_release.yml`` produce and attach the assets.
 
 Hooked into the Sphinx build from ``conf.py``'s ``setup()``, on the ``builder-inited`` event, so
 the generated ``report/index.rst`` exists before Sphinx reads any source files, both in CI
@@ -18,10 +18,11 @@ placeholder page instead of raising.
 from pathlib import Path
 
 import numpy as np
+from _report_runs import RunSpec, discover_runs
 from astropy.table import QTable
 
 from uvex_transients.simulation.rates import estimate_yield
-from uvex_transients.utils.results import RELEASES_URL, find_release, get_results
+from uvex_transients.utils.results import GITHUB_REPO, RELEASES_URL, find_release, get_results
 
 _DISPLAY_NAMES = {
     "kilonova": "Kilonova",
@@ -113,26 +114,69 @@ def _summary_table_rst(yields: QTable) -> str:
 
 
 # ----------------------------------------- #
-# Page Assembly                              #
+# Run Cards                                  #
 # ----------------------------------------- #
-_EXAMPLES_RST = """\
-Examples
-========
+def _indent(text: str, spaces: int) -> str:
+    return "\n".join(" " * spaces + line if line else line for line in text.splitlines())
 
-The examples below download this release's data products with
-:func:`~uvex_transients.utils.get_results` and analyze them: the event catalog that survived the
-cuts, the exposure catalog, the per-event summary table, and the synthetic photometry. The
-Transient Summaries section has one page per transient family, with its detection funnel, expected
-number of events and the distributions of its selected events. Each page is rebuilt with the docs,
-so they follow the latest release.
+
+def _run_card_rst(run: RunSpec) -> str:
+    """Render one run as a sphinx-design ``grid-item-card`` linking to its gallery's index."""
+    badges = " ".join(f":bdg-secondary-line:`{tag}`" for tag in run.tags)
+    footer = ":bdg-primary:`Primary run` · " if run.is_primary else ""
+    count = run.n_analyses
+    footer += "Analyses coming soon" if count == 0 else f"{count} {'analysis' if count == 1 else 'analyses'}"
+    if run.config:
+        footer += f" · `{run.config} <https://github.com/{GITHUB_REPO}/blob/main/{run.config}>`__"
+    lines = [
+        f".. grid-item-card:: :octicon:`{run.icon};1.3em;sd-text-primary` {run.title}",
+        f"   :link: {run.key}/index",
+        "   :link-type: doc",
+        "   :class-card: sd-shadow-sm sd-border-1 run-card",
+        "",
+        f"   {run.summary}",
+    ]
+    if badges:
+        lines += ["", f"   {badges}"]
+    lines += ["", "   +++", f"   {footer}"]
+    return "\n".join(lines)
+
+
+def _runs_rst(runs: list[RunSpec]) -> str:
+    """Render the "Simulation Runs" section: a grid of run cards, and a hidden toctree for the sidebar."""
+    if not runs:
+        return ""
+    cards = "\n\n".join(_run_card_rst(run) for run in runs)
+    toctree = "\n".join(f"   {run.key}/index" for run in runs)
+    return f"""\
+Simulation Runs
+===============
+
+Each run is its own simulation, with its own population, selection and data products, and has a
+gallery of the analyses done on it. Every example downloads its run's data from the latest release
+with :func:`~uvex_transients.utils.get_results` (cached after the first download), and the pages are
+rebuilt with the docs, so they follow the latest release.
+
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+{_indent(cards, 3)}
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
 
-   auto_examples/index
+{toctree}
 """
 
-_PLACEHOLDER_RST = f"""\
+
+# ----------------------------------------- #
+# Page Assembly                              #
+# ----------------------------------------- #
+def _placeholder_rst(runs: list[RunSpec]) -> str:
+    return f"""\
+.. _report_page:
+
 Transient Yield Report
 =======================
 
@@ -143,17 +187,15 @@ Transient Yield Report
    ``event_summary.ecsv`` attached is published, this page will be generated automatically on
    the next documentation build.
 
-{_EXAMPLES_RST}
+{_runs_rst(runs)}
 """
 
 
-def _write_placeholder(report_dir: Path) -> None:
-    (report_dir / "index.rst").write_text(_PLACEHOLDER_RST)
-
-
-def _write_report(report_dir: Path, tag: str, release_url: str, yields: QTable) -> None:
+def _report_rst(tag: str, release_url: str, yields: QTable, runs: list[RunSpec]) -> str:
     confidence = int(round(100 * yields.meta["confidence"]))
-    rst = f"""\
+    return f"""\
+.. _report_page:
+
 Transient Yield Report
 =======================
 
@@ -166,7 +208,7 @@ Transient Yield Report
 
 .. seealso::
 
-   Every data product from this run (the event catalog, photometry, exposure, and per-event
+   Every data product from these runs (the event catalog, photometry, exposure, and per-event
    summary) is attached to the `{tag} release page <{release_url}>`__ on GitHub, and
    :func:`~uvex_transients.utils.get_results` downloads them into a local cache. Earlier
    releases are listed on the `releases page <{RELEASES_URL}>`__.
@@ -174,22 +216,22 @@ Transient Yield Report
 Summary
 =======
 
-For each transient type, the fraction of simulated events that UVEX detects and the expected
-number of real events that corresponds to. The first uncertainty on each value is the
+For each transient type of the primary run, the fraction of simulated events that UVEX detects and
+the expected number of real events that corresponds to. The first uncertainty on each value is the
 {confidence}% Clopper-Pearson interval from the finite Monte Carlo sample, and the second, on the
 expected detections only, is the uncertainty on the event rate.
 
 {_summary_table_rst(yields)}
 
-{_EXAMPLES_RST}
+{_runs_rst(runs)}
 """
-    (report_dir / "index.rst").write_text(rst)
 
 
 def generate_report(app) -> None:
     """Sphinx ``builder-inited`` callback: (re)generate ``report/index.rst`` from the latest release."""
     report_dir = Path(app.srcdir) / "report"
     report_dir.mkdir(parents=True, exist_ok=True)
+    runs = discover_runs(Path(app.srcdir) / "report_examples")
 
     try:
         release = find_release()
@@ -199,8 +241,9 @@ def generate_report(app) -> None:
         yields = estimate_yield(events)
     except (ConnectionError, LookupError, OSError, ValueError, KeyError) as exc:
         print(f"[report] could not build the report from the latest release ({exc}); using a placeholder.")
-        _write_placeholder(report_dir)
+        (report_dir / "index.rst").write_text(_placeholder_rst(runs))
         return
 
-    _write_report(report_dir, tag, release.get("html_url") or f"{RELEASES_URL}/tag/{tag}", yields)
+    release_url = release.get("html_url") or f"{RELEASES_URL}/tag/{tag}"
+    (report_dir / "index.rst").write_text(_report_rst(tag, release_url, yields, runs))
     print(f"[report] generated report/index.rst from release {tag}.")

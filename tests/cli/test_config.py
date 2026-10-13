@@ -414,3 +414,22 @@ def test_full_run_config_lists_every_registered_transient_class():
         f"missing from full_run.yaml: {sorted(registered - _FULL_RUN_EXCLUDED_CLASSES - listed)}; "
         f"unknown to the registry: {sorted(listed - registered)}"
     )
+
+
+def test_infant_sne_config_selects_on_three_days_and_keeps_full_photometry():
+    """`configs/infant_sne.yaml` is every supernova class of `full_run.yaml`, with the 72 h selection window."""
+    import astropy.units as u
+
+    from uvex_transients.cli.config import RunConfig
+
+    configs = Path(__file__).resolve().parents[2] / "configs"
+    infant = RunConfig.from_yaml(configs / "infant_sne.yaml")
+    full = get_run_yaml().load((configs / "full_run.yaml").read_text())
+
+    supernova_classes = {
+        entry["class"] for entry in full["transients"].values() if entry["class"].endswith(("SNe", "SLSNe"))
+    }
+    assert {t.__class__.__name__ for t in infant.transients.values()} == supernova_classes
+    for transient in infant.transients.values():
+        assert transient.duration_limit == 3 * u.day
+        assert transient.photometry_post_window == 100 * u.day

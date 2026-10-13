@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 
 from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
-from .results import get_results
+from .results import get_results, list_simulations
 from .updates import OutdatedVersionWarning, check_for_updates
 
 __all__ = [
@@ -15,6 +15,7 @@ __all__ = [
     "cache_dir",
     "get_cache_dir",
     "get_results",
+    "list_simulations",
     "OutdatedVersionWarning",
     "check_for_updates",
     "logger",

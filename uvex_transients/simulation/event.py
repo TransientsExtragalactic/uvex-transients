@@ -404,13 +404,13 @@ class Event:
             f"one of them: {list(detector.bandpasses)}."
         )
 
-    def _pivot_nu_and_log_attenuation(self, bandpass) -> tuple[Quantity, np.ndarray]:
+    def _band_grid_and_log_attenuation(self, bandpass) -> tuple[Quantity, np.ndarray, np.ndarray]:
         """
-        Return `bandpass`'s pivot frequency and this event's own dust attenuation there.
+        Return `bandpass`'s frequency grid and throughput, and this event's own dust attenuation on that grid.
 
-        The same single-wavelength approximation `simulate_photometry` uses for its
-        noiseless flux (`SpectralElement.pivot`), not a full bandpass-throughput
-        integral -- see :meth:`mag`'s docstring for why that distinction matters here.
+        What `simulate_photometry` measures is the flux averaged over the full bandpass (see
+        `~uvex_transients.models._utils.measure_bands`), so the noiseless `mag` and `flux` integrate over the
+        same throughput curve, with the dust applied at every sample of it rather than at one wavelength.
 
         Parameters
         ----------
@@ -419,12 +419,14 @@ class Event:
 
         Returns
         -------
-        tuple of (~astropy.units.Quantity, numpy.ndarray)
-            `bandpass`'s pivot frequency, and the natural log of this event's
-            dust attenuation there (see :func:`~uvex_transients.dust.log_attenuation`).
+        tuple of (~astropy.units.Quantity, numpy.ndarray, numpy.ndarray)
+            `bandpass`'s observed frequency grid, its dimensionless throughput on that grid, and the natural
+            log of this event's dust attenuation on that grid (see :func:`~uvex_transients.dust.log_attenuation`).
         """
-        nu = bandpass.pivot().to(u.Hz, equivalencies=u.spectral())
-        return nu, log_attenuation(nu, self._ebv)
+        wave = bandpass.waveset
+        nu = wave.to(u.Hz, equivalencies=u.spectral())
+        throughput = np.asarray(bandpass(wave).to_value(u.dimensionless_unscaled))
+        return nu, throughput, log_attenuation(nu, self._ebv)
 
     def mag(self, t: Quantity, mission: Mission, band: Hashable | None = None) -> Quantity:
         """
@@ -432,13 +434,13 @@ class Event:
 
         This is the literal noiseless curve :meth:`simulate_photometry`'s noisy points
         scatter around, not merely a physically similar but numerically different
-        quantity: like that method, the flux is evaluated at `band`'s pivot
-        wavelength (`~synphot.SpectralElement.pivot`), *not* integrated across the
-        full bandpass throughput, and this event's own foreground dust (`ebv`) is
-        applied, in addition to its `redshift`/`luminosity_distance`/SED parameters
-        (see :meth:`sample_parameters`) -- so only a time grid and a mission/band are
-        needed. Useful for plotting a theory curve alongside real observations, not
-        for simulating a detection.
+        quantity: like that method, the flux is the photon-weighted average over the full
+        bandpass throughput (`~uvex_transients.models.core.base.SpectralModel.flux_band`),
+        *not* the flux at the bandpass's pivot wavelength, and this event's own foreground
+        dust (`ebv`) is applied across the band, in addition to its
+        `redshift`/`luminosity_distance`/SED parameters (see :meth:`sample_parameters`) --
+        so only a time grid and a mission/band are needed. Useful for plotting a theory
+        curve alongside real observations, not for simulating a detection.
 
         Parameters
         ----------
@@ -457,9 +459,10 @@ class Event:
             with `t`'s shape.
         """
         bandpass = self._resolve_bandpass(mission, band)
-        nu, attenuation = self._pivot_nu_and_log_attenuation(bandpass)
-        return self._transient.sed.mag(
+        nu, throughput, attenuation = self._band_grid_and_log_attenuation(bandpass)
+        return self._transient.sed.mag_band(
             nu,
+            throughput,
             t,
             redshift=self._redshift,
             luminosity_distance=self._luminosity_distance,
@@ -469,9 +472,9 @@ class Event:
 
     def flux(self, t: Quantity, mission: Mission, band: Hashable | None = None) -> Quantity:
         """
-        Theoretical (noiseless) observed flux density of this event's SED, at `band`'s pivot wavelength.
+        Theoretical (noiseless) observed flux density of this event's SED, averaged over `band`'s throughput.
 
-        Same inputs, and the same pivot-wavelength-plus-dust definition matching
+        Same inputs, and the same photon-weighted-bandpass-plus-dust definition matching
         :meth:`simulate_photometry` exactly, as :meth:`mag` -- see its docstring.
 
         Parameters
@@ -490,9 +493,10 @@ class Event:
             The observed flux density, with `t`'s shape.
         """
         bandpass = self._resolve_bandpass(mission, band)
-        nu, attenuation = self._pivot_nu_and_log_attenuation(bandpass)
-        return self._transient.sed.flux(
+        nu, throughput, attenuation = self._band_grid_and_log_attenuation(bandpass)
+        return self._transient.sed.flux_band(
             nu,
+            throughput,
             t,
             redshift=self._redshift,
             luminosity_distance=self._luminosity_distance,

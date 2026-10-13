@@ -45,10 +45,18 @@ def test_pinning_is_idempotent(package_config, run_config):
 
 
 def test_repo_is_pinned_to_a_registered_tag(package_config, run_config):
-    """The committed configs agree with each other: full_run.yaml uses the default, which is registered."""
+    """The committed configs agree with each other: every release config uses the default, which is registered."""
     tag = sync_scheduler.pin_package_config(package_config, "v9.9.9")  # exercises the regexes on the real file
     assert tag != package_config
     default = next(line for line in package_config.splitlines() if line.startswith("  default_schedule: "))
     name = default.split(": ")[1]
     assert name.startswith("uvex_v")
     assert f"schedule:\n  name: {name}\n" in run_config
+    for path in sync_scheduler.RUN_CONFIGS:
+        assert f"schedule:\n  name: {name}\n" in path.read_text(), path.name
+
+
+def test_every_release_config_is_pinned_by_the_sync_script():
+    """A release config missing from `RUN_CONFIGS` would silently keep an old schedule after a sync."""
+    on_disk = {p for p in (_ROOT / "configs").glob("*.yaml") if p.name != "quickstart_tde.yaml"}
+    assert on_disk == set(sync_scheduler.RUN_CONFIGS)

@@ -250,8 +250,10 @@ No real instrument observes at a single, infinitely narrow frequency -- it integ
 spectrum over some bandpass. :meth:`~uvex_transients.models.core.base.SpectralModel.flux_band` and
 :meth:`~uvex_transients.models.core.base.SpectralModel.mag_band` do exactly that: give them a
 frequency grid and the (dimensionless) throughput at each point, and they return the
-throughput-weighted flux density, or its AB magnitude, over that band. Here we build a simple
-Gaussian bandpass by hand to stand in for a real UV filter:
+photon-weighted flux density, or its AB magnitude, over that band. That is the flux density of a
+flat-:math:`F_\nu` (AB) source that would give a photon-counting detector the same counts,
+:math:`\int F_\nu T\,d\nu/\nu \,/ \int T\,d\nu/\nu`. Here we build a simple Gaussian bandpass by hand to
+stand in for a real UV filter:
 
 .. plot::
    :include-source: true

@@ -261,7 +261,9 @@ model's parameters actually are.
        how far after explosion :meth:`Event.simulate_photometry
        <uvex_transients.simulation.event.Event.simulate_photometry>` evaluates the transient's SED
        before falling back to background/non-detection photometry (a unit string or a bare number
-       of days). Optional; defaults to ``duration_limit``.
+       of days). Optional; defaults to ``duration_limit``. Setting it separately lets a short
+       ``duration_limit`` define the detection window while the photometry of the events that
+       survive still covers their full evolution (see ``configs/infant_sne.yaml``).
    * - ``cosmology``
      - ``!astropy_cosmology``
      - Overrides the transient's cosmology. Optional; defaults to the package's own default
@@ -541,7 +543,7 @@ arguments.
    * - ``event_summary``
      - ``catalog``, ``exposure``, ``photometry``
      - ``snr_threshold``
-     - ``rise_sigma`` (default ``3``), ``processing_delay`` (hours, default ``0``), ``lookback``,
+     - ``rise_sigma`` (default ``3``), ``rise_mags`` (default ``[1, 2, 3]``), ``processing_delay`` (hours, default ``0``), ``lookback``,
        ``bands``, ``footprints``, ``color_bands``
 
 ``event_summary`` writes one row per event of ``catalog``, so that detection timing, cadence, and
@@ -551,7 +553,10 @@ expected number of real events it stands for, so summing it over a selection giv
 selection's expected yield), the first and last observation and detection times, the time of the first
 downlink after the first detection (``t_alert``), the last non-detection before the first
 detection (``t_last_nondet`` and its ``last_nondet_snr``, plus ``t_last_constraining_nondet``,
-the last one whose rise to the first detection is at least ``rise_sigma``), and the peak SNR,
+the last one whose rise to the first detection is at least ``rise_sigma``), ``t_rise_1mag``,
+``t_rise_2mag`` and ``t_rise_3mag`` (the first detection that many magnitudes above a band's
+detection limit at its last non-detection), a copy of the detection quantities for each band
+(``t_first_det_FUV``, ``t_last_nondet_NUV``, ``t_rise_2mag_FUV``, and so on), and the peak SNR,
 magnitude, FUV-NUV color, and time from ``photometry``. ``catalog`` is typically the SNR-cut
 catalog. Its ``pre_cut_counts`` (the number of events of each type when the baseline was generated,
 which no cut changes) and the ``exposure`` and rate factors of each type are stored in the table's

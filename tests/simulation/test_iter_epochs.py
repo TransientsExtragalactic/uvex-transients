@@ -240,3 +240,42 @@ def test_unmeasurable_band_never_wins(setup, monkeypatch):
     assert len(epochs) > 0
     assert set(np.asarray(epochs["band"])) == {BAND_NAMES[1]}
     assert np.all(np.isfinite(epochs["snr"]))
+
+
+# --------------------------------------------------------------------------- #
+# Uncollapsed bands                                                           #
+# --------------------------------------------------------------------------- #
+def test_uncollapsed_epochs_keep_every_band(setup):
+    """`collapse_bands=False` gives one row per (event, observation, band), and the best-band rows are the default."""
+    _, _, catalog, sim = setup
+    collapsed = _epochs(sim, catalog, lookback=None)
+    full = _epochs(sim, catalog, lookback=None, collapse_bands=False)
+
+    bands = list(uvex.detector.bandpasses)
+    assert len(full) == len(collapsed) * len(bands)
+    assert set(full["band"]) == set(bands)
+    assert np.all(full["band"] == np.asarray(bands)[full["band_index"]])
+
+    best = full[full["is_best_band"]]
+    assert len(best) == len(collapsed)
+    for column in ("event_id", "observation_index", "band", "snr", "flux", "flux_err"):
+        np.testing.assert_array_equal(np.asarray(best[column]), np.asarray(collapsed[column]))
+
+
+def test_uncollapsed_epochs_are_grouped_by_event_then_time_then_band(setup):
+    _, _, catalog, sim = setup
+    full = _epochs(sim, catalog, lookback=None, collapse_bands=False)
+    key = np.lexsort((full["band_index"], full["t_obs"].jd, full["event_id"]))
+    np.testing.assert_array_equal(key, np.arange(len(full)))
+    starts, stops = event_boundaries(full["event_id"])
+    assert len(np.unique(full["event_id"])) == len(starts)
+
+
+def test_uncollapsed_epochs_floor_applies_to_each_band(setup):
+    """Only rows whose own band clears the floor survive, and a dropped epoch's best band was dropped too."""
+    _, _, catalog, sim = setup
+    full = _epochs(sim, catalog, lookback=None, collapse_bands=False)
+    floor = float(np.nanmedian(full["snr"]))
+    kept = _epochs(sim, catalog, lookback=None, collapse_bands=False, detection_floor=floor)
+    assert np.all(kept["snr"] >= floor)
+    assert len(kept) == int(np.sum(full["snr"] >= floor))

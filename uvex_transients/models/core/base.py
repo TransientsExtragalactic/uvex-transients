@@ -6,7 +6,7 @@ A :class:`SpectralModel` describes how a source's spectral luminosity,
 time since explosion :math:`t`. From that single quantity, this base class
 derives everything else a user typically needs to turn a physical model into
 something observable: a bolometric light curve, a normalized spectral shape,
-a redshifted and distance-diluted flux, a throughput-weighted band flux, AB
+a redshifted and distance-diluted flux, a photon-weighted band flux, AB
 magnitudes, and a :class:`~synphot.SourceSpectrum` ready to feed into a
 detector simulation.
 
@@ -2553,17 +2553,25 @@ class SpectralModel(_ModelBase):
         **parameters: CGSParameterValue,
     ) -> FloatResult:
         r"""
-        Natural log of the throughput-weighted mean flux density over a band, plain cgs numbers.
+        Natural log of the photon-weighted mean flux density over a band, plain cgs numbers.
 
         .. math::
 
-            \log \bar{F}_\nu = \log \frac{\int F_\nu(\nu, t) \cdot T(\nu)\,d\nu}{\int T(\nu)\,d\nu}
+            \log \bar{F}_\nu = \log \frac{\int F_\nu(\nu, t) \cdot T(\nu)\,d\nu/\nu}{\int T(\nu)\,d\nu/\nu}
 
         using :meth:`flux_cgs`'s (redshifted, distance-diluted) :math:`F_\nu`,
         integrated over the observed-frame frequency grid ``nu`` and bandpass
         response ``throughput`` by trapezoidal quadrature. Dividing by the
         integrated throughput keeps the result dimensionally a flux density,
         directly comparable to :meth:`flux_cgs`.
+
+        The :math:`d\nu/\nu` weighting is the one a photon-counting detector applies: its
+        count rate is :math:`\propto \int F_\nu T\,d\nu/\nu`, so :math:`\bar{F}_\nu` is the
+        flux density of a flat-:math:`F_\nu` (AB) source that would give the same counts as
+        this spectrum. That is what "the AB magnitude in a band" means for UVEX, and it is
+        what `~uvex_transients.models._utils.measure_bands` measures, so a noiseless
+        band magnitude and a simulated measurement agree. It assumes ``throughput`` is the
+        fractional *photon* throughput, as m4opt's bandpasses are.
 
         Because this method integrates away a frequency axis, ``t``,
         ``redshift``, ``luminosity_distance``, and every parameter are each
@@ -2622,8 +2630,9 @@ class SpectralModel(_ModelBase):
             **band_ready_parameters,
         )
 
-        numerator = np.trapezoid(np.exp(log_flux_density) * throughput_sorted, nu_sorted, axis=-1)
-        denominator = np.trapezoid(throughput_sorted, nu_sorted)
+        photon_throughput = throughput_sorted / nu_sorted
+        numerator = np.trapezoid(np.exp(log_flux_density) * photon_throughput, nu_sorted, axis=-1)
+        denominator = np.trapezoid(photon_throughput, nu_sorted)
 
         # A model that is exactly zero over the band (e.g. outside its regime of validity) gives -inf here.
         with np.errstate(divide="ignore"):
@@ -2770,7 +2779,9 @@ class SpectralModel(_ModelBase):
         **parameters: ParameterValue,
     ) -> Quantity:
         r"""
-        Evaluate the throughput-weighted mean observed flux density over a band.
+        Evaluate the photon-weighted mean observed flux density over a band.
+
+        See :meth:`flux_band_log_cgs` for the definition and why it is photon-weighted.
 
         Parameters
         ----------
