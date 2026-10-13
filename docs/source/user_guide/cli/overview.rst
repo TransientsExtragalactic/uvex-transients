@@ -256,7 +256,9 @@ model's parameters actually are.
        how far after explosion :meth:`Event.simulate_photometry
        <uvex_transients.simulation.event.Event.simulate_photometry>` evaluates the transient's SED
        before falling back to background/non-detection photometry (a unit string or a bare number
-       of days). Optional; defaults to ``duration_limit``.
+       of days). Optional; defaults to ``duration_limit``. Setting it separately lets a short
+       ``duration_limit`` define the detection window while the photometry of the events that
+       survive still covers their full evolution (see ``configs/infant_sne.yaml``).
    * - ``cosmology``
      - ``!astropy_cosmology``
      - Overrides the transient's cosmology. Optional; defaults to the package's own default
