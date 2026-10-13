@@ -724,9 +724,8 @@ that would mix independent Monte Carlo errors with a shared rate uncertainty.
 Reconstructing and Simulating Events
 ----------------------------------------
 
-Every screening step above works with cheap, batched approximations -- a shared phase grid, a
-single flux point at each band's pivot wavelength. Getting a real, per-observation synthetic
-light curve for one particular event means reconstructing it as a full
+Every screening step above works with cheap, batched approximations, such as a shared phase grid.
+Getting a real, per-observation synthetic light curve for one particular event means reconstructing it as a full
 :class:`~uvex_transients.simulation.event.Event`, via
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.get_events`. Because an
 ``EventCatalog`` holds no live reference to the schedule or the transients it came from (see
@@ -762,7 +761,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
     t = np.linspace(0, tde.duration_limit.to_value(u.day), 300) * u.day
 
     event.mag(t, mission, band="NUV")     # apparent AB magnitude
-    event.flux(t, mission, band="NUV")    # observed flux density, at the band's pivot wavelength
+    event.flux(t, mission, band="NUV")    # observed flux density, averaged over the band's throughput
     event.luminosity(t)                   # rest-frame bolometric L_bol(t)
 
 Synthetic Photometry

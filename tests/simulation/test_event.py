@@ -11,6 +11,8 @@ from m4opt.synphot import observing
 from uvex_transients.simulation.event import Event
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
+from .._photometry import effective_flux_jy
+
 
 def test_simulate_photometry_batches_observations_and_bands(make_schedule_from_pointings):
     """
@@ -65,11 +67,10 @@ def test_simulate_photometry_batches_observations_and_bands(make_schedule_from_p
                 expected_snr = uvex.detector.get_snr(obs_row["duration"], spectrum_single, band)
                 row = phot[(phot["band"] == band) & (phot["obs_time"] == obs_row["start_time"])]
                 assert len(row) == 1
-                true_flux = float(
-                    np.squeeze(spectrum_single(uvex.detector.bandpasses[band].pivot(), flux_unit=u.Jy).value)
-                )
-                # The uncertainty is the true flux over the detector's expected SNR.
-                np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-6)
+                true_flux = float(effective_flux_jy(spectrum_single, uvex.detector.bandpasses[band])[0])
+                # The uncertainty is the band's effective flux over the detector's expected SNR. The effective flux
+                # is integrated here independently of the package, so the tolerance is the quadrature's.
+                np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-3)
                 # The reported `snr` is the measured one: the noisy flux over its uncertainty.
                 measured_snr = row["flux"][0].to_value(u.Jy) / row["flux_err"][0].to_value(u.Jy)
                 np.testing.assert_allclose(row["snr"][0], measured_snr, rtol=1e-10)
@@ -198,3 +199,44 @@ def test_exposure_running_past_the_window_is_background(make_schedule_from_point
     assert not np.any(overrun["in_model"]) and len(overrun) == len(uvex.detector.bandpasses)
     assert np.all(overrun["rel_time"] > 0 * u.day)  # it is after the explosion; only its window policy excludes it
     assert np.all(np.abs(overrun["snr"]) < 6)  # background noise, not the (bright) source
+
+
+def test_noiseless_flux_and_mag_are_band_averaged_with_dust_across_the_band(make_schedule_from_pointings):
+    """
+    `Event.flux`/`Event.mag` are the photon-weighted bandpass average with the event's dust applied at every sample.
+
+    Checked against an independent integral of the same event's dusty `~synphot.SourceSpectrum` (dust enters that
+    one through a separate path, a callable evaluated on synphot's own wavelengths), at a large E(B-V) so that a
+    dust factor misaligned with the throughput, or applied at one wavelength, would show.
+    """
+    event_coord = SkyCoord(ra=150 * u.deg, dec=20 * u.deg)
+    t_explosion = Time("2025-01-01T00:00:00", scale="utc")
+    schedule = make_schedule_from_pointings(SkyCoord([150] * u.deg, [20] * u.deg), t_explosion + [10] * u.day)
+    transient = TidalDisruptionEvent()
+    event = Event(
+        event_id=1,
+        schedule=schedule,
+        transient=transient,
+        coord=event_coord,
+        redshift=0.05,
+        t_explosion=t_explosion,
+        seed=7,
+        ebv=0.5,
+    )
+    t = np.array([5.0, 20.0, 60.0]) * u.day
+
+    for band in uvex.detector.bandpasses:
+        bandpass = uvex.detector.bandpasses[band]
+        spectrum = transient.sed.as_source_spectrum(
+            t[:, np.newaxis],
+            redshift=event.redshift,
+            luminosity_distance=event.luminosity_distance,
+            ebv=event.ebv,
+            **event.sample_parameters(),
+        )
+        expected = effective_flux_jy(spectrum, bandpass)
+        flux = event.flux(t, uvex, band=band).to_value(u.Jy)
+        np.testing.assert_allclose(flux, expected, rtol=2e-3)
+        np.testing.assert_allclose(
+            event.mag(t, uvex, band=band).to_value(u.ABmag), -2.5 * np.log10(flux / 3631.0), rtol=1e-8
+        )
