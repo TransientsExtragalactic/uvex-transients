@@ -465,9 +465,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">SECONDS_PER_DAY</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">_log_sigmoid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">_log_sigmoid</span><span class="p">,</span> <span class="n">cooling_temperature_cgs</span><span class="p">,</span> <span class="n">temperature_bump_cgs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
@@ -484,11 +483,6 @@
 <span class="c1">#: switch) the bolometric light curve is unconstrained and can underflow toward 0 in float64,</span>
 <span class="c1">#: which would otherwise propagate to -inf magnitudes downstream.</span>
 <span class="n">_L_BOL_FLOOR_CGS</span> <span class="o">=</span> <span class="mf">1e35</span>
-
-<span class="c1">#: Numerical floor on the photospheric temperature, in K. Same rationale as `_L_BOL_FLOOR_CGS`:</span>
-<span class="c1">#: well before t0, the doubly-broken power law's early t^alpha_r branch can underflow toward 0 K,</span>
-<span class="c1">#: which drives the blackbody flux to exactly 0 and -inf magnitudes.</span>
-<span class="n">_T_FLOOR_K</span> <span class="o">=</span> <span class="mf">100.0</span>
 
 
 <span class="c1"># ======================================== #</span>
@@ -527,29 +521,19 @@
 <span class="sd">    (shock-cooling decline, hydrogen-recombination plateau, radioactive tail): two logistic</span>
 <span class="sd">    switches, two exponentials, three luminosity scales.</span>
 
-<span class="sd">    The photospheric temperature reuses the light curve's own :math:`t_0` and :math:`t_P` and is a</span>
-<span class="sd">    smooth, doubly-broken power law with three regimes -- an early regime, a cooling-phase regime</span>
-<span class="sd">    around :math:`t_0`, and a recombination/plateau regime around :math:`t_P` --</span>
+<span class="sd">    The photospheric temperature follows the same single-power-law cooling law used by the Type IIb</span>
+<span class="sd">    and Villar supernova models</span>
+<span class="sd">    (:func:`~uvex_transients.models._util_functions.cooling_temperature_cgs`):</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}</span>
-<span class="sd">        \left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}</span>
-<span class="sd">        \left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},</span>
+<span class="sd">        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.</span>
 
-<span class="sd">    (:math:`t` in days). Both bracketed terms are normalized to equal 1 exactly at their own break</span>
-<span class="sd">    (:math:`t=t_0`, :math:`t=\sqrt{t_0 t_P}`), so :math:`T(t_0) \approx T_0` (up to a small</span>
-<span class="sd">    correction from the second bracket, negligible when :math:`t_0 \ll t_P`). For :math:`t \ll t_0`,</span>
-<span class="sd">    :math:`T(t) \to T_0\, (t/t_0)^{\alpha_r}`; between the two breaks</span>
-<span class="sd">    (:math:`t_0 \ll t \ll \sqrt{t_0 t_P}`), :math:`T(t) \propto t^{\alpha_c}`; for</span>
-<span class="sd">    :math:`t \gg \sqrt{t_0 t_P}` (approaching and past :math:`t_P`), :math:`T(t) \propto</span>
-<span class="sd">    t^{\alpha_p}`. With :math:`\alpha_r &gt; 0 &gt; \alpha_c &gt; \alpha_p`, the temperature rises through</span>
-<span class="sd">    the early, pre-:math:`t_0` region (where :math:`L_\mathrm{bol} \approx 0` anyway, so this</span>
-<span class="sd">    region is not otherwise constrained), peaks near :math:`t_0`, then declines -- fast through the</span>
-<span class="sd">    cooling regime, and much more slowly (nearly flat) through the recombination/plateau regime.</span>
-<span class="sd">    :math:`s_0`/:math:`s_1` set the sharpness of the two breaks (smooth, unlike the light curve's</span>
-<span class="sd">    logistic switches, but the same role); the second break has no epoch of its own, so it is</span>
-<span class="sd">    centered on the geometric mean of :math:`t_0` and :math:`t_P`.</span>
+<span class="sd">    It starts hot at :math:`T_0` at :math:`t=0` (the shock-heated, pre-rise photosphere, :math:`\sim5\times10^4`</span>
+<span class="sd">    K) and cools monotonically toward the hydrogen-recombination temperature :math:`T_\mathrm{floor}`</span>
+<span class="sd">    (:math:`\sim5.6\times10^3` K). The data only constrain :math:`T` from a few days after explosion, where</span>
+<span class="sd">    :math:`T - T_\mathrm{floor} \propto (T_0 - T_\mathrm{floor})\,\tau_T^{\alpha_T}\,t^{-\alpha_T}`, so</span>
+<span class="sd">    :math:`T_0` and :math:`\tau_T` are degenerate and :math:`T_0` is set by the expected early-time temperature.</span>
 
 <span class="sd">    .. rubric:: Parameters</span>
 
@@ -577,24 +561,21 @@
 <span class="sd">         - :math:`L_\mathrm{Co}`</span>
 <span class="sd">       * - ``tau_Co``</span>
 <span class="sd">         - :math:`\tau_\mathrm{Co}`</span>
-<span class="sd">       * - ``T_0``</span>
+<span class="sd">       * - ``T0``</span>
 <span class="sd">         - :math:`T_0`</span>
-<span class="sd">       * - ``alpha_r``</span>
-<span class="sd">         - :math:`\alpha_r`</span>
-<span class="sd">       * - ``alpha_c``</span>
-<span class="sd">         - :math:`\alpha_c`</span>
-<span class="sd">       * - ``alpha_p``</span>
-<span class="sd">         - :math:`\alpha_p`</span>
-<span class="sd">       * - ``s_0``</span>
-<span class="sd">         - :math:`s_0`</span>
-<span class="sd">       * - ``s_1``</span>
-<span class="sd">         - :math:`s_1`</span>
+<span class="sd">       * - ``T_floor``</span>
+<span class="sd">         - :math:`T_\mathrm{floor}`</span>
+<span class="sd">       * - ``tau_T``</span>
+<span class="sd">         - :math:`\tau_T`</span>
+<span class="sd">       * - ``alpha_T``</span>
+<span class="sd">         - :math:`\alpha_T`</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    ``tau_drop``/``tau_Co`` are fixed shape constants. Light-curve priors (``t0`` through</span>
 <span class="sd">    ``tau_Co``) come from a :func:`scipy.optimize.curve_fit` to SN 1999em and SN 2003hn;</span>
-<span class="sd">    temperature-law priors (``T_0`` through ``s_1``) are hand-tuned against the aggregate Type IIP</span>
+<span class="sd">    temperature-law priors (``T0`` through ``alpha_T``) are hand-tuned: ``T0`` to the expected</span>
+<span class="sd">    :math:`\sim5\times10^4` K early-time temperature, the others against the aggregate Type IIP</span>
 <span class="sd">    photospheric-temperature dataset in ``test_data/transients`` (SN 1999em, SN 2003hn, SN 2012aw,</span>
 <span class="sd">    SN 2012A, SN 2008in), following :footcite:t:`dallora2014` and :footcite:t:`faran2018`.</span>
 <span class="sd">    """</span>
@@ -658,42 +639,31 @@
             <span class="n">description</span><span class="o">=</span><span class="s2">"Radioactive-tail decay timescale. Fixed to the 56Co decay e-folding time."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{Co}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"T_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.05</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">"T0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.7</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
             <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Doubly-broken power-law temperature normalization; T(t) ~ T_0 at t = t0 (~11200 K)."</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric temperature at t=0 (the T(t) -&gt; T0 limit, not literally T at peak)."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_0"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_r"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Early-regime (t &lt;&lt; t0) temperature power-law index; T rises toward t0."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_r"</span><span class="p">,</span>
+        <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">3.73</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.08</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Asymptotic late-time photospheric temperature (T(t) -&gt; T_floor as t -&gt; infinity)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.45</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Cooling-regime (t0 &lt;&lt; t &lt;&lt; sqrt(t0 t_P)) temperature power-law index; T declines."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_c"</span><span class="p">,</span>
+        <span class="s2">"tau_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric cooling timescale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_T"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_p"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau-regime (t &gt;&gt; sqrt(t0 t_P)) temperature power-law index; T declines slowly."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_p"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"s_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the break at t0 (early -&gt; cooling regime)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s_0"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"s_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the break at sqrt(t0 t_P) (cooling -&gt; plateau regime)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s_1"</span><span class="p">,</span>
+        <span class="s2">"alpha_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.2</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric cooling power-law index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_T"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">}</span>
 
@@ -705,31 +675,20 @@
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">t0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">t_P</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">T_0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">alpha_r</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">alpha_c</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">alpha_p</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">s_0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">s_1</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">T0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">T_floor</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">tau_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">alpha_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        Doubly-broken power-law photospheric temperature; see the class docstring.</span>
-
-<span class="sd">        Reuses the light curve's own ``t0``/``t_P``. Evaluated in days -- ``t``, ``t0``, ``t_P``</span>
-<span class="sd">        arrive in cgs (seconds), converted back here since (unlike the rest of this model) the</span>
-<span class="sd">        formula is not scale-invariant to the day/second choice.</span>
-
-<span class="sd">        Floored at ``_T_FLOOR_K`` -- well before ``t0`` (unconstrained; ``L_bol`` is already ~0</span>
-<span class="sd">        there) the early branch can otherwise underflow toward 0 K.</span>
+<span class="sd">        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        t : numpy.ndarray</span>
 <span class="sd">            Time since explosion, in seconds.</span>
-<span class="sd">        t0, t_P, T_0, alpha_r, alpha_c, alpha_p, s_0, s_1 : float or numpy.ndarray</span>
+<span class="sd">        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray</span>
 <span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
 <span class="sd">        **_ignored</span>
 <span class="sd">            Any other model parameter values, ignored.</span>
@@ -739,16 +698,7 @@
 <span class="sd">        numpy.ndarray</span>
 <span class="sd">            :math:`T(t)`, in Kelvin.</span>
 <span class="sd">        """</span>
-        <span class="n">t_day</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
-        <span class="n">t0_day</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
-        <span class="n">tP_day</span> <span class="o">=</span> <span class="n">t_P</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
-        <span class="n">t_break2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t0_day</span> <span class="o">*</span> <span class="n">tP_day</span><span class="p">)</span>
-
-        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
-            <span class="n">early_to_cooling</span> <span class="o">=</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">t_day</span> <span class="o">/</span> <span class="n">t0_day</span><span class="p">)</span> <span class="o">**</span> <span class="n">s_0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">((</span><span class="n">alpha_c</span> <span class="o">-</span> <span class="n">alpha_r</span><span class="p">)</span> <span class="o">/</span> <span class="n">s_0</span><span class="p">)</span>
-            <span class="n">cooling_to_plateau</span> <span class="o">=</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">t_day</span> <span class="o">/</span> <span class="n">t_break2</span><span class="p">)</span> <span class="o">**</span> <span class="n">s_1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">alpha_c</span> <span class="o">-</span> <span class="n">alpha_p</span><span class="p">)</span> <span class="o">/</span> <span class="n">s_1</span><span class="p">)</span>
-            <span class="n">temperature</span> <span class="o">=</span> <span class="n">T_0</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_day</span> <span class="o">/</span> <span class="n">t0_day</span><span class="p">)</span> <span class="o">**</span> <span class="n">alpha_r</span> <span class="o">*</span> <span class="n">early_to_cooling</span> <span class="o">*</span> <span class="n">cooling_to_plateau</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">_T_FLOOR_K</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cooling_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">T0</span><span class="o">=</span><span class="n">T0</span><span class="p">,</span> <span class="n">T_floor</span><span class="o">=</span><span class="n">T_floor</span><span class="p">,</span> <span class="n">timescale</span><span class="o">=</span><span class="n">tau_T</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_T</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TypeIIPSED.temperature">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature.html#uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature">[docs]</a>
@@ -880,10 +830,26 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Early-interacting, IXF/GGI-like Type IIP supernova SED.</span>
 
-<span class="sd">    Same light curve and temperature functional forms as :class:`TypeIIPSED` -- only the parameter</span>
-<span class="sd">    priors differ, shifted toward the brighter, hotter, faster early cooling phase attributed to</span>
-<span class="sd">    shock breakout through and/or collisional heating of close circumstellar material, rather than</span>
-<span class="sd">    the smoother early decline of ordinary Type IIP SNe.</span>
+<span class="sd">    Same light curve as :class:`TypeIIPSED`, with different priors shifted toward the brighter,</span>
+<span class="sd">    faster early cooling phase attributed to shock breakout through and/or collisional heating of</span>
+<span class="sd">    close circumstellar material, rather than the smoother early decline of ordinary Type IIP SNe.</span>
+
+<span class="sd">    The temperature law differs: the single-power-law cooling law of :class:`TypeIIPSED`, now describing a</span>
+<span class="sd">    hot initial flash (:math:`T_0 \sim10^5` K) that has cooled by :math:`\sim1` d, plus a reheating bump</span>
+<span class="sd">    (:func:`~uvex_transients.models._util_functions.temperature_bump_cgs`) that reproduces the rise of the</span>
+<span class="sd">    photospheric temperature to :math:`\sim2\times10^4` K at :math:`\sim3` d seen in SN 2023ixf and SN 2024ggi:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}</span>
+<span class="sd">        + \Delta T_\mathrm{bump}\,\frac{g(t/\tau_b)}{g(\beta_\mathrm{bump}/\alpha_\mathrm{bump})},</span>
+<span class="sd">        \qquad g(x) = \frac{x^{\beta_\mathrm{bump}}}{(1 + x)^{\alpha_\mathrm{bump} + \beta_\mathrm{bump}}},</span>
+
+<span class="sd">    with :math:`\tau_b = t_\mathrm{bump}\,\alpha_\mathrm{bump}/\beta_\mathrm{bump}`, so the bump peaks at</span>
+<span class="sd">    exactly :math:`t_\mathrm{bump}` with height :math:`\Delta T_\mathrm{bump}`. The temperature is not</span>
+<span class="sd">    monotonic. There is no temperature data before :math:`\sim0.8` d, so the flash parameters (``T0``,</span>
+<span class="sd">    ``tau_T``, ``alpha_T``) are set by expectation rather than fit, and the bump parameters</span>
+<span class="sd">    (``T_bump``, ``t_bump``, ``beta_bump``, ``alpha_bump``) and ``T_floor`` by fits to the data.</span>
 
 <span class="sd">    Priors are hand-tuned against SN 2023ixf :footcite:p:`hsu2025` and SN 2024ggi</span>
 <span class="sd">    :footcite:p:`chen2024`, the only two objects of this kind currently in</span>
@@ -949,44 +915,97 @@
             <span class="n">description</span><span class="o">=</span><span class="s2">"Radioactive-tail decay timescale. Fixed to the 56Co decay e-folding time."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{Co}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"T_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.3</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">"T0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
             <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Doubly-broken power-law temperature normalization; T(t) ~ T_0 at t = t0 (~11200 K)."</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric temperature at t=0, the hot shock-breakout flash (the T(t) -&gt; T0 limit)."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_0"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_r"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Early-regime (t &lt;&lt; t0) temperature power-law index; T rises toward t0."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_r"</span><span class="p">,</span>
+        <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">3.69</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.06</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Asymptotic late-time photospheric temperature (T(t) -&gt; T_floor as t -&gt; infinity)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Cooling-regime (t0 &lt;&lt; t &lt;&lt; sqrt(t0 t_P)) temperature power-law index; T declines."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_c"</span><span class="p">,</span>
+        <span class="s2">"tau_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Cooling timescale of the initial hot flash."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_T"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"alpha_p"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau-regime (t &gt;&gt; sqrt(t0 t_P)) temperature power-law index; T declines slowly."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_p"</span><span class="p">,</span>
+        <span class="s2">"alpha_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Cooling power-law index of the initial hot flash."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_T"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"s_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the break at t0 (early -&gt; cooling regime)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s_0"</span><span class="p">,</span>
+        <span class="s2">"T_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.19</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.08</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak temperature excess of the post-flash reheating bump, above the cooling law."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\Delta T_\mathrm</span><span class="si">{bump}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"s_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the break at sqrt(t0 t_P) (cooling -&gt; plateau regime)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s_1"</span><span class="p">,</span>
+        <span class="s2">"t_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">2.4</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">3.6</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Epoch of the peak of the reheating bump."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_\mathrm</span><span class="si">{bump}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-    <span class="p">}</span></div>
+        <span class="s2">"beta_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Rise power-law index of the reheating bump."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta_\mathrm</span><span class="si">{bump}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"alpha_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Decay power-law index of the reheating bump."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{bump}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Cooling Law + Reheating Bump: T(t)      #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_temperature_cgs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">T0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">T_floor</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">tau_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">alpha_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">T_bump</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">t_bump</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">beta_bump</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">alpha_bump</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Cooling law plus a reheating bump; see the class docstring.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        T0, T_floor, tau_T, alpha_T, T_bump, t_bump, beta_bump, alpha_bump : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`T(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">cooling</span> <span class="o">=</span> <span class="n">cooling_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">T0</span><span class="o">=</span><span class="n">T0</span><span class="p">,</span> <span class="n">T_floor</span><span class="o">=</span><span class="n">T_floor</span><span class="p">,</span> <span class="n">timescale</span><span class="o">=</span><span class="n">tau_T</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_T</span><span class="p">)</span>
+        <span class="n">bump</span> <span class="o">=</span> <span class="n">temperature_bump_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="n">T_bump</span><span class="p">,</span> <span class="n">t_peak</span><span class="o">=</span><span class="n">t_bump</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta_bump</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_bump</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cooling</span> <span class="o">+</span> <span class="n">bump</span></div>
 
 </pre></div>
 

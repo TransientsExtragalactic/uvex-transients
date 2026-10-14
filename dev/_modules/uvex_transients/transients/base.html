@@ -1464,6 +1464,65 @@
         <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RATE_CI</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">rate</span> <span class="o">*</span> <span class="n">lower</span><span class="p">,</span> <span class="n">rate</span> <span class="o">*</span> <span class="n">upper</span><span class="p">)</span>
 
+<div class="viewcode-block" id="ExtragalacticTransient.integrated_rate_to">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.integrated_rate_to.html#uvex_transients.transients.supernovae.ExtragalacticTransient.integrated_rate_to">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">integrated_rate_to</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span> <span class="n">all_sky</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Compute the expected event rate out to a redshift, :math:`z \le z_{\max}`.</span>
+
+<span class="sd">        Truncate the integral defining :attr:`integrated_rate` at ``z``:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \mathcal R_\Omega(&lt;z)</span>
+<span class="sd">            = \int_0^{z}</span>
+<span class="sd">              \frac{R(z')}{1+z'}</span>
+<span class="sd">              \frac{dV_c}{dz'\,d\Omega}\,dz'.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : float or ~numpy.ndarray</span>
+<span class="sd">            Upper redshift bound(s), each in :math:`[0, z_{\max}]`, where</span>
+<span class="sd">            :math:`z_{\max}` is :attr:`redshift_limit`.</span>
+<span class="sd">        all_sky : bool, optional</span>
+<span class="sd">            If `True`, return the all-sky rate in inverse years (as :attr:`all_sky_rate`)</span>
+<span class="sd">            instead of the rate per steradian (as :attr:`integrated_rate`). Default `False`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            Expected rate per observer time and solid angle (or per observer time if</span>
+<span class="sd">            ``all_sky``), with the same shape as ``z``. No survey footprint or</span>
+<span class="sd">            detection selection is applied.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any ``z`` is non-finite, negative, or beyond :attr:`redshift_limit`.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Evaluated by linear interpolation of the cumulative rate tabulated on</span>
+<span class="sd">        :attr:`redshift_grid`, so its accuracy is set by :attr:`redshift_grid_size`.</span>
+<span class="sd">        ``integrated_rate_to(redshift_limit)`` equals :attr:`integrated_rate`.</span>
+<span class="sd">        The rate-only bounds follow by scaling with the ``RATE_CI`` multipliers.</span>
+<span class="sd">        """</span>
+        <span class="n">z_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z_arr</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">z_arr</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">z_arr</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`z` must be finite and lie in [0, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_redshift_limit</span><span class="si">}</span><span class="s2">] (the redshift limit); got </span><span class="si">{</span><span class="n">z</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_rate_table</span><span class="p">()</span>
+        <span class="n">fraction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">z_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redshift_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_cdf</span><span class="p">)</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrated_rate</span> <span class="o">*</span> <span class="n">fraction</span>
+        <span class="k">if</span> <span class="n">all_sky</span><span class="p">:</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">rate</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rate</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">effective_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>

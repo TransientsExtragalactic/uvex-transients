@@ -498,8 +498,8 @@ weeks-to-months-long luminosity “plateau” as a recombination front recedes t
 followed by a radioactive tail powered by <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> decay. A subset show a brighter,
 hotter, faster early excess on top of this, attributed to shock breakout through and/or collisional
 heating of close circumstellar material – IXF/GGI-like objects, after the prototypes SN 2023ixf
-and SN 2024ggi. Both IIP variants share the same SED functional form and differ only in their
-parameter priors. Type IIb events, which lost most but not all of their hydrogen, are modeled with
+and SN 2024ggi. Both IIP variants share the same light curve and differ in their parameter priors;
+the excess variant’s photospheric temperature has an additional early reheating bump. Type IIb events, which lost most but not all of their hydrogen, are modeled with
 a different, double-pulse form. Each is implemented as its own transient population in a tab below.
 (Hydrogen-free Type Ib and Ic supernovae are covered on the <a class="reference internal" href="type_i.html#transients-type-i"><span class="std std-ref">Type I page</span></a>.)</p>
 <div class="sd-tab-set docutils">
@@ -539,7 +539,7 @@ Strolger <em>et al.</em><a class="footnote-reference brackets" href="#footcite-s
 <a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 0.51\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.48\)</span></p></td>
 <td><p>–</p></td>
 <td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
 priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -556,8 +556,7 @@ rounded up. See the observability summary below.</p></td>
 <p class="rubric" id="transients-type-ii-sed">SED Model</p>
 <p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a> is two shared-onset exponential
 components (an early cooling-phase decline onto a constant plateau) plus a switched
-radioactive tail, together with a smooth, doubly-broken power-law photospheric temperature
-that reuses the light curve’s own <span class="math notranslate nohighlight">\(t_0\)</span>/<span class="math notranslate nohighlight">\(t_P\)</span>:</p>
+radioactive tail, together with a single-power-law cooling photospheric temperature:</p>
 <div class="math notranslate nohighlight">
 \[L_\mathrm{bol}(t) = S_0(t)\,\bigl[1-S_P(t)\bigr]
 \Bigl[L_\mathrm{pk}\,e^{-(t-t_0)/\tau_\mathrm{cool}} + L_p\Bigr]
@@ -571,26 +570,23 @@ S_P(t) = \frac{1}{1+e^{-(t-t_P)/\tau_\mathrm{drop}}}.\]</div>
 <span class="math notranslate nohighlight">\(t_P\)</span>. Between the rise and <span class="math notranslate nohighlight">\(t_P\)</span>, <span class="math notranslate nohighlight">\(L_\mathrm{bol}\)</span> is an early
 cooling-phase decline from <span class="math notranslate nohighlight">\(L_\mathrm{pk}\)</span> onto a constant plateau <span class="math notranslate nohighlight">\(L_p\)</span>; after
 <span class="math notranslate nohighlight">\(t_P\)</span> it switches to a pure radioactive-tail exponential.</p>
-<p>The temperature law has three regimes – an early regime, a cooling-phase regime around
-<span class="math notranslate nohighlight">\(t_0\)</span>, and a recombination/plateau regime around <span class="math notranslate nohighlight">\(t_P\)</span> – joined by two smooth
-breaks:</p>
+<p>The temperature follows the same cooling law as the Type IIb and Villar supernova models:</p>
 <div class="math notranslate nohighlight">
-\[T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}
-\left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}
-\left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},\]</div>
-<p>with <span class="math notranslate nohighlight">\(t\)</span> in days, so that <span class="math notranslate nohighlight">\(T(t_0) \approx T_0\)</span>. With
-<span class="math notranslate nohighlight">\(\alpha_r &gt; 0 &gt; \alpha_c &gt; \alpha_p\)</span>, the temperature rises through the early,
-pre-<span class="math notranslate nohighlight">\(t_0\)</span> region (where <span class="math notranslate nohighlight">\(L_\mathrm{bol} \approx 0\)</span> anyway), peaks near
-<span class="math notranslate nohighlight">\(t_0\)</span>, then declines – fast through the cooling regime and much more slowly through
-the recombination/plateau regime. <span class="math notranslate nohighlight">\(s_0\)</span>/<span class="math notranslate nohighlight">\(s_1\)</span> set the sharpness of the two
-breaks. The second break has no epoch of its own, so it is centered on the geometric mean of
-<span class="math notranslate nohighlight">\(t_0\)</span> and <span class="math notranslate nohighlight">\(t_P\)</span>.</p>
+\[T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.\]</div>
+<p>It starts at <span class="math notranslate nohighlight">\(T_0 \sim 5\times10^4\)</span> K at <span class="math notranslate nohighlight">\(t=0\)</span>, the shock-heated photosphere, and
+cools monotonically toward the hydrogen-recombination temperature <span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span>
+(<span class="math notranslate nohighlight">\(\sim5.4\times10^3\)</span> K). The data only constrain <span class="math notranslate nohighlight">\(T\)</span> from a few days after
+explosion, where <span class="math notranslate nohighlight">\(T - T_\mathrm{floor} \propto (T_0 - T_\mathrm{floor})\,
+\tau_T^{\alpha_T}\,t^{-\alpha_T}\)</span>, so <span class="math notranslate nohighlight">\(T_0\)</span> and <span class="math notranslate nohighlight">\(\tau_T\)</span> are degenerate and
+<span class="math notranslate nohighlight">\(T_0\)</span> is set by the expected early-time temperature.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Light-curve priors (<code class="docutils literal notranslate"><span class="pre">t0</span></code> through <code class="docutils literal notranslate"><span class="pre">tau_Co</span></code>) come from fitting the light-curve model to
-SN 1999em and SN 2003hn; temperature-law priors (<code class="docutils literal notranslate"><span class="pre">T_0</span></code> through <code class="docutils literal notranslate"><span class="pre">s_1</span></code>) are hand-tuned
-against the aggregate Type IIP temperature dataset in the plot below.</p>
+SN 1999em and SN 2003hn. <code class="docutils literal notranslate"><span class="pre">T0</span></code> is set to the expected early-time temperature, and the
+other temperature-law priors (<code class="docutils literal notranslate"><span class="pre">T_floor</span></code> through <code class="docutils literal notranslate"><span class="pre">alpha_T</span></code>) are tuned so that every
+temperature point in the aggregate Type IIP dataset in the plot below falls inside the
+prior band.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 16.0%" />
@@ -618,7 +614,7 @@ against the aggregate Type IIP temperature dataset in the plot below.</p>
 </tr>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_pk</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_\mathrm{pk}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})\)</span>; mean=42.48, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})\)</span>; mean=42.48, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3)</p></td>
 <td><p class="sd-card-text">Early cooling-phase peak luminosity scale (median <span class="math notranslate nohighlight">\(\sim3\times10^{42}\)</span> erg/s).</p></td>
 </tr>
 <tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_cool</span></code></p></td>
@@ -628,7 +624,7 @@ against the aggregate Type IIP temperature dataset in the plot below.</p>
 </tr>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_p</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_p\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=42.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=42.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
 <td><p class="sd-card-text">Plateau luminosity.</p></td>
 </tr>
 <tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_P</span></code></p></td>
@@ -643,7 +639,7 @@ against the aggregate Type IIP temperature dataset in the plot below.</p>
 </tr>
 <tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_Co</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_\mathrm{Co}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.39, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3)</p></td>
 <td><p class="sd-card-text">Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_Co</span></code></p></td>
@@ -652,35 +648,25 @@ against the aggregate Type IIP temperature dataset in the plot below.</p>
 <td><p class="sd-card-text">Radioactive-tail decay timescale, fixed to the <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> e-folding
 time.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_0</span></code></p></td>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=4.05, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
-<td><p class="sd-card-text">Normalization: <span class="math notranslate nohighlight">\(T(t_0) \approx T_0\)</span> (<span class="math notranslate nohighlight">\(\sim1.1\times10^4\)</span> K).</p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=4.7, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p class="sd-card-text">Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(5\times10^4\)</span> K). Not constrained by data.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_r</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_r\)</span></p></td>
-<td><p class="sd-card-text">Normal(2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
-<td><p class="sd-card-text">Early-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> rises toward <span class="math notranslate nohighlight">\(t_0\)</span>.</p></td>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.73, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.08)</p></td>
+<td><p class="sd-card-text">Late-time recombination temperature (median <span class="math notranslate nohighlight">\(5.4\times10^3\)</span> K).</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_c</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_c\)</span></p></td>
-<td><p class="sd-card-text">Normal(-0.45, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
-<td><p class="sd-card-text">Cooling-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> declines.</p></td>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_T</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_T\)</span></p></td>
+<td><p class="sd-card-text">Uniform(0.7 d, 2 d)</p></td>
+<td><p class="sd-card-text">Cooling timescale.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_p</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_p\)</span></p></td>
-<td><p class="sd-card-text">Normal(-0.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.01)</p></td>
-<td><p class="sd-card-text">Plateau-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> declines slowly.</p></td>
-</tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">s_0</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(s_0\)</span></p></td>
-<td><p class="sd-card-text">Uniform(10, 20)</p></td>
-<td><p class="sd-card-text">Sharpness of the break at <span class="math notranslate nohighlight">\(t_0\)</span>.</p></td>
-</tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">s_1</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(s_1\)</span></p></td>
-<td><p class="sd-card-text">Uniform(10, 50)</p></td>
-<td><p class="sd-card-text">Sharpness of the break at <span class="math notranslate nohighlight">\(\sqrt{t_0 t_P}\)</span>.</p></td>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_T</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_T\)</span></p></td>
+<td><p class="sd-card-text">Uniform(0.9, 1.2)</p></td>
+<td><p class="sd-card-text">Cooling power-law index.</p></td>
 </tr>
 </tbody>
 </table>
@@ -702,7 +688,7 @@ draw’s peak apparent AB magnitude, in whichever band is brighter, against reds
 detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
 <span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
 1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-adopted above, <span class="math notranslate nohighlight">\(z=0.51\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+adopted above, <span class="math notranslate nohighlight">\(z=0.48\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
 finer grid than this plot’s.</p>
 <p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
 fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
@@ -767,28 +753,37 @@ rounded up. See the observability summary below.</p></td>
 </div>
 <p class="rubric">SED Model</p>
 <p><a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPExcessSED.html#uvex_transients.models.supernovae.IIp.TypeIIPExcessSED" title="uvex_transients.models.supernovae.IIp.TypeIIPExcessSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSED</span></code></a> is a subclass of
-<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a>: the same light curve and
-temperature functional forms,</p>
+<a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a>: the same light curve,</p>
 <div class="math notranslate nohighlight">
 \[L_\mathrm{bol}(t) = S_0(t)\,\bigl[1-S_P(t)\bigr]
 \Bigl[L_\mathrm{pk}\,e^{-(t-t_0)/\tau_\mathrm{cool}} + L_p\Bigr]
-+ S_P(t)\, L_\mathrm{Co}\, e^{-(t-t_P)/\tau_\mathrm{Co}},
-\qquad
-T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}
-\left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}
-\left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},\]</div>
-<p>only with different parameter priors – an earlier, faster rise (<code class="docutils literal notranslate"><span class="pre">t0</span></code>, <code class="docutils literal notranslate"><span class="pre">tau_rise</span></code>), a
-higher peak luminosity (<code class="docutils literal notranslate"><span class="pre">L_pk</span></code>) and normalization temperature (<code class="docutils literal notranslate"><span class="pre">T_0</span></code>), and a shallower
-early-regime temperature index (<code class="docutils literal notranslate"><span class="pre">alpha_r</span></code>) – shifted to match the brighter, hotter, faster
-early cooling phase seen in SN 2023ixf and SN 2024ggi, rather than the smoother early decline
-of ordinary Type IIP SNe.</p>
++ S_P(t)\, L_\mathrm{Co}\, e^{-(t-t_P)/\tau_\mathrm{Co}},\]</div>
+<p>with different priors: an earlier, faster rise (<code class="docutils literal notranslate"><span class="pre">t0</span></code>, <code class="docutils literal notranslate"><span class="pre">tau_rise</span></code>) and a higher peak
+luminosity (<code class="docutils literal notranslate"><span class="pre">L_pk</span></code>), shifted to match the brighter, faster early cooling phase seen in
+SN 2023ixf and SN 2024ggi, rather than the smoother early decline of ordinary Type IIP SNe.</p>
+<p>The temperature law differs. It is the cooling law of the ordinary Type IIP, now describing a
+hot initial flash (<span class="math notranslate nohighlight">\(T_0 \sim 10^5\)</span> K) that has cooled by <span class="math notranslate nohighlight">\(\sim1\)</span> d, plus a reheating
+bump that reproduces the rise of the photospheric temperature to <span class="math notranslate nohighlight">\(\sim2\times10^4\)</span> K at
+<span class="math notranslate nohighlight">\(\sim3\)</span> d seen in both objects:</p>
+<div class="math notranslate nohighlight">
+\[T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}
++ \Delta T_\mathrm{bump}\,\frac{g(t/\tau_b)}{g(\beta_\mathrm{bump}/\alpha_\mathrm{bump})},
+\qquad g(x) = \frac{x^{\beta_\mathrm{bump}}}{(1 + x)^{\alpha_\mathrm{bump} + \beta_\mathrm{bump}}},\]</div>
+<p>with <span class="math notranslate nohighlight">\(\tau_b = t_\mathrm{bump}\,\alpha_\mathrm{bump}/\beta_\mathrm{bump}\)</span>, so that the
+bump rises as <span class="math notranslate nohighlight">\(t^{\beta_\mathrm{bump}}\)</span>, peaks at exactly <span class="math notranslate nohighlight">\(t_\mathrm{bump}\)</span> with
+height <span class="math notranslate nohighlight">\(\Delta T_\mathrm{bump}\)</span>, and decays as <span class="math notranslate nohighlight">\(t^{-\alpha_\mathrm{bump}}\)</span>. The
+temperature is therefore not monotonic: it cools from the flash to a trough of
+<span class="math notranslate nohighlight">\(\sim1.3\times10^4\)</span> K at <span class="math notranslate nohighlight">\(\sim1\)</span> d, rises to the bump, and cools again.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
 <p class="sd-card-text">Hand-tuned against SN 2023ixf <a class="footnote-reference brackets" href="#footcite-hsu2025" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> and SN 2024ggi
 <a class="footnote-reference brackets" href="#footcite-chen2024" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>, the only two objects of this kind currently in
 <code class="docutils literal notranslate"><span class="pre">test_data/transients</span></code>. Parameters not listed below (<code class="docutils literal notranslate"><span class="pre">tau_drop</span></code>, <code class="docutils literal notranslate"><span class="pre">tau_Co</span></code>) are
-fixed to the same values as ordinary Type IIP.</p>
+fixed to the same values as ordinary Type IIP. There is no temperature data before
+<span class="math notranslate nohighlight">\(\sim0.8\)</span> d, so the flash parameters (<code class="docutils literal notranslate"><span class="pre">T0</span></code>, <code class="docutils literal notranslate"><span class="pre">tau_T</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_T</span></code>) are set by
+expectation. <code class="docutils literal notranslate"><span class="pre">T_floor</span></code> and the bump parameters come from fits to the two objects
+(with <code class="docutils literal notranslate"><span class="pre">beta_bump</span></code> only bounded below, <span class="math notranslate nohighlight">\(\gtrsim5\)</span>).</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 16.0%" />
@@ -839,35 +834,45 @@ fixed to the same values as ordinary Type IIP.</p>
 <td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.5, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3)</p></td>
 <td><p class="sd-card-text">Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_0</span></code></p></td>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
 <td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=4.2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
-<td><p class="sd-card-text">Normalization: <span class="math notranslate nohighlight">\(T(t_0) \approx T_0\)</span> (<span class="math notranslate nohighlight">\(\sim1.6\times10^4\)</span> K).</p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=5.0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p class="sd-card-text">Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(10^5\)</span> K), the hot flash. Not constrained by data.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_r</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_r\)</span></p></td>
-<td><p class="sd-card-text">Normal(1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
-<td><p class="sd-card-text">Early-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> rises toward <span class="math notranslate nohighlight">\(t_0\)</span>.</p></td>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.69, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.06)</p></td>
+<td><p class="sd-card-text">Late-time temperature (median <span class="math notranslate nohighlight">\(4.9\times10^3\)</span> K).</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_c</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_c\)</span></p></td>
-<td><p class="sd-card-text">Normal(-0.45, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
-<td><p class="sd-card-text">Cooling-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> declines.</p></td>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_T</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_T\)</span></p></td>
+<td><p class="sd-card-text">Uniform(0.15 d, 0.3 d)</p></td>
+<td><p class="sd-card-text">Cooling timescale of the initial flash.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_p</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_p\)</span></p></td>
-<td><p class="sd-card-text">Normal(-0.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.01)</p></td>
-<td><p class="sd-card-text">Plateau-regime power-law index; <span class="math notranslate nohighlight">\(T\)</span> declines slowly.</p></td>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_T</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_T\)</span></p></td>
+<td><p class="sd-card-text">Uniform(1.8, 2.4)</p></td>
+<td><p class="sd-card-text">Cooling power-law index of the initial flash.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">s_0</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(s_0\)</span></p></td>
-<td><p class="sd-card-text">Uniform(10, 20)</p></td>
-<td><p class="sd-card-text">Sharpness of the break at <span class="math notranslate nohighlight">\(t_0\)</span>.</p></td>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_bump</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\Delta T_\mathrm{bump}\)</span></p></td>
+<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(\Delta T_\mathrm{bump}/\mathrm{K})\)</span>; mean=4.19, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.08)</p></td>
+<td><p class="sd-card-text">Peak temperature excess of the reheating bump (median <span class="math notranslate nohighlight">\(1.55\times10^4\)</span> K).</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">s_1</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(s_1\)</span></p></td>
-<td><p class="sd-card-text">Uniform(10, 50)</p></td>
-<td><p class="sd-card-text">Sharpness of the break at <span class="math notranslate nohighlight">\(\sqrt{t_0 t_P}\)</span>.</p></td>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_bump</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_\mathrm{bump}\)</span></p></td>
+<td><p class="sd-card-text">Uniform(2.4 d, 3.6 d)</p></td>
+<td><p class="sd-card-text">Epoch of the bump’s peak.</p></td>
+</tr>
+<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">beta_bump</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\beta_\mathrm{bump}\)</span></p></td>
+<td><p class="sd-card-text">Uniform(5, 12)</p></td>
+<td><p class="sd-card-text">Rise power-law index of the bump.</p></td>
+</tr>
+<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_bump</span></code></p></td>
+<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_\mathrm{bump}\)</span></p></td>
+<td><p class="sd-card-text">Uniform(1.6, 2.4)</p></td>
+<td><p class="sd-card-text">Decay power-law index of the bump.</p></td>
 </tr>
 </tbody>
 </table>

@@ -10,8 +10,8 @@ weeks-to-months-long luminosity "plateau" as a recombination front recedes throu
 followed by a radioactive tail powered by :math:`^{56}\mathrm{Co}` decay. A subset show a brighter,
 hotter, faster early excess on top of this, attributed to shock breakout through and/or collisional
 heating of close circumstellar material -- IXF/GGI-like objects, after the prototypes SN 2023ixf
-and SN 2024ggi. Both IIP variants share the same SED functional form and differ only in their
-parameter priors. Type IIb events, which lost most but not all of their hydrogen, are modeled with
+and SN 2024ggi. Both IIP variants share the same light curve and differ in their parameter priors;
+the excess variant's photospheric temperature has an additional early reheating bump. Type IIb events, which lost most but not all of their hydrogen, are modeled with
 a different, double-pulse form. Each is implemented as its own transient population in a tab below.
 (Hydrogen-free Type Ib and Ic supernovae are covered on the :ref:`Type I page <transients_type_i>`.)
 
@@ -46,7 +46,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.51`
+           - :math:`z = 0.48`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -62,8 +62,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` is two shared-onset exponential
       components (an early cooling-phase decline onto a constant plateau) plus a switched
-      radioactive tail, together with a smooth, doubly-broken power-law photospheric temperature
-      that reuses the light curve's own :math:`t_0`/:math:`t_P`:
+      radioactive tail, together with a single-power-law cooling photospheric temperature:
 
       .. math::
 
@@ -84,29 +83,26 @@ a different, double-pulse form. Each is implemented as its own transient populat
       cooling-phase decline from :math:`L_\mathrm{pk}` onto a constant plateau :math:`L_p`; after
       :math:`t_P` it switches to a pure radioactive-tail exponential.
 
-      The temperature law has three regimes -- an early regime, a cooling-phase regime around
-      :math:`t_0`, and a recombination/plateau regime around :math:`t_P` -- joined by two smooth
-      breaks:
+      The temperature follows the same cooling law as the Type IIb and Villar supernova models:
 
       .. math::
 
-          T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}
-          \left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}
-          \left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},
+          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
 
-      with :math:`t` in days, so that :math:`T(t_0) \approx T_0`. With
-      :math:`\alpha_r > 0 > \alpha_c > \alpha_p`, the temperature rises through the early,
-      pre-:math:`t_0` region (where :math:`L_\mathrm{bol} \approx 0` anyway), peaks near
-      :math:`t_0`, then declines -- fast through the cooling regime and much more slowly through
-      the recombination/plateau regime. :math:`s_0`/:math:`s_1` set the sharpness of the two
-      breaks. The second break has no epoch of its own, so it is centered on the geometric mean of
-      :math:`t_0` and :math:`t_P`.
+      It starts at :math:`T_0 \sim 5\times10^4` K at :math:`t=0`, the shock-heated photosphere, and
+      cools monotonically toward the hydrogen-recombination temperature :math:`T_\mathrm{floor}`
+      (:math:`\sim5.4\times10^3` K). The data only constrain :math:`T` from a few days after
+      explosion, where :math:`T - T_\mathrm{floor} \propto (T_0 - T_\mathrm{floor})\,
+      \tau_T^{\alpha_T}\,t^{-\alpha_T}`, so :math:`T_0` and :math:`\tau_T` are degenerate and
+      :math:`T_0` is set by the expected early-time temperature.
 
       .. dropdown:: Parameter priors
 
          Light-curve priors (``t0`` through ``tau_Co``) come from fitting the light-curve model to
-         SN 1999em and SN 2003hn; temperature-law priors (``T_0`` through ``s_1``) are hand-tuned
-         against the aggregate Type IIP temperature dataset in the plot below.
+         SN 1999em and SN 2003hn. ``T0`` is set to the expected early-time temperature, and the
+         other temperature-law priors (``T_floor`` through ``alpha_T``) are tuned so that every
+         temperature point in the aggregate Type IIP dataset in the plot below falls inside the
+         prior band.
 
          .. list-table::
             :header-rows: 1
@@ -126,7 +122,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Rise timescale (median 1 d).
             * - ``L_pk``
               - :math:`L_\mathrm{pk}`
-              - Normal(:math:`\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})`; mean=42.48, :math:`\sigma`\=0.2)
+              - Normal(:math:`\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})`; mean=42.48, :math:`\sigma`\=0.3)
               - Early cooling-phase peak luminosity scale (median :math:`\sim3\times10^{42}` erg/s).
             * - ``tau_cool``
               - :math:`\tau_\mathrm{cool}`
@@ -134,7 +130,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Early cooling-phase decay timescale.
             * - ``L_p``
               - :math:`L_p`
-              - Normal(:math:`\log_{10}(L_p/\mathrm{erg\,s^{-1}})`; mean=42.1, :math:`\sigma`\=0.1)
+              - Normal(:math:`\log_{10}(L_p/\mathrm{erg\,s^{-1}})`; mean=42.1, :math:`\sigma`\=0.2)
               - Plateau luminosity.
             * - ``t_P``
               - :math:`t_P`
@@ -146,37 +142,29 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Plateau-end transition width.
             * - ``L_Co``
               - :math:`L_\mathrm{Co}`
-              - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41.39, :math:`\sigma`\=0.1)
+              - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41, :math:`\sigma`\=0.3)
               - Radioactive-tail luminosity at ``t_P``.
             * - ``tau_Co``
               - :math:`\tau_\mathrm{Co}`
               - Fixed (111.4 d)
               - Radioactive-tail decay timescale, fixed to the :math:`^{56}\mathrm{Co}` e-folding
                 time.
-            * - ``T_0``
+            * - ``T0``
               - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.05, :math:`\sigma`\=0.1)
-              - Normalization: :math:`T(t_0) \approx T_0` (:math:`\sim1.1\times10^4` K).
-            * - ``alpha_r``
-              - :math:`\alpha_r`
-              - Normal(2, :math:`\sigma`\=0.2)
-              - Early-regime power-law index; :math:`T` rises toward :math:`t_0`.
-            * - ``alpha_c``
-              - :math:`\alpha_c`
-              - Normal(-0.45, :math:`\sigma`\=0.1)
-              - Cooling-regime power-law index; :math:`T` declines.
-            * - ``alpha_p``
-              - :math:`\alpha_p`
-              - Normal(-0.1, :math:`\sigma`\=0.01)
-              - Plateau-regime power-law index; :math:`T` declines slowly.
-            * - ``s_0``
-              - :math:`s_0`
-              - Uniform(10, 20)
-              - Sharpness of the break at :math:`t_0`.
-            * - ``s_1``
-              - :math:`s_1`
-              - Uniform(10, 50)
-              - Sharpness of the break at :math:`\sqrt{t_0 t_P}`.
+              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.7, :math:`\sigma`\=0.1)
+              - Temperature at :math:`t=0` (median :math:`5\times10^4` K). Not constrained by data.
+            * - ``T_floor``
+              - :math:`T_\mathrm{floor}`
+              - Normal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.73, :math:`\sigma`\=0.08)
+              - Late-time recombination temperature (median :math:`5.4\times10^3` K).
+            * - ``tau_T``
+              - :math:`\tau_T`
+              - Uniform(0.7 d, 2 d)
+              - Cooling timescale.
+            * - ``alpha_T``
+              - :math:`\alpha_T`
+              - Uniform(0.9, 1.2)
+              - Cooling power-law index.
 
       .. rubric:: Simulated Light Curves
 
@@ -269,7 +257,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.51`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.48`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -410,31 +398,44 @@ a different, double-pulse form. Each is implemented as its own transient populat
       .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPExcessSED` is a subclass of
-      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`: the same light curve and
-      temperature functional forms,
+      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`: the same light curve,
 
       .. math::
 
           L_\mathrm{bol}(t) = S_0(t)\,\bigl[1-S_P(t)\bigr]
           \Bigl[L_\mathrm{pk}\,e^{-(t-t_0)/\tau_\mathrm{cool}} + L_p\Bigr]
           + S_P(t)\, L_\mathrm{Co}\, e^{-(t-t_P)/\tau_\mathrm{Co}},
-          \qquad
-          T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}
-          \left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}
-          \left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},
 
-      only with different parameter priors -- an earlier, faster rise (``t0``, ``tau_rise``), a
-      higher peak luminosity (``L_pk``) and normalization temperature (``T_0``), and a shallower
-      early-regime temperature index (``alpha_r``) -- shifted to match the brighter, hotter, faster
-      early cooling phase seen in SN 2023ixf and SN 2024ggi, rather than the smoother early decline
-      of ordinary Type IIP SNe.
+      with different priors: an earlier, faster rise (``t0``, ``tau_rise``) and a higher peak
+      luminosity (``L_pk``), shifted to match the brighter, faster early cooling phase seen in
+      SN 2023ixf and SN 2024ggi, rather than the smoother early decline of ordinary Type IIP SNe.
+
+      The temperature law differs. It is the cooling law of the ordinary Type IIP, now describing a
+      hot initial flash (:math:`T_0 \sim 10^5` K) that has cooled by :math:`\sim1` d, plus a reheating
+      bump that reproduces the rise of the photospheric temperature to :math:`\sim2\times10^4` K at
+      :math:`\sim3` d seen in both objects:
+
+      .. math::
+
+          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}
+          + \Delta T_\mathrm{bump}\,\frac{g(t/\tau_b)}{g(\beta_\mathrm{bump}/\alpha_\mathrm{bump})},
+          \qquad g(x) = \frac{x^{\beta_\mathrm{bump}}}{(1 + x)^{\alpha_\mathrm{bump} + \beta_\mathrm{bump}}},
+
+      with :math:`\tau_b = t_\mathrm{bump}\,\alpha_\mathrm{bump}/\beta_\mathrm{bump}`, so that the
+      bump rises as :math:`t^{\beta_\mathrm{bump}}`, peaks at exactly :math:`t_\mathrm{bump}` with
+      height :math:`\Delta T_\mathrm{bump}`, and decays as :math:`t^{-\alpha_\mathrm{bump}}`. The
+      temperature is therefore not monotonic: it cools from the flash to a trough of
+      :math:`\sim1.3\times10^4` K at :math:`\sim1` d, rises to the bump, and cools again.
 
       .. dropdown:: Parameter priors
 
          Hand-tuned against SN 2023ixf :footcite:p:`hsu2025` and SN 2024ggi
          :footcite:p:`chen2024`, the only two objects of this kind currently in
          ``test_data/transients``. Parameters not listed below (``tau_drop``, ``tau_Co``) are
-         fixed to the same values as ordinary Type IIP.
+         fixed to the same values as ordinary Type IIP. There is no temperature data before
+         :math:`\sim0.8` d, so the flash parameters (``T0``, ``tau_T``, ``alpha_T``) are set by
+         expectation. ``T_floor`` and the bump parameters come from fits to the two objects
+         (with ``beta_bump`` only bounded below, :math:`\gtrsim5`).
 
          .. list-table::
             :header-rows: 1
@@ -472,30 +473,38 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - :math:`L_\mathrm{Co}`
               - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41.5, :math:`\sigma`\=0.3)
               - Radioactive-tail luminosity at ``t_P``.
-            * - ``T_0``
+            * - ``T0``
               - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.2, :math:`\sigma`\=0.1)
-              - Normalization: :math:`T(t_0) \approx T_0` (:math:`\sim1.6\times10^4` K).
-            * - ``alpha_r``
-              - :math:`\alpha_r`
-              - Normal(1, :math:`\sigma`\=0.2)
-              - Early-regime power-law index; :math:`T` rises toward :math:`t_0`.
-            * - ``alpha_c``
-              - :math:`\alpha_c`
-              - Normal(-0.45, :math:`\sigma`\=0.1)
-              - Cooling-regime power-law index; :math:`T` declines.
-            * - ``alpha_p``
-              - :math:`\alpha_p`
-              - Normal(-0.1, :math:`\sigma`\=0.01)
-              - Plateau-regime power-law index; :math:`T` declines slowly.
-            * - ``s_0``
-              - :math:`s_0`
-              - Uniform(10, 20)
-              - Sharpness of the break at :math:`t_0`.
-            * - ``s_1``
-              - :math:`s_1`
-              - Uniform(10, 50)
-              - Sharpness of the break at :math:`\sqrt{t_0 t_P}`.
+              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=5.0, :math:`\sigma`\=0.1)
+              - Temperature at :math:`t=0` (median :math:`10^5` K), the hot flash. Not constrained by data.
+            * - ``T_floor``
+              - :math:`T_\mathrm{floor}`
+              - Normal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.69, :math:`\sigma`\=0.06)
+              - Late-time temperature (median :math:`4.9\times10^3` K).
+            * - ``tau_T``
+              - :math:`\tau_T`
+              - Uniform(0.15 d, 0.3 d)
+              - Cooling timescale of the initial flash.
+            * - ``alpha_T``
+              - :math:`\alpha_T`
+              - Uniform(1.8, 2.4)
+              - Cooling power-law index of the initial flash.
+            * - ``T_bump``
+              - :math:`\Delta T_\mathrm{bump}`
+              - Normal(:math:`\log_{10}(\Delta T_\mathrm{bump}/\mathrm{K})`; mean=4.19, :math:`\sigma`\=0.08)
+              - Peak temperature excess of the reheating bump (median :math:`1.55\times10^4` K).
+            * - ``t_bump``
+              - :math:`t_\mathrm{bump}`
+              - Uniform(2.4 d, 3.6 d)
+              - Epoch of the bump's peak.
+            * - ``beta_bump``
+              - :math:`\beta_\mathrm{bump}`
+              - Uniform(5, 12)
+              - Rise power-law index of the bump.
+            * - ``alpha_bump``
+              - :math:`\alpha_\mathrm{bump}`
+              - Uniform(1.6, 2.4)
+              - Decay power-law index of the bump.
 
       .. rubric:: Simulated Light Curves
 
