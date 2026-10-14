@@ -981,6 +981,62 @@ class ExtragalacticTransient(TransientBase, ABC):
         lower, upper = self.RATE_CI
         return (rate * lower, rate * upper)
 
+    def integrated_rate_to(
+        self, z: Union[float, NDArray[np.float64]], all_sky: bool = False
+    ) -> Union[Quantity, NDArray[np.float64]]:
+        r"""
+        Compute the expected event rate out to a redshift, :math:`z \le z_{\max}`.
+
+        Truncate the integral defining :attr:`integrated_rate` at ``z``:
+
+        .. math::
+
+            \mathcal R_\Omega(<z)
+            = \int_0^{z}
+              \frac{R(z')}{1+z'}
+              \frac{dV_c}{dz'\,d\Omega}\,dz'.
+
+        Parameters
+        ----------
+        z : float or ~numpy.ndarray
+            Upper redshift bound(s), each in :math:`[0, z_{\max}]`, where
+            :math:`z_{\max}` is :attr:`redshift_limit`.
+        all_sky : bool, optional
+            If `True`, return the all-sky rate in inverse years (as :attr:`all_sky_rate`)
+            instead of the rate per steradian (as :attr:`integrated_rate`). Default `False`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            Expected rate per observer time and solid angle (or per observer time if
+            ``all_sky``), with the same shape as ``z``. No survey footprint or
+            detection selection is applied.
+
+        Raises
+        ------
+        ValueError
+            If any ``z`` is non-finite, negative, or beyond :attr:`redshift_limit`.
+
+        Notes
+        -----
+        Evaluated by linear interpolation of the cumulative rate tabulated on
+        :attr:`redshift_grid`, so its accuracy is set by :attr:`redshift_grid_size`.
+        ``integrated_rate_to(redshift_limit)`` equals :attr:`integrated_rate`.
+        The rate-only bounds follow by scaling with the ``RATE_CI`` multipliers.
+        """
+        z_arr = np.asarray(z, dtype=float)
+        if not np.all(np.isfinite(z_arr)) or np.any(z_arr < 0) or np.any(z_arr > self._redshift_limit):
+            raise ValueError(
+                f"`z` must be finite and lie in [0, {self._redshift_limit}] (the redshift limit); got {z!r}."
+            )
+
+        self._ensure_rate_table()
+        fraction = np.interp(z_arr, self._redshift_grid, self._z_cdf)
+        rate = self._integrated_rate * fraction
+        if all_sky:
+            rate = (rate * 4 * np.pi * u.sr).to(u.yr**-1)
+        return rate
+
     @property
     def effective_volume(self) -> Quantity:
         r"""

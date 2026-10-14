@@ -60,6 +60,49 @@ def test_all_sky_rate_is_integrated_rate_over_full_sky():
     assert t.all_sky_rate.to_value(u.yr**-1) == pytest.approx(expected.to_value(u.yr**-1))
 
 
+def test_integrated_rate_to_matches_total_at_the_redshift_limit():
+    """Integrating out to `redshift_limit` reproduces `integrated_rate` / `all_sky_rate`."""
+    t = _ConstantRateTransient()
+    assert t.integrated_rate_to(t.redshift_limit).to_value(t.integrated_rate.unit) == pytest.approx(
+        t.integrated_rate.value
+    )
+    assert t.integrated_rate_to(t.redshift_limit, all_sky=True).to_value(u.yr**-1) == pytest.approx(
+        t.all_sky_rate.to_value(u.yr**-1)
+    )
+
+
+def test_integrated_rate_to_matches_direct_integration():
+    """A partial-redshift rate agrees with an independent quadrature of the defining integral."""
+    from scipy.integrate import quad
+
+    t = _ConstantRateTransient()
+    z_stop = 0.4
+
+    def weight(z):
+        dvc = t.cosmology.differential_comoving_volume(z).to_value(u.Mpc**3 / u.sr)
+        return t.event_rate(z) * dvc / (1.0 + z)
+
+    expected = quad(weight, 0.0, z_stop)[0]
+    assert t.integrated_rate_to(z_stop).to_value(u.sr**-1 * u.yr**-1) == pytest.approx(expected, rel=1e-3)
+
+
+def test_integrated_rate_to_is_monotonic_and_vectorized():
+    """Array input returns an array of the same shape, nondecreasing, starting at zero."""
+    t = _ConstantRateTransient()
+    z = np.linspace(0.0, t.redshift_limit, 7)
+    rate = t.integrated_rate_to(z)
+    assert rate.shape == z.shape
+    assert rate[0].value == 0.0
+    assert np.all(np.diff(rate.value) > 0)
+
+
+@pytest.mark.parametrize("z", [-0.1, np.nan, np.inf, 1.5])
+def test_integrated_rate_to_rejects_out_of_range_redshifts(z):
+    """Redshifts outside `[0, redshift_limit]` or non-finite raise `ValueError`."""
+    with pytest.raises(ValueError, match="redshift limit"):
+        _ConstantRateTransient().integrated_rate_to(z)
+
+
 def test_all_sky_rate_equals_rate_times_effective_volume():
     """`all_sky_rate` is `rate * effective_volume` (the point value, i.e. `A * V`)."""
     t = _ConstantRateTransient()
