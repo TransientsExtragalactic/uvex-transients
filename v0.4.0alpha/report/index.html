@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Transient Yield Report &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'report/index';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.4.0alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Standard Run" href="full_run/index.html" />
+    <link rel="prev" title="Multi-Band ToO Follow-up" href="../auto_examples/too_simulations/plot_multiband_too_followup.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#" aria-current="page">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#" aria-current="page">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="full_run/index.html">Standard Run</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="full_run/event_detection/index.html">Event Detection</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="full_run/event_detection/plot_footprint_overlap.html">Overlap With Other Surveys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="full_run/event_detection/plot_detected_yields.html">Expected Detections</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="full_run/transient_characterization/index.html">Transient Characterization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="full_run/transient_characterization/plot_characterized_footprints.html">Overlap of Characterized Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="full_run/transient_characterization/plot_characterization.html">Standard Cuts and Yields</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="infant_sne/index.html">Infant Supernovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="infant_sne/plot_infant_sne_yields.html">Infant Supernova Triggers</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Transient Yield Report</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <p align="center">
+  <img src="../_static/uvex_logo_dark.png" width="400" alt="uvex_logo">
+</p><section class="report-title" id="transient-yield-report">
+<span id="report-page"></span><h1>Transient Yield Report<a class="headerlink" href="#transient-yield-report" title="Link to this heading">#</a></h1>
+<p>The <strong>UVEX Transient Yield Report</strong> (TYR) is the expected transient science of the UVEX survey: how many
+events of each type UVEX should detect, given the <em>latest published release</em> of the survey schedule, the
+transient SED models and their volumetric rates. Every number on these pages comes from the data products
+of that release, and the pages are regenerated when the documentation is rebuilt.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The TYR is a <strong>first look</strong> at the simulated data, not a final analysis. The numbers will change as the
+survey schedule, the transient models and the rates are refined. Detailed analyses, such as follow-up
+planning, classification or science-case-specific selections, are up to the user and the UVEX team,
+starting from the released data products.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page is generated from the latest published release, <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.4.0alpha">v0.4.0alpha</a>, specifically
+its <code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> data product. Every data product (the event catalog, photometry,
+exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
+listed on the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases">releases page</a>.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../user_guide/simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for how a simulation is built, from sampling events to the cuts and
+actions applied to them, and <a class="reference internal" href="../user_guide/cli/overview.html#user-guide-cli"><span class="std std-ref">Command-Line Interface</span></a> for the config files that define one.</p></li>
+<li><p><a class="reference internal" href="../user_guide/simulation/yield_statistics.html#yield-statistics"><span class="std std-ref">Yield Statistics</span></a> for how the expected detections and their uncertainties are computed.</p></li>
+<li><p><a class="reference internal" href="../transients/index.html#transients"><span class="std std-ref">Transients</span></a> for the SED model, rate and priors of every transient type.</p></li>
+<li><p><a class="reference internal" href="../_as_gen/uvex_transients.utils.results.get_results.html#uvex_transients.utils.results.get_results" title="uvex_transients.utils.results.get_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code></a> for downloading a release’s data products.</p></li>
+</ul>
+</div>
+<nav class="contents local" id="on-this-page">
+<p class="topic-title">On this page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#available-simulations" id="id1">Available Simulations</a></p></li>
+<li><p><a class="reference internal" href="#transient-detection-report" id="id2">Transient Detection Report</a></p></li>
+<li><p><a class="reference internal" href="#simulations" id="id3">Simulations</a></p></li>
+</ul>
+</nav>
+<section id="available-simulations">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Available Simulations</a><a class="headerlink" href="#available-simulations" title="Link to this heading">#</a></h2>
+<p>The TYR contains several <strong>simulations</strong>, each with its own transient populations, selection and
+data products. The default is the <strong>Standard Run</strong>, which covers every registered transient class at
+full scale; the others each target one science case.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 58.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Simulation</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Analyses</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Standard Run</strong></p></td>
+<td><p>The total number of each transient type that UVEX both detects and can characterize, with every registered class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale. Downstream analyses apply relatively relaxed cuts to select events with UV coverage that can probably be classified, though probably not early. This is the default run.</p></td>
+<td><p><a class="reference internal" href="full_run/index.html"><span class="doc">4 analyses</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Infant Supernovae</p></td>
+<td><p>The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is to get on target as quickly as possible.</p></td>
+<td><p><a class="reference internal" href="infant_sne/index.html"><span class="doc">1 analysis</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="transient-detection-report">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Transient Detection Report</a><a class="headerlink" href="#transient-detection-report" title="Link to this heading">#</a></h2>
+<p>The <strong>0th-order</strong> result of the TYR is the number of transients UVEX <em>detects</em> over its 2-year prime
+mission. Here, an event is <strong>detected</strong> if the survey observes its position after it explodes and, in at
+least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
+event whose only such observation is the first-ever visit to that field is not counted, since there is no
+reference image to detect it against. A detection says only that UVEX <em>sees</em> the event: it does not mean
+the event can be characterized or classified, which needs more observations and is a subject for
+downstream analysis.</p>
+<p>The table gives, for each transient type of the Standard Run, the expected number of real events that
+UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
+Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
+percentage of those detected events whose sky position lies inside the footprint of ZTF
+(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
+only, and do not account for whether those surveys observed the event at the right time.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 38.0%" />
+<col style="width: 14.0%" />
+<col style="width: 14.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Transient Type</p></th>
+<th class="head"><p>Expected Detections</p></th>
+<th class="head"><p>% ZTF Overlap</p></th>
+<th class="head"><p>% Rubin Overlap</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ia SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(146,461^{+2,796}_{-2,756}\,{}^{+11,266}_{-11,266}\)</span></p></td>
+<td><p>81.4%</p></td>
+<td><p>69.6%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ib SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(10,114^{+760}_{-718}\,{}^{+4,551}_{-4,794}\)</span></p></td>
+<td><p>78.3%</p></td>
+<td><p>69.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(8,405^{+695}_{-654}\,{}^{+4,285}_{-4,464}\)</span></p></td>
+<td><p>81.1%</p></td>
+<td><p>68.1%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic-BL SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(1,313^{+293}_{-251}\,{}^{+1,109}_{-1,313}\)</span></p></td>
+<td><p>89.6%</p></td>
+<td><p>74.6%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIb SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(1,616^{+323}_{-280}\,{}^{+734}_{-773}\)</span></p></td>
+<td><p>85.4%</p></td>
+<td><p>72.0%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIP SNe (Excess)</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(193,148^{+3,214}_{-3,173}\,{}^{+57,131}_{-64,712}\)</span></p></td>
+<td><p>81.9%</p></td>
+<td><p>69.5%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIP SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(55,652^{+1,745}_{-1,704}\,{}^{+16,461}_{-18,646}\)</span></p></td>
+<td><p>80.9%</p></td>
+<td><p>69.4%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/kilonovae.html"><span class="doc">Kilonova</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(0^{+3.97}_{-0}\,{}^{+0}_{-0}\)</span></p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/lfbots.html"><span class="doc">LFBOT</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(459^{+145}_{-119}\,{}^{+115}_{-418}\)</span></p></td>
+<td><p>84.8%</p></td>
+<td><p>69.7%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/slsne.html"><span class="doc">SLSNe (Magnetar)</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(15,214^{+865}_{-833}\,{}^{+5,692}_{-8,244}\)</span></p></td>
+<td><p>81.2%</p></td>
+<td><p>66.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/tdes.html"><span class="doc">Tidal Disruption Event</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(6,259^{+585}_{-548}\,{}^{+1,211}_{-2,019}\)</span></p></td>
+<td><p>80.4%</p></td>
+<td><p>71.0%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="simulations">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Simulations</a><a class="headerlink" href="#simulations" title="Link to this heading">#</a></h2>
+<p>Each <strong>simulation</strong> is its own run of the pipeline, built for one science case: its own transient classes,
+parameter priors, sampling and selection cuts, and therefore its own data products. Each card below opens a
+gallery of the analyses done on that simulation. The examples download its data from the latest release with
+<a class="reference internal" href="../_as_gen/uvex_transients.utils.results.get_results.html#uvex_transients.utils.results.get_results" title="uvex_transients.utils.results.get_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_results()</span></code></a> (cached after the first download), and the galleries are
+rebuilt with the docs, so they follow the latest release.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-3 sd-g-xs-3 sd-g-sm-3 sd-g-md-3 sd-g-lg-3 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-border-1 run-card docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg version="1.1" width="1.3em" height="1.3em" class="sd-octicon sd-octicon-telescope sd-text-primary" viewBox="0 0 16 16" aria-hidden="true"><path d="M14.184 1.143v-.001l1.422 2.464a1.75 1.75 0 0 1-.757 2.451L3.104 11.713a1.75 1.75 0 0 1-2.275-.702l-.447-.775a1.75 1.75 0 0 1 .53-2.32L11.682.573a1.748 1.748 0 0 1 2.502.57Zm-4.709 9.32h-.001l2.644 3.863a.75.75 0 1 1-1.238.848l-1.881-2.75v2.826a.75.75 0 0 1-1.5 0v-2.826l-1.881 2.75a.75.75 0 1 1-1.238-.848l2.049-2.992a.746.746 0 0 1 .293-.253l1.809-.87a.749.749 0 0 1 .944.252ZM9.436 3.92h-.001l-4.97 3.39.942 1.63 5.42-2.61Zm3.091-2.108h.001l-1.85 1.26 1.505 2.605 2.016-.97a.247.247 0 0 0 .13-.151.247.247 0 0 0-.022-.199l-1.422-2.464a.253.253 0 0 0-.161-.119.254.254 0 0 0-.197.038ZM1.756 9.157a.25.25 0 0 0-.075.33l.447.775a.25.25 0 0 0 .325.1l1.598-.769-.83-1.436-1.465 1Z"></path></svg> Standard Run</div>
+<p class="sd-card-text">The total number of each transient type that UVEX both detects and can characterize, with every registered class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale. Downstream analyses apply relatively relaxed cuts to select events with UV coverage that can probably be classified, though probably not early. This is the default run.</p>
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Kilonovae</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">TDEs</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">LFBOTs</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SNe</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SLSNe</span></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">Default run</span> · 4 analyses · <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml">configs/full_run.yaml</a></p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="full_run/index.html"><span class="doc">Standard Run</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-border-1 run-card docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<svg version="1.1" width="1.3em" height="1.3em" class="sd-octicon sd-octicon-zap sd-text-primary" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.504.43a1.516 1.516 0 0 1 2.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.249 1.249 0 0 1-.871.354h-.302a1.25 1.25 0 0 1-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.429Zm1.047 1.074L3.286 8.571A.25.25 0 0 0 3.462 9H6.75a.75.75 0 0 1 .694 1.034l-1.713 4.188 6.982-6.793A.25.25 0 0 0 12.538 7H9.25a.75.75 0 0 1-.683-1.06l2.008-4.418.003-.006a.036.036 0 0 0-.004-.009l-.006-.006-.008-.001c-.003 0-.006.002-.009.004Z"></path></svg> Infant Supernovae</div>
+<p class="sd-card-text">The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is to get on target as quickly as possible.</p>
+<p class="sd-card-text"><span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type Ia</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type II</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">Type Ib/c</span> <span class="sd-sphinx-override sd-badge sd-outline-secondary sd-text-secondary">SLSNe</span></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text">1 analysis · <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/infant_sne.yaml">configs/infant_sne.yaml</a></p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="infant_sne/index.html"><span class="doc">Infant Supernovae</span></a></div>
+</div>
+</div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../auto_examples/too_simulations/plot_multiband_too_followup.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Multi-Band ToO Follow-up</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="full_run/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Standard Run</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-simulations">Available Simulations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transient-detection-report">Transient Detection Report</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulations">Simulations</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/report/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
