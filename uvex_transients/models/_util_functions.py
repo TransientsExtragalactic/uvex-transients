@@ -170,8 +170,8 @@ def cooling_temperature_cgs(
 
     :math:`T(t) \to T_0` as :math:`t \to 0` and :math:`T(t) \to T_\mathrm{floor}` as
     :math:`t \to \infty`. Shared by models whose photosphere cools according to this
-    single power law; a doubly-broken cooling law (e.g. a Type IIP's early/cooling/plateau
-    phases) is a genuinely different functional form and is not expressed in terms of this.
+    single power law. Models with an additional temperature rebrightening add
+    :func:`temperature_bump_cgs` on top of it.
 
     Parameters
     ----------
@@ -192,6 +192,54 @@ def cooling_temperature_cgs(
         :math:`T(t)`, in K.
     """
     return T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
+
+
+def temperature_bump_cgs(
+    t: FloatArray,
+    *,
+    amplitude: CGSParameterValue,
+    t_peak: CGSParameterValue,
+    beta: CGSParameterValue,
+    alpha: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Temperature excess with a power-law rise and power-law decline, parametrized by its peak.
+
+    With :math:`x = t/\tau` and :math:`\tau = t_\mathrm{peak}\,\alpha/\beta`,
+
+    .. math::
+
+        \Delta T(t) = \Delta T_\mathrm{pk}\,\frac{g(x)}{g(\beta/\alpha)}, \qquad
+        g(x) = \frac{x^{\beta}}{(1 + x)^{\alpha + \beta}}.
+
+    :math:`g` rises as :math:`x^\beta` for :math:`x \ll 1`, falls as :math:`x^{-\alpha}` for
+    :math:`x \gg 1`, and peaks at :math:`x = \beta/\alpha`, so :math:`\Delta T` is zero at
+    :math:`t = 0`, reaches exactly ``amplitude`` at ``t = t_peak``, and decays to zero at late times.
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    amplitude : array_like
+        Peak value of the excess :math:`\Delta T_\mathrm{pk}`, in K.
+    t_peak : array_like
+        Time of the peak, in s.
+    beta : array_like
+        Rise index (:math:`\Delta T \propto t^\beta` at early times).
+    alpha : array_like
+        Decay index (:math:`\Delta T \propto t^{-\alpha}` at late times).
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`\Delta T(t)`, in K.
+    """
+    x_peak = beta / alpha
+    x = t / (t_peak / x_peak)
+    with np.errstate(divide="ignore"):
+        ln_g = beta * np.log(x) - (alpha + beta) * np.log1p(x)
+    ln_g_peak = beta * np.log(x_peak) - (alpha + beta) * np.log1p(x_peak)
+    return amplitude * np.exp(ln_g - ln_g_peak)
 
 
 def blackbody_temperature_cgs(L: CGSParameterValue, radius: CGSParameterValue) -> FloatArray:

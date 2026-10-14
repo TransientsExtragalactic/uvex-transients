@@ -229,7 +229,7 @@ class TypeIIPSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.51
+    DEFAULT_Z_LIM = 0.48
 
     RATE_FRACTION = _TYPE_IIP_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_FRACTION_ERR)

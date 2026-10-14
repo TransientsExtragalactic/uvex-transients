@@ -10,6 +10,7 @@ from uvex_transients.models._util_functions import (
     log_expm1,
     planck_Bnu_log_cgs,
     planck_shape_log_cgs,
+    temperature_bump_cgs,
 )
 
 
@@ -69,6 +70,27 @@ class TestCoolingTemperatureCgs:
         expected = T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
         actual = cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=timescale, alpha=alpha)
         np.testing.assert_allclose(actual, expected)
+
+
+class TestTemperatureBumpCgs:
+    PARAMS = {"amplitude": 1.5e4, "t_peak": 3.0, "beta": 8.0, "alpha": 2.0}
+
+    def test_peaks_at_t_peak_with_amplitude(self):
+        t = np.linspace(0.1, 30.0, 6000)
+        bump = temperature_bump_cgs(t, **self.PARAMS)
+        assert t[np.argmax(bump)] == pytest.approx(self.PARAMS["t_peak"], abs=0.01)
+        assert temperature_bump_cgs(3.0, **self.PARAMS) == pytest.approx(1.5e4)
+        assert bump.max() <= 1.5e4 * (1 + 1e-12)
+
+    def test_limits(self):
+        assert temperature_bump_cgs(0.0, **self.PARAMS) == 0.0
+        assert temperature_bump_cgs(1e6, **self.PARAMS) == pytest.approx(0.0, abs=1e-3)
+
+    def test_asymptotic_slopes(self):
+        early = temperature_bump_cgs(np.array([1e-4, 2e-4]), **self.PARAMS)
+        late = temperature_bump_cgs(np.array([1e5, 2e5]), **self.PARAMS)
+        assert np.log(early[1] / early[0]) / np.log(2.0) == pytest.approx(self.PARAMS["beta"], rel=1e-3)
+        assert np.log(late[1] / late[0]) / np.log(2.0) == pytest.approx(-self.PARAMS["alpha"], rel=1e-3)
 
 
 class TestLogExpm1:

@@ -5,9 +5,8 @@ from typing import ClassVar
 import numpy as np
 from astropy import units as u
 
-from uvex_transients.models._constants import SECONDS_PER_DAY
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
-from uvex_transients.models._util_functions import _log_sigmoid
+from uvex_transients.models._util_functions import _log_sigmoid, cooling_temperature_cgs, temperature_bump_cgs
 from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
@@ -24,11 +23,6 @@ _TAU_CO_DAYS = 77.236 / np.log(2.0)
 #: switch) the bolometric light curve is unconstrained and can underflow toward 0 in float64,
 #: which would otherwise propagate to -inf magnitudes downstream.
 _L_BOL_FLOOR_CGS = 1e35
-
-#: Numerical floor on the photospheric temperature, in K. Same rationale as `_L_BOL_FLOOR_CGS`:
-#: well before t0, the doubly-broken power law's early t^alpha_r branch can underflow toward 0 K,
-#: which drives the blackbody flux to exactly 0 and -inf magnitudes.
-_T_FLOOR_K = 100.0
 
 
 # ======================================== #
@@ -65,29 +59,19 @@ class TypeIIPSED(SpectralModel):
     (shock-cooling decline, hydrogen-recombination plateau, radioactive tail): two logistic
     switches, two exponentials, three luminosity scales.
 
-    The photospheric temperature reuses the light curve's own :math:`t_0` and :math:`t_P` and is a
-    smooth, doubly-broken power law with three regimes -- an early regime, a cooling-phase regime
-    around :math:`t_0`, and a recombination/plateau regime around :math:`t_P` --
+    The photospheric temperature follows the same single-power-law cooling law used by the Type IIb
+    and Villar supernova models
+    (:func:`~uvex_transients.models._util_functions.cooling_temperature_cgs`):
 
     .. math::
 
-        T(t) = T_0\, \left(\frac{t}{t_0}\right)^{\alpha_r}
-        \left(\frac{1 + (t/t_0)^{s_0}}{2}\right)^{\frac{\alpha_c - \alpha_r}{s_0}}
-        \left(\frac{1 + (t/\sqrt{t_0 t_P})^{s_1}}{2}\right)^{-\frac{\alpha_c - \alpha_p}{s_1}},
+        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
 
-    (:math:`t` in days). Both bracketed terms are normalized to equal 1 exactly at their own break
-    (:math:`t=t_0`, :math:`t=\sqrt{t_0 t_P}`), so :math:`T(t_0) \approx T_0` (up to a small
-    correction from the second bracket, negligible when :math:`t_0 \ll t_P`). For :math:`t \ll t_0`,
-    :math:`T(t) \to T_0\, (t/t_0)^{\alpha_r}`; between the two breaks
-    (:math:`t_0 \ll t \ll \sqrt{t_0 t_P}`), :math:`T(t) \propto t^{\alpha_c}`; for
-    :math:`t \gg \sqrt{t_0 t_P}` (approaching and past :math:`t_P`), :math:`T(t) \propto
-    t^{\alpha_p}`. With :math:`\alpha_r > 0 > \alpha_c > \alpha_p`, the temperature rises through
-    the early, pre-:math:`t_0` region (where :math:`L_\mathrm{bol} \approx 0` anyway, so this
-    region is not otherwise constrained), peaks near :math:`t_0`, then declines -- fast through the
-    cooling regime, and much more slowly (nearly flat) through the recombination/plateau regime.
-    :math:`s_0`/:math:`s_1` set the sharpness of the two breaks (smooth, unlike the light curve's
-    logistic switches, but the same role); the second break has no epoch of its own, so it is
-    centered on the geometric mean of :math:`t_0` and :math:`t_P`.
+    It starts hot at :math:`T_0` at :math:`t=0` (the shock-heated, pre-rise photosphere, :math:`\sim5\times10^4`
+    K) and cools monotonically toward the hydrogen-recombination temperature :math:`T_\mathrm{floor}`
+    (:math:`\sim5.6\times10^3` K). The data only constrain :math:`T` from a few days after explosion, where
+    :math:`T - T_\mathrm{floor} \propto (T_0 - T_\mathrm{floor})\,\tau_T^{\alpha_T}\,t^{-\alpha_T}`, so
+    :math:`T_0` and :math:`\tau_T` are degenerate and :math:`T_0` is set by the expected early-time temperature.
 
     .. rubric:: Parameters
 
@@ -115,24 +99,21 @@ class TypeIIPSED(SpectralModel):
          - :math:`L_\mathrm{Co}`
        * - ``tau_Co``
          - :math:`\tau_\mathrm{Co}`
-       * - ``T_0``
+       * - ``T0``
          - :math:`T_0`
-       * - ``alpha_r``
-         - :math:`\alpha_r`
-       * - ``alpha_c``
-         - :math:`\alpha_c`
-       * - ``alpha_p``
-         - :math:`\alpha_p`
-       * - ``s_0``
-         - :math:`s_0`
-       * - ``s_1``
-         - :math:`s_1`
+       * - ``T_floor``
+         - :math:`T_\mathrm{floor}`
+       * - ``tau_T``
+         - :math:`\tau_T`
+       * - ``alpha_T``
+         - :math:`\alpha_T`
 
     Notes
     -----
     ``tau_drop``/``tau_Co`` are fixed shape constants. Light-curve priors (``t0`` through
     ``tau_Co``) come from a :func:`scipy.optimize.curve_fit` to SN 1999em and SN 2003hn;
-    temperature-law priors (``T_0`` through ``s_1``) are hand-tuned against the aggregate Type IIP
+    temperature-law priors (``T0`` through ``alpha_T``) are hand-tuned: ``T0`` to the expected
+    :math:`\sim5\times10^4` K early-time temperature, the others against the aggregate Type IIP
     photospheric-temperature dataset in ``test_data/transients`` (SN 1999em, SN 2003hn, SN 2012aw,
     SN 2012A, SN 2008in), following :footcite:t:`dallora2014` and :footcite:t:`faran2018`.
     """
@@ -196,42 +177,31 @@ class TypeIIPSED(SpectralModel):
             description="Radioactive-tail decay timescale. Fixed to the 56Co decay e-folding time.",
             latex=r"\tau_\mathrm{Co}",
         ),
-        "T_0": Parameter(
-            prior=NormalPrior(mean=4.05, sigma=0.1),
+        "T0": Parameter(
+            prior=NormalPrior(mean=4.7, sigma=0.1),
             scale=1.0 * u.K,
             transform="log10",
-            description="Doubly-broken power-law temperature normalization; T(t) ~ T_0 at t = t0 (~11200 K).",
+            description="Photospheric temperature at t=0 (the T(t) -> T0 limit, not literally T at peak).",
             latex=r"T_0",
         ),
-        "alpha_r": Parameter(
-            prior=NormalPrior(mean=2, sigma=0.2),
-            scale=1,
-            description="Early-regime (t << t0) temperature power-law index; T rises toward t0.",
-            latex=r"\alpha_r",
+        "T_floor": Parameter(
+            prior=NormalPrior(mean=3.73, sigma=0.08),
+            scale=1.0 * u.K,
+            transform="log10",
+            description="Asymptotic late-time photospheric temperature (T(t) -> T_floor as t -> infinity).",
+            latex=r"T_\mathrm{floor}",
         ),
-        "alpha_c": Parameter(
-            prior=NormalPrior(mean=-0.45, sigma=0.1),
-            scale=1,
-            description="Cooling-regime (t0 << t << sqrt(t0 t_P)) temperature power-law index; T declines.",
-            latex=r"\alpha_c",
+        "tau_T": Parameter(
+            prior=UniformPrior(lower=0.7, upper=2.0),
+            scale=1 * u.day,
+            description="Photospheric cooling timescale.",
+            latex=r"\tau_T",
         ),
-        "alpha_p": Parameter(
-            prior=NormalPrior(mean=-0.1, sigma=0.01),
-            scale=1,
-            description="Plateau-regime (t >> sqrt(t0 t_P)) temperature power-law index; T declines slowly.",
-            latex=r"\alpha_p",
-        ),
-        "s_0": Parameter(
-            prior=UniformPrior(lower=10, upper=20),
-            scale=1,
-            description="Sharpness of the break at t0 (early -> cooling regime).",
-            latex=r"s_0",
-        ),
-        "s_1": Parameter(
-            prior=UniformPrior(lower=10, upper=50),
-            scale=1,
-            description="Sharpness of the break at sqrt(t0 t_P) (cooling -> plateau regime).",
-            latex=r"s_1",
+        "alpha_T": Parameter(
+            prior=UniformPrior(lower=0.9, upper=1.2),
+            scale=1.0,
+            description="Photospheric cooling power-law index.",
+            latex=r"\alpha_T",
         ),
     }
 
@@ -243,31 +213,20 @@ class TypeIIPSED(SpectralModel):
         cls,
         t: FloatArray,
         *,
-        t0: CGSParameterValue,
-        t_P: CGSParameterValue,
-        T_0: CGSParameterValue,
-        alpha_r: CGSParameterValue,
-        alpha_c: CGSParameterValue,
-        alpha_p: CGSParameterValue,
-        s_0: CGSParameterValue,
-        s_1: CGSParameterValue,
+        T0: CGSParameterValue,
+        T_floor: CGSParameterValue,
+        tau_T: CGSParameterValue,
+        alpha_T: CGSParameterValue,
         **_ignored: CGSParameterValue,
     ) -> FloatArray:
         r"""
-        Doubly-broken power-law photospheric temperature; see the class docstring.
-
-        Reuses the light curve's own ``t0``/``t_P``. Evaluated in days -- ``t``, ``t0``, ``t_P``
-        arrive in cgs (seconds), converted back here since (unlike the rest of this model) the
-        formula is not scale-invariant to the day/second choice.
-
-        Floored at ``_T_FLOOR_K`` -- well before ``t0`` (unconstrained; ``L_bol`` is already ~0
-        there) the early branch can otherwise underflow toward 0 K.
+        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.
 
         Parameters
         ----------
         t : numpy.ndarray
             Time since explosion, in seconds.
-        t0, t_P, T_0, alpha_r, alpha_c, alpha_p, s_0, s_1 : float or numpy.ndarray
+        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray
             This model's parameter values, in cgs units; see the class docstring.
         **_ignored
             Any other model parameter values, ignored.
@@ -277,16 +236,7 @@ class TypeIIPSED(SpectralModel):
         numpy.ndarray
             :math:`T(t)`, in Kelvin.
         """
-        t_day = t / SECONDS_PER_DAY
-        t0_day = t0 / SECONDS_PER_DAY
-        tP_day = t_P / SECONDS_PER_DAY
-        t_break2 = np.sqrt(t0_day * tP_day)
-
-        with np.errstate(divide="ignore", invalid="ignore"):
-            early_to_cooling = ((1.0 + (t_day / t0_day) ** s_0) / 2) ** ((alpha_c - alpha_r) / s_0)
-            cooling_to_plateau = ((1.0 + (t_day / t_break2) ** s_1) / 2) ** (-(alpha_c - alpha_p) / s_1)
-            temperature = T_0 * (t_day / t0_day) ** alpha_r * early_to_cooling * cooling_to_plateau
-        return np.maximum(temperature, _T_FLOOR_K)
+        return cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=tau_T, alpha=alpha_T)
 
     @classmethod
     def temperature(cls, t: u.Quantity, **parameters: CGSParameterValue) -> u.Quantity:
@@ -412,10 +362,26 @@ class TypeIIPExcessSED(TypeIIPSED):
     r"""
     Early-interacting, IXF/GGI-like Type IIP supernova SED.
 
-    Same light curve and temperature functional forms as :class:`TypeIIPSED` -- only the parameter
-    priors differ, shifted toward the brighter, hotter, faster early cooling phase attributed to
-    shock breakout through and/or collisional heating of close circumstellar material, rather than
-    the smoother early decline of ordinary Type IIP SNe.
+    Same light curve as :class:`TypeIIPSED`, with different priors shifted toward the brighter,
+    faster early cooling phase attributed to shock breakout through and/or collisional heating of
+    close circumstellar material, rather than the smoother early decline of ordinary Type IIP SNe.
+
+    The temperature law differs: the single-power-law cooling law of :class:`TypeIIPSED`, now describing a
+    hot initial flash (:math:`T_0 \sim10^5` K) that has cooled by :math:`\sim1` d, plus a reheating bump
+    (:func:`~uvex_transients.models._util_functions.temperature_bump_cgs`) that reproduces the rise of the
+    photospheric temperature to :math:`\sim2\times10^4` K at :math:`\sim3` d seen in SN 2023ixf and SN 2024ggi:
+
+    .. math::
+
+        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}
+        + \Delta T_\mathrm{bump}\,\frac{g(t/\tau_b)}{g(\beta_\mathrm{bump}/\alpha_\mathrm{bump})},
+        \qquad g(x) = \frac{x^{\beta_\mathrm{bump}}}{(1 + x)^{\alpha_\mathrm{bump} + \beta_\mathrm{bump}}},
+
+    with :math:`\tau_b = t_\mathrm{bump}\,\alpha_\mathrm{bump}/\beta_\mathrm{bump}`, so the bump peaks at
+    exactly :math:`t_\mathrm{bump}` with height :math:`\Delta T_\mathrm{bump}`. The temperature is not
+    monotonic. There is no temperature data before :math:`\sim0.8` d, so the flash parameters (``T0``,
+    ``tau_T``, ``alpha_T``) are set by expectation rather than fit, and the bump parameters
+    (``T_bump``, ``t_bump``, ``beta_bump``, ``alpha_bump``) and ``T_floor`` by fits to the data.
 
     Priors are hand-tuned against SN 2023ixf :footcite:p:`hsu2025` and SN 2024ggi
     :footcite:p:`chen2024`, the only two objects of this kind currently in
@@ -481,41 +447,94 @@ class TypeIIPExcessSED(TypeIIPSED):
             description="Radioactive-tail decay timescale. Fixed to the 56Co decay e-folding time.",
             latex=r"\tau_\mathrm{Co}",
         ),
-        "T_0": Parameter(
-            prior=NormalPrior(mean=4.3, sigma=0.1),
+        "T0": Parameter(
+            prior=NormalPrior(mean=5.0, sigma=0.1),
             scale=1.0 * u.K,
             transform="log10",
-            description="Doubly-broken power-law temperature normalization; T(t) ~ T_0 at t = t0 (~11200 K).",
+            description="Photospheric temperature at t=0, the hot shock-breakout flash (the T(t) -> T0 limit).",
             latex=r"T_0",
         ),
-        "alpha_r": Parameter(
-            prior=NormalPrior(mean=1, sigma=0.2),
-            scale=1,
-            description="Early-regime (t << t0) temperature power-law index; T rises toward t0.",
-            latex=r"\alpha_r",
+        "T_floor": Parameter(
+            prior=NormalPrior(mean=3.69, sigma=0.06),
+            scale=1.0 * u.K,
+            transform="log10",
+            description="Asymptotic late-time photospheric temperature (T(t) -> T_floor as t -> infinity).",
+            latex=r"T_\mathrm{floor}",
         ),
-        "alpha_c": Parameter(
-            prior=NormalPrior(mean=-0.5, sigma=0.1),
-            scale=1,
-            description="Cooling-regime (t0 << t << sqrt(t0 t_P)) temperature power-law index; T declines.",
-            latex=r"\alpha_c",
+        "tau_T": Parameter(
+            prior=UniformPrior(lower=0.15, upper=0.3),
+            scale=1 * u.day,
+            description="Cooling timescale of the initial hot flash.",
+            latex=r"\tau_T",
         ),
-        "alpha_p": Parameter(
-            prior=NormalPrior(mean=-0.1, sigma=0.01),
-            scale=1,
-            description="Plateau-regime (t >> sqrt(t0 t_P)) temperature power-law index; T declines slowly.",
-            latex=r"\alpha_p",
+        "alpha_T": Parameter(
+            prior=UniformPrior(lower=1.8, upper=2.4),
+            scale=1.0,
+            description="Cooling power-law index of the initial hot flash.",
+            latex=r"\alpha_T",
         ),
-        "s_0": Parameter(
-            prior=UniformPrior(lower=10, upper=20),
-            scale=1,
-            description="Sharpness of the break at t0 (early -> cooling regime).",
-            latex=r"s_0",
+        "T_bump": Parameter(
+            prior=NormalPrior(mean=4.19, sigma=0.08),
+            scale=1.0 * u.K,
+            transform="log10",
+            description="Peak temperature excess of the post-flash reheating bump, above the cooling law.",
+            latex=r"\Delta T_\mathrm{bump}",
         ),
-        "s_1": Parameter(
-            prior=UniformPrior(lower=10, upper=50),
-            scale=1,
-            description="Sharpness of the break at sqrt(t0 t_P) (cooling -> plateau regime).",
-            latex=r"s_1",
+        "t_bump": Parameter(
+            prior=UniformPrior(lower=2.4, upper=3.6),
+            scale=1 * u.day,
+            description="Epoch of the peak of the reheating bump.",
+            latex=r"t_\mathrm{bump}",
+        ),
+        "beta_bump": Parameter(
+            prior=UniformPrior(lower=5, upper=12),
+            scale=1.0,
+            description="Rise power-law index of the reheating bump.",
+            latex=r"\beta_\mathrm{bump}",
+        ),
+        "alpha_bump": Parameter(
+            prior=UniformPrior(lower=1.6, upper=2.4),
+            scale=1.0,
+            description="Decay power-law index of the reheating bump.",
+            latex=r"\alpha_\mathrm{bump}",
         ),
     }
+
+    # -------------------------------------- #
+    # Cooling Law + Reheating Bump: T(t)      #
+    # -------------------------------------- #
+    @classmethod
+    def _temperature_cgs(
+        cls,
+        t: FloatArray,
+        *,
+        T0: CGSParameterValue,
+        T_floor: CGSParameterValue,
+        tau_T: CGSParameterValue,
+        alpha_T: CGSParameterValue,
+        T_bump: CGSParameterValue,
+        t_bump: CGSParameterValue,
+        beta_bump: CGSParameterValue,
+        alpha_bump: CGSParameterValue,
+        **_ignored: CGSParameterValue,
+    ) -> FloatArray:
+        r"""
+        Cooling law plus a reheating bump; see the class docstring.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        T0, T_floor, tau_T, alpha_T, T_bump, t_bump, beta_bump, alpha_bump : float or numpy.ndarray
+            This model's parameter values, in cgs units; see the class docstring.
+        **_ignored
+            Any other model parameter values, ignored.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`T(t)`, in Kelvin.
+        """
+        cooling = cooling_temperature_cgs(t, T0=T0, T_floor=T_floor, timescale=tau_T, alpha=alpha_T)
+        bump = temperature_bump_cgs(t, amplitude=T_bump, t_peak=t_bump, beta=beta_bump, alpha=alpha_bump)
+        return cooling + bump
