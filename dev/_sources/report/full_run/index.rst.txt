@@ -2,21 +2,116 @@
 
 .. _report_full_run_gallery:
 
-*******************************
-Full Population Run
-*******************************
+***************
+Standard Run
+***************
 
 .. card::
    :class-card: sd-shadow-sm gallery-banner
 
-   *Module:* :mod:`~uvex_transients.utils`
+   *Config:* `configs/full_run.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml>`__
+   · *Module:* :mod:`~uvex_transients.utils.summary_report`
 
-   Each example downloads the data products of the latest published release with
-   :func:`~uvex_transients.utils.get_results` (cached after the first download) and analyzes
-   them: the event catalog, the exposure catalog, the per-event summary table, and the synthetic
-   photometry. The Transient Summaries section below has one page per transient family.
+   The default simulation: every transient class the package ships, sampled at full scale against the UVEX
+   survey schedule, and screened down to the events UVEX detects. These pages ask how many of them UVEX
+   detects, how often, and how many of those can be characterized.
 
    :ref:`Back to the report <report_page>`
+
+The sample
+==========
+
+The simulation draws Monte Carlo events of **every registered transient class**, with each class using its own
+default rate, redshift limit and duration (see :ref:`transients` for the model and rate of each):
+
+- **Type I supernovae**: Ia, Ib, Ic and the broad-lined Ic-BL,
+- **Type II supernovae**: IIP, IIP with an early excess, and IIb,
+- **Superluminous supernovae** (the magnetar-powered SLSN-I),
+- **Exotic transients**: tidal disruption events, luminous fast blue optical transients (LFBOTs) and kilonovae.
+
+Events are placed on the sky and in time by sampling the volumetric rate over the whole survey, and then observed
+against the real UVEX survey schedule (the scheduler release pinned in the config, so the data products are
+reproducible) with the ``uvex_fast`` mission model. To keep the highest-rate populations tractable the events are
+downsampled by a factor of 20 (``generate.downsample``), and every count is rescaled back automatically, so the
+numbers on these pages are **expected UVEX events**. Each Monte Carlo event stands for :math:`\mu_0 / n` real ones,
+with :math:`n` the number generated and :math:`\mu_0` the number that exist in UVEX's footprint and observing
+window, and the finite sample is carried through as a Monte Carlo uncertainty (see :ref:`yield-statistics`).
+
+What is a detection?
+====================
+
+Two screens, applied in order, reduce the generated events to the **detected** sample that every page starts from:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Screen
+     - What it keeps
+   * - Magnitude (``limiting_magnitude``)
+     - Events that could ever peak brighter than **25 AB**. This ignores the schedule and only discards events too
+       faint for UVEX to ever see, to save work in the next step.
+   * - Detection (``snr``)
+     - Events with at least one observation after the explosion, in at least one band (FUV or NUV), whose
+       signal-to-noise ratio exceeds **5**. An event whose *only* such observation is the first-ever visit to
+       its field is dropped, since there is no reference image to detect it against
+       (``exclude_first_visit_detections``).
+
+A detection says that UVEX *sees* the event. It does not mean the event can be classified.
+
+What is a characterized event?
+==============================
+
+The characterization pages apply three further cuts to the detected events. They are applied here, to the event
+summary table, and are not part of the run, so they can be changed without regenerating it
+(:ref:`Transient Characterization <report_full_run_characterization>` has a page with every setting in one place):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Cut
+     - What it keeps
+   * - Repeat detections
+     - At least **2** detections. A lone detection is hard to tell apart from noise or an artifact.
+   * - Bright peak
+     - A highest-SNR measurement brighter than **23 AB**.
+   * - Bracketed explosion
+     - A gap from the last constraining non-detection to the first detection that is shorter than a limit per type
+       (from 3 days for kilonovae and Type IIP with an excess, to 60 days for SLSNe), so the explosion time is
+       pinned down.
+
+These are relatively relaxed cuts. They choose events that UVEX gets UV coverage of and that can probably be
+classified, but probably not early.
+
+The pages below follow the order of the analysis: first what is detected, then what can be characterized.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+
+Event Detection
+===============
+
+How many events of each type UVEX detects, how often it detects each one, and where on the sky
+they are. Here an event counts as **detected** with no further selection, as in the report's
+Transient Detection Report, so these pages are the upper bound on what can be studied.
 
 
 .. raw:: html
@@ -32,18 +127,35 @@ Full Population Run
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Every release attaches four data products from the full run. get_results downloads the ones you ask for into the package cache and returns their local paths, and each file loads with its own from_disk:">
+    <div class="sphx-glr-thumbcontainer" tooltip="Which of the events that UVEX detects can also be seen by other surveys, and where in the UVEX surveys do the different transient types turn up?">
 
 .. only:: html
 
-  .. image:: /report/full_run/images/thumb/sphx_glr_plot_release_data_thumb.png
+  .. image:: /report/full_run/event_detection/images/thumb/sphx_glr_plot_footprint_overlap_thumb.png
     :alt:
 
-  :doc:`/report/full_run/plot_release_data`
+  :doc:`/report/full_run/event_detection/plot_footprint_overlap`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Loading the Release Data</div>
+      <div class="sphx-glr-thumbnail-title">Overlap With Other Surveys</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="How many events of each transient type does UVEX detect, and how repeatable are those detections?">
+
+.. only:: html
+
+  .. image:: /report/full_run/event_detection/images/thumb/sphx_glr_plot_detected_yields_thumb.png
+    :alt:
+
+  :doc:`/report/full_run/event_detection/plot_detected_yields`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Expected Detections</div>
     </div>
 
 
@@ -54,26 +166,13 @@ Full Population Run
     </div>
 
 
-.. toctree::
-   :hidden:
 
-   /report/full_run/plot_release_data
+Transient Characterization
+==========================
 
-
-*******************************
-Transient Summaries
-*******************************
-
-.. card::
-   :class-card: sd-shadow-sm gallery-banner
-
-   *Module:* :mod:`~uvex_transients.utils.summary_report`
-
-   One page per transient family, each built from the event summary table of the latest release: the
-   detection funnel, the expected number of events, the distributions of the selected events, their
-   sky positions and an example light curve. Pages whose data cannot be obtained skip the cells that
-   need it, so a build without network access, or against a release that predates the summary table,
-   still succeeds.
+A detection is not yet a characterization. These pages apply the standard selection cuts to the
+detected events, to keep the ones with enough repeat detections, a bright enough peak and a tightly
+bracketed explosion time to be classified, and then repeat the detection analysis on what is left.
 
 
 .. raw:: html
@@ -89,103 +188,35 @@ Transient Summaries
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Kilonovae, the UV and optical counterparts of binary neutron star mergers (see transients_kilonovae for the model and its rate). They are rare and nearby, so the whole population is sampled with no downsampling.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Which of the characterized events can also be seen by other surveys, and where in the UVEX surveys are they?">
 
 .. only:: html
 
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_kilonovae_thumb.png
+  .. image:: /report/full_run/transient_characterization/images/thumb/sphx_glr_plot_characterized_footprints_thumb.png
     :alt:
 
-  :doc:`/report/full_run/transient_summaries/plot_kilonovae`
+  :doc:`/report/full_run/transient_characterization/plot_characterized_footprints`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Kilonovae</div>
+      <div class="sphx-glr-thumbnail-title">Overlap of Characterized Events</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Magnetar-powered Type I superluminous supernovae (see transients_slsne for the model, its priors and how its light curves compare to the literature sample). They are rare but extremely luminous, so UVEX sees them out to high redshift, and long-lived, so each one is observed many times.">
+    <div class="sphx-glr-thumbcontainer" tooltip="How many of the detected events can be characterized: observed often enough, brightly enough and early enough to be classified?">
 
 .. only:: html
 
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_slsne_thumb.png
+  .. image:: /report/full_run/transient_characterization/images/thumb/sphx_glr_plot_characterization_thumb.png
     :alt:
 
-  :doc:`/report/full_run/transient_summaries/plot_slsne`
+  :doc:`/report/full_run/transient_characterization/plot_characterization`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Superluminous Supernovae</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Tidal disruption events, stars torn apart by a supermassive black hole (see transients_tdes for the model and its rate). They are common and long-lived, which makes them the most expensive population to sample.">
-
-.. only:: html
-
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_tdes_thumb.png
-    :alt:
-
-  :doc:`/report/full_run/transient_summaries/plot_tdes`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Tidal Disruption Events</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Luminous fast blue optical transients, AT2018cow-like events that rise and fade within weeks while reaching very high luminosities (see transients_lfbots for the model and its rate).">
-
-.. only:: html
-
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_lfbots_thumb.png
-    :alt:
-
-  :doc:`/report/full_run/transient_summaries/plot_lfbots`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Luminous Fast Blue Optical Transients</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The hydrogen-bearing core-collapse supernovae, together: the plateau Type IIP, a Type IIP population with an early excess, and the Type IIb. Their UV emission is brightest in the first days to weeks, during shock breakout and cooling (see transients_type_ii for each model and its rate).">
-
-.. only:: html
-
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_type_ii_sne_thumb.png
-    :alt:
-
-  :doc:`/report/full_run/transient_summaries/plot_type_ii_sne`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Type II Supernovae</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="The hydrogen-free supernovae, together: the stripped-envelope core-collapse subtypes (Ib, Ic and the broad-lined Ic-BL) and the thermonuclear Type Ia. They share one summary because they share the same Arnett-style SED physics with different priors, and a Type I candidate is often classified only after the fact (see transients_type_i for each model and its rate).">
-
-.. only:: html
-
-  .. image:: /report/full_run/transient_summaries/images/thumb/sphx_glr_plot_type_i_sne_thumb.png
-    :alt:
-
-  :doc:`/report/full_run/transient_summaries/plot_type_i_sne`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Type I Supernovae</div>
+      <div class="sphx-glr-thumbnail-title">Standard Cuts and Yields</div>
     </div>
 
 
@@ -201,7 +232,8 @@ Transient Summaries
    :includehidden:
 
 
-   /report/full_run/transient_summaries/index.rst
+   /report/full_run/event_detection/index.rst
+   /report/full_run/transient_characterization/index.rst
 
 
 .. only:: html

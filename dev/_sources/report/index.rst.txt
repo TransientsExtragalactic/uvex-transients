@@ -1,100 +1,170 @@
+.. raw:: html
+
+    <p align="center">
+      <img src="../_static/uvex_logo_dark.png" width="400" alt="uvex_logo">
+    </p>
+
 .. _report_page:
+
+.. rst-class:: report-title
 
 Transient Yield Report
 =======================
 
+The **UVEX Transient Yield Report** (TYR) is the expected transient science of the UVEX survey: how many
+events of each type UVEX should detect, given the *latest published release* of the survey schedule, the
+transient SED models and their volumetric rates. Every number on these pages comes from the data products
+of that release, and the pages are regenerated when the documentation is rebuilt.
+
+.. important::
+
+   The TYR is a **first look** at the simulated data, not a final analysis. The numbers will change as the
+   survey schedule, the transient models and the rates are refined. Detailed analyses, such as follow-up
+   planning, classification or science-case-specific selections, are up to the user and the UVEX team,
+   starting from the released data products.
+
 .. note::
 
-   This page is generated automatically from the latest published release,
-   `v0.3.0alpha <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.3.0alpha>`__, of UVEX Transients, specifically its ``event_summary.ecsv`` data
-   product (see :doc:`../user_guide`). It is regenerated on every documentation build, so it may
-   lag between releases.
+   This page is generated from the latest published release, `v0.3.0alpha <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.3.0alpha>`__, specifically
+   its ``event_summary.ecsv`` data product. Every data product (the event catalog, photometry,
+   exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
+   listed on the `releases page <https://github.com/TransientsExtragalactic/uvex-transients/releases>`__.
+
 
 .. seealso::
 
-   Every data product from these runs (the event catalog, photometry, exposure, and per-event
-   summary) is attached to the `v0.3.0alpha release page <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.3.0alpha>`__ on GitHub, and
-   :func:`~uvex_transients.utils.get_results` downloads them into a local cache. Earlier
-   releases are listed on the `releases page <https://github.com/TransientsExtragalactic/uvex-transients/releases>`__.
+   - :ref:`user_guide_simulation` for how a simulation is built, from sampling events to the cuts and
+     actions applied to them, and :ref:`user_guide_cli` for the config files that define one.
+   - :ref:`yield-statistics` for how the expected detections and their uncertainties are computed.
+   - :ref:`transients` for the SED model, rate and priors of every transient type.
+   - :func:`~uvex_transients.utils.results.get_results` for downloading a release's data products.
 
-Summary
-=======
+.. contents:: On this page
+   :local:
+   :depth: 1
 
-For each transient type of the primary run, the fraction of simulated events that UVEX detects and
-the expected number of real events that corresponds to. The first uncertainty on each value is the
-90% Clopper-Pearson interval from the finite Monte Carlo sample, and the second, on the
-expected detections only, is the uncertainty on the event rate.
+Available Simulations
+---------------------
+
+The TYR contains several **simulations**, each with its own transient populations, selection and
+data products. The default is the **Standard Run**, which covers every registered transient class at
+full scale; the others each target one science case.
 
 .. list-table::
    :header-rows: 1
-   :widths: 26 37 37
+   :widths: 22 58 20
+
+   * - Simulation
+     - Description
+     - Analyses
+   * - **Standard Run**
+     - The total number of each transient type that UVEX both detects and can characterize, with every registered class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale. Downstream analyses apply relatively relaxed cuts to select events with UV coverage that can probably be classified, though probably not early. This is the default run.
+     - :doc:`4 analyses <full_run/index>`
+   * - Infant Supernovae
+     - The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is to get on target as quickly as possible.
+     - :doc:`1 analysis <infant_sne/index>`
+
+Transient Detection Report
+--------------------------
+
+The **0th-order** result of the TYR is the number of transients UVEX *detects* over its 2-year prime
+mission. Here, an event is **detected** if the survey observes its position after it explodes and, in at
+least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
+event whose only such observation is the first-ever visit to that field is not counted, since there is no
+reference image to detect it against. A detection says only that UVEX *sees* the event: it does not mean
+the event can be characterized or classified, which needs more observations and is a subject for
+downstream analysis.
+
+The table gives, for each transient type of the Standard Run, the expected number of real events that
+UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
+Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
+percentage of those detected events whose sky position lies inside the footprint of ZTF
+(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
+only, and do not account for whether those surveys observed the event at the right time.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 38 14 14
 
    * - Transient Type
-     - Detection Probability
      - Expected Detections
-   * - Type Ia SNe
-     - :math:`0.0182^{+0.000350}_{-0.000345}`
+     - % ZTF Overlap
+     - % Rubin Overlap
+   * - :doc:`Type Ia SNe <../transients/type_i>`
      - :math:`147,339^{+2,828}_{-2,787}\,{}^{+11,334}_{-11,334}`
-   * - Type Ib SNe
-     - :math:`0.0205^{+0.00155}_{-0.00146}`
+     - --
+     - --
+   * - :doc:`Type Ib SNe <../transients/type_i>`
      - :math:`10,084^{+761}_{-719}\,{}^{+4,538}_{-4,779}`
-   * - Type Ic SNe
-     - :math:`0.0281^{+0.00232}_{-0.00219}`
+     - --
+     - --
+   * - :doc:`Type Ic SNe <../transients/type_i>`
      - :math:`8,354^{+691}_{-650}\,{}^{+4,259}_{-4,437}`
-   * - Type Ic-BL SNe
-     - :math:`0.00372^{+0.000811}_{-0.000695}`
+     - --
+     - --
+   * - :doc:`Type Ic-BL SNe <../transients/type_i>`
      - :math:`1,414^{+308}_{-264}\,{}^{+1,195}_{-1,414}`
-   * - Type IIb SNe
-     - :math:`0.00277^{+0.000521}_{-0.000455}`
+     - --
+     - --
+   * - :doc:`Type IIb SNe <../transients/type_ii>`
      - :math:`1,854^{+348}_{-304}\,{}^{+843}_{-887}`
-   * - Type IIP SNe (Excess)
-     - :math:`0.0236^{+0.000400}_{-0.000395}`
+     - --
+     - --
+   * - :doc:`Type IIP SNe (Excess) <../transients/type_ii>`
      - :math:`187,807^{+3,181}_{-3,140}\,{}^{+55,551}_{-62,923}`
-   * - Type IIP SNe
-     - :math:`0.00671^{+0.000206}_{-0.000201}`
+     - --
+     - --
+   * - :doc:`Type IIP SNe <../transients/type_ii>`
      - :math:`59,197^{+1,815}_{-1,773}\,{}^{+17,510}_{-19,833}`
-   * - Kilonova
-     - :math:`0^{+0.0392}_{-0}`
+     - --
+     - --
+   * - :doc:`Kilonova <../transients/kilonovae>`
      - :math:`0^{+4.09}_{-0}\,{}^{+0}_{-0}`
-   * - LFBOT
-     - :math:`0.0772^{+0.0330}_{-0.0255}`
+     - --
+     - --
+   * - :doc:`LFBOT <../transients/lfbots>`
      - :math:`281^{+120}_{-92.7}\,{}^{+70.3}_{-256}`
-   * - SLSNe (Magnetar)
-     - :math:`0.0869^{+0.00533}_{-0.00511}`
+     - --
+     - --
+   * - :doc:`SLSNe (Magnetar) <../transients/slsne>`
      - :math:`13,846^{+849}_{-814}\,{}^{+5,180}_{-7,503}`
-   * - Tidal Disruption Event
-     - :math:`0.122^{+0.00766}_{-0.00735}`
+     - --
+     - --
+   * - :doc:`Tidal Disruption Event <../transients/tdes>`
      - :math:`12,768^{+801}_{-768}\,{}^{+2,471}_{-4,119}`
+     - --
+     - --
 
-Simulation Runs
-===============
+Simulations
+-----------
 
-Each run is its own simulation, with its own population, selection and data products, and has a
-gallery of the analyses done on it. Every example downloads its run's data from the latest release
-with :func:`~uvex_transients.utils.get_results` (cached after the first download), and the pages are
+Each **simulation** is its own run of the pipeline, built for one science case: its own transient classes,
+parameter priors, sampling and selection cuts, and therefore its own data products. Each card below opens a
+gallery of the analyses done on that simulation. The examples download its data from the latest release with
+:func:`~uvex_transients.utils.results.get_results` (cached after the first download), and the galleries are
 rebuilt with the docs, so they follow the latest release.
 
 .. grid:: 1 1 2 2
    :gutter: 3
 
-   .. grid-item-card:: :octicon:`telescope;1.3em;sd-text-primary` Full Population Run
+   .. grid-item-card:: :octicon:`telescope;1.3em;sd-text-primary` Standard Run
       :link: full_run/index
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1 run-card
 
-      Every registered transient class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale against the UVEX schedule. This is the run behind the summary table above.
+      The total number of each transient type that UVEX both detects and can characterize, with every registered class (kilonovae, TDEs, LFBOTs and the supernova families) at full scale. Downstream analyses apply relatively relaxed cuts to select events with UV coverage that can probably be classified, though probably not early. This is the default run.
 
       :bdg-secondary-line:`Kilonovae` :bdg-secondary-line:`TDEs` :bdg-secondary-line:`LFBOTs` :bdg-secondary-line:`SNe` :bdg-secondary-line:`SLSNe`
 
       +++
-      :bdg-primary:`Primary run` · 7 analyses · `configs/full_run.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml>`__
+      :bdg-primary:`Default run` · 4 analyses · `configs/full_run.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml>`__
 
    .. grid-item-card:: :octicon:`zap;1.3em;sd-text-primary` Infant Supernovae
       :link: infant_sne/index
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1 run-card
 
-      Supernovae detected within 72 hours of explosion, the regime that constrains progenitor radii, shock breakout and shock cooling, and that makes the best targets for early spectroscopy.
+      The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is to get on target as quickly as possible.
 
       :bdg-secondary-line:`Type Ia` :bdg-secondary-line:`Type II` :bdg-secondary-line:`Type Ib/c` :bdg-secondary-line:`SLSNe`
 
@@ -107,4 +177,3 @@ rebuilt with the docs, so they follow the latest release.
 
    full_run/index
    infant_sne/index
-

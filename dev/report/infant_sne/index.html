@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d86e327e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -65,8 +65,8 @@
     <link rel="icon" href="../../_static/trex_logo.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Rise Time Brackets" href="plot_rise_brackets.html" />
-    <link rel="prev" title="Type I Supernovae" href="../full_run/transient_summaries/plot_type_i_sne.html" />
+    <link rel="next" title="Infant Supernova Triggers" href="plot_infant_sne_yields.html" />
+    <link rel="prev" title="Standard Cuts and Yields" href="../full_run/transient_characterization/plot_characterization.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
@@ -421,13 +421,21 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../full_run/index.html">Full Population Run</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../full_run/plot_release_data.html">Loading the Release Data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../full_run/index.html">Standard Run</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../full_run/event_detection/index.html">Event Detection</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../full_run/event_detection/plot_footprint_overlap.html">Overlap With Other Surveys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../full_run/event_detection/plot_detected_yields.html">Expected Detections</a></li>
 </ul>
 </details></li>
-
+<li class="toctree-l2 has-children"><a class="reference internal" href="../full_run/transient_characterization/index.html">Transient Characterization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../full_run/transient_characterization/plot_characterized_footprints.html">Overlap of Characterized Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../full_run/transient_characterization/plot_characterization.html">Standard Cuts and Yields</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">Infant Supernovae</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="plot_rise_brackets.html">Rise Time Brackets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_infant_sne_yields.html">Infant Supernova Triggers</a></li>
 </ul>
 </details></li>
 </ul>
@@ -495,15 +503,52 @@
 <div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm gallery-banner docutils">
 <div class="sd-card-body docutils">
 <p class="sd-card-text"><em>Run:</em> <code class="docutils literal notranslate"><span class="pre">configs/infant_sne.yaml</span></code> · <em>Data:</em> <code class="docutils literal notranslate"><span class="pre">get_results(...,</span> <span class="pre">simulation=&quot;infant_sne&quot;)</span></code></p>
-<p class="sd-card-text">Every supernova class, sampled only over the 72 hours after explosion, with a loose 23 AB
-magnitude screen and a 5 sigma SNR cut. The brighter selection needed for spectroscopic
-follow-up is applied to the event summary table afterwards.</p>
+<p class="sd-card-text">The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection
+brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is
+to get on target as quickly as possible.</p>
 <p class="sd-card-text"><a class="reference internal" href="../index.html#report-page"><span class="std std-ref">Back to the report</span></a></p>
 </div>
 </div>
-<div id='sg-tag-list' class='sphx-glr-tag-list'></div><div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="How tightly does UVEX bracket the rise of an infant supernova? The event summary table records, for each event, t_rise_&lt;N&gt;mag: the first detection at least N magnitudes brighter than the detection limit at the event&#x27;s last non-detection. The gap t_rise_&lt;N&gt;mag - t_last_nondet is therefore an upper limit on how long the event took to rise by N magnitudes, as an observer would see it."><img alt="" src="../../_images/sphx_glr_plot_rise_brackets_thumb.png" />
-<p><a class="reference internal" href="plot_rise_brackets.html"><span class="doc">Rise Time Brackets</span></a></p>
-  <div class="sphx-glr-thumbnail-title">Rise Time Brackets</div>
+<section id="the-sample">
+<h2>The sample<a class="headerlink" href="#the-sample" title="Link to this heading">#</a></h2>
+<p>Every supernova class of the Standard Run (Ia, Ib, Ic, Ic-BL, IIP, IIP with an early excess, IIb and the SLSNe) is
+sampled over <strong>only the 72 hours after explosion</strong>, since an infant supernova is caught in its first days. Events
+are generated at their true rate, with no downsampling, and observed against the UVEX survey schedule. Two screens
+reduce them to the detected sample:</p>
+<ul class="simple">
+<li><p>a loose <strong>23 AB</strong> magnitude screen on the peak, which discards events too faint for UVEX to see in the window,</p></li>
+<li><p>a <strong>5 sigma</strong> detection in at least one observation in the window, ignoring an event whose only detection is the
+first-ever visit to its field.</p></li>
+</ul>
+<p>The photometry of the events that survive covers the <strong>30 days before</strong> the explosion (the survey’s observations of
+the position before there was a source, which give the non-detections and limits that bracket the rise) and the
+<strong>100 days after</strong> it, so every light curve shows its full evolution. The brighter selection that makes an event an
+infant is applied afterwards, to these tables, so the definition can be changed without regenerating the run.</p>
+</section>
+<section id="what-is-an-infant-supernova">
+<h2>What is an infant supernova?<a class="headerlink" href="#what-is-an-infant-supernova" title="Link to this heading">#</a></h2>
+<p>To make sure spectroscopic follow-up is possible, the event must reach <strong>20 AB</strong> or brighter in a 5 sigma detection
+within <strong>48 hours</strong> of the last non-detection in the same band. To trigger on one early, the alert stream needs a
+cut that can be applied to the first detection, and an event is <strong>triggered</strong> if any of three conditions holds on
+a 5 sigma detection within 48 hours of the last non-detection:</p>
+<ul class="simple">
+<li><ol class="loweralpha simple">
+<li><p>it has <strong>brightened</strong> by at least a given number of magnitudes since the limit of that non-detection,</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="2">
+<li><p>it is <strong>brightening</strong> at at least a given rate, in magnitudes per day, since that limit,</p></li>
+</ol>
+</li>
+<li><ol class="loweralpha simple" start="3">
+<li><p>it is <strong>intrinsically bright</strong>, with an absolute magnitude brighter than a given value.</p></li>
+</ol>
+</li>
+</ul>
+<p>The analysis below counts the infants and the triggers, and shows the light curves of triggered events.</p>
+<div id='sg-tag-list' class='sphx-glr-tag-list'></div><div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="How many infant supernovae does UVEX find, and how many can it trigger on early enough to get a spectrum?"><img alt="" src="../../_images/sphx_glr_plot_infant_sne_yields_thumb.png" />
+<p><a class="reference internal" href="plot_infant_sne_yields.html"><span class="doc">Infant Supernova Triggers</span></a></p>
+  <div class="sphx-glr-thumbnail-title">Infant Supernova Triggers</div>
 </div></div><div class="toctree-wrapper compound">
 </div>
 <div class="sphx-glr-footer sphx-glr-footer-gallery docutils container">
@@ -515,6 +560,7 @@ follow-up is applied to the event summary table afterwards.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
 </section>
 
 
@@ -528,20 +574,20 @@ follow-up is applied to the event summary table afterwards.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../full_run/transient_summaries/plot_type_i_sne.html"
+       href="../full_run/transient_characterization/plot_characterization.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Type I Supernovae</p>
+        <p class="prev-next-title">Standard Cuts and Yields</p>
       </div>
     </a>
     <a class="right-next"
-       href="plot_rise_brackets.html"
+       href="plot_infant_sne_yields.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Rise Time Brackets</p>
+        <p class="prev-next-title">Infant Supernova Triggers</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -555,6 +601,19 @@ follow-up is applied to the event summary table afterwards.</p>
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-sample">The sample</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-an-infant-supernova">What is an infant supernova?</a></li>
+</ul>
+  </nav></div>
 
   <div class="sidebar-secondary-item">
 

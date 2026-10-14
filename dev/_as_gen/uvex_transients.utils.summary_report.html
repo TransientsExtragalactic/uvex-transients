@@ -38,7 +38,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=d86e327e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
   <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
@@ -1598,8 +1598,11 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a aria-current="page" class="current reference internal" href="#">uvex_transients.utils.summary_report</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.UVEX_REGIONS.html">uvex_transients.utils.summary_report.UVEX_REGIONS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.OVERLAP_FOOTPRINTS.html">uvex_transients.utils.summary_report.OVERLAP_FOOTPRINTS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_COLUMNS.html">uvex_transients.utils.summary_report.REQUIRED_COLUMNS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_META.html">uvex_transients.utils.summary_report.REQUIRED_META</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.STANDARD_POPULATIONS.html">uvex_transients.utils.summary_report.STANDARD_POPULATIONS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.summary_report.POPULATION_GROUPS.html">uvex_transients.utils.summary_report.POPULATION_GROUPS</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.utils.summary_report.PopulationSpec.html">PopulationSpec</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.PopulationSpec.color.html">uvex_transients.utils.summary_report.PopulationSpec.color</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.PopulationSpec.label.html">uvex_transients.utils.summary_report.PopulationSpec.label</a></li>
@@ -1607,11 +1610,15 @@
 </ul>
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.html">SummaryReport</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.footprint_overlap.html">uvex_transients.utils.summary_report.SummaryReport.footprint_overlap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.from_release.html">uvex_transients.utils.summary_report.SummaryReport.from_release</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_detection_counts.html">uvex_transients.utils.summary_report.SummaryReport.plot_detection_counts</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_distributions.html">uvex_transients.utils.summary_report.SummaryReport.plot_distributions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_example_event.html">uvex_transients.utils.summary_report.SummaryReport.plot_example_event</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_footprint_overlap.html">uvex_transients.utils.summary_report.SummaryReport.plot_footprint_overlap</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_funnel.html">uvex_transients.utils.summary_report.SummaryReport.plot_funnel</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_sky.html">uvex_transients.utils.summary_report.SummaryReport.plot_sky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.plot_yields.html">uvex_transients.utils.summary_report.SummaryReport.plot_yields</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.stage_counts.html">uvex_transients.utils.summary_report.SummaryReport.stage_counts</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.yield_table.html">uvex_transients.utils.summary_report.SummaryReport.yield_table</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.utils.summary_report.SummaryReport.yields.html">uvex_transients.utils.summary_report.SummaryReport.yields</a></li>
@@ -1705,21 +1712,35 @@ and produces the figures and tables that go with it:</p>
 <li><p>the <strong>expected yield</strong> per population, <cite>SummaryReport.yield_table</cite>,</p></li>
 <li><p>the <strong>distributions</strong> of the properties behind each cut, <cite>SummaryReport.plot_distributions</cite>,</p></li>
 <li><p>the <strong>sky positions</strong> of the selected events, <cite>SummaryReport.plot_sky</cite>,</p></li>
+<li><p>the <strong>expected yield</strong> as a bar chart, <cite>SummaryReport.plot_yields</cite>, and how many of the events were
+detected more than once, <cite>SummaryReport.plot_detection_counts</cite>,</p></li>
+<li><p>the <strong>overlap with other surveys</strong>, <cite>SummaryReport.footprint_overlap</cite>,</p></li>
 <li><p>one reconstructed <strong>example light curve</strong>, <cite>SummaryReport.plot_example_event</cite>.</p></li>
 </ul>
-<p>Everything but the example light curve reads only the summary table, so <cite>SummaryReport.from_release</cite>
-builds a full report from nothing but the published release.</p>
+<p>The yield, detection-count, overlap and sky plots take an optional <code class="docutils literal notranslate"><span class="pre">mask</span></code>, so the same figures describe
+the detected events, the selected ones, or any other cut. Everything but the example light curve reads only
+the summary table, so <cite>SummaryReport.from_release</cite> builds a full report from nothing but the published
+release.</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.UVEX_REGIONS.html#uvex_transients.utils.summary_report.UVEX_REGIONS" title="uvex_transients.utils.summary_report.UVEX_REGIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UVEX_REGIONS</span></code></a></p></td>
 <td><p>Legend label and footprint registry name of each UVEX survey region shaded on the sky map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_COLUMNS.html#uvex_transients.utils.summary_report.REQUIRED_COLUMNS" title="uvex_transients.utils.summary_report.REQUIRED_COLUMNS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REQUIRED_COLUMNS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.OVERLAP_FOOTPRINTS.html#uvex_transients.utils.summary_report.OVERLAP_FOOTPRINTS" title="uvex_transients.utils.summary_report.OVERLAP_FOOTPRINTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OVERLAP_FOOTPRINTS</span></code></a></p></td>
+<td><p>Label and footprint registry name of each survey <cite>SummaryReport.footprint_overlap</cite> compares to.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_COLUMNS.html#uvex_transients.utils.summary_report.REQUIRED_COLUMNS" title="uvex_transients.utils.summary_report.REQUIRED_COLUMNS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REQUIRED_COLUMNS</span></code></a></p></td>
 <td><p>The columns of the summary table that <cite>SummaryReport</cite> reads.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_META.html#uvex_transients.utils.summary_report.REQUIRED_META" title="uvex_transients.utils.summary_report.REQUIRED_META"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REQUIRED_META</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.REQUIRED_META.html#uvex_transients.utils.summary_report.REQUIRED_META" title="uvex_transients.utils.summary_report.REQUIRED_META"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REQUIRED_META</span></code></a></p></td>
 <td><p>The <code class="docutils literal notranslate"><span class="pre">meta</span></code> entries of the summary table that <cite>SummaryReport</cite> reads.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.STANDARD_POPULATIONS.html#uvex_transients.utils.summary_report.STANDARD_POPULATIONS" title="uvex_transients.utils.summary_report.STANDARD_POPULATIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STANDARD_POPULATIONS</span></code></a></p></td>
+<td><p>The release's populations with their display names and the longest explosion bracket of each.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.summary_report.POPULATION_GROUPS.html#uvex_transients.utils.summary_report.POPULATION_GROUPS" title="uvex_transients.utils.summary_report.POPULATION_GROUPS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">POPULATION_GROUPS</span></code></a></p></td>
+<td><p><cite>STANDARD_POPULATIONS</cite> keys collected into the few groups the figures are split into, one panel each.</p></td>
 </tr>
 </tbody>
 </table>
