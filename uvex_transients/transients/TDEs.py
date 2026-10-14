@@ -26,10 +26,10 @@ _TDE_RATE_CI: tuple[float, float] = ((3.1e-7 - 1.0e-7) / 3.1e-7, (3.1e-7 + 0.6e-
 # ======================================= #
 def luminosity_function_yao23(log_L: np.ndarray) -> np.ndarray:
     r"""
-    Evaluate the TDE blackbody luminosity function of :footcite:t:`yao2023`.
+    Evaluate the Yao et al. (2023) TDE blackbody luminosity function.
 
-    The luminosity function :math:`\phi(L_\mathrm{bb})` is the volumetric rate per unit logarithmic
-    (base 10) interval in the peak blackbody luminosity, a power law of the form
+    The luminosity function :math:`\phi(L_\mathrm{bb})` of :footcite:t:`yao2023` is the volumetric rate
+    per unit logarithmic (base 10) interval in the peak blackbody luminosity, a power law of the form
 
     .. math::
 
