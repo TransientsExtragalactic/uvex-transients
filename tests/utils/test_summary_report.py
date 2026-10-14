@@ -261,3 +261,100 @@ class TestFromRelease:
         monkeypatch.setattr(summary_report, "get_results", fail)
         with pytest.raises(error):
             SummaryReport.from_release(POPULATIONS)
+
+
+class TestStandardConfiguration:
+    """The populations and groups that the Standard Run's report pages share."""
+
+    def test_groups_partition_the_standard_populations(self):
+        grouped = [key for keys in summary_report.POPULATION_GROUPS.values() for key in keys]
+        assert sorted(grouped) == sorted(summary_report.STANDARD_POPULATIONS)
+
+    def test_more_populations_than_palette_colors_still_get_a_color(self):
+        n = len(summary_report.STANDARD_POPULATIONS)
+        table = make_summary()
+        for key in summary_report.STANDARD_POPULATIONS:
+            table.meta["n_pre_cut"].setdefault(key, 10)
+        report = SummaryReport(table, summary_report.STANDARD_POPULATIONS)
+        assert len(report.populations) == n
+        assert all(spec.color for spec in report.populations.values())
+
+
+class TestMaskedFigures:
+    """The figures that take a mask of the events to draw."""
+
+    def test_detected_covers_every_reported_row(self, report):
+        assert report.detected.sum() == 8  # the unreported Ia row is left out
+        assert not report.detected[-1]
+
+    def test_yield_bars(self, report):
+        assert isinstance(report.plot_yields(), Figure)
+        assert isinstance(report.plot_yields(mask=report.detected), Figure)
+
+    def test_yield_bars_with_nothing_selected_draw_an_upper_limit(self, report):
+        fig = report.plot_yields(mask=np.zeros(len(report.summary), dtype=bool))
+        assert any(text.get_text().startswith("<") for text in fig.axes[0].texts)
+
+    def test_a_mask_of_the_wrong_shape_raises(self, report):
+        with pytest.raises(ValueError, match="'mask'"):
+            report.plot_yields(mask=np.ones(3, dtype=bool))
+        with pytest.raises(ValueError, match="'mask'"):
+            report.plot_detection_counts(mask=np.ones(len(report.summary), dtype=int))
+
+    def test_detection_counts_fall_with_the_number_required(self, report):
+        fig = report.plot_detection_counts(groups={"all": ["tde", "kilonova"]}, mask=report.detected)
+        for line in fig.axes[0].get_lines():
+            percent = line.get_ydata()
+            assert percent[0] == 100.0  # every detected event has at least one detection
+            assert np.all(np.diff(percent) <= 0)
+
+    def test_detection_counts_need_a_reported_population(self, report):
+        with pytest.raises(ValueError, match="reported"):
+            report.plot_detection_counts(groups={"none": ["ia_sne"]})
+
+    def test_sky_with_a_mask_draws_only_those_events(self, report):
+        fig = report.plot_sky(footprints={}, mask=report.detected)
+        labels = [text.get_text() for text in fig.axes[0].get_legend().get_texts()]
+        assert not any("Detected" in label or "selected" in label for label in labels)
+        assert "TDE (6)" in labels
+
+
+class TestFootprintOverlap:
+    """The percentage of each population inside other surveys' footprints."""
+
+    def test_percentages_come_from_the_tables_own_footprint_columns(self, report):
+        report.summary["in_ztf_main"] = np.arange(len(report.summary)) < 3  # the first three TDEs
+        overlap = report.footprint_overlap({"ZTF": "ztf:main"}, mask=report.detected)
+        assert list(overlap["population"]) == ["TDE", "Kilonova"]
+        assert overlap["ZTF"][0] == pytest.approx(100 * 3 / 6)
+        assert overlap["ZTF"][1] == 0.0
+
+    def test_expected_events_are_the_weights_of_the_masked_rows(self, report):
+        report.summary["in_ztf_main"] = True
+        overlap = report.footprint_overlap({"ZTF": "ztf:main"}, mask=report.detected)
+        assert list(overlap["expected_events"]) == [60.0, 1.0]
+
+    def test_positions_are_looked_up_when_the_table_lacks_the_column(self, report):
+        overlap = report.footprint_overlap({"ZTF": "ztf:main"}, mask=report.detected)
+        assert np.all((overlap["ZTF"] >= 0) & (overlap["ZTF"] <= 100))
+
+    def test_a_footprint_that_cannot_be_built_is_nan(self, report, monkeypatch):
+        from uvex_transients.surveys.footprints import default_registry
+
+        def unavailable(name):
+            raise ImportError("no rubin_scheduler")
+
+        monkeypatch.setattr(default_registry, "get", unavailable)
+        overlap = report.footprint_overlap({"Rubin": "lsst:combined"}, mask=report.detected)
+        assert np.all(np.isnan(overlap["Rubin"]))
+
+    def test_a_population_with_no_events_is_nan(self, report):
+        report.summary["in_ztf_main"] = True
+        overlap = report.footprint_overlap({"ZTF": "ztf:main"}, mask=np.zeros(len(report.summary), dtype=bool))
+        assert np.all(np.isnan(overlap["ZTF"]))
+
+    def test_the_grid(self, report):
+        report.summary["in_ztf_main"] = True
+        fig = report.plot_footprint_overlap({"ZTF": "ztf:main", "Rubin": "ztf:main"}, mask=report.detected)
+        assert isinstance(fig, Figure)
+        assert "100%" in [text.get_text() for text in fig.axes[0].texts]

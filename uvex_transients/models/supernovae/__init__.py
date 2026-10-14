@@ -2,8 +2,6 @@
 
 __all__ = [
     "ArnettMagnetarSpindownSED",
-    "MoragShockCoolingBlackbodySED",
-    "MoragShockCoolingSED",
     "TypeIaSED",
     "TypeIIPExcessSED",
     "TypeIIPSED",
@@ -18,6 +16,6 @@ from ..arnett import ArnettMagnetarSpindownSED
 from .Ia import TypeIaSED
 from .Ibc import TypeIbSED, TypeIcSED
 from .IcBL import TypeIcBLSED
-from .IIb import MoragShockCoolingBlackbodySED, MoragShockCoolingSED, TypeIIbSED
+from .IIb import TypeIIbSED
 from .IIp import TypeIIPExcessSED, TypeIIPSED
 from .villar import VillarCoolingBlackbodySED

@@ -22,9 +22,11 @@ from astropy.table import QTable, vstack
 from astropy.time import Time
 from astropy.units import Quantity
 from m4opt.synphot import Detector, observing
+from m4opt.synphot._math import countrate  # private, but m4opt is pinned (pyproject.toml) and `get_snr` calls it too
 from numpy.typing import DTypeLike, NDArray
 from synphot import SourceSpectrum
 from synphot import units as synphot_units
+from synphot.models import ConstFlux1D
 
 from uvex_transients.models._typing import FloatArray, FloatResult, PhysicalInput, RNGInput, UnitLike
 from uvex_transients.utils import config, get_rng
@@ -473,16 +475,27 @@ def measure_bands(
     noise_seed: int | NDArray | None = None,
     noise_observation_keys: NDArray | None = None,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]:
-    """
+    r"""
     Measure a batch of spectra with a detector: one noisy measurement per epoch and band.
 
     The single place the detector noise model is turned into measurements, shared by the
     per-event photometry tables and the survey-wide detection cuts so both always agree.
     For each epoch and band, `~m4opt.synphot.Detector.get_snr` gives the expected SNR of the
-    true spectrum (source and sky Poisson noise plus detector read and dark noise). The
-    one-sigma uncertainty is the true flux over that SNR, the measured flux is the true flux
-    plus a Gaussian draw of one uncertainty, and the measured SNR is that flux over the
-    uncertainty.
+    true spectrum (source and sky Poisson noise plus detector read and dark noise). The true
+    flux is the band's *effective* flux density: the flux density of a flat-:math:`F_\nu` (AB)
+    source that gives the same photon count rate through the full bandpass as the spectrum does,
+    :math:`\int F_\nu T\,d\nu/\nu / \int T\,d\nu/\nu` (see
+    `~uvex_transients.models.core.base.SpectralModel.flux_band_log_cgs`). It is the flux that the
+    SNR refers to, since both come from the same count rate, so the one-sigma uncertainty, the
+    effective flux over that SNR, depends only on the exposure, sky and detector (plus the source's
+    own shot noise) and not on the spectrum's shape. The measured flux is the effective flux plus
+    a Gaussian draw of one uncertainty, and the measured SNR is that flux over the uncertainty.
+
+    The effective flux is deliberately *not* the spectrum at the bandpass pivot wavelength. The two
+    agree for smooth spectra, but a spectrum with almost no flux at the pivot and a lot in the
+    bandpass's out-of-band throughput tail (an early, UV-faint supernova in a UV band) gets all
+    of its counts from the tail. The pivot flux would then be many orders of magnitude below the
+    flux the counts imply, and so would its uncertainty.
 
     Every epoch can have its own position, observer location and time, so many events can
     be measured at once.
@@ -547,11 +560,18 @@ def measure_bands(
     rng = get_rng(rng)
     detector_bands = list(detector.bandpasses)
     flux, flux_err, snr, snr_expected = [], [], [], []
+    one_jy = SourceSpectrum(ConstFlux1D, amplitude=1 * u.Jy)
 
     with observing(observer_location, coord, obstime):
         for band in band_names:
             expected = u.Quantity(detector.get_snr(exptime, spectra, band)).to_value(u.dimensionless_unscaled)
-            true_flux = np.squeeze(spectra(detector.bandpasses[band].pivot(), flux_unit=u.Jy).to_value(u.Jy), axis=-1)
+            # The effective flux: the count rate of the spectrum over that of a flat 1 Jy source. The area and
+            # aperture correction that `get_snr` also applies cancel in the ratio.
+            bandpass = detector.bandpasses[band]
+            true_flux = np.reshape(
+                (countrate(spectra, bandpass) / countrate(one_jy, bandpass)).to_value(u.dimensionless_unscaled),
+                expected.shape,
+            )
 
             with np.errstate(invalid="ignore", divide="ignore"):
                 valid = np.isfinite(expected) & (expected > 0)

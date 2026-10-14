@@ -31,9 +31,11 @@ Quick Facts
        kilonova -- a simplifying assumption made for this simulation, not one asserted by
        :footcite:t:`fishbach2026` itself. No redshift evolution is assumed.
    * - Redshift limit
-     - :math:`z = 0.2`
+     - :math:`z = 0.19`
      - --
-     - See observability summary below.
+     - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
+       priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up.
+       See the observability summary below.
    * - Duration
      - 30 days
      - --
@@ -67,8 +69,10 @@ floor :math:`T_\mathrm{floor}`. The functional forms are
 This is a deliberately phenomenological choice: the rise of AT2017gfo was never actually observed
 (hence the Gaussian rise is unconstrained by data and merely provides a smooth turn-on), but the
 broken-power-law decline in bolometric luminosity and the power-law-to-floor cooling in
-temperature both broadly track the behavior reported by :footcite:t:`waxman2018`, with the
-normalization of both anchored to the :footcite:t:`cowperthwaite2017` measurement at 0.6 days.
+temperature both broadly track the behavior reported by :footcite:t:`waxman2018`. The luminosity
+normalization is anchored to the :footcite:t:`cowperthwaite2017` measurement at 0.6 days, while the
+temperature priors are set so that the median cooling curve runs through the photospheric
+temperatures of :footcite:t:`waxman2018`.
 
 .. list-table::
    :header-rows: 1
@@ -100,16 +104,16 @@ normalization of both anchored to the :footcite:t:`cowperthwaite2017` measuremen
      - Time the decline steepens from :math:`\alpha_1` to :math:`\alpha_2` :footcite:p:`waxman2018`.
    * - ``T0``
      - :math:`T_0`
-     - LogNormal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=3.9, :math:`\sigma`\=0.1)
-     - :math:`\approx7900` K, anchored to :footcite:t:`cowperthwaite2017`'s :math:`T\approx8300` K at 0.6 d.
+     - LogNormal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.2, :math:`\sigma`\=0.1)
+     - :math:`\approx16000` K. Median cooling curve centred on the :footcite:t:`waxman2018` temperatures.
    * - ``T_floor``
      - :math:`T_\mathrm{floor}`
-     - LogNormal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.4, :math:`\sigma`\=0.08)
-     - :math:`\approx2500` K asymptotic floor :footcite:p:`waxman2018`.
+     - LogNormal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.2, :math:`\sigma`\=0.08)
+     - :math:`\approx1600` K asymptotic floor, near the coolest temperatures of :footcite:p:`waxman2018`.
    * - ``alpha_T``
      - :math:`\alpha_T`
-     - Uniform(0.3, 0.7)
-     - Early-time cooling index, :math:`T\sim t^{-\alpha_T}` :footcite:p:`waxman2018`.
+     - Uniform(0.8, 1.3)
+     - Cooling index, :math:`T-T_\mathrm{floor}\sim t^{-\alpha_T}`, centred on the best fit to :footcite:p:`waxman2018`.
 
 Simulated Light Curves
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,70 +190,44 @@ were anchored to.
 Observability Summary
 ----------------------
 
-Below are the redshifts :math:`z` and corresponding bandpass calculated peak apparent AB magnitudes
-:math:`m_\mathrm{AB}` of 3000 simulated kilonovae drawn from the priors above, with
-the UVEX 1 Dwell limit of :math:`m<24.5` overplotted. Findings here justify our confidence in a
-:math:`z=0.2` redshift limit for this population.
+The plots below show how the redshift limit follows from the SED. We draw 1000 sets of parameters
+from the priors above and evaluate each of them across a grid of redshifts, in the UVEX FUV and NUV
+bands, over the whole rest-frame light curve. The left panel shows each draw's peak apparent AB
+magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
+where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
+beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
+magnitude limit. The redshift limit adopted above, :math:`z=0.19`, is its value at :math:`m=24.5`,
+rounded up and derived on a finer grid than this plot's.
+
+The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
+detected events, and it does not include Milky Way extinction or sky position.
 
 .. plot::
    :include-source: false
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from astropy import units as u
-    from scipy.stats import gaussian_kde
+   import numpy as np
+   import matplotlib.pyplot as plt
 
-    from uvex_transients.missions import uvex_fast as uvex
-    from uvex_transients.transients.kilonovae import Kilonova
-    from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED as SEDClass
+   from uvex_transients.missions import uvex_fast as uvex
+   from uvex_transients.transients.kilonovae import Kilonova
+   from uvex_transients.utils.plotting import plot_detection_horizon
 
-    rng = np.random.default_rng(20260911)
-    n_samples = 3000
-
-    kilonova = Kilonova()
-    z = kilonova.sample_event_redshift(n_samples, rng=rng)
-    params = SEDClass().sample_parameters(size=n_samples, rng=rng)
-
-    # Observed-frame time of rest-frame peak, i.e. where each event is brightest as seen by UVEX.
-    t_obs_peak = params["t_peak"] * (1.0 + z)
-
-    bandpasses = uvex.detector.bandpasses
-    band_names = list(bandpasses)
-
-    fig, axes = plt.subplots(1, len(band_names), figsize=(10.5, 4.8), sharey=True)
-
-    for ax, band_name in zip(axes, band_names):
-        mag = SEDClass.mag_bandpass(bandpasses[band_name], t_obs_peak, redshift=z, **params).to_value(u.ABmag)
-        finite = np.isfinite(mag)
-        z_finite, mag_finite = z[finite], mag[finite]
-
-        ax.scatter(z_finite, mag_finite, s=5, ec='k',fc='k',alpha=0.5, label="Simulated events")
-
-        kde = gaussian_kde(np.vstack([z_finite, mag_finite]))
-        z_grid = np.linspace(z_finite.min(), z_finite.max(), 150)
-        mag_grid = np.linspace(mag_finite.min(), mag_finite.max(), 150)
-        Z_grid, Mag_grid = np.meshgrid(z_grid, mag_grid)
-        density = kde(np.vstack([Z_grid.ravel(), Mag_grid.ravel()])).reshape(Z_grid.shape)
-        ax.contour(Z_grid, Mag_grid, density, levels=6, colors="k", linewidths=0.7)
-
-        ax.axhline(24.5, color="firebrick", ls="--", lw=1.2, label="UVEX limit (1 Dwell)")
-
-        ax.invert_yaxis()
-        ax.set_xlabel("Redshift")
-        ax.set_title(f"UVEX {band_name}")
-        ax.legend(loc="upper right", fontsize=8, frameon=False)
-
-        ax.invert_yaxis()
-        ax.set_ylim([30, 18])
-
-    axes[0].set_ylabel("Peak apparent AB magnitude")
-    fig.suptitle(f"Kilonova: peak apparent magnitude vs. redshift (n={n_samples})")
-    fig.tight_layout()
-    plt.show()
+   transient = Kilonova()
+   curve, grid = transient.get_detection_horizon(
+       np.arange(22.0, 27.01, 0.5),
+       uvex.detector.bandpasses,
+       z_min=transient.redshift_limit / 4,
+       z_max=4 * transient.redshift_limit,
+       n_z=45,
+       rng=0,
+       progress=False,
+   )
+   plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+   plt.show()
 
 The anticipated rate of kilonovae detectable by UVEX at these limits is as follows assuming that
 any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
-in comoving volume out to :math:`z=0.2`:
+in comoving volume out to :math:`z=0.19`:
 
 .. plot::
    :include-source: false

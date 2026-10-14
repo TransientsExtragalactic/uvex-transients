@@ -4,17 +4,51 @@
 # ------------------------------------------ #
 # Builds the sdist and a universal (pure-Python) wheel and publishes them to
 # PyPI when a version tag (v*) is pushed. Independently (so it can't hold up
-# the PyPI publish), also runs the full-population pipeline, attaches its
-# output data products to the corresponding GitHub Release, and then
-# dispatches `build_documentation.yml` (see that workflow's own header for
-# why the versioned docs build has to be triggered from here rather than
-# from the tag push directly).
+# the PyPI publish), also runs the simulations, attaches their output data
+# products to the corresponding GitHub Release, and then dispatches
+# `build_documentation.yml` (see that workflow's own header for why the
+# versioned docs build has to be triggered from here rather than from the tag
+# push directly).
+#
+# The shape of the data-product side is a fan-out and a fan-in:
+#
+#   create_release --+-- run_primary     (configs/full_run.yaml, flat assets)
+#                    +-- run_infant_sne  (configs/infant_sne.yaml, infant_sne.zip)
+#                    +-- ...                          |
+#                                                     +-- trigger_docs
+#
+# Each simulation is its own job (see `_run_and_release.yml`) on its own runner,
+# so they run in parallel instead of in series. To add a secondary simulation,
+# add a config under `configs/` and one more `run_*` job below, and add it to
+# `trigger_docs`' `needs`.
+#
+# `workflow_dispatch` is a dry-run path for testing this pipeline from a branch
+# without cutting a release: it never publishes to PyPI, uploads to a draft
+# release under `release_tag` (drafts are invisible to
+# `uvex_transients.utils.results.find_release`), and never triggers the docs
+# build. Delete the draft release and its tag afterwards.
 name: Build and Release to PyPI
 
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Name of the draft release the dry run uploads to.
+        required: true
+        default: dry-run
+        type: string
+      only:
+        description: Which simulations to run.
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - primary
+          - infant_sne
 
 jobs:
   # ------------------------------------------ #
@@ -22,6 +56,7 @@ jobs:
   # ------------------------------------------ #
   build:
     name: Build distributions
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -66,43 +101,94 @@ jobs:
           verbose: true
 
   # ------------------------------------------ #
-  # Run the full-population pipeline and        #
-  # release its data products                   #
+  # Create the release the runs upload to       #
   # ------------------------------------------ #
-  release_data_products:
-    name: Run full_run.yaml and release outputs
+  # Done once, up front, so the parallel run jobs below never race to create
+  # it. Idempotent: an existing release (for example one created by hand) is
+  # left exactly as it is.
+  create_release:
+    name: Create the release
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write  # required to dispatch build_documentation.yml below
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0  # required for setuptools-scm tag-based versioning
+      - name: Resolve the release tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
+      - name: Create the release if it does not exist
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists."
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            gh release create "$TAG" --verify-tag --title "$TAG"
+          else
+            gh release create "$TAG" --draft --target "${{ github.sha }}" --title "$TAG" \
+              --notes "Dry run of build_and_release.yml. Safe to delete."
+          fi
 
-      - name: Install package
-        run: pip install -e .
+  # ------------------------------------------ #
+  # Simulations (run in parallel)               #
+  # ------------------------------------------ #
+  run_primary:
+    name: Primary run (full_run.yaml)
+    needs: [create_release]
+    if: ${{ github.event_name == 'push' || inputs.only == 'all' || inputs.only == 'primary' }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/_run_and_release.yml
+    with:
+      config: configs/full_run.yaml
+      name: release
+      release_tag: ${{ needs.create_release.outputs.tag }}
+      package: false
 
-      - name: Run full-population pipeline
-        run: uvex-transients run configs/full_run.yaml --out-dir results/release --overwrite
+  run_infant_sne:
+    name: Infant SNe run (infant_sne.yaml)
+    needs: [create_release]
+    if: ${{ github.event_name == 'push' || inputs.only == 'all' || inputs.only == 'infant_sne' }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/_run_and_release.yml
+    with:
+      config: configs/infant_sne.yaml
+      name: infant_sne
+      release_tag: ${{ needs.create_release.outputs.tag }}
+      package: true
 
-      - name: Attach data products to the release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: results/release/*
-          fail_on_unmatched_files: true
-
-      # The versioned docs build (build_documentation.yml) downloads this
-      # release's event_summary.ecsv for its "Report" page, and the report's
-      # examples download the other data products, so it can't run until the
-      # assets above are actually uploaded. It is dispatched from here, after
-      # that, rather than off the tag push itself (which would race this job).
+  # ------------------------------------------ #
+  # Build the docs once the assets are there    #
+  # ------------------------------------------ #
+  # The versioned docs build (build_documentation.yml) downloads this
+  # release's event_summary.ecsv for its "Report" page, and the report's
+  # examples download the other data products, so it can't run until the
+  # assets above are actually uploaded. It is dispatched from here, after
+  # that, rather than off the tag push itself (which would race the runs).
+  #
+  # It waits for every simulation to finish, but only the primary run has to
+  # have succeeded: the report page is built from it, and the examples built
+  # from a secondary run skip themselves when its asset is missing.
+  trigger_docs:
+    name: Trigger versioned documentation build
+    needs: [create_release, run_primary, run_infant_sne]
+    if: ${{ !cancelled() && github.event_name == 'push' && needs.run_primary.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write  # required to dispatch build_documentation.yml
+    steps:
       - name: Trigger versioned documentation build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: gh workflow run build_documentation.yml --ref ${{ github.ref_name }}

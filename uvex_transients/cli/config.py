@@ -24,7 +24,8 @@ from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.simulation.logical_ops import LOGICAL_OP_ARITY
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.surveys.utils import get_schedule
-from uvex_transients.transients.base import TransientBase
+from uvex_transients.transients.base import ExtragalacticTransient, TransientBase
+from uvex_transients.utils import logger
 
 from .yaml_tags import get_run_yaml
 
@@ -218,8 +219,6 @@ def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
         transient = transient_cls(cosmology=cosmology)
 
         z_limit = entry.pop("z_limit", None)
-        if z_limit is not None:
-            transient.redshift_limit = z_limit
 
         duration_limit = entry.pop("duration_limit", None)
         if duration_limit is not None:
@@ -236,12 +235,55 @@ def _resolve_transients(section: Mapping) -> dict[str, TransientBase]:
         parameters = entry.pop("parameters", {}) or {}
         _apply_parameter_overrides(transient.sed, parameters)
 
+        # Last: a ``{mag_limit: ...}`` limit is read off a curve that depends on the duration and the parameters.
+        if z_limit is not None:
+            transient.redshift_limit = _resolve_z_limit(key, transient, z_limit)
+
         if entry:
             raise ValueError(f"transients.{key!r} has unknown key(s) {sorted(entry)}.")
 
         transients[key] = transient
 
     return transients
+
+
+def _resolve_z_limit(key: str, transient: TransientBase, spec) -> float:
+    """
+    Resolve a transient's ``z_limit`` entry to a redshift.
+
+    Parameters
+    ----------
+    key : str
+        The transient's key in the ``transients:`` block, for error messages.
+    transient : TransientBase
+        The configured transient.
+    spec : float or Mapping
+        Either a redshift, or ``{mag_limit: m}`` to read the redshift off the transient's horizon curve at the
+        single-dwell AB magnitude limit ``m``.
+
+    Returns
+    -------
+    float
+        The redshift limit.
+
+    Raises
+    ------
+    ValueError
+        If `spec` is a mapping other than ``{mag_limit: m}``, or the transient has no horizon curve.
+    """
+    if not isinstance(spec, Mapping):
+        return spec
+    if set(spec) != {"mag_limit"}:
+        raise ValueError(
+            f"transients.{key!r}: 'z_limit' must be a number or {{mag_limit: <AB magnitude>}}, got {dict(spec)}."
+        )
+    if not isinstance(transient, ExtragalacticTransient):
+        raise ValueError(
+            f"transients.{key!r}: {type(transient).__name__} has no horizon curve to read a 'mag_limit' from."
+        )
+    z_limit = transient.horizon_curve.z_limit(spec["mag_limit"])
+    logger.info("transients.%s: z_limit = %.3g at %s AB.", key, z_limit, spec["mag_limit"])
+    return z_limit
 
 
 def _resolve_steps(section: list) -> list["StepSpec"]:

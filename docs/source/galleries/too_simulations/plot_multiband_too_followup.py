@@ -151,8 +151,8 @@ print(phot["t", "instrument", "band", "snr", "ab_mag"][:6])
 # The light curves
 # -------------------
 #
-# The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag`,
-# evaluated at each band's pivot wavelength) alongside the simulated visits from both
+# The noiseless theory curve (:meth:`~uvex_transients.models.core.base.SpectralModel.mag_bandpass`,
+# averaged over each band's throughput) alongside the simulated visits from both
 # instruments: detections above SNR=5 as points with error bars, fainter visits as
 # downward-pointing upper limits -- the same plotting convention used at the end of
 # :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py`.
@@ -167,9 +167,10 @@ band_detectors = {band: rubin.detector for band in RUBIN_CADENCES} | {
 
 fig, ax = resolve_fig_axes(fig_size=(9, 5))
 for band, detector in band_detectors.items():
-    nu = detector.bandpasses[band].pivot().to(u.Hz, equivalencies=u.spectral())
-    theory_mag = tde.sed.mag(
-        nu,
+    bandpass = detector.bandpasses[band]
+    nu = bandpass.waveset.to(u.Hz, equivalencies=u.spectral())
+    theory_mag = tde.sed.mag_bandpass(
+        bandpass,
         t_theory,
         redshift=redshift,
         luminosity_distance=luminosity_distance,

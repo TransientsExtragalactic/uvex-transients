@@ -18,7 +18,7 @@ from regions import CircleSkyRegion  # noqa: E402
 from uvex_transients.surveys.base import SurveySchedule  # noqa: E402
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def fov() -> CircleSkyRegion:
     """
     A generous, boresight-centered (RA=0/Dec=0) circular FOV.
@@ -31,13 +31,13 @@ def fov() -> CircleSkyRegion:
     return CircleSkyRegion(center=SkyCoord(0 * u.deg, 0 * u.deg), radius=1 * u.deg)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hot_spot() -> SkyCoord:
     """A fixed sky position that every `make_schedule`-built schedule below points at."""
     return SkyCoord(ra=150 * u.deg, dec=20 * u.deg)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def make_schedule(fov, hot_spot):
     """Factory for a synthetic `SurveySchedule` of ``n_sched`` observations, all pointed at `hot_spot`."""
 

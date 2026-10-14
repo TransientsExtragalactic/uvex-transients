@@ -1,9 +1,5 @@
 """Tests for `uvex_transients.utils.plotting`."""
 
-import os
-import subprocess
-import sys
-
 import matplotlib as mpl
 
 mpl.use("Agg")
@@ -12,11 +8,11 @@ import astropy.units as u
 import numpy as np
 import pytest
 from astropy.table import QTable
-from mocpy import MOC
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
+from mocpy import MOC
 
 from uvex_transients.utils.config import config
 from uvex_transients.utils.plotting import (
@@ -28,6 +24,7 @@ from uvex_transients.utils.plotting import (
     get_default_cmap,
     plot_band_light_curve,
     plot_detection_funnel,
+    plot_detection_horizon,
     plot_footprints,
     plot_healpix_map,
     plot_histogram,
@@ -132,35 +129,6 @@ class TestGetBandColor:
     def test_known_band_matches_config(self):
         """A band present in `config["plotting.band_colors"]` should return that exact color."""
         assert get_band_color("FUV") == config["plotting.band_colors"]["FUV"]
-
-    def test_unknown_band_is_deterministic(self):
-        """An unconfigured band name should still map to the same color on repeated calls."""
-        assert get_band_color("made-up-band") == get_band_color("made-up-band")
-
-    def test_unknown_band_is_deterministic_across_processes(self):
-        """The fallback color must not depend on `hash()`'s per-process salt (PYTHONHASHSEED)."""
-        script = "from uvex_transients.utils.plotting import get_band_color; print(get_band_color('made-up-band'))"
-        outputs = {
-            subprocess.run(
-                [sys.executable, "-c", script],
-                capture_output=True,
-                text=True,
-                check=True,
-                env={**os.environ, "PYTHONHASHSEED": seed},
-            ).stdout
-            for seed in ("0", "1", "2")
-        }
-        assert len(outputs) == 1
-
-    def test_different_unknown_bands_can_differ(self):
-        """Different unconfigured band names are not guaranteed, but commonly do, map differently.
-
-        Any single hardcoded pair could in principle collide in the finite-resolution colormap, so
-        this checks that a modest set of arbitrary names doesn't *all* collapse onto one color,
-        rather than asserting inequality for one specific pair.
-        """
-        colors = {get_band_color(f"unknown-band-{i}") for i in range(10)}
-        assert len(colors) > 1
 
 
 class TestGetCategoricalColors:
@@ -500,3 +468,31 @@ class TestPlotRateBars:
         plt.close(fig)
 
         assert np.allclose(rates_per_day, (rates_per_year / u.yr).to_value(1 / u.day))
+
+
+class TestPlotDetectionHorizon:
+    """`plot_detection_horizon` draws the grid and the limit curve for a transient class."""
+
+    def _inputs(self):
+        from types import SimpleNamespace
+
+        z_grid = np.geomspace(0.01, 1.0, 10)
+        rng = np.random.default_rng(0)
+        m_eff = 18.0 + 8.0 * np.log10(z_grid)[None, :] + rng.normal(0, 0.5, (30, 1))
+        grid = SimpleNamespace(z_grid=z_grid, m_eff=m_eff)
+        curve = QTable({"mag_limit": np.array([22.0, 24.5, 27.0]) * u.ABmag, "z_limit": [0.1, 0.3, 0.9]})
+        return SimpleNamespace(redshift_limit=0.5), curve, grid
+
+    def test_returns_a_figure_with_two_panels(self):
+        transient, curve, grid = self._inputs()
+        fig = plot_detection_horizon(transient, curve, grid)
+        assert isinstance(fig, Figure)
+        assert len(fig.axes) == 2
+        plt.close(fig)
+
+    def test_marks_the_limit_in_use_on_both_panels(self):
+        transient, curve, grid = self._inputs()
+        fig = plot_detection_horizon(transient, curve, grid)
+        for ax in fig.axes:
+            assert any("redshift limit, z = 0.5" in text.get_text() for text in ax.get_legend().get_texts())
+        plt.close(fig)

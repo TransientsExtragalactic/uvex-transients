@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:12.072** total execution time for 25 files **from all galleries**:
+**00:00.981** total execution time for 29 files **from all galleries**:
 
 .. container::
 
@@ -32,31 +32,16 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py` (``galleries/surveys/plot_tde_rubin_overlap.py``)
-     - 00:11.524
+   * - :ref:`sphx_glr_report_infant_sne_plot_infant_sne_yields.py` (``report_examples/infant_sne/plot_infant_sne_yields.py``)
+     - 00:00.981
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_ztf_footprint.py` (``galleries/surveys/plot_ztf_footprint.py``)
-     - 00:00.185
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_ls4_footprints.py` (``galleries/surveys/plot_ls4_footprints.py``)
-     - 00:00.162
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_lsst_footprints.py` (``galleries/surveys/plot_lsst_footprints.py``)
-     - 00:00.123
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_uvex_footprints.py` (``galleries/surveys/plot_uvex_footprints.py``)
-     - 00:00.079
+   * - :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` (``galleries/custom_transients/plot_kilonova_detection_horizon.py``)
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_action_detection_counts.py` (``galleries/simulating/plot_action_detection_counts.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_action_photometry.py` (``galleries/simulating/plot_action_photometry.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_action_yield.py` (``galleries/simulating/plot_action_yield.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_baseline.py` (``galleries/simulating/plot_cut_baseline.py``)
@@ -101,9 +86,36 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
      - 00:00.000
      - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_ls4_footprints.py` (``galleries/surveys/plot_ls4_footprints.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_lsst_footprints.py` (``galleries/surveys/plot_lsst_footprints.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py` (``galleries/surveys/plot_tde_rubin_overlap.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_uvex_footprints.py` (``galleries/surveys/plot_uvex_footprints.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_ztf_footprint.py` (``galleries/surveys/plot_ztf_footprint.py``)
+     - 00:00.000
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py` (``galleries/too_simulations/plot_multiband_too_followup.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_too_simulations_plot_too_followup.py` (``galleries/too_simulations/plot_too_followup.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_event_detection_plot_detected_yields.py` (``report_examples/full_run/event_detection/plot_detected_yields.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_event_detection_plot_footprint_overlap.py` (``report_examples/full_run/event_detection/plot_footprint_overlap.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
      - 00:00.000
      - 0.0

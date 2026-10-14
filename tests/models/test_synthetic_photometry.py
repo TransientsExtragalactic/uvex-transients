@@ -15,6 +15,8 @@ from m4opt.synphot.background import GalacticBackground
 from uvex_transients.models import VanVelzenTDESED, VillarCoolingBlackbodySED
 from uvex_transients.utils.keyed_noise import keyed_standard_normal, time_key
 
+from .._photometry import effective_flux_jy
+
 
 def test_synthetic_photometry_batches_events_and_times():
     """
@@ -219,11 +221,12 @@ def test_simulate_photometry_matches_manual_get_snr():
             spectrum = model.as_source_spectrum(t_i, redshift=redshift, **params)
             with observing(observer_location[i], coord, obstime[i]):
                 expected_snr = uvex.detector.get_snr(exptime, spectrum, band)
-            true_flux = float(np.squeeze(spectrum(uvex.detector.bandpasses[band].pivot(), flux_unit=u.Jy).value))
+            true_flux = float(effective_flux_jy(spectrum, uvex.detector.bandpasses[band])[0])
             row = phot[(phot["band"] == band) & (phot["t"] == t_i)]
             assert len(row) == 1
-            # The uncertainty is the true flux over the detector's expected SNR.
-            np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-6)
+            # The uncertainty is the band's effective flux over the detector's expected SNR. The effective flux is
+            # integrated here independently of the package, so the tolerance is the quadrature's.
+            np.testing.assert_allclose(row["flux_err"][0].to_value(u.Jy), true_flux / expected_snr, rtol=1e-3)
             # The reported `snr` is the measured one: the noisy flux over its uncertainty.
             measured_snr = row["flux"][0].to_value(u.Jy) / row["flux_err"][0].to_value(u.Jy)
             np.testing.assert_allclose(row["snr"][0], measured_snr, rtol=1e-10)
@@ -531,6 +534,7 @@ def _measure_setup(n):
     """A TDE model, a sky position, and ``n`` epochs spread over 200 days, with their observing geometry."""
     model = VanVelzenTDESED()
     params = {name: value[0] for name, value in model.sample_parameters(1, rng=8).items()}
+    params["amplitude"] = 10**43.8 * u.erg / u.s  # pinned: these tests need a clearly detectable TDE, not a prior draw
     t = np.linspace(1, 200, n) * u.day
     obstime = Time("2025-01-01T00:00:00", scale="utc") + t
     return model, params, SkyCoord(ra=150 * u.deg, dec=20 * u.deg), t, obstime, uvex.observer_location(obstime)
@@ -611,3 +615,74 @@ def test_in_model_overrides_the_default():
 
     with pytest.raises(ValueError, match="in_model"):
         model.measure_photometry(t, 900 * u.s, uvex.detector, coord, redshift=0.05, in_model=[True], **params)
+
+
+def test_flux_band_is_the_photon_weighted_average_of_the_spectrum():
+    r"""
+    `flux_band` is :math:`\int F_\nu T\,d\nu/\nu / \int T\,d\nu/\nu`, the flux a photon-counting detector implies.
+
+    Checked against an independent integral of the same SED's `~synphot.SourceSpectrum`, and against the plain
+    flux-weighted average to make sure the two are distinguishable for this SED, so the test cannot pass by accident
+    with the wrong weighting.
+    """
+    # A cooling blackbody is steep across the UV bands (the two weightings differ by 1 to 15 percent here).
+    model = VillarCoolingBlackbodySED()
+    params = {name: value[0] for name, value in model.sample_parameters(1, rng=2).items()}
+    t, redshift = 40 * u.day, 0.05
+    for band in uvex.detector.bandpasses:
+        bandpass = uvex.detector.bandpasses[band]
+        wave = bandpass.waveset
+        nu = wave.to(u.Hz, equivalencies=u.spectral())
+        throughput = np.asarray(bandpass(wave).to_value(u.dimensionless_unscaled))
+
+        measured = model.flux_band(nu, throughput, t, redshift=redshift, **params).to_value(u.Jy)
+        spectrum = model.as_source_spectrum(t, redshift=redshift, **params)
+        expected = effective_flux_jy(spectrum, bandpass)[0]
+        np.testing.assert_allclose(measured, expected, rtol=1e-3)
+
+        flux = np.reshape(spectrum(wave, flux_unit=u.Jy).to_value(u.Jy), -1)
+        flux_weighted = np.trapezoid(flux * throughput, nu.value) / np.trapezoid(throughput, nu.value)
+        assert abs(flux_weighted / expected - 1) > 1e-3, "this SED cannot tell the two weightings apart"
+
+
+def test_measurement_error_is_the_background_limited_error_for_a_spectrum_with_no_flux_at_the_pivot():
+    """
+    A UV-faint spectrum, whose counts all come from the bandpass's red tail, still has the background-limited error.
+
+    A 2000 K blackbody has essentially nothing at the FUV/NUV pivots, but its optical flux leaks through the
+    bandpasses' out-of-band throughput. The detector's SNR is set by those counts, so the uncertainty has to be the
+    effective flux over that SNR: the same as for a source-free measurement. Taking the flux at the pivot instead
+    gave an uncertainty orders of magnitude too small.
+    """
+    from synphot import SourceSpectrum
+    from synphot.models import BlackBody1D
+
+    from uvex_transients.models._utils import measure_bands, simulate_flat_photometry
+
+    coord = SkyCoord(ra=150 * u.deg, dec=20 * u.deg)
+    obstime = Time("2025-03-01T00:00:00", scale="utc")
+    observer_location = uvex.observer_location(obstime)
+    exptime = np.full(1, 900.0) * u.s
+    spectrum = SourceSpectrum(BlackBody1D, temperature=2000 * u.K) * 1e-30
+
+    for band in uvex.detector.bandpasses:
+        _, flux_err, _, snr_expected = measure_bands(
+            uvex.detector, [band], exptime, spectrum, coord, observer_location, obstime, rng=0
+        )
+        background_only = simulate_flat_photometry(
+            np.zeros(1) * u.day,
+            exptime,
+            uvex.detector,
+            coord,
+            observer_location=observer_location,
+            obstime=obstime,
+            bands=[band],
+            rng=0,
+        )
+        np.testing.assert_allclose(flux_err[0, 0], background_only["flux_err"][0].to_value(u.Jy), rtol=1e-3)
+
+        # The reason this is a regression test: the pivot flux is nowhere near what the counts imply (a factor of
+        # about 500 in NUV and 1e11 in FUV).
+        pivot_flux = float(np.squeeze(spectrum(uvex.detector.bandpasses[band].pivot(), flux_unit=u.Jy).value))
+        effective_flux = flux_err[0, 0] * snr_expected[0, 0]
+        assert effective_flux > 100 * pivot_flux

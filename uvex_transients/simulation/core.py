@@ -11,7 +11,7 @@ to ever matter. The schedule-aware cuts (`SurveySimulator.filter_by_snr` and fri
 built on `SurveySimulator.iter_epochs`, which yields every observation of every event.
 """
 
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import replace
 from functools import partial
 from pathlib import Path
@@ -175,7 +175,116 @@ def _reduce_nondetection_gap(chunk: QTable, rows: slice) -> float | None:
     return float((t[first] - t[rows.start + earlier[-1]]).to_value(u.day))
 
 
-def _reduce_event_summary(chunk: QTable, rows: slice, snr_threshold: float, rise_sigma: float) -> dict:
+def _rise_column(mags: float) -> str:
+    """Return the summary column holding the time of a rise of `mags` magnitudes, e.g. ``t_rise_2mag``."""
+    return f"t_rise_{mags:g}mag".replace(".", "p")
+
+
+_SERIES_KEYS = (
+    "n_det",
+    "t_first_det",
+    "t_last_det",
+    "t_last_nondet",
+    "last_nondet_snr",
+    "t_last_constraining_nondet",
+)
+"""tuple of str: The per-event quantities `_reduce_series` returns for one series of epochs, besides the rises."""
+
+
+def _reduce_series(
+    jd: np.ndarray,
+    detected: np.ndarray,
+    non_detected: np.ndarray,
+    snr: np.ndarray,
+    flux: np.ndarray,
+    flux_err: np.ndarray,
+    observation_index: np.ndarray,
+    snr_threshold: float,
+    rise_sigma: float,
+    rise_mags: Sequence[float],
+) -> dict:
+    """
+    Reduce one event's time-ordered series of epochs to its detection and non-detection times.
+
+    The series is either the event's best band at each epoch, which is the event as seen in any band, or
+    the epochs of one band. Either way the first detection is the first epoch of the series that is a
+    detection, and the non-detections that bracket it are earlier epochs of the same series.
+
+    Parameters
+    ----------
+    jd, detected, non_detected, snr, flux, flux_err, observation_index : numpy.ndarray
+        One entry per epoch: its Julian date, the `SurveySimulator._iter_detection_epochs` flags, its
+        measured SNR, flux density and uncertainty (Jy), and its schedule row.
+    snr_threshold : float
+        The detection threshold, used to turn a non-detection's uncertainty into its detection limit.
+    rise_sigma : float
+        Minimum significance of the rise from a non-detection to the first detection for that
+        non-detection to count as constraining.
+    rise_mags : sequence of float
+        The magnitude rises to time (see `_rise_column`).
+
+    Returns
+    -------
+    dict
+        ``n_det``, ``t_first_det``, ``t_last_det``, ``first_det_obs_index``, ``t_last_nondet``,
+        ``last_nondet_snr``, ``t_last_constraining_nondet`` and one ``t_rise_<N>mag`` per entry of
+        `rise_mags`, as documented in `_reduce_event_summary`. Anything undefined is `None`.
+    """
+    detections = np.flatnonzero(detected)
+    result = {
+        "n_det": int(detections.size),
+        "first_det_obs_index": None,
+        **dict.fromkeys(_SERIES_KEYS[1:]),
+        **{_rise_column(mags): None for mags in rise_mags},
+    }
+    if detections.size == 0:
+        return result
+
+    first, last = detections[0], detections[-1]
+    result["t_first_det"] = float(jd[first])
+    result["t_last_det"] = float(jd[last])
+    result["first_det_obs_index"] = int(observation_index[first])
+
+    # Only epochs before the first detection can bracket it. `non_detected` is "SNR at or below the
+    # threshold", so a pre-explosion false positive is neither a detection nor a non-detection and
+    # drops out here. If the first observation is already a detection, `earlier` is empty and the
+    # event is unbracketed.
+    earlier = np.flatnonzero(non_detected[:first])
+    if earlier.size:
+        result["t_last_nondet"] = float(jd[earlier[-1]])
+        result["last_nondet_snr"] = float(snr[earlier[-1]])
+
+        # A non-detection just under threshold next to a detection just over it says nothing about
+        # when the source turned on. It only constrains the rise if the detection is brighter than
+        # it by `rise_sigma` standard errors, with the two measurement errors added in quadrature.
+        # This uses measured fluxes only, so an observer with forced photometry could compute it.
+        rise = (flux[first] - flux[earlier]) / np.hypot(flux_err[first], flux_err[earlier])
+        constraining = earlier[rise >= rise_sigma]
+        if constraining.size:
+            result["t_last_constraining_nondet"] = float(jd[constraining[-1]])
+
+        # What an observer could say about the source at the last non-detection: nothing brighter
+        # than its detection limit. A rise of N magnitudes is a detection with at least
+        # 10**(0.4 N) times that flux. Every detection is a candidate, not only the first, since
+        # an event can be seen several times before it has brightened by N magnitudes. A limit
+        # that is not a positive number leaves the rise undefined.
+        flux_limit = snr_threshold * flux_err[earlier[-1]]
+        if np.isfinite(flux_limit) and flux_limit > 0:
+            for mags in rise_mags:
+                bright_enough = detections[flux[detections] >= flux_limit * 10 ** (0.4 * mags)]
+                if bright_enough.size:
+                    result[_rise_column(mags)] = float(jd[bright_enough[0]])
+    return result
+
+
+def _reduce_event_summary(
+    chunk: QTable,
+    rows: slice,
+    snr_threshold: float,
+    rise_sigma: float,
+    rise_mags: Sequence[float] = (),
+    bands: Sequence[str] = (),
+) -> dict:
     """
     Reduce one event's epochs to the scalars `SurveySimulator.run_event_summary_action` tabulates.
 
@@ -184,18 +293,28 @@ def _reduce_event_summary(chunk: QTable, rows: slice, snr_threshold: float, rise
     time order, as `SurveySimulator.iter_epochs` yields them. Times are returned as Julian dates,
     and every quantity that is undefined for the event is `None`.
 
+    A chunk with an ``is_best_band`` column (from ``collapse_bands=False``) holds every band of
+    every epoch. The unsuffixed quantities then describe the event in any band, from each epoch's
+    best band, exactly as for a chunk already collapsed to it.
+
     Parameters
     ----------
     chunk : ~astropy.table.QTable
-        A chunk from `SurveySimulator._iter_detection_epochs` with ``keep_all=True``.
+        A chunk from `SurveySimulator._iter_detection_epochs` with ``keep_all=True``, and with
+        ``collapse_bands=False`` if `bands` is given.
     rows : slice
         The rows of `chunk` belonging to one event.
     snr_threshold : float
         The detection threshold. It is already applied in the chunk's ``detected`` and
-        ``non_detected`` columns, so it is not used directly here.
+        ``non_detected`` columns. It is used here only to turn the last non-detection's
+        uncertainty into its detection limit.
     rise_sigma : float
         Minimum significance of the rise from a non-detection to the first detection for that
         non-detection to count as constraining.
+    rise_mags : sequence of float, optional
+        Magnitude rises to time, one ``t_rise_<N>mag`` entry each (see `_rise_column`).
+    bands : sequence of str, optional
+        Bands to also reduce on their own, each adding the per-band entries listed below.
 
     Returns
     -------
@@ -208,56 +327,54 @@ def _reduce_event_summary(chunk: QTable, rows: slice, snr_threshold: float, rise
           detection, which may be pre-explosion, and its measured SNR.
         - ``t_last_constraining_nondet``: the last such non-detection whose rise to the first
           detection is significant at `rise_sigma`.
+        - ``t_rise_<N>mag`` for each N in `rise_mags`: the first detection at least N magnitudes
+          brighter than the detection limit (`snr_threshold` times the uncertainty) of the last
+          non-detection, so it brackets the rise from that non-detection. With `bands`, the
+          earliest of the bands' own.
+        - With `bands`, for each band the same quantities from that band's epochs alone, as
+          ``n_det_<band>``, ``t_first_det_<band>``, ``t_last_det_<band>``, ``t_last_nondet_<band>``,
+          ``last_nondet_snr_<band>``, ``t_last_constraining_nondet_<band>`` and
+          ``t_rise_<N>mag_<band>``.
     """
+    best = (
+        np.asarray(chunk["is_best_band"][rows], dtype=bool)
+        if "is_best_band" in chunk.colnames
+        else np.ones(rows.stop - rows.start, dtype=bool)
+    )
+    arrays = (
+        chunk["t_obs"][rows].jd,
+        np.asarray(chunk["detected"][rows]),
+        np.asarray(chunk["non_detected"][rows]),
+        np.asarray(chunk["snr"][rows], dtype=np.float64),
+        chunk["flux"][rows].to_value(u.Jy),
+        chunk["flux_err"][rows].to_value(u.Jy),
+        np.asarray(chunk["observation_index"][rows]),
+    )
     pre_explosion = np.asarray(chunk["pre_explosion"][rows])
-    detected = np.asarray(chunk["detected"][rows])
-    non_detected = np.asarray(chunk["non_detected"][rows])
-    snr = np.asarray(chunk["snr"][rows], dtype=np.float64)
-    flux = chunk["flux"][rows].to_value(u.Jy)
-    flux_err = chunk["flux_err"][rows].to_value(u.Jy)
-    jd = chunk["t_obs"][rows].jd
+
+    # Reduces the epochs picked by a boolean `select` with this event's settings.
+    reduce = lambda select: _reduce_series(*(a[select] for a in arrays), snr_threshold, rise_sigma, rise_mags)  # noqa: E731
+
+    summary = reduce(best)
 
     # Pre-explosion rows have no source, so they are not observations of the event. They are kept
-    # in the chunk only because they can still serve as non-detections below.
-    post = np.flatnonzero(~pre_explosion)
-    detections = np.flatnonzero(detected)
-    summary = {
-        "n_obs": int(post.size),
-        "n_det": int(detections.size),
-        "t_first_obs": float(jd[post[0]]) if post.size else None,
-        "t_last_obs": float(jd[post[-1]]) if post.size else None,
-        "t_first_det": None,
-        "t_last_det": None,
-        "first_det_obs_index": None,
-        "t_last_nondet": None,
-        "last_nondet_snr": None,
-        "t_last_constraining_nondet": None,
-    }
-    if detections.size == 0:
-        return summary
+    # in the chunk only because they can still serve as non-detections.
+    post_jd = arrays[0][best & ~pre_explosion]
+    summary["n_obs"] = int(post_jd.size)
+    summary["t_first_obs"] = float(post_jd[0]) if post_jd.size else None
+    summary["t_last_obs"] = float(post_jd[-1]) if post_jd.size else None
 
-    first, last = detections[0], detections[-1]
-    summary["t_first_det"] = float(jd[first])
-    summary["t_last_det"] = float(jd[last])
-    summary["first_det_obs_index"] = int(chunk["observation_index"][rows][first])
-
-    # Only epochs before the first detection can bracket it. `non_detected` is "SNR at or below the
-    # threshold", so a pre-explosion false positive is neither a detection nor a non-detection and
-    # drops out here. If the first observation is already a detection, `earlier` is empty and the
-    # event is unbracketed.
-    earlier = np.flatnonzero(non_detected[:first])
-    if earlier.size:
-        summary["t_last_nondet"] = float(jd[earlier[-1]])
-        summary["last_nondet_snr"] = float(snr[earlier[-1]])
-
-        # A non-detection just under threshold next to a detection just over it says nothing about
-        # when the source turned on. It only constrains the rise if the detection is brighter than
-        # it by `rise_sigma` standard errors, with the two measurement errors added in quadrature.
-        # This uses measured fluxes only, so an observer with forced photometry could compute it.
-        rise = (flux[first] - flux[earlier]) / np.hypot(flux_err[first], flux_err[earlier])
-        constraining = earlier[rise >= rise_sigma]
-        if constraining.size:
-            summary["t_last_constraining_nondet"] = float(jd[constraining[-1]])
+    if bands:
+        band = np.asarray(chunk["band"][rows]).astype(str)
+        rise_keys = [_rise_column(mags) for mags in rise_mags]
+        per_band = {name: reduce(band == name) for name in bands}
+        for name, result in per_band.items():
+            for key in (*_SERIES_KEYS, *rise_keys):
+                summary[f"{key}_{name}"] = result[key]
+        # Rising in any band is rising in the earliest of them, each against its own limit.
+        for key in rise_keys:
+            times = [result[key] for result in per_band.values() if result[key] is not None]
+            summary[key] = min(times) if times else None
     return summary
 
 
@@ -764,6 +881,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         detector,
         include_snr,
         lookback,
+        collapse_bands=True,
     ) -> Iterator[QTable]:
         """Yield the chunks for `iter_epochs`, which does all the argument validation."""
         table = catalog.table
@@ -851,14 +969,29 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                             **{key: values[chunk_slice][event_index] for key, values in sed_inputs_type.items()},
                         )
 
-                        # Keep each epoch's best band, so an observation is never counted once per
-                        # band. A band that could not be measured (NaN) never wins.
+                        # A band that could not be measured (NaN) never wins.
                         best = np.argmax(np.where(np.isnan(snr), -np.inf, snr), axis=0)
                         epochs = np.arange(len(row_index))
-                        columns["band"] = np.asarray(band_names)[best]
-                        columns["snr"] = snr[best, epochs]
-                        columns["flux"] = flux[best, epochs] * u.Jy
-                        columns["flux_err"] = flux_err[best, epochs] * u.Jy
+                        if collapse_bands:
+                            # Keep each epoch's best band, so an observation is never counted once per
+                            # band.
+                            columns["band"] = np.asarray(band_names)[best]
+                            columns["snr"] = snr[best, epochs]
+                            columns["flux"] = flux[best, epochs] * u.Jy
+                            columns["flux_err"] = flux_err[best, epochs] * u.Jy
+                        else:
+                            # Every band of every epoch, band-major. Each geometry column is repeated
+                            # for the bands of its epoch, and the measurements are flattened to match.
+                            n_band = len(band_names)
+                            epoch_of_row = np.tile(epochs, n_band)
+                            band_of_row = np.repeat(np.arange(n_band), epochs.size)
+                            columns = {name: values[epoch_of_row] for name, values in columns.items()}
+                            columns["band_index"] = band_of_row
+                            columns["band"] = np.asarray(band_names)[band_of_row]
+                            columns["is_best_band"] = band_of_row == best[epoch_of_row]
+                            columns["snr"] = snr.reshape(-1)
+                            columns["flux"] = flux.reshape(-1) * u.Jy
+                            columns["flux_err"] = flux_err.reshape(-1) * u.Jy
                         meets_floor = columns["snr"] >= detection_floor
 
                     pbar.update(1)
@@ -868,7 +1001,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                     # Each event's rows are contiguous and time-ordered, so per-event reductions
                     # (see `event_boundaries`) can rely on it.
                     chunk = QTable(columns)[meets_floor]
-                    yield chunk[np.lexsort((chunk["t_obs"].jd, chunk["event_id"]))]
+                    if collapse_bands:
+                        yield chunk[np.lexsort((chunk["t_obs"].jd, chunk["event_id"]))]
+                    else:
+                        yield chunk[np.lexsort((chunk["band_index"], chunk["t_obs"].jd, chunk["event_id"]))]
 
     def _iter_detection_epochs(
         self,
@@ -879,6 +1015,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         chunk_size: int | None,
         keep_all: bool = False,
         lookback: u.Quantity | None = 0 * u.day,
+        collapse_bands: bool = True,
     ) -> Iterator[QTable]:
         """
         Yield `iter_epochs` chunks with each epoch marked as a detection or not.
@@ -905,12 +1042,17 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             every epoch is kept, e.g. to find non-detections.
         lookback : ~astropy.units.Quantity or None, optional
             Forwarded to `iter_epochs`.
+        collapse_bands : bool, optional
+            Forwarded to `iter_epochs`. If `False`, each row is one band of an epoch, and
+            ``detected``/``non_detected`` refer to that band's own SNR.
 
         Yields
         ------
         ~astropy.table.QTable
             One chunk of epochs, with the columns above added.
         """
+        # Only passed when it differs from the default, so callers that stub `iter_epochs` are unaffected.
+        extra = {} if collapse_bands else {"collapse_bands": False}
         epochs = self.iter_epochs(
             catalog,
             mission,
@@ -918,6 +1060,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             chunk_size=chunk_size,
             detection_floor=-np.inf if keep_all else snr_threshold,
             lookback=lookback,
+            **extra,
         )
         with logging_redirect_tqdm(loggers=[logger]):
             for chunk in epochs:
@@ -935,6 +1078,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         reducer: Callable[[QTable, slice], Any],
         keep_all: bool = False,
         lookback: u.Quantity | None = 0 * u.day,
+        collapse_bands: bool = True,
     ) -> dict[int, Any]:
         """
         Reduce each event's epochs to a single value in one pass over `iter_epochs`.
@@ -963,6 +1107,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             an event with none is never passed to it. If `True` it sees every epoch.
         lookback : ~astropy.units.Quantity or None, optional
             Forwarded to `_iter_detection_epochs`.
+        collapse_bands : bool, optional
+            Forwarded to `_iter_detection_epochs`.
 
         Returns
         -------
@@ -971,7 +1117,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         """
         reduced = {}
         for chunk in self._iter_detection_epochs(
-            catalog, mission, snr_threshold, bands, chunk_size, keep_all, lookback
+            catalog, mission, snr_threshold, bands, chunk_size, keep_all, lookback, collapse_bands
         ):
             if not keep_all:
                 chunk = chunk[chunk["detected"]]
@@ -1171,6 +1317,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         progress: bool = True,
         include_snr: bool = True,
         lookback: u.Quantity | None = 0 * u.day,
+        collapse_bands: bool = True,
     ) -> Iterator[QTable]:
         """
         Lazily yield every observation of every event, one chunk of events at a time.
@@ -1201,6 +1348,14 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
           same draw `~uvex_transients.simulation.event.Event.simulate_photometry` makes for
           that measurement, whatever else is evaluated alongside it. For a pre-explosion row it
           is a draw from the background noise alone, at that observation's real depth.
+
+        With `collapse_bands` `False` the epochs are not reduced to their best band. There is then
+        one row per (event, observation, band), sorted by ``(event_id, t_obs, band)`` so an
+        epoch's bands are adjacent, and the rows gain ``band_index`` (the band's position in
+        `bands`) and ``is_best_band``, `True` for the one row of each epoch that the default
+        would have kept. Selecting those rows therefore reproduces the default output exactly.
+        A band that could not be measured has a NaN ``snr``, so it is neither a detection nor a
+        non-detection.
 
         With `include_snr` `False` only the geometry columns are produced, and neither
         `mission` nor the SED is touched.
@@ -1247,6 +1402,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             ``pre_explosion``). A positive duration also yields the earlier observations of
             the event's position, e.g. to find the last pre-explosion non-detection. `None`
             looks back to the start of the schedule.
+        collapse_bands : bool, optional
+            Whether to keep only each epoch's best band (the default). If `False`, every band is
+            kept, as described above. `detection_floor` is then applied to each band's own
+            ``snr``, so it can drop an epoch's weaker bands and keep its best one. Ignored when
+            `include_snr` is `False`.
 
         Returns
         -------
@@ -1330,6 +1490,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             detector,
             include_snr,
             lookback,
+            collapse_bands,
         )
 
     @classmethod
@@ -2840,6 +3001,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         mission: Mission,
         snr_threshold: float,
         rise_sigma: float = 3.0,
+        rise_mags: Sequence[float] = (1.0, 2.0, 3.0),
         processing_delay: u.Quantity | float = 0.0,
         lookback: float | None = None,
         bands: list[str] | None = None,
@@ -2884,6 +3046,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Minimum significance of the rise from a non-detection to the first detection,
             :math:`(f_{\rm det} - f_{\rm and}) / \sqrt{\sigma_{\rm det}^2 + \sigma_{\rm and}^2}`, for
             that non-detection to count in ``t_last_constraining_nondet``. The default is 3.
+        rise_mags : sequence of float, optional
+            Magnitude rises to time, each giving a ``t_rise_<N>mag`` column. The default is
+            ``(1, 2, 3)``. An empty sequence adds no such columns.
         processing_delay : ~astropy.units.Quantity or float, optional
             Fixed ground-segment latency added to the downlink completion time to get
             ``t_alert``. Bare numbers are interpreted as hours. The default is 0.
@@ -2891,7 +3056,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Days before each explosion to search for non-detections. `None` (the default)
             searches back to the start of the schedule.
         bands : list of str, optional
-            Forwarded to `iter_epochs`.
+            Which of the mission's bands to measure, as in `iter_epochs`; the default is all of
+            them. Each one also gets its own set of per-band columns (see Returns).
         chunk_size : int, optional
             Forwarded to `iter_epochs`.
         footprints : list of str, optional
@@ -2927,6 +3093,22 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
               explosion. Masked if the first observation was already a detection.
             - ``t_last_constraining_nondet``: the last such epoch whose rise to the first
               detection is at least `rise_sigma`.
+            - ``t_rise_<N>mag``, one per entry of `rise_mags` (``t_rise_1mag``, ``t_rise_2mag`` and
+              ``t_rise_3mag`` by default; a fractional N has its point written ``p``, as in
+              ``t_rise_0p5mag``): the first detection at least N magnitudes brighter than the
+              detection limit (`snr_threshold` times the uncertainty) of ``t_last_nondet``'s
+              epoch. Any detection can be the one, not only the first. Subtracting
+              ``t_last_nondet`` gives the observed bracket on a rise of N magnitudes. Masked if
+              there is no ``t_last_nondet``, or no detection gets that far above its limit.
+              It is the earliest of the per-band rises below, each against its own band's limit.
+            - For each band in `bands`, the same detection quantities from that band's own
+              measurements, with the band's name as a suffix (``n_det_FUV``, ``t_first_det_FUV``,
+              ``t_last_det_FUV``, ``t_last_nondet_FUV``, ``last_nondet_snr_FUV``,
+              ``t_last_constraining_nondet_FUV``, ``t_rise_1mag_FUV``, and so on). A band's first
+              detection is its own, so its last non-detection is the last epoch before that where
+              this band was at or below the threshold, and may follow the any-band first detection.
+              The unsuffixed columns above describe the event in any band: an epoch is a detection
+              if its best band is one. ``n_obs``, ``field_id`` and ``t_alert`` have no per-band form.
             - ``peak_snr``, ``peak_mag``, ``peak_color``, ``peak_time``: the highest-SNR
               measurement in `photometry`, its AB magnitude, the color of that observation
               (masked if either band is missing or not finite), and its time.
@@ -2975,6 +3157,16 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         color_bands = ["FUV", "NUV"] if color_bands is None else list(color_bands)
         if len(color_bands) != 2:
             raise ValueError(f"'color_bands' must name exactly two bands, got {color_bands}.")
+        rise_mags = [float(mags) for mags in rise_mags]
+        if not all(np.isfinite(mags) and mags > 0 for mags in rise_mags):
+            raise ValueError(f"'rise_mags' must all be positive and finite, got {rise_mags}.")
+        if len({_rise_column(mags) for mags in rise_mags}) != len(rise_mags):
+            raise ValueError(f"'rise_mags' must not repeat a value, got {rise_mags}.")
+        detector = getattr(mission, "detector", None)
+        if bands is not None:
+            band_names = list(dict.fromkeys(bands))
+        else:
+            band_names = list(detector.bandpasses) if detector is not None else []
         footprints = list(_SUMMARY_FOOTPRINTS) if footprints is None else list(footprints)
         delay = processing_delay if isinstance(processing_delay, u.Quantity) else processing_delay * u.hr
 
@@ -3028,9 +3220,16 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 snr_threshold,
                 bands,
                 chunk_size,
-                partial(_reduce_event_summary, snr_threshold=snr_threshold, rise_sigma=rise_sigma),
+                partial(
+                    _reduce_event_summary,
+                    snr_threshold=snr_threshold,
+                    rise_sigma=rise_sigma,
+                    rise_mags=rise_mags,
+                    bands=band_names,
+                ),
                 keep_all=True,
                 lookback=None if lookback is None else lookback * u.day,
+                collapse_bands=False,
             )
         per_event = [stats.get(int(eid)) for eid in event_ids]
 
@@ -3065,6 +3264,20 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         summary["t_last_constraining_nondet"] = _masked_times(
             _gather(per_event, "t_last_constraining_nondet"), scale, time_format
         )
+        for mags in rise_mags:
+            summary[_rise_column(mags)] = _masked_times(_gather(per_event, _rise_column(mags)), scale, time_format)
+
+        # The same quantities for each band on its own.
+        for name in band_names:
+            summary[f"n_det_{name}"] = np.array(
+                [0 if s is None else s[f"n_det_{name}"] for s in per_event], dtype=np.int64
+            )
+            for key in ("t_first_det", "t_last_det", "t_last_nondet", "t_last_constraining_nondet"):
+                summary[f"{key}_{name}"] = _masked_times(_gather(per_event, f"{key}_{name}"), scale, time_format)
+            summary[f"last_nondet_snr_{name}"] = _masked_floats(_gather(per_event, f"last_nondet_snr_{name}"))
+            for mags in rise_mags:
+                column = f"{_rise_column(mags)}_{name}"
+                summary[column] = _masked_times(_gather(per_event, column), scale, time_format)
 
         # Peak quantities, from the highest-SNR row of each event in the photometry table.
         phot = photometry.table if isinstance(photometry, PhotometryCatalog) else photometry
@@ -3105,6 +3318,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             {
                 "snr_threshold": float(snr_threshold),
                 "rise_sigma": float(rise_sigma),
+                "rise_mags": rise_mags,
+                "band_names": band_names,
                 "processing_delay_hr": float(delay.to_value(u.hr)),
                 "lookback_days": None if lookback is None else float(lookback),
                 "bands": None if bands is None else list(bands),

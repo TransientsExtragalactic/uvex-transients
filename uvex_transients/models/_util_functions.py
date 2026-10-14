@@ -194,6 +194,29 @@ def cooling_temperature_cgs(
     return T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
 
 
+def blackbody_temperature_cgs(L: CGSParameterValue, radius: CGSParameterValue) -> FloatArray:
+    r"""
+    Temperature of a blackbody sphere with a given luminosity and radius.
+
+    .. math::
+
+        T = \left[\frac{L}{4\pi\sigma_\mathrm{SB}\,r^2}\right]^{1/4}
+
+    Parameters
+    ----------
+    L : array_like
+        Bolometric luminosity, in erg/s.
+    radius : array_like
+        Photospheric radius, in cm.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`T`, in K.
+    """
+    return (L / (4.0 * np.pi * SIGMA_SB_CGS * radius**2)) ** 0.25
+
+
 def photospheric_temperature_cgs(
     t: FloatArray,
     *,
@@ -221,7 +244,7 @@ def photospheric_temperature_cgs(
     numpy.ndarray
         :math:`T(t)`, in K. Diverges as :math:`t \to 0`.
     """
-    return (L / (4.0 * np.pi * SIGMA_SB_CGS * (v_phot * t) ** 2)) ** 0.25
+    return blackbody_temperature_cgs(L, v_phot * t)
 
 
 def photospheric_temperature_with_floor_cgs(

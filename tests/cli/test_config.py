@@ -3,15 +3,18 @@
 import io
 from pathlib import Path
 
+import numpy as np
 import pytest
 from astropy import units as u
 from astropy.cosmology import FLRW
+from astropy.table import QTable
 from m4opt.missions._uvex import uvex
 
 import uvex_transients.transients as transients_pkg
 from uvex_transients.cli.config import _KNOWN_TRANSIENT_MODULES, RunConfig
 from uvex_transients.cli.yaml_tags import get_run_yaml
 from uvex_transients.models.core.priors import NormalPrior
+from uvex_transients.transients.horizon import HorizonCurve
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
 
@@ -37,7 +40,7 @@ def test_schedule_path_and_fov_path_round_trip(tmp_path, make_schedule):
 
 def test_schedule_rejects_more_than_one_source():
     """Giving both `name:` and `url:` (or any two of the three groups) raises."""
-    config = _config_from("schedule:\n  name: uvex_initial_main\n  url: https://example.com/x.ecsv\n")
+    config = _config_from("schedule:\n  name: uvex_v0.5.0\n  url: https://example.com/x.ecsv\n")
     with pytest.raises(ValueError, match="at most one of"):
         _ = config.schedule
 
@@ -95,6 +98,49 @@ transients:
     assert transient.redshift_limit == 0.5
     assert transient.sed["sigma_rise"].fixed_value == 2.0 * u.day
     assert transient.sed["amplitude"].prior == NormalPrior(mean=44.0, sigma=0.1)
+
+
+def _stub_curve():
+    """Build a tiny horizon curve: z = 0.1 at 22 AB and 0.4 at 24 AB."""
+    return HorizonCurve(QTable({"mag_limit": [22.0, 24.0] * u.ABmag, "z_limit": [0.1, 0.4]}))
+
+
+def test_z_limit_mag_limit_reads_the_horizon_curve(monkeypatch):
+    """`z_limit: {mag_limit: m}` sets the redshift limit from the transient's horizon curve."""
+    monkeypatch.setattr(TidalDisruptionEvent, "horizon_curve", property(lambda self: _stub_curve()))
+    doc = "transients:\n  tde:\n    class: TidalDisruptionEvent\n    z_limit: {mag_limit: 23.0}\n"
+    transient = _config_from(doc).transients["tde"]
+    assert transient.redshift_limit == pytest.approx(np.sqrt(0.1 * 0.4))
+
+
+def test_z_limit_mag_limit_is_read_after_the_other_overrides(monkeypatch):
+    """The curve is asked for after `duration_limit:` and `parameters:`, which it depends on."""
+    seen = []
+
+    def curve(self):
+        seen.append((self.duration_limit, self.sed["sigma_rise"].fixed_value))
+        return _stub_curve()
+
+    monkeypatch.setattr(TidalDisruptionEvent, "horizon_curve", property(curve))
+    doc = """
+transients:
+  tde:
+    class: TidalDisruptionEvent
+    z_limit: {mag_limit: 23.0}
+    duration_limit: 50 day
+    parameters:
+      sigma_rise: 2.0 day
+"""
+    _ = _config_from(doc).transients
+    assert seen == [(50 * u.day, 2.0 * u.day)]
+
+
+@pytest.mark.parametrize("spec", ["{depth: 23.0}", "{mag_limit: 23.0, extra: 1}"])
+def test_z_limit_mapping_must_be_exactly_mag_limit(spec):
+    """A `z_limit:` mapping with any key other than `mag_limit` raises."""
+    doc = f"transients:\n  tde:\n    class: TidalDisruptionEvent\n    z_limit: {spec}\n"
+    with pytest.raises(ValueError, match="must be a number or"):
+        _ = _config_from(doc).transients
 
 
 def test_transients_unknown_class_raises():
@@ -341,7 +387,9 @@ def test_known_transient_modules_matches_the_package_directory():
     register (see `_import_known_transients`'s docstring) -- this fails loudly instead.
     """
     package_dir = Path(transients_pkg.__file__).parent
-    actual_modules = {path.stem for path in package_dir.glob("*.py") if path.stem not in {"__init__", "base"}}
+    actual_modules = {
+        path.stem for path in package_dir.glob("*.py") if path.stem not in {"__init__", "base", "horizon"}
+    }
     assert actual_modules == set(_KNOWN_TRANSIENT_MODULES)
 
 
@@ -366,3 +414,22 @@ def test_full_run_config_lists_every_registered_transient_class():
         f"missing from full_run.yaml: {sorted(registered - _FULL_RUN_EXCLUDED_CLASSES - listed)}; "
         f"unknown to the registry: {sorted(listed - registered)}"
     )
+
+
+def test_infant_sne_config_selects_on_three_days_and_keeps_full_photometry():
+    """`configs/infant_sne.yaml` is every supernova class of `full_run.yaml`, with the 72 h selection window."""
+    import astropy.units as u
+
+    from uvex_transients.cli.config import RunConfig
+
+    configs = Path(__file__).resolve().parents[2] / "configs"
+    infant = RunConfig.from_yaml(configs / "infant_sne.yaml")
+    full = get_run_yaml().load((configs / "full_run.yaml").read_text())
+
+    supernova_classes = {
+        entry["class"] for entry in full["transients"].values() if entry["class"].endswith(("SNe", "SLSNe"))
+    }
+    assert {t.__class__.__name__ for t in infant.transients.values()} == supernova_classes
+    for transient in infant.transients.values():
+        assert transient.duration_limit == 3 * u.day
+        assert transient.photometry_post_window == 100 * u.day

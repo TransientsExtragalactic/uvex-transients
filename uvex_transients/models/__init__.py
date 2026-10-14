@@ -6,6 +6,7 @@ __all__ = [
     "kilonovae",
     "lfbots",
     "lightcurves",
+    "shock_cooling",
     "spectra",
     "supernovae",
     "tdes",
@@ -34,6 +35,12 @@ from . import lightcurves
 from .lightcurves import *
 
 __all__.extend(lightcurves.__all__)
+
+# Imports from the shock_cooling submodule.
+from . import shock_cooling
+from .shock_cooling import *
+
+__all__.extend(shock_cooling.__all__)
 
 # Imports from the supernovae submodule.
 from . import supernovae

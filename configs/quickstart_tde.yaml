@@ -32,7 +32,7 @@
 # happens to be the package default, so this block is here for clarity, not
 # because it's required.
 schedule:
-  name: uvex_initial_main
+  name: uvex_v0.5.0
 
 # Which m4opt mission (bandpasses, detector, background) to simulate against.
 # Defaults to "uvex" if omitted entirely. "uvex_fast" is uvex with its bandpass
@@ -48,9 +48,9 @@ mission: uvex_fast
 transients:
   tde:
     class: TidalDisruptionEvent
-    # z_limit: 2.0
+    # z_limit: 1.7
     # parameters:
-    #   amplitude: !prior {type: normal, mean: 43.8, sigma: 0.3}
+    #   amplitude: !prior {type: power_law, alpha: 2.41, lower: 1.0e+43, upper: 1.0e+46}
     #   sigma_rise: 1.0 day
 
 # Read by `generate`/`run`. `downsample` trades sample size for speed: a

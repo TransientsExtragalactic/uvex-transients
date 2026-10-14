@@ -52,6 +52,7 @@ and :mod:`~uvex_transients.utils`, and a command-line interface that ties all fo
 
          user_guide/transients/overview
          user_guide/transients/custom_transients
+         user_guide/transients/redshift_limits
 
    .. grid-item-card:: Surveys
       :class-card: sd-shadow-sm sd-border-1 guide-card

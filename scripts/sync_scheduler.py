@@ -2,15 +2,15 @@
 Pin this repository to the latest uvex-scheduler release.
 
 The package config (``uvex_transients/config.yaml``) registers every released schedule by name
-(``uvex_v0.5.0``, ...), and the release run (``configs/full_run.yaml``) and the package defaults
-point at the newest one. This script looks up the latest release of ``m4opt/uvex-scheduler`` and
-makes the following edits, all in place and all idempotent:
+(``uvex_v0.5.0``, ...), and the release runs (``configs/full_run.yaml``, ``configs/infant_sne.yaml``)
+and the package defaults point at the newest one. This script looks up the latest release of
+``m4opt/uvex-scheduler`` and makes the following edits, all in place and all idempotent:
 
 - registers ``uvex_v<latest>`` in ``schedules.schedule_urls`` (older entries are left alone, so
   they remain available as references to the previous schedules),
 - points ``schedules.default_schedule`` at it,
 - points ``observatories.uvex.repo_url`` (the survey-footprint files) at the same tag,
-- points ``schedule.name`` in ``configs/full_run.yaml`` at it.
+- points ``schedule.name`` in each release run-config (``RUN_CONFIGS``) at it.
 
 Edits are plain text substitutions rather than a YAML round trip, so the diff is exactly the
 lines above and no comments or formatting are disturbed. If the repository is already pinned to
@@ -34,7 +34,8 @@ from pathlib import Path
 UPSTREAM = "m4opt/uvex-scheduler"
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_CONFIG = ROOT / "uvex_transients" / "config.yaml"
-RUN_CONFIG = ROOT / "configs" / "full_run.yaml"
+RUN_CONFIGS = (ROOT / "configs" / "full_run.yaml", ROOT / "configs" / "infant_sne.yaml")
+"""tuple of pathlib.Path: The run-configs whose data products are attached to each release."""
 
 _RAW = f"https://raw.githubusercontent.com/{UPSTREAM}/refs/tags"
 _TAG = re.compile(r"v\d+\.\d+\.\d+")
@@ -93,7 +94,7 @@ def pin_package_config(text: str, tag: str) -> str:
 
 def pin_run_config(text: str, tag: str) -> str:
     """
-    Pin the run-config text (``configs/full_run.yaml``) to the release `tag`.
+    Pin the text of a run-config (one of `RUN_CONFIGS`) to the release `tag`.
 
     Parameters
     ----------
@@ -121,7 +122,7 @@ def main() -> None:
         raise SystemExit(f"Refusing to pin to {tag!r}: expected a tag like v1.2.3.")
 
     changed = False
-    for path, pin in ((PACKAGE_CONFIG, pin_package_config), (RUN_CONFIG, pin_run_config)):
+    for path, pin in ((PACKAGE_CONFIG, pin_package_config), *((path, pin_run_config) for path in RUN_CONFIGS)):
         old = path.read_text()
         new = pin(old, tag)
         if new != old:

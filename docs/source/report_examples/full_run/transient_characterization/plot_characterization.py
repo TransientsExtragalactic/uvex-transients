@@ -1,0 +1,216 @@
+"""
+Standard Cuts and Yields
+========================
+
+How many of the detected events can be *characterized*: observed often enough, brightly enough and
+early enough to be classified?
+
+A detection alone is not much. This page applies a set of standard cuts to the detected events of every
+transient type, and reports what is left as the expected number of UVEX events. The cuts are relatively
+relaxed, since they pick events that UVEX will get UV coverage of and that can probably be classified, but
+probably not early. Every setting is at the top of the page, so the same page answers the question for
+a different selection.
+
+Everything is read from the event summary table of the latest release, through
+:class:`~uvex_transients.utils.summary_report.SummaryReport`.
+"""
+
+from dataclasses import replace
+
+import matplotlib.pyplot as plt
+
+from uvex_transients.utils.plotting import set_plot_style
+from uvex_transients.utils.summary_report import POPULATION_GROUPS, STANDARD_POPULATIONS, SummaryReport
+
+set_plot_style()
+
+# %%
+# Configuration
+# --------------
+#
+# The three cuts are the same for every type, apart from the longest allowed gap between the last
+# non-detection and the first detection, which is set per type. Change any of them and the funnels, yields
+# and figures below follow.
+
+#: An event needs at least this many detections.
+MIN_DETECTIONS = 2
+
+#: The highest-SNR measurement of an event must be brighter than this AB magnitude.
+PEAK_MAG_LIMIT = 23.0
+
+#: The longest gap, in days, from the last constraining non-detection to the first detection, per type.
+MAX_GAP = {key: spec.max_gap for key, spec in STANDARD_POPULATIONS.items()}
+# MAX_GAP["tde"] = 15.0  # for example, to pin the explosion of a TDE down twice as tightly
+
+POPULATIONS = {key: replace(spec, max_gap=MAX_GAP[key]) for key, spec in STANDARD_POPULATIONS.items()}
+
+try:
+    report = SummaryReport.from_release(POPULATIONS, min_detections=MIN_DETECTIONS, peak_mag_limit=PEAK_MAG_LIMIT)
+except (ConnectionError, LookupError, OSError, ValueError) as err:
+    report = None
+    print(f"Skipping this page's analysis, the release data is not available: {err}")
+else:
+    print(f"{len(report.summary):,} detected events in the release's summary table.")
+
+# %%
+# The cuts
+# ---------
+#
+# The cuts are cumulative:
+#
+# - **Repeat detections**: at least ``MIN_DETECTIONS`` epochs with SNR above threshold, since a lone detection is
+#   hard to tell apart from noise or an artifact.
+# - **Bright peak**: the highest-SNR measurement is brighter than ``PEAK_MAG_LIMIT``.
+# - **Bracketed explosion**: the gap between the last *constraining* non-detection (one whose rise to the first
+#   detection is significant at 3 sigma, so a marginal non-detection does not count) and the first detection is
+#   below a limit per type, so that the explosion time is pinned down. An event with no constraining
+#   non-detection has no bracket and is dropped.
+#
+# The default gap is set at roughly the time each type takes to rise, so that its explosion is pinned down while
+# it is still bright:
+#
+# .. list-table::
+#    :header-rows: 1
+#    :widths: 18 12 70
+#
+#    * - Type
+#      - Max gap (days)
+#      - Reasoning
+#    * - Type Ia
+#      - 14
+#      - Type Ia SNe reach peak roughly two to three weeks after explosion.
+#    * - Type Ib, Ic, Ic-BL
+#      - 10
+#      - Stripped-envelope SNe reach peak in about two weeks. The broad-lined Ic is taken to be the same.
+#    * - Type IIP, IIb
+#      - 7
+#      - The UV is brightest in the first days to weeks, during shock breakout and cooling, and the
+#        shock-cooling peak of a IIb arrives within about a week.
+#    * - Type IIP + excess
+#      - 3
+#      - The early excess lasts only a few days, so the explosion has to be pinned down more tightly.
+#    * - SLSN-I
+#      - 60
+#      - SLSNe rise slowly, over roughly 30 to 100 days in the rest frame (longer in the observer frame).
+#    * - TDE
+#      - 30
+#      - TDEs rise over a few weeks, so a month brackets the rise itself.
+#    * - LFBOT
+#      - 5
+#      - LFBOTs rise in a few days and fade over a few weeks.
+#    * - Kilonova
+#      - 3
+#      - The UV emission fades within days, so the explosion has to be pinned down to a few days for the event
+#        to still be bright when it is found.
+
+# %%
+# Cut funnels
+# ------------
+#
+# How many events of each type survive each cut, in **expected UVEX events**: the Monte Carlo events that
+# reach a stage times :math:`\mu_0 / n`, with :math:`n` the number generated and :math:`\mu_0` the number that
+# exist in UVEX's footprint and observing window. The first bar is therefore :math:`\mu_0`. Black error bars
+# are the Monte Carlo uncertainty on each stage and the pale band is the rate uncertainty, which scales every
+# stage by the same factor. One funnel per group of types, to keep the bars legible.
+
+if report is not None:
+    for name, keys in POPULATION_GROUPS.items():
+        group = SummaryReport(
+            report.summary,
+            {key: report.populations[key] for key in keys},
+            min_detections=MIN_DETECTIONS,
+            peak_mag_limit=PEAK_MAG_LIMIT,
+        )
+        group.plot_funnel().axes[0].set_title(f"Detection funnel: {name}")
+
+plt.show()
+
+# %%
+# Characterized events per type
+# ------------------------------
+#
+# The expected number of events that pass every cut. This is the same figure as the
+# :ref:`detected events <sphx_glr_report_full_run_event_detection_plot_detected_yields.py>`, now for the
+# selected ones: the black error bars are the Monte Carlo uncertainty and the pale band is the rate uncertainty.
+
+if report is not None:
+    report.plot_yields()
+
+plt.show()
+
+# %%
+# The numbers behind the bars, with the fraction of the events generated that is selected:
+
+if report is not None:
+    report.yield_table().pprint_all()
+
+# %%
+# How often is each event detected?
+# ----------------------------------
+#
+# The percentage of the characterized events that are detected at least :math:`N` times. The cut on repeat
+# detections keeps every curve at 100% up to :math:`N =` ``MIN_DETECTIONS``, and the rest of the curve is how
+# much more than that is available.
+
+if report is not None:
+    report.plot_detection_counts(POPULATION_GROUPS)
+
+plt.show()
+
+# %%
+# Example light curves
+# ---------------------
+#
+# One characterized event of each type, rebuilt from the release's event catalog and observed with synthetic
+# photometry against the schedule. Filled squares are detections, open triangles are upper limits, and the
+# lines are the noiseless model. This needs the event catalog and the survey schedule as well, and the schedule
+# is fetched fresh, so it can differ from the one the release was run against.
+
+events = schedule = None
+if report is not None:
+    try:
+        from uvex_transients.simulation import EventCatalog
+        from uvex_transients.surveys import get_schedule
+        from uvex_transients.utils import get_results
+
+        events = EventCatalog.from_disk(get_results(["events"])["events"])
+        schedule = get_schedule()
+    except (ConnectionError, LookupError, OSError, ValueError) as err:
+        print(f"Skipping the example light curves, a data product is not available: {err}")
+
+if events is not None:
+    from uvex_transients.missions import uvex_fast as uvex
+    from uvex_transients.transients.kilonovae import Kilonova
+    from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
+    from uvex_transients.transients.supernovae import (
+        MagnetarSLSNe,
+        TypeIaSNe,
+        TypeIbSNe,
+        TypeIcBLSNe,
+        TypeIcSNe,
+        TypeIIbSNe,
+        TypeIIPExcessSNe,
+        TypeIIPSNe,
+    )
+    from uvex_transients.transients.TDEs import TidalDisruptionEvent
+
+    transients = {
+        "ia_sne": TypeIaSNe(),
+        "ib_sne": TypeIbSNe(),
+        "ic_sne": TypeIcSNe(),
+        "icbl_sne": TypeIcBLSNe(),
+        "iip_sne": TypeIIPSNe(),
+        "iip_excess_sne": TypeIIPExcessSNe(),
+        "iib_sne": TypeIIbSNe(),
+        "slsne": MagnetarSLSNe(),
+        "tde": TidalDisruptionEvent(),
+        "lfbot": LuminousFastBlueOpticalTransient(),
+        "kilonova": Kilonova(),
+    }
+    for key in report.populations:
+        try:
+            report.plot_example_event(key, events, transients, schedule, uvex)
+        except ValueError as err:
+            print(err)
+
+plt.show()

@@ -9,6 +9,7 @@ from uvex_transients.models.core.priors import (
     DiscretePrior,
     MixturePrior,
     NormalPrior,
+    PowerLawPrior,
     Prior,
     UniformPrior,
 )
@@ -105,3 +106,35 @@ class TestMixturePrior:
         x = np.linspace(-5, 15, 101)
         np.testing.assert_allclose(prior_a.pdf(x), prior_b.pdf(x))
         assert prior_a.sample(size=10, rng=rng).size == 10
+
+
+class TestPowerLawPrior:
+    """`PowerLawPrior`'s bound validation, in particular an infinite upper bound."""
+
+    def test_rejects_non_positive_lower(self):
+        with pytest.raises(ValueError, match="`lower` must be positive"):
+            PowerLawPrior(alpha=2.0, lower=0.0, upper=10.0)
+
+    def test_rejects_upper_not_above_lower(self):
+        with pytest.raises(ValueError, match="`upper` must exceed `lower`"):
+            PowerLawPrior(alpha=2.0, lower=5.0, upper=5.0)
+
+    @pytest.mark.parametrize("alpha", [-1.0, 0.5, 1.0])
+    def test_rejects_infinite_upper_unless_alpha_exceeds_one(self, alpha):
+        with pytest.raises(ValueError, match="requires `alpha > 1`"):
+            PowerLawPrior(alpha=alpha, lower=1.0, upper=np.inf)
+
+    @pytest.mark.parametrize("alpha", [-1.5, 0.5, 1.0])
+    def test_finite_upper_allowed_for_any_alpha(self, alpha):
+        PowerLawPrior(alpha=alpha, lower=1.0, upper=1.0e6)
+
+    @pytest.mark.parametrize("alpha", [1.41, 2.5])
+    def test_infinite_upper_is_normalized_and_samples_match_analytic_median(self, alpha):
+        prior = PowerLawPrior(alpha=alpha, lower=1.0, upper=np.inf)
+
+        x = np.logspace(0.0, 10.0, 400_001)
+        assert np.trapezoid(prior.pdf(x), x) == pytest.approx(1.0, abs=1e-3)
+
+        samples = prior.sample(200_000, rng=0)
+        assert np.all(np.isfinite(samples))
+        assert np.median(samples) == pytest.approx(2.0 ** (1.0 / (alpha - 1.0)), rel=0.02)

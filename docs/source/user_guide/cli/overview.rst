@@ -97,7 +97,7 @@ The Schedule
 .. code-block:: yaml
 
     schedule:
-      name: uvex_initial_main    # one of the names in `schedules.schedule_urls`
+      name: uvex_v0.5.0    # one of the names in `schedules.schedule_urls`
 
     # ...or, to fetch a URL directly instead of a name registered in the package config:
     #
@@ -171,11 +171,12 @@ overrides you want on top of its defaults:
     transients:
       tde:
         class: TidalDisruptionEvent
-        z_limit: 2.0                 # overrides ExtragalacticTransient.redshift_limit
+        z_limit: 1.7                 # overrides ExtragalacticTransient.redshift_limit
+                                     # (or z_limit: {mag_limit: 23.0} to look it up from the horizon curve)
         duration_limit: 200 day      # overrides TransientBase.duration_limit
         cosmology: !astropy_cosmology {name: Planck18}
         parameters:
-          amplitude: !prior {type: normal, mean: 43.8, sigma: 0.3}
+          amplitude: !prior {type: power_law, alpha: 2.41, lower: 1.0e+43, upper: 1.0e+46}
           sigma_rise: 1.0 day        # a bare value fixes the parameter instead
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`
@@ -236,9 +237,13 @@ model's parameters actually are.
      - A registered :class:`~uvex_transients.transients.base.TransientBase` subclass name.
        Required.
    * - ``z_limit``
-     - float
+     - float or mapping
      - Overrides :attr:`~uvex_transients.transients.base.ExtragalacticTransient.redshift_limit`.
-       Optional.
+       Either a redshift, or ``{mag_limit: <AB magnitude>}`` to read the redshift off the
+       transient's :attr:`~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`
+       at that single-visit depth (see :ref:`horizon_curves`). The lookup uses the transient's
+       ``duration_limit``, ``cosmology`` and ``parameters`` overrides, and a curve for a
+       non-default combination is generated on the spot, which takes seconds to a minute. Optional.
    * - ``duration_limit``
      - str or number
      - Overrides :attr:`~uvex_transients.transients.base.TransientBase.duration_limit` (a unit
@@ -256,7 +261,9 @@ model's parameters actually are.
        how far after explosion :meth:`Event.simulate_photometry
        <uvex_transients.simulation.event.Event.simulate_photometry>` evaluates the transient's SED
        before falling back to background/non-detection photometry (a unit string or a bare number
-       of days). Optional; defaults to ``duration_limit``.
+       of days). Optional; defaults to ``duration_limit``. Setting it separately lets a short
+       ``duration_limit`` define the detection window while the photometry of the events that
+       survive still covers their full evolution (see ``configs/infant_sne.yaml``).
    * - ``cosmology``
      - ``!astropy_cosmology``
      - Overrides the transient's cosmology. Optional; defaults to the package's own default
@@ -536,7 +543,7 @@ arguments.
    * - ``event_summary``
      - ``catalog``, ``exposure``, ``photometry``
      - ``snr_threshold``
-     - ``rise_sigma`` (default ``3``), ``processing_delay`` (hours, default ``0``), ``lookback``,
+     - ``rise_sigma`` (default ``3``), ``rise_mags`` (default ``[1, 2, 3]``), ``processing_delay`` (hours, default ``0``), ``lookback``,
        ``bands``, ``footprints``, ``color_bands``
 
 ``event_summary`` writes one row per event of ``catalog``, so that detection timing, cadence, and
@@ -546,7 +553,10 @@ expected number of real events it stands for, so summing it over a selection giv
 selection's expected yield), the first and last observation and detection times, the time of the first
 downlink after the first detection (``t_alert``), the last non-detection before the first
 detection (``t_last_nondet`` and its ``last_nondet_snr``, plus ``t_last_constraining_nondet``,
-the last one whose rise to the first detection is at least ``rise_sigma``), and the peak SNR,
+the last one whose rise to the first detection is at least ``rise_sigma``), ``t_rise_1mag``,
+``t_rise_2mag`` and ``t_rise_3mag`` (the first detection that many magnitudes above a band's
+detection limit at its last non-detection), a copy of the detection quantities for each band
+(``t_first_det_FUV``, ``t_last_nondet_NUV``, ``t_rise_2mag_FUV``, and so on), and the peak SNR,
 magnitude, FUV-NUV color, and time from ``photometry``. ``catalog`` is typically the SNR-cut
 catalog. Its ``pre_cut_counts`` (the number of events of each type when the baseline was generated,
 which no cut changes) and the ``exposure`` and rate factors of each type are stored in the table's

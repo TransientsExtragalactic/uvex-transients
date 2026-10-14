@@ -13,7 +13,8 @@ import numpy as np
 import pytest
 from astropy import units as u
 
-from uvex_transients.models.supernovae import MoragShockCoolingBlackbodySED, MoragShockCoolingSED
+from uvex_transients.models.shock_cooling.morag import _components_log_cgs_morag24
+from uvex_transients.models.shock_cooling import MoragShockCoolingBlackbodySED, MoragShockCoolingSED
 
 MODELS = [MoragShockCoolingBlackbodySED, MoragShockCoolingSED]
 
@@ -35,7 +36,7 @@ def _single_draw(model_class, seed=3):
 
 def _valid(model_class, t, parameters):
     """Boolean mask of the epochs inside the regime of validity, from the model's own components."""
-    return np.asarray(model_class._components(t.cgs.value, **_cgs(parameters)).valid)
+    return np.asarray(_components_log_cgs_morag24(**model_class._log_arguments(t.cgs.value, **_cgs(parameters))).valid)
 
 
 def _set_fill(monkeypatch, model_class, fill):

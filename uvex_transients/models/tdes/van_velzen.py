@@ -2,11 +2,12 @@ r"""Composite tidal disruption event SED, following the Van Velzen et al. (2021)
 
 from typing import ClassVar
 
+import numpy as np
 from astropy import units as u
 
 from uvex_transients.models.core.base import ComposedSpectralModel
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import NormalPrior
+from uvex_transients.models.core.priors import NormalPrior, PowerLawPrior
 from uvex_transients.models.lightcurves.generic import GREDLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
 
@@ -44,13 +45,15 @@ class VanVelzenTDESED(ComposedSpectralModel):
     :class:`~uvex_transients.models.core.base.ComposedSpectralModel` for how the two
     are combined.
 
-    The default priors are informed by the log-normal fits to the ZTF TDE sample
-    reported by :footcite:t:`2021ApJ...908....4V` (their Section 4.1 / Table 4),
-    though the values below have since been hand-tuned away from those exact fits
-    and are not currently a literal reproduction of them: log-normal in
-    :math:`L_0`, :math:`T`, :math:`\sigma`, and :math:`\tau`, each parameterized
-    here via a base-10 log transform on a
-    :class:`~uvex_transients.models.core.priors.NormalPrior`.
+    The default priors for :math:`\sigma` and :math:`\tau` are informed by the log-normal fits to the
+    ZTF TDE sample reported by :footcite:t:`2021ApJ...908....4V` (their Section 4.1 / Table 4),
+    though the values below have since been hand-tuned away from those exact fits and are not
+    currently a literal reproduction of them. The :math:`T` prior is likewise log-normal, with its mean
+    and scatter matched to :math:`\log_{10} T` for the 33 TDEs of :footcite:t:`yao2023`. Each of these
+    is parameterized here via a base-10 log transform on a
+    :class:`~uvex_transients.models.core.priors.NormalPrior`. The :math:`L_0` prior is instead the
+    blackbody luminosity function of :footcite:t:`yao2023`, a power law above
+    :math:`10^{43}\ \mathrm{erg\,s^{-1}}`, normalized explicitly to unit area (see the table below).
 
     .. rubric:: Parameters
 
@@ -66,7 +69,9 @@ class VanVelzenTDESED(ComposedSpectralModel):
        * - ``amplitude``
          - :math:`L_0`
          - Peak bolometric luminosity, :math:`L_0 = L_\mathrm{bol}(t_\mathrm{peak})`.
-           :math:`\log_{10}(L_0/\mathrm{erg\,s^{-1}}) \sim \mathcal{N}(43.8, 0.3^2)`.
+           :math:`p(L_0) \propto L_0^{-2.41}` for :math:`L_0 \ge 10^{43}\ \mathrm{erg\,s^{-1}}`
+           (unbounded above), i.e. :math:`dN/d\log L_0 \propto L_0^{-1.41}`
+           :footcite:p:`yao2023`, normalized explicitly to unit area.
        * - ``sigma_rise``
          - :math:`\sigma`
          - Gaussian width of the pre-peak rise.
@@ -78,7 +83,7 @@ class VanVelzenTDESED(ComposedSpectralModel):
        * - ``temperature``
          - :math:`T`
          - Photospheric blackbody temperature.
-           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.1^2)`.
+           :math:`\log_{10}(T/\mathrm{K}) \sim \mathcal{N}(4.3, 0.15^2)`.
 
     References
     ----------
@@ -88,18 +93,19 @@ class VanVelzenTDESED(ComposedSpectralModel):
     _LIGHTCURVE_CLASS = GREDLightcurve
     _SPECTRUM_CLASS = BlackbodySpectrum
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
+        # Yao et al. 2023 luminosity function: dN/dlogL ~ L^-1.41 above 1e43 erg/s. Per unit L that is
+        # a power law of index 1.41 + 1 = 2.41. No transform: the latent variable is L itself.
         "amplitude": Parameter(
-            prior=NormalPrior(mean=43.8, sigma=0.3),
+            prior=PowerLawPrior(alpha=2.41, lower=1.0e43, upper=np.inf),
             scale=1.0 * u.erg / u.s,
-            transform="log10",
-            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). log10(L_0/[erg/s]) ~ N(43.8, 0.3^2).",
+            description="Peak bolometric luminosity, L_0 = L_bol(t_peak). p(L_0) ~ L_0^-2.41 for L_0 >= 1e43 erg/s.",
             latex=r"L_0",
         ),
         "temperature": Parameter(
-            prior=NormalPrior(mean=4.3, sigma=0.1),
+            prior=NormalPrior(mean=4.3, sigma=0.15),
             scale=1.0 * u.K,
             transform="log10",
-            description="Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.1^2).",
+            description="Photospheric blackbody temperature. log10(T/K) ~ N(4.3, 0.15^2).",
             latex=r"T",
         ),
         "sigma_rise": Parameter(

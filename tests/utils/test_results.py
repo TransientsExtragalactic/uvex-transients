@@ -1,6 +1,11 @@
 """Tests for `uvex_transients.utils.results.get_results`, with the GitHub API and downloads mocked out."""
 
+import http.server
 import importlib
+import io
+import os
+import threading
+import zipfile
 
 import pytest
 
@@ -126,3 +131,138 @@ class TestFindRelease:
         monkeypatch.setattr(results, "_urlopen", lambda request, timeout: _Response())
         with pytest.raises(LookupError, match="No published releases"):
             results.find_release()
+
+
+# ----------------------------------------- #
+# Secondary simulations (zip archives)       #
+# ----------------------------------------- #
+SUMMARY = b"summary-of-the-infant-run"
+PHOTOMETRY = os.urandom(6 << 20)  # incompressible, so the archive is dominated by this member
+
+
+def _build_zip() -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("event_summary.ecsv", SUMMARY)
+        archive.writestr("exposure.ecsv", b"exposure")
+        archive.writestr("photometry.ecsv", PHOTOMETRY)
+    return buffer.getvalue()
+
+
+class _Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        server = self.server
+        header = self.headers.get("Range")
+        server.requests.append(header)
+        payload = server.payload
+        if header and server.support_range:
+            start, end = (int(x) for x in header.removeprefix("bytes=").split("-"))
+            body = payload[start : end + 1]
+            self.send_response(206)
+            self.send_header("Content-Range", f"bytes {start}-{start + len(body) - 1}/{len(payload)}")
+        else:
+            body = payload
+            self.send_response(200)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+        server.bytes_served += len(body)
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture
+def serve_zip():
+    """Serve the simulation archive from a local HTTP server; ``support_range`` toggles Range support."""
+    payload = _build_zip()
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    server.payload = payload
+    server.support_range = True
+    server.requests = []
+    server.bytes_served = 0
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    server.url = f"http://127.0.0.1:{server.server_address[1]}/infant_sne.zip"
+    yield server
+    server.shutdown()
+    server.server_close()
+    thread.join()
+
+
+@pytest.fixture
+def fake_simulation_release(monkeypatch, tmp_path, serve_zip):
+    """Build a release carrying a flat primary asset plus ``infant_sne.zip`` served by `serve_zip`."""
+    release = {
+        "tag_name": "v1",
+        "draft": False,
+        "assets": [
+            {"name": "event_summary.ecsv", "size": 3, "browser_download_url": "https://example.test/summary"},
+            {"name": "infant_sne.zip", "size": len(serve_zip.payload), "browser_download_url": serve_zip.url},
+        ],
+    }
+    monkeypatch.setattr(results, "find_release", lambda tag=None, timeout=60.0: release)
+    monkeypatch.setattr(results, "cache_dir", tmp_path / "cache")
+    return release
+
+
+class TestSimulations:
+    """`get_results(simulation=...)` and `list_simulations`, against a local server that supports Range requests."""
+
+    def test_fetches_only_the_requested_member(self, fake_simulation_release, serve_zip, tmp_path):
+        paths = results.get_results(["summary"], simulation="infant_sne")
+        assert paths["summary"] == tmp_path / "cache" / "results" / "v1" / "infant_sne" / "event_summary.ecsv"
+        assert paths["summary"].read_bytes() == SUMMARY
+        assert not (paths["summary"].parent / "photometry.ecsv").exists()
+        assert all(header is not None for header in serve_zip.requests)  # every request was a Range request
+        assert serve_zip.bytes_served < len(serve_zip.payload) / 2  # the 6 MB photometry member never moved
+
+    def test_default_returns_every_member(self, fake_simulation_release):
+        paths = results.get_results(simulation="infant_sne")
+        assert set(paths) == {"event_summary.ecsv", "exposure.ecsv", "photometry.ecsv"}
+        assert paths["photometry.ecsv"].read_bytes() == PHOTOMETRY
+
+    def test_short_keys_and_file_names_are_returned_as_given(self, fake_simulation_release):
+        paths = results.get_results(["summary", "exposure.ecsv"], simulation="infant_sne")
+        assert list(paths) == ["summary", "exposure.ecsv"]
+
+    def test_a_cached_member_is_not_fetched_again(self, fake_simulation_release, serve_zip):
+        results.get_results(["summary"], simulation="infant_sne")
+        serve_zip.requests.clear()
+        results.get_results(["summary"], simulation="infant_sne")
+        assert len(serve_zip.requests) > 0  # the archive's directory is still read ...
+        assert serve_zip.bytes_served < len(serve_zip.payload) / 2  # ... but not the member again
+
+    def test_explicit_directory(self, fake_simulation_release, tmp_path):
+        paths = results.get_results(["summary"], simulation="infant_sne", directory=tmp_path / "mine")
+        assert paths["summary"] == (tmp_path / "mine" / "event_summary.ecsv").resolve()
+
+    def test_size_mismatch_raises_unless_overwrite(self, fake_simulation_release, tmp_path):
+        stale = tmp_path / "mine"
+        stale.mkdir()
+        (stale / "event_summary.ecsv").write_bytes(b"stale")
+        with pytest.raises(FileExistsError):
+            results.get_results(["summary"], simulation="infant_sne", directory=stale)
+        paths = results.get_results(["summary"], simulation="infant_sne", directory=stale, overwrite=True)
+        assert paths["summary"].read_bytes() == SUMMARY
+
+    def test_unknown_simulation_lists_the_available_ones(self, fake_simulation_release):
+        with pytest.raises(LookupError, match=r"infant_sne"):
+            results.get_results(simulation="nope")
+
+    def test_unknown_member(self, fake_simulation_release):
+        with pytest.raises(LookupError, match="final_catalog.ecsv"):
+            results.get_results(["events"], simulation="infant_sne")
+
+    def test_falls_back_to_a_full_download_without_range_support(self, fake_simulation_release, serve_zip):
+        serve_zip.support_range = False
+        paths = results.get_results(["summary"], simulation="infant_sne")
+        assert paths["summary"].read_bytes() == SUMMARY
+        assert not list(paths["summary"].parent.glob("*.download"))  # the temporary archive is removed
+
+    def test_primary_run_ignores_simulation_archives(self, fake_simulation_release, monkeypatch):
+        monkeypatch.setattr(results, "_download", lambda url, dest, timeout: dest.write_bytes(b"abc"))
+        assert set(results.get_results()) == {"event_summary.ecsv"}
+
+    def test_list_simulations(self, fake_simulation_release):
+        assert results.list_simulations() == ["infant_sne"]
