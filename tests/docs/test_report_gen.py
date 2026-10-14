@@ -24,6 +24,8 @@ def summary_file(tmp_path):
     """A small event summary table on disk, as `run_event_summary_action` would write it."""
     table = QTable()
     table["transient_type"] = np.array(["tde"] * 6 + ["slsne"] * 2)
+    table["in_ztf_main"] = np.array([True, True, False, False, False, False, True, False])
+    table["in_lsst_combined"] = np.ones(8, dtype=bool)
     table.meta.update(
         {
             "n_pre_cut": {"tde": 100, "slsne": 50, "kilonova": 20},
@@ -60,18 +62,28 @@ def _release(tag="v9"):
 
 
 def test_summary_table_lists_every_type_with_its_display_name(summary_file):
-    yields = estimate_yield(QTable.read(summary_file))
-    rst = report_gen._summary_table_rst(yields)
+    events = QTable.read(summary_file)
+    yields = estimate_yield(events)
+    rst = report_gen._summary_table_rst(yields, events)
     assert "Tidal Disruption Event" in rst
     assert "SLSNe (Magnetar)" in rst
     assert "Kilonova" in rst  # generated but never detected, so it still has a row
-    assert rst.count(":math:") == 2 * len(yields)
+    assert rst.count(":math:") == len(yields)  # one stacked-interval role per type
 
 
 def test_zero_detections_render_without_nan(summary_file):
-    rst = report_gen._summary_table_rst(estimate_yield(QTable.read(summary_file)))
+    events = QTable.read(summary_file)
+    rst = report_gen._summary_table_rst(estimate_yield(events), events)
     assert "nan" not in rst.lower()
-    assert "--" not in rst
+    assert all("--" not in line for line in rst.splitlines() if ":math:" in line)  # only the overlap cells can be "--"
+
+
+def test_overlap_is_the_percent_of_detected_events_inside_the_footprint(summary_file):
+    events = QTable.read(summary_file)
+    assert report_gen._overlap(events, "tde", "in_ztf_main") == "33.3%"
+    assert report_gen._overlap(events, "slsne", "in_lsst_combined") == "100.0%"
+    assert report_gen._overlap(events, "kilonova", "in_ztf_main") == "--"  # no detected events
+    assert report_gen._overlap(events, "tde", "not_a_column") == "--"
 
 
 def test_generate_report_writes_the_page_from_the_latest_release(srcdir, monkeypatch, summary_file):
@@ -101,7 +113,7 @@ def test_the_page_has_one_card_per_run_in_order(srcdir, monkeypatch, summary_fil
     assert ":bdg-secondary-line:`TDEs`" in rst
     assert "2 analyses" in rst  # scripts are counted in subsections too
     assert "Analyses coming soon" in rst  # a run with no scripts yet
-    assert rst.count("Primary run") == 1  # only the run without a `simulation`
+    assert rst.count(":bdg-primary:`Default run`") == 1  # only the run without a `simulation`
     assert "configs/main.yaml" in rst
     assert "   :hidden:" in rst and "   main/index" in rst  # the sidebar lists the galleries
 
