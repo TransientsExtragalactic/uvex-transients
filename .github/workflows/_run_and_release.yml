@@ -65,7 +65,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install package
-        run: pip install -e .
+        run: pip install -e ".[rubin]"  # rubin: the event summary flags events against the LSST footprint
 
       - name: Run pipeline
         run: uvex-transients run "${{ inputs.config }}" --out-dir "results/${{ inputs.name }}" --overwrite

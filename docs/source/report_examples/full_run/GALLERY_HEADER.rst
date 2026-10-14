@@ -1,8 +1,8 @@
 .. _report_full_run_gallery:
 
-*******************************
-Full Population Run
-*******************************
+***************
+Standard Run
+***************
 
 .. card::
    :class-card: sd-shadow-sm gallery-banner

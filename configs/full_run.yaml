@@ -121,6 +121,10 @@ steps:
       photometry: phot
     params:
       snr_threshold: 5.0
+      # The default UVEX footprints plus ZTF and Rubin, so the docs' report can quote
+      # how much of each type's detected population falls on their sky. Resolving the LSST
+      # footprint needs the `rubin` extra.
+      footprints: [uvex:lmlz:wide, uvex:lmlz:deep, uvex:mc, ztf:main, lsst:combined]
     checkpoint: event_summary.ecsv
 
 # Suppresses per-step checkpointing by default (every step above whose own
