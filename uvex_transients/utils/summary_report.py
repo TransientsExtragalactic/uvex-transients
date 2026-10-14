@@ -12,14 +12,20 @@ and produces the figures and tables that go with it:
 - the **expected yield** per population, `SummaryReport.yield_table`,
 - the **distributions** of the properties behind each cut, `SummaryReport.plot_distributions`,
 - the **sky positions** of the selected events, `SummaryReport.plot_sky`,
+- the **expected yield** as a bar chart, `SummaryReport.plot_yields`, and how many of the events were
+  detected more than once, `SummaryReport.plot_detection_counts`,
+- the **overlap with other surveys**, `SummaryReport.footprint_overlap`,
 - one reconstructed **example light curve**, `SummaryReport.plot_example_event`.
 
-Everything but the example light curve reads only the summary table, so `SummaryReport.from_release`
-builds a full report from nothing but the published release.
+The yield, detection-count, overlap and sky plots take an optional ``mask``, so the same figures describe
+the detected events, the selected ones, or any other cut. Everything but the example light curve reads only
+the summary table, so `SummaryReport.from_release` builds a full report from nothing but the published
+release.
 """
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from itertools import cycle
 from typing import TYPE_CHECKING
 
 import astropy.units as u
@@ -30,11 +36,13 @@ from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
 from ..simulation.rates import estimate_yield
+from .log import logger
 from .plotting import (
     add_funnel_legend,
     compute_funnel_bounds,
     get_band_color,
     get_categorical_colors,
+    get_default_cmap,
     plot_band_light_curve,
     plot_detection_funnel,
     plot_footprints,
@@ -50,7 +58,14 @@ if TYPE_CHECKING:
     from ..surveys.footprints.base import SurveyFootprint
     from ..transients.base import TransientBase
 
-__all__ = ["PopulationSpec", "SummaryReport", "UVEX_REGIONS"]
+__all__ = [
+    "OVERLAP_FOOTPRINTS",
+    "POPULATION_GROUPS",
+    "PopulationSpec",
+    "STANDARD_POPULATIONS",
+    "SummaryReport",
+    "UVEX_REGIONS",
+]
 
 UVEX_REGIONS = {
     "LMLZ wide": "uvex:lmlz:wide",
@@ -61,6 +76,9 @@ UVEX_REGIONS = {
 
 # Pale, so the event markers drawn over them stay legible.
 REGION_COLORS = ["#d6e4f0", "#f2dcc0", "#d9ead3"]
+
+OVERLAP_FOOTPRINTS = {**UVEX_REGIONS, "ZTF": "ztf:main", "Rubin": "lsst:combined"}
+"""dict: Label and footprint registry name of each survey `SummaryReport.footprint_overlap` compares to."""
 
 REQUIRED_COLUMNS = (
     "event_id",
@@ -100,6 +118,35 @@ class PopulationSpec:
     The default takes the next color of ``config["plotting.categorical_colors"]``, in the order the
     populations were given.
     """
+
+
+STANDARD_POPULATIONS = {
+    "ia_sne": PopulationSpec("Type Ia", max_gap=14.0),
+    "ib_sne": PopulationSpec("Type Ib", max_gap=10.0),
+    "ic_sne": PopulationSpec("Type Ic", max_gap=10.0),
+    "icbl_sne": PopulationSpec("Type Ic-BL", max_gap=10.0),
+    "iip_sne": PopulationSpec("Type IIP", max_gap=7.0),
+    "iip_excess_sne": PopulationSpec("Type IIP + excess", max_gap=3.0),
+    "iib_sne": PopulationSpec("Type IIb", max_gap=7.0),
+    "slsne": PopulationSpec("SLSN-I", max_gap=60.0),
+    "tde": PopulationSpec("TDE", max_gap=30.0),
+    "lfbot": PopulationSpec("LFBOT", max_gap=5.0),
+    "kilonova": PopulationSpec("Kilonova", max_gap=3.0),
+}
+"""dict: The release's populations with their display names and the longest explosion bracket of each.
+
+The limit is set at roughly the time the event takes to rise, so that the explosion is pinned down while
+the event is still bright. The order is the order of the figures, with the common populations first so
+that the rare ones are drawn on top of them in the sky maps.
+"""
+
+POPULATION_GROUPS = {
+    "Type I SNe": ["ia_sne", "ib_sne", "ic_sne", "icbl_sne"],
+    "Type II SNe": ["iip_sne", "iip_excess_sne", "iib_sne"],
+    "SLSNe": ["slsne"],
+    "Exotic transients": ["tde", "lfbot", "kilonova"],
+}
+"""dict: `STANDARD_POPULATIONS` keys collected into the few groups the figures are split into, one panel each."""
 
 
 def _filled(column) -> NDArray[np.float64]:
@@ -165,6 +212,8 @@ class SummaryReport:
         The table, as given.
     populations : dict of str to PopulationSpec
         The populations being reported, each with its color filled in.
+    detected : numpy.ndarray of bool
+        True for the rows of the reported populations, which have all been detected.
     repeated, bright, selected : numpy.ndarray of bool
         The cumulative cuts, one entry per row of `summary`: the first alone, the first two, and
         all three.
@@ -205,7 +254,8 @@ class SummaryReport:
                 f"The summary table has none of the populations {list(populations)}; "
                 f"it has {list(summary.meta['n_pre_cut'])}."
             )
-        colors = iter(get_categorical_colors(len(present)))
+        # The palette is short, so a long list of populations reuses its colors.
+        colors = cycle(get_categorical_colors(min(len(present), 8)))
         self.populations = {
             key: PopulationSpec(
                 populations[key].label, populations[key].max_gap, populations[key].color or next(colors)
@@ -237,6 +287,8 @@ class SummaryReport:
             self.repeated = self.n_det >= self.min_detections
             self.bright = self.repeated & (self.peak_mag < self.peak_mag_limit)
             self.selected = self.bright & (self.gap <= max_gap)
+        self.detected = np.isin(self.types, list(self.populations))
+        self._footprint_flags: dict[str, NDArray[np.bool_] | None] = {}
 
     @classmethod
     def from_release(
@@ -429,6 +481,257 @@ class SummaryReport:
         fig.tight_layout()
         return fig
 
+    def _resolve_mask(self, mask) -> NDArray[np.bool_]:
+        """`mask` as a boolean array with a row per event, `selected` if it is None."""
+        if mask is None:
+            return self.selected
+        mask = np.asarray(mask)
+        if mask.dtype != bool or mask.shape != (len(self.summary),):
+            raise ValueError(f"'mask' must be a boolean array of shape ({len(self.summary)},).")
+        return mask
+
+    def plot_yields(self, mask: NDArray[np.bool_] | None = None, fig_size: tuple[float, float] = (10, 4.5)) -> Figure:
+        r"""
+        Plot the expected number of events of each population as a bar chart, with both uncertainties.
+
+        The bars are `~uvex_transients.simulation.rates.estimate_yield` of the rows in `mask`. As in
+        `plot_funnel`, the black error bars are the Monte Carlo (Clopper-Pearson) uncertainty and the
+        pale band is the rate uncertainty. A population with no events in `mask` gets only an upper limit.
+
+        Parameters
+        ----------
+        mask : numpy.ndarray of bool, optional
+            The events to count, one entry per row of the table. The default is `selected`; pass
+            `detected` for every detection.
+        fig_size : tuple of float, optional
+            Figure size in inches. The default is ``(10, 4.5)``.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The bar chart.
+
+        Raises
+        ------
+        ValueError
+            If `mask` is not a boolean array with one entry per row.
+        """
+        yields = estimate_yield(self.summary, mask=self._resolve_mask(mask), transient_types=list(self.populations))
+        by_type = {str(row["transient_type"]): row for row in yields}
+        rows = [by_type[key] for key in self.populations]  # in the order given, not estimate_yield's
+        column = lambda name: np.array([float(row[name]) for row in rows])  # noqa: E731
+        counts = column("expected_events")
+        upper = np.maximum(column("expected_events_binom_upper"), column("expected_events_rate_upper"))
+
+        fig, ax = plt.subplots(figsize=fig_size)
+        x = np.arange(len(rows))
+        plot_detection_funnel(
+            ax,
+            x=x,
+            counts=counts,
+            mc_lower=column("expected_events_binom_lower"),
+            mc_upper=column("expected_events_binom_upper"),
+            rate_lower=column("expected_events_rate_lower"),
+            rate_upper=column("expected_events_rate_upper"),
+            color=[spec.color for spec in self.populations.values()],
+        )
+        for xi, count, top in zip(x, counts, upper):
+            ax.text(
+                xi, top * 1.15, _fmt(count) if count > 0 else f"< {_fmt(top)}", ha="center", va="bottom", fontsize=8
+            )
+        ax.set_xticks(x, [spec.label for spec in self.populations.values()], rotation=30, ha="right")
+        ax.set_yscale("log")
+        # Room below the lowest bar, or the lowest upper limit of a population with no events.
+        lowest = np.concatenate([counts[counts > 0], upper[counts == 0]])
+        if lowest.size:
+            ax.set_ylim(lowest.min() / 3, upper.max() * 5)
+        ax.set_ylabel("Expected UVEX events")
+        add_funnel_legend(ax, loc="upper right")
+        fig.tight_layout()
+        return fig
+
+    def plot_detection_counts(
+        self,
+        groups: Mapping[str, Sequence[str]] | None = None,
+        mask: NDArray[np.bool_] | None = None,
+        max_detections: int = 100,
+        fig_size: tuple[float, float] = (11, 7),
+    ) -> Figure:
+        r"""
+        Plot the percentage of events detected at least :math:`N` times, one panel per group of populations.
+
+        This is how repeatable the detections are. An event detected once is a snapshot, while one detected
+        many times has a light curve to work with.
+
+        Parameters
+        ----------
+        groups : Mapping of str to Sequence of str, optional
+            The populations in each panel, by `populations` key. Populations that are not being reported
+            are skipped. The default is `POPULATION_GROUPS`.
+        mask : numpy.ndarray of bool, optional
+            The events to count, one entry per row of the table. The default is `selected`.
+        max_detections : int, optional
+            The largest :math:`N` on the x axis. The default is 100.
+        fig_size : tuple of float, optional
+            Figure size in inches. The default is ``(11, 7)``.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The panels, two to a row.
+
+        Raises
+        ------
+        ValueError
+            If `mask` is not a boolean array with one entry per row, or `groups` has none of the
+            reported populations.
+        """
+        mask = self._resolve_mask(mask)
+        groups = POPULATION_GROUPS if groups is None else groups
+        panels = {name: [k for k in keys if k in self.populations] for name, keys in groups.items()}
+        panels = {name: keys for name, keys in panels.items() if keys}
+        if not panels:
+            raise ValueError(f"None of the populations in {dict(groups)} is being reported.")
+
+        n_rows = -(-len(panels) // 2)
+        fig, axes = plt.subplots(n_rows, 2, figsize=fig_size, sharex=True, sharey=True, squeeze=False)
+        n_detections = np.arange(1, max_detections + 1)
+        for ax, (name, keys) in zip(axes.flat, panels.items()):
+            for key in keys:
+                chosen = self._in(key) & mask
+                if not chosen.any():
+                    continue
+                percent = [100 * np.mean(self.n_det[chosen] >= n) for n in n_detections]
+                spec = self.populations[key]
+                ax.step(n_detections, percent, where="post", color=spec.color, label=f"{spec.label} ({chosen.sum():,})")
+            ax.set_title(name)
+            ax.set_xscale("log")
+            ax.set_ylim(0, 102)
+            if ax.get_legend_handles_labels()[0]:
+                ax.legend(fontsize=8, title="Population (Monte Carlo events)", title_fontsize=8)
+        for ax in axes.flat[len(panels) :]:
+            ax.axis("off")
+        for ax in axes[:, 0]:
+            ax.set_ylabel("% of events")
+        for ax in axes[-1]:
+            ax.set_xlabel(f"Number of detections, at least N (SNR > {self.snr_threshold:g})")
+        fig.tight_layout()
+        return fig
+
+    def _in_footprint(self, name: str) -> NDArray[np.bool_] | None:
+        """
+        Mask of the events inside the footprint registered as `name`, or None if it cannot be built.
+
+        A table from a release that recorded the footprint has an ``in_<name>`` column (with the ``:``
+        of the name as ``_``), which is used as is. Otherwise the events' positions are looked up in the
+        footprint, which for a Rubin footprint needs the ``rubin`` extra.
+        """
+        if name not in self._footprint_flags:
+            column = "in_" + name.replace(":", "_")
+            if column in self.summary.colnames:
+                flags = np.asarray(self.summary[column], dtype=bool)
+            else:
+                from ..surveys.footprints import default_registry
+
+                try:
+                    flags = np.asarray(default_registry.get(name).contains_skycoord(self.summary["coord"]), dtype=bool)
+                except ImportError as err:
+                    logger.warning("Cannot test %s overlap: %s", name, err)
+                    flags = None
+            self._footprint_flags[name] = flags
+        return self._footprint_flags[name]
+
+    def footprint_overlap(
+        self,
+        footprints: Mapping[str, str] | None = None,
+        mask: NDArray[np.bool_] | None = None,
+    ) -> QTable:
+        """
+        Find what percentage of each population's events falls inside each survey's footprint.
+
+        This is overlap on the sky only. It does not say whether the other survey was observing the position
+        at the time. The regions of one survey, such as the UVEX regions, can overlap each other, so a row's
+        percentages need not add up to 100.
+
+        Parameters
+        ----------
+        footprints : Mapping of str to str, optional
+            Column label and footprint registry name of each survey to compare to. The default is
+            `OVERLAP_FOOTPRINTS`: the three UVEX regions, ZTF and Rubin.
+        mask : numpy.ndarray of bool, optional
+            The events to count, one entry per row of the table. The default is `selected`.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per population, in the order given, with its ``population`` label, the
+            ``expected_events`` in `mask`, and a column of percentages for each footprint, named by its label.
+            A footprint that could not be built (Rubin's, without the ``rubin`` extra) is NaN, and a population
+            with no events in `mask` is NaN in every footprint.
+
+        Raises
+        ------
+        ValueError
+            If `mask` is not a boolean array with one entry per row.
+        """
+        mask = self._resolve_mask(mask)
+        footprints = OVERLAP_FOOTPRINTS if footprints is None else footprints
+        flags = {label: self._in_footprint(name) for label, name in footprints.items()}
+        table = QTable()
+        table["population"] = [spec.label for spec in self.populations.values()]
+        table["expected_events"] = [float(self.weight[self._in(key) & mask].sum()) for key in self.populations]
+        for label, inside in flags.items():
+            table[label] = [
+                np.nan
+                if inside is None or not (self._in(key) & mask).any()
+                else 100 * float(np.mean(inside[self._in(key) & mask]))
+                for key in self.populations
+            ]
+        return table
+
+    def plot_footprint_overlap(
+        self,
+        footprints: Mapping[str, str] | None = None,
+        mask: NDArray[np.bool_] | None = None,
+        fig_size: tuple[float, float] = (8, 6),
+    ) -> Figure:
+        """
+        Plot `footprint_overlap` as a grid with a population per row and a survey per column.
+
+        Parameters
+        ----------
+        footprints : Mapping of str to str, optional
+            As for `footprint_overlap`.
+        mask : numpy.ndarray of bool, optional
+            As for `footprint_overlap`.
+        fig_size : tuple of float, optional
+            Figure size in inches. The default is ``(8, 6)``.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The grid, each cell labeled with its percentage. A cell with no value reads "n/a".
+        """
+        table = self.footprint_overlap(footprints, mask)
+        labels = [name for name in table.colnames if name not in ("population", "expected_events")]
+        percent = np.array([table[label] for label in labels]).T
+
+        fig, ax = plt.subplots(figsize=fig_size)
+        image = ax.imshow(np.ma.masked_invalid(percent), vmin=0, vmax=100, cmap=get_default_cmap(), aspect="auto")
+        for i, j in np.ndindex(percent.shape):
+            text = "n/a" if np.isnan(percent[i, j]) else f"{percent[i, j]:.0f}%"
+            ax.text(j, i, text, ha="center", va="center", color="w" if percent[i, j] < 65 else "k")
+        ax.set_xticks(range(len(labels)), [label.replace(" ", "\n") for label in labels])
+        ax.set_yticks(
+            range(len(table)),
+            [f"{row['population']} ({_fmt(row['expected_events'])})" for row in table],
+        )
+        ax.xaxis.tick_top()
+        ax.tick_params(length=0)
+        fig.colorbar(image, ax=ax, label="% of events inside the footprint")
+        fig.tight_layout()
+        return fig
+
     def _panels(self) -> dict[str, tuple[str, NDArray[np.float64], bool, Callable[[str], float] | None]]:
         """Each distribution's axis label, values, whether it is log-scaled, and its cut threshold (per population)."""
         return {
@@ -524,7 +827,11 @@ class SummaryReport:
             figs.append(fig)
         return figs
 
-    def plot_sky(self, footprints: "Mapping[str, SurveyFootprint | MOC] | None" = None) -> Figure:
+    def plot_sky(
+        self,
+        footprints: "Mapping[str, SurveyFootprint | MOC] | None" = None,
+        mask: NDArray[np.bool_] | None = None,
+    ) -> Figure:
         """
         Plot where the detected and the selected events fall on the sky, in an Aitoff projection.
 
@@ -535,6 +842,10 @@ class SummaryReport:
         footprints : mapping of str to SurveyFootprint or mocpy.MOC, optional
             Regions to shade, keyed by legend label. Defaults to the three UVEX regions (`UVEX_REGIONS`),
             which are fetched on first use. Pass an empty mapping to draw only the events.
+        mask : numpy.ndarray of bool, optional
+            Draw only the events in `mask`, each population in its own color, instead of the selected
+            events over a gray backdrop of all the detected ones. Populations are drawn in the order given,
+            so the rare ones sit on top.
 
         Returns
         -------
@@ -555,23 +866,25 @@ class SummaryReport:
             region_handles = ax.get_legend().legend_handles
             ax.get_legend().remove()
         ax.grid(True)
-        detected = np.isin(self.types, list(self.populations))
-        ax.scatter(
-            coord.ra[detected].wrap_at(180 * u.deg).radian,
-            coord.dec[detected].radian,
-            s=2,
-            alpha=0.2,
-            color="#888888",
-            label=f"Detected ({int(detected.sum()):,})",
-        )
+        if mask is None:
+            ax.scatter(
+                coord.ra[self.detected].wrap_at(180 * u.deg).radian,
+                coord.dec[self.detected].radian,
+                s=2,
+                alpha=0.2,
+                color="#888888",
+                label=f"Detected ({int(self.detected.sum()):,})",
+            )
+        chosen_rows = self._resolve_mask(mask)
         for key, spec in self.populations.items():
-            chosen = self._in(key) & self.selected
+            chosen = self._in(key) & chosen_rows
             ax.scatter(
                 coord.ra[chosen].wrap_at(180 * u.deg).radian,
                 coord.dec[chosen].radian,
-                s=8,
+                s=8 if mask is None else 5,
+                alpha=1.0 if mask is None else 0.6,
                 color=spec.color,
-                label=f"{spec.label} selected ({int(chosen.sum()):,})",
+                label=f"{spec.label}{' selected' if mask is None else ''} ({int(chosen.sum()):,})",
             )
         event_handles, _ = ax.get_legend_handles_labels()
         ax.legend(
@@ -595,6 +908,7 @@ class SummaryReport:
         schedule: "SurveySchedule",
         mission: "Mission",
         seed: int = 1,
+        faint_limit: float = 26.0,
     ) -> Figure:
         """
         Plot the synthetic light curve of one randomly chosen selected event of a population.
@@ -618,6 +932,10 @@ class SummaryReport:
             The mission to simulate the photometry for.
         seed : int, optional
             Seed of the draw of the event. The default is 1.
+        faint_limit : float, optional
+            The faintest AB magnitude shown. Nothing fainter is plotted, however faint the noiseless model
+            gets, so the axis shows the range UVEX can actually measure. The brightest end is set by the
+            data. The default is 26.
 
         Returns
         -------
@@ -652,7 +970,8 @@ class SummaryReport:
                 err_scale=5.0,
                 label=str(band),
             )
-        ax.invert_yaxis()
+        # Faint end fixed, bright end left to the data, and the axis inverted by ordering the limits.
+        ax.set_ylim(faint_limit, min(ax.get_ylim()[0], faint_limit - 1))
         ax.set_xlabel("Days since explosion")
         ax.set_ylabel("AB magnitude")
         label = self.populations[key].label

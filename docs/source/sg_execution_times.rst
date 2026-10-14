@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:43.667** total execution time for 32 files **from all galleries**:
+**00:00.981** total execution time for 29 files **from all galleries**:
 
 .. container::
 
@@ -32,38 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
-     - 00:17.955
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_too_followup.py` (``galleries/too_simulations/plot_too_followup.py``)
-     - 00:07.594
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_type_ii_sne.py` (``report_examples/full_run/transient_summaries/plot_type_ii_sne.py``)
-     - 00:04.117
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_type_i_sne.py` (``report_examples/full_run/transient_summaries/plot_type_i_sne.py``)
-     - 00:03.435
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_lfbots.py` (``report_examples/full_run/transient_summaries/plot_lfbots.py``)
-     - 00:02.386
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_slsne.py` (``report_examples/full_run/transient_summaries/plot_slsne.py``)
-     - 00:02.260
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_tdes.py` (``report_examples/full_run/transient_summaries/plot_tdes.py``)
-     - 00:02.023
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_summaries_plot_kilonovae.py` (``report_examples/full_run/transient_summaries/plot_kilonovae.py``)
-     - 00:01.586
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_plot_release_data.py` (``report_examples/full_run/plot_release_data.py``)
-     - 00:01.134
-     - 0.0
-   * - :ref:`sphx_glr_report_infant_sne_plot_rise_brackets.py` (``report_examples/infant_sne/plot_rise_brackets.py``)
-     - 00:00.845
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py` (``galleries/too_simulations/plot_multiband_too_followup.py``)
-     - 00:00.332
+   * - :ref:`sphx_glr_report_infant_sne_plot_infant_sne_yields.py` (``report_examples/infant_sne/plot_infant_sne_yields.py``)
+     - 00:00.981
      - 0.0
    * - :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` (``galleries/custom_transients/plot_kilonova_detection_horizon.py``)
      - 00:00.000
@@ -110,6 +80,9 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_transient_type.py` (``galleries/simulating/plot_cut_transient_type.py``)
      - 00:00.000
      - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
+     - 00:00.000
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
      - 00:00.000
      - 0.0
@@ -126,5 +99,23 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_surveys_plot_ztf_footprint.py` (``galleries/surveys/plot_ztf_footprint.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_multiband_too_followup.py` (``galleries/too_simulations/plot_multiband_too_followup.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_too_simulations_plot_too_followup.py` (``galleries/too_simulations/plot_too_followup.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_event_detection_plot_detected_yields.py` (``report_examples/full_run/event_detection/plot_detected_yields.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_event_detection_plot_footprint_overlap.py` (``report_examples/full_run/event_detection/plot_footprint_overlap.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
      - 00:00.000
      - 0.0

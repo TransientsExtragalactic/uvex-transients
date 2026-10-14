@@ -7,11 +7,79 @@ Standard Run
 .. card::
    :class-card: sd-shadow-sm gallery-banner
 
-   *Module:* :mod:`~uvex_transients.utils`
+   *Config:* `configs/full_run.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/full_run.yaml>`__
+   · *Module:* :mod:`~uvex_transients.utils.summary_report`
 
-   Each example downloads the data products of the latest published release with
-   :func:`~uvex_transients.utils.get_results` (cached after the first download) and analyzes
-   them: the event catalog, the exposure catalog, the per-event summary table, and the synthetic
-   photometry. The Transient Summaries section below has one page per transient family.
+   The default simulation: every transient class the package ships, sampled at full scale against the UVEX
+   survey schedule, and screened down to the events UVEX detects. These pages ask how many of them UVEX
+   detects, how often, and how many of those can be characterized.
 
    :ref:`Back to the report <report_page>`
+
+The sample
+==========
+
+The simulation draws Monte Carlo events of **every registered transient class**, with each class using its own
+default rate, redshift limit and duration (see :ref:`transients` for the model and rate of each):
+
+- **Type I supernovae**: Ia, Ib, Ic and the broad-lined Ic-BL,
+- **Type II supernovae**: IIP, IIP with an early excess, and IIb,
+- **Superluminous supernovae** (the magnetar-powered SLSN-I),
+- **Exotic transients**: tidal disruption events, luminous fast blue optical transients (LFBOTs) and kilonovae.
+
+Events are placed on the sky and in time by sampling the volumetric rate over the whole survey, and then observed
+against the real UVEX survey schedule (the scheduler release pinned in the config, so the data products are
+reproducible) with the ``uvex_fast`` mission model. To keep the highest-rate populations tractable the events are
+downsampled by a factor of 20 (``generate.downsample``), and every count is rescaled back automatically, so the
+numbers on these pages are **expected UVEX events**. Each Monte Carlo event stands for :math:`\mu_0 / n` real ones,
+with :math:`n` the number generated and :math:`\mu_0` the number that exist in UVEX's footprint and observing
+window, and the finite sample is carried through as a Monte Carlo uncertainty (see :ref:`yield-statistics`).
+
+What is a detection?
+====================
+
+Two screens, applied in order, reduce the generated events to the **detected** sample that every page starts from:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Screen
+     - What it keeps
+   * - Magnitude (``limiting_magnitude``)
+     - Events that could ever peak brighter than **25 AB**. This ignores the schedule and only discards events too
+       faint for UVEX to ever see, to save work in the next step.
+   * - Detection (``snr``)
+     - Events with at least one observation after the explosion, in at least one band (FUV or NUV), whose
+       signal-to-noise ratio exceeds **5**. An event whose *only* such observation is the first-ever visit to
+       its field is dropped, since there is no reference image to detect it against
+       (``exclude_first_visit_detections``).
+
+A detection says that UVEX *sees* the event. It does not mean the event can be classified.
+
+What is a characterized event?
+==============================
+
+The characterization pages apply three further cuts to the detected events. They are applied here, to the event
+summary table, and are not part of the run, so they can be changed without regenerating it
+(:ref:`Transient Characterization <report_full_run_characterization>` has a page with every setting in one place):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Cut
+     - What it keeps
+   * - Repeat detections
+     - At least **2** detections. A lone detection is hard to tell apart from noise or an artifact.
+   * - Bright peak
+     - A highest-SNR measurement brighter than **23 AB**.
+   * - Bracketed explosion
+     - A gap from the last constraining non-detection to the first detection that is shorter than a limit per type
+       (from 3 days for kilonovae and Type IIP with an excess, to 60 days for SLSNe), so the explosion time is
+       pinned down.
+
+These are relatively relaxed cuts. They choose events that UVEX gets UV coverage of and that can probably be
+classified, but probably not early.
+
+The pages below follow the order of the analysis: first what is detected, then what can be characterized.
