@@ -1143,6 +1143,7 @@
                         <span class="n">pixel_ids</span><span class="o">=</span><span class="n">pixel_ids</span><span class="p">,</span>
                         <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
                         <span class="n">seed</span><span class="o">=</span><span class="n">bin_seeds</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                        <span class="n">downsample</span><span class="o">=</span><span class="n">type_downsample</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="c1"># Interpolate this transient type's own cached D_L(z) grid at each sampled</span>
@@ -1162,15 +1163,6 @@
 
                     <span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
                     <span class="n">table</span><span class="p">[</span><span class="s2">"time_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
-                    <span class="k">if</span> <span class="n">type_downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="c1"># Spawned *after* `sample_events_on_healpix_grid` has already</span>
-                        <span class="c1"># drawn its own 6 children from `bin_seeds[k]` above, so this</span>
-                        <span class="c1"># doesn't perturb that draw; see its own docstring on why</span>
-                        <span class="c1"># spawn order off a shared `SeedSequence` matters.</span>
-                        <span class="n">downsample_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">bin_seeds</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-                        <span class="n">n_keep</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">//</span> <span class="n">type_downsample</span><span class="p">)</span>  <span class="c1"># ceiling division</span>
-                        <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">downsample_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-                        <span class="n">table</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
                     <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
                     <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
