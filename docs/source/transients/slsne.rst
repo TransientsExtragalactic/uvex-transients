@@ -243,7 +243,8 @@ UV Calibration
 ~~~~~~~~~~~~~~~
 
 The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
-SLSNe-I from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+SLSNe-I from the Swift Optical/Ultraviolet Supernova Archive (SOUSA), supplemented with the host-subtracted,
+recalibrated photometry of `Hinkle et al. (2023) <https://arxiv.org/abs/2309.03270>`__, on 100 random draws from the priors above,
 integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
 :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
 legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
