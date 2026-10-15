@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from astropy import units as u
 
-from uvex_transients.models.arnett import ArnettDecaySED, LineBlanketedArnettDecaySED
+from uvex_transients.models.arnett import LineBlanketedArnettDecaySED
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import (
     ConstantPrior,
@@ -123,7 +123,7 @@ class TypeIbSED(LineBlanketedArnettDecaySED):
     }
 
 
-class TypeIcSED(ArnettDecaySED):
+class TypeIcSED(LineBlanketedArnettDecaySED):
     r"""
     Type Ic supernova SED, with priors fit to a literature sample of stripped-envelope SNe.
 
@@ -159,6 +159,12 @@ class TypeIcSED(ArnettDecaySED):
        * - ``T_floor``
          - :math:`T_\mathrm{floor}`
          - Minimum photospheric temperature.
+       * - ``break_frequency``
+         - :math:`\nu_\mathrm{break}`
+         - Frequency blueward of which line blanketing suppresses the flux.
+       * - ``beta``
+         - :math:`\beta`
+         - Power-law index of the suppression above the break.
 
     References
     ----------
@@ -201,5 +207,17 @@ class TypeIcSED(ArnettDecaySED):
             scale=1 * u.K,
             description="Minimum photospheric temperature.",
             latex=r"T_\mathrm{floor}",
+        ),
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=5.0),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
         ),
     }
