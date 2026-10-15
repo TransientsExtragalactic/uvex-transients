@@ -561,6 +561,9 @@ class MoragShockCoolingArnettSED(SpectralModel):
     .. footbibliography::
     """
 
+    _ARNETT_SED: ClassVar[type[ArnettDecaySED]] = ArnettDecaySED
+    """type of ArnettDecaySED: The nickel component. Subclasses swap in an SED with its own parameters and priors."""
+
     _MORAG_PARAMETERS: ClassVar[tuple[str, ...]] = tuple(_MoragShockCoolingBase._DEFAULT_PARAMETERS)
     _ARNETT_PARAMETERS: ClassVar[tuple[str, ...]] = ("M_Ni", "M_ej", "v_ej", "kappa", "kappa_gamma", "T_floor")
 
@@ -635,9 +638,9 @@ class MoragShockCoolingArnettSED(SpectralModel):
         """
         morag, arnett = cls._split_parameters(parameters)
         L_morag = _UncutMoragShockCoolingSED.eval_bolometric(t, **morag)
-        L_arnett = ArnettDecaySED.eval_bolometric(t, **arnett)
+        L_arnett = cls._ARNETT_SED.eval_bolometric(t, **arnett)
         T_morag = _UncutMoragShockCoolingSED.temperature(t, **morag)
-        T_arnett = ArnettDecaySED.temperature(t, **arnett)
+        T_arnett = cls._ARNETT_SED.temperature(t, **arnett)
         return (L_morag * T_morag + L_arnett * T_arnett) / (L_morag + L_arnett)
 
     @classmethod
@@ -645,11 +648,11 @@ class MoragShockCoolingArnettSED(SpectralModel):
         r"""Natural log of :math:`L_\mathrm{bol}(t)` in erg/s, the sum of the two components."""
         morag, arnett = cls._split_parameters(parameters)
         return np.logaddexp(
-            _UncutMoragShockCoolingSED._eval_bolometric(t, **morag), ArnettDecaySED._eval_bolometric(t, **arnett)
+            _UncutMoragShockCoolingSED._eval_bolometric(t, **morag), cls._ARNETT_SED._eval_bolometric(t, **arnett)
         )
 
     @classmethod
     def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
         r"""Natural log of :math:`L_\nu(\nu, t)` in erg/s/Hz, the sum of the two components."""
         morag, arnett = cls._split_parameters(parameters)
-        return np.logaddexp(_UncutMoragShockCoolingSED._eval(nu, t, **morag), ArnettDecaySED._eval(nu, t, **arnett))
+        return np.logaddexp(_UncutMoragShockCoolingSED._eval(nu, t, **morag), cls._ARNETT_SED._eval(nu, t, **arnett))

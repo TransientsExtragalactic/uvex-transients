@@ -276,10 +276,9 @@ class TypeIIbSNe(_CoreCollapseSNe):
     """
     Full Type IIb core-collapse SN light curve.
 
-    `TypeIIbSED`: a phenomenological superposition of two Bazin pulses (an early shock-cooling
-    peak and the radioactively powered main peak) times a cooling blackbody photosphere. A broad
-    prior on the early peak's amplitude covers both single- and double-peaked Type IIb events in
-    the same population.
+    `TypeIIbSED`: the Morag et al. 2024 shock cooling SED, evaluated at every epoch, plus a line-blanketed
+    Arnett nickel component with Type Ib priors, so that one SED covers the early flash, the trough and the
+    main peak.
 
     Unlike `ShockCoolingIIb`, which covers only the early shock-cooling phase, this spans a full
     Type IIb light curve, hence its much longer `DEFAULT_DURATION`. Shares the same event rate as

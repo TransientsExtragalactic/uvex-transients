@@ -10,6 +10,7 @@ from uvex_transients.models._typing import CGSParameterValue, FloatArray
 from uvex_transients.models._util_functions import (
     _log_sigmoid,
     cooling_temperature_cgs,
+    modified_blackbody_unit_shape_log_cgs,
     sigmoid_temperature_cgs,
     temperature_bump_cgs,
 )
@@ -17,7 +18,6 @@ from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import ConstantPrior, NormalPrior, TruncatedNormalPrior, UniformPrior
-from uvex_transients.models.spectra.thermal import BlackbodySpectrum
 
 __all__ = ["TypeIIPExcessSED", "TypeIIPSED"]
 
@@ -43,7 +43,7 @@ class TypeIIPSED(SpectralModel):
     r"""
     Type IIP supernova SED: a cut-off power-law shock-cooling decline, a plateau and a radioactive tail.
 
-    With a cooling blackbody photosphere.
+    With a cooling, line-blanketed blackbody photosphere.
 
     .. math::
 
@@ -121,6 +121,10 @@ class TypeIIPSED(SpectralModel):
          - :math:`t_T`
        * - ``k_T``
          - :math:`k_T`
+       * - ``break_frequency``
+         - :math:`\nu_\mathrm{break}`
+       * - ``beta``
+         - :math:`\beta`
 
     Notes
     -----
@@ -136,11 +140,25 @@ class TypeIIPSED(SpectralModel):
     although in the data :math:`L_1` and :math:`L_p` are correlated, so the population is somewhat broader than
     the observed one at fixed epoch pairs.
 
+    The blackbody is line-blanketed: the UV blueward of ``break_frequency`` is suppressed as :math:`\nu^{-\beta}`
+    (see :class:`~uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum`), and the shape is divided by
+    its integral (the shared table of
+    :func:`~uvex_transients.models._util_functions.get_modified_blackbody_norm_interpolator`) so that
+    :math:`L_\mathrm{bol}(t)` is unchanged. Both parameters start at the Type Ia values. The cooling-law
+    parameters below were fit before the blanketing was added.
+
     ``T_floor``, ``t_T`` and ``k_T`` were fit against the Swift/UVOT UVW1 light curves of the Type IIP SNe in
     ``test_data/transients`` (epochs from 2 to 50 d), with ``T0`` held at its prior and the optical temperatures of
     SN 1999em, SN 2003hn, SN 2012aw, SN 2012A and SN 2008in weighted down. The UVOT light curves are mostly timed
     from discovery rather than explosion, which the calibration treats as a random 0 to 5 d lag.
+
+    After the line blanketing was added, ``T_floor`` was raised by hand to :math:`10^{3.74}\,\mathrm{K}` (about
+    5500 K, close to the hydrogen-recombination temperature) and ``k_T`` lowered to 1.5 to 2.0, giving a warmer,
+    smoother cooling transition than the fit alone.
     """
+
+    SMOOTHING: ClassVar[float] = 10.0
+    """float: The smoothing parameter :math:`s` of the line-blanketing break, fixed for every instance."""
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "L_1": Parameter(
@@ -202,7 +220,7 @@ class TypeIIPSED(SpectralModel):
             latex=r"T_0",
         ),
         "T_floor": Parameter(
-            prior=NormalPrior(mean=3.65, sigma=0.04),
+            prior=NormalPrior(mean=3.74, sigma=0.04),
             scale=1.0 * u.K,
             transform="log10",
             description="Asymptotic late-time photospheric temperature (T(t) -> T_floor as t -> infinity).",
@@ -216,10 +234,22 @@ class TypeIIPSED(SpectralModel):
             latex=r"t_T",
         ),
         "k_T": Parameter(
-            prior=UniformPrior(lower=2.0, upper=2.8),
+            prior=UniformPrior(lower=1.5, upper=2.0),
             scale=1.0,
             description="Steepness of the photospheric cooling transition.",
             latex=r"k_T",
+        ),
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=5.0),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
         ),
     }
 
@@ -319,9 +349,7 @@ class TypeIIPSED(SpectralModel):
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
         r"""
-        :math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.
-
-        Evaluated at this ``t``'s own cooling-law temperature.
+        :math:`\log S(\nu, t)`, the unit-integral line-blanketed blackbody at this ``t``'s own temperature.
 
         Parameters
         ----------
@@ -338,7 +366,9 @@ class TypeIIPSED(SpectralModel):
             The natural log of the normalized spectral shape, in 1/Hz.
         """
         temperature = cls._temperature_cgs(t, **parameters)
-        return BlackbodySpectrum._eval(nu, temperature=temperature)
+        return modified_blackbody_unit_shape_log_cgs(
+            nu, temperature, parameters["break_frequency"], parameters["beta"], cls.SMOOTHING
+        )
 
     # -------------------------------------- #
     # Spectral Luminosity: L_nu(nu, t)       #
@@ -411,13 +441,13 @@ class TypeIIPExcessSED(TypeIIPSED):
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "t0": Parameter(
-            prior=UniformPrior(lower=2, upper=5),
+            prior=UniformPrior(lower=0.5, upper=3.5),
             scale=1.0 * u.day,
             description="Explosion/rise reference epoch.",
             latex=r"t_0",
         ),
         "tau_rise": Parameter(
-            prior=NormalPrior(mean=-0.5, sigma=0.2),
+            prior=NormalPrior(mean=-0.2, sigma=0.15),
             scale=1.0 * u.day,
             transform="log10",
             description="Rise timescale.",
@@ -518,6 +548,18 @@ class TypeIIPExcessSED(TypeIIPSED):
             scale=1.0,
             description="Decay power-law index of the reheating bump.",
             latex=r"\alpha_\mathrm{bump}",
+        ),
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=3.5),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
         ),
     }
 

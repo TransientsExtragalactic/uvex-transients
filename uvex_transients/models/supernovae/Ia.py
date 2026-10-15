@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from astropy import units as u
 
-from uvex_transients.models.arnett import ArnettDecaySED
+from uvex_transients.models.arnett import LineBlanketedArnettDecaySED
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import (
     ConstantPrior,
@@ -16,12 +16,13 @@ from uvex_transients.models.core.priors import (
 __all__ = ["TypeIaSED"]
 
 
-class TypeIaSED(ArnettDecaySED):
+class TypeIaSED(LineBlanketedArnettDecaySED):
     r"""
     Type Ia supernova SED, with priors fit to a ZTF sample of SNe Ia.
 
-    Reuses :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s radioactive-decay Arnett diffusion and
-    floored-photosphere blackbody entirely; only :attr:`_DEFAULT_PARAMETERS` differs. The priors follow
+    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely (radioactive-decay Arnett
+    diffusion, floored photospheric temperature and a line-blanketed blackbody); only
+    :attr:`_DEFAULT_PARAMETERS` differs. The priors follow
     :footcite:t:`sarin2026` (Sarin et al. 2026, a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and ``M_ej``
     are the population-level Gaussians from that paper's hierarchical Arnett-model fit
     (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;
@@ -56,6 +57,12 @@ class TypeIaSED(ArnettDecaySED):
        * - ``T_floor``
          - :math:`T_\mathrm{floor}`
          - Minimum photospheric temperature.
+       * - ``break_frequency``
+         - :math:`\nu_\mathrm{break}`
+         - Frequency blueward of which line blanketing suppresses the flux.
+       * - ``beta``
+         - :math:`\beta`
+         - Power-law index of the suppression above the break.
 
     References
     ----------
@@ -98,5 +105,17 @@ class TypeIaSED(ArnettDecaySED):
             scale=1 * u.K,
             description="Minimum photospheric temperature.",
             latex=r"T_\mathrm{floor}",
+        ),
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=5.0),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
         ),
     }

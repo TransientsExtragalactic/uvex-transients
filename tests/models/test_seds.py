@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from astropy import units as u
 
-from uvex_transients.models.arnett import ArnettDecaySED
+from uvex_transients.models.arnett import ArnettDecaySED, LineBlanketedArnettDecaySED
 from uvex_transients.models.core.base import ComposedSpectralModel, SpectralModel
 from uvex_transients.models.core.priors import PowerLawPrior
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
@@ -49,6 +49,10 @@ class TestArnettMagnetarSpindownSED(SpectralModelContract):
 
 class TestArnettDecaySED(SpectralModelContract):
     model_class = ArnettDecaySED
+
+
+class TestLineBlanketedArnettDecaySED(SpectralModelContract):
+    model_class = LineBlanketedArnettDecaySED
 
 
 class TestTypeIaSED(SpectralModelContract):

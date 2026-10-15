@@ -51,7 +51,20 @@ def test_missing_object_raises(archive_path):
 def test_packaged_archive():
     """The packaged archive is detection-only and carries the expected columns."""
     archive = SwiftSNeArchive()
-    assert len(archive.objects()) == 311
+    assert len(archive.objects()) == 336
+    assert archive.objects(sn_type="IIP+Excess") == ["SN2023ixf", "SN2024ggi"]
     lc = archive.lightcurve("Gaia16apd", "UVM2")
     assert len(lc) == 12
     assert lc.colnames == ["t", "L", "L_err", "mjd"]
+
+
+def test_packaged_archive_hinkle_slsne():
+    """The recalibrated Hinkle+2023 SLSNe-I are present, detection-only, and timed from TNS discovery."""
+    archive = SwiftSNeArchive()
+    assert archive.meta("SN2018ibb")["t0_source"] == "discovery_TNS"
+    assert archive.meta("LSQ14mo")["t0_source"] == "first_swift"
+    lc = archive.lightcurve("SN2018ibb", "UVW1")
+    assert len(lc) == archive.meta("SN2018ibb", "UVW1")["n_det"] == 20
+    assert (lc["L"] > 0).all()
+    assert lc["t"].value == pytest.approx(lc["mjd"].value - archive.meta("SN2018ibb")["t0_mjd"])
+    assert "DES15S2nr" not in archive.objects()  # no UV detections
