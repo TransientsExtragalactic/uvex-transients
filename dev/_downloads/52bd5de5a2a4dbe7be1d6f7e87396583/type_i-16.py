@@ -2,60 +2,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from uvex_transients.missions import uvex_fast as uvex
-from uvex_transients.transients.supernovae import TypeIcBLSNe
-from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
+from uvex_transients.models.supernovae import TypeIcBLSED as SEDClass
+from uvex_transients.utils.lightcurve_archive import LightcurveArchive
 
 rng = np.random.default_rng(20260924)
-n_samples = 1000
+n_samples = 300
 
-sn = TypeIcBLSNe()
-redshift = sn.sample_event_redshift(n_samples, rng=rng)
-params = sn.sed.sample_parameters(size=n_samples, rng=rng)
-params_grid = {pname: value[:, None] for pname, value in params.items()}
+params = SEDClass().sample_parameters(size=n_samples, rng=rng)
+params_grid = {name: value[:, None] for name, value in params.items()}
+archive = LightcurveArchive()
 
-# The all-sky rate, with no survey footprint applied.
-all_sky_rate = sn.all_sky_rate
+t = np.geomspace(0.1, 1000, 400) * u.day
+L_bol = SEDClass.eval_bolometric(t, **params_grid)
+T = SEDClass.temperature(t, **params_grid)
 
-t_grid_rest = np.geomspace(0.1, 100, 300) * u.day
-t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
-z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
+fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
 
-visible_counts = {}
-for band_name, bandpass in uvex.detector.bandpasses.items():
-    mag_curve = sn.sed.mag_bandpass(
-        bandpass,
-        t_obs_grid,
-        redshift=z_grid_bcast,
-        **params_grid,
-    ).to_value(u.ABmag)
-    magnitudes = np.nanmin(mag_curve, axis=1)
+for row in range(n_samples):
+    ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.15)
+    ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
 
-    visible = magnitudes < 24.5
-    visible_counts[band_name] = int(np.count_nonzero(visible))
-
-    print(
-        f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
-        f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
+icbl_events = [name for name in archive.events("supernovae/Ic-BL") if name.endswith("srinivasaragavan2024")]
+for i, name in enumerate(icbl_events):
+    lbol_obs = archive.table("supernovae/Ic-BL", name, "L_bol")
+    ax_L.plot(
+        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+        color="k", lw=0.8, alpha=0.4,
+        label="Srinivasaragavan+24 (n=%d)" % len(icbl_events) if i == 0 else None,
     )
 
-# Plot all-sky visible rates, with MC (statistical) and rate (systematic)
-# uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
-band_names = list(visible_counts)
+ax_L.set_xscale("log")
+ax_L.set_yscale("log")
+ax_L.set_xlim(1e-1, 1e3)
+ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
+ax_L.set_title(f"Type Ic-BL: simulated bolometric light curves (n={n_samples})")
+ax_L.legend(loc="lower left", fontsize=8, frameon=False)
 
-fig, ax = plt.subplots(figsize=(5, 4))
-plot_rate_bars(
-    ax,
-    band_names,
-    [visible_counts[band] for band in band_names],
-    n_samples,
-    all_sky_rate,
-    rate_ci=sn.RATE_CI,
-    color=[get_band_color(band) for band in band_names],
-)
-ax.set_yscale("log")
-ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
-ax.set_title("Peak-visible Type Ic-BL rate")
-add_funnel_legend(ax, loc="lower right")
+ax_T.set_xscale("log")
+ax_T.set_yscale("log")
+ax_T.set_xlim(1e-1, 1e3)
+ax_T.set_xlabel("Time since explosion [days]")
+ax_T.set_ylabel("Photospheric temperature [K]")
+ax_T.set_title(f"Type Ic-BL: simulated photospheric temperatures (n={n_samples})")
 
 fig.tight_layout()

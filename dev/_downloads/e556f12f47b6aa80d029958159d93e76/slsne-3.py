@@ -1,19 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
-from uvex_transients.missions import uvex_fast as uvex
-from uvex_transients.transients.supernovae import MagnetarSLSNe
-from uvex_transients.utils.plotting import plot_detection_horizon
+from uvex_transients.models.supernovae import ArnettMagnetarSpindownSED
+from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
-transient = MagnetarSLSNe()
-curve, grid = transient.get_detection_horizon(
-    np.arange(22.0, 27.01, 0.5),
-    uvex.detector.bandpasses,
-    z_min=transient.redshift_limit / 4,
-    z_max=4 * transient.redshift_limit,
-    n_z=45,
-    rng=0,
-    progress=False,
-)
-plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+plot_swift_uv_calibration(ArnettMagnetarSpindownSED, "SLSN-I", min_points=3, band="UVW2")
 plt.show()

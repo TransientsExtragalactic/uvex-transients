@@ -1,7 +1,19 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
-from uvex_transients.models.supernovae import TypeIcBLSED
-from uvex_transients.utils.plotting import plot_swift_uv_calibration
+from uvex_transients.missions import uvex_fast as uvex
+from uvex_transients.transients.supernovae import TypeIcSNe
+from uvex_transients.utils.plotting import plot_detection_horizon
 
-plot_swift_uv_calibration(TypeIcBLSED, "Ic-BL", min_points=3)
+transient = TypeIcSNe()
+curve, grid = transient.get_detection_horizon(
+    np.arange(22.0, 27.01, 0.5),
+    uvex.detector.bandpasses,
+    z_min=transient.redshift_limit / 4,
+    z_max=4 * transient.redshift_limit,
+    n_z=45,
+    rng=0,
+    progress=False,
+)
+plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
 plt.show()

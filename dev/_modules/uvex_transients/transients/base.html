@@ -861,6 +861,14 @@
     <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_Z_GRID_SIZE</span> <span class="o">=</span> <span class="mi">100</span>
 
+    <span class="n">HORIZON_T_MIN</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""~astropy.units.Quantity | None: Earliest rest-frame time of the `horizon_curve` light-curve grid.</span>
+
+<span class="sd">    `None` (the default) uses `~uvex_transients.transients.horizon.T_MIN`. Set it on a class whose SED is only</span>
+<span class="sd">    meaningful after some epoch, so that earlier times do not set the horizon (for example a shock-cooling component</span>
+<span class="sd">    whose luminosity grows without bound toward :math:`t\\to0`).</span>
+<span class="sd">    """</span>
+
     <span class="n">HAS_STORED_HORIZON_CURVE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="w">    </span><span class="sd">"""bool: Whether the package ships a stored `horizon_curve` file for this class.</span>
 
