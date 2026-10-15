@@ -76,7 +76,7 @@ underlying physics in any detail.
       double-pulse phenomenological model spanning single- and double-peaked light curves.
 
       +++
-      :math:`z \le 0.29`-:math:`1.1` · 100-200 day window
+      :math:`z \le 0.50`-:math:`1.8` · 100-200 day window
 
    .. grid-item-card:: Type I Supernovae
       :link: type_i
@@ -89,7 +89,7 @@ underlying physics in any detail.
       physics as the SLSNe-I model below.
 
       +++
-      :math:`z \le 0.47`-:math:`0.77` · 100-365 day window
+      :math:`z \le 0.17`-:math:`0.30` · 100-365 day window
 
 Detailed Physical Models
 --------------------------

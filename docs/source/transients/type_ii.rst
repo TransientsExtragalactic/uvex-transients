@@ -10,9 +10,11 @@ weeks-to-months-long luminosity "plateau" as a recombination front recedes throu
 followed by a radioactive tail powered by :math:`^{56}\mathrm{Co}` decay. A subset show a brighter,
 hotter, faster early excess on top of this, attributed to shock breakout through and/or collisional
 heating of close circumstellar material -- IXF/GGI-like objects, after the prototypes SN 2023ixf
-and SN 2024ggi. Both IIP variants share the same light curve and differ in their parameter priors;
-the excess variant's photospheric temperature has an additional early reheating bump. Type IIb events, which lost most but not all of their hydrogen, are modeled with
-a different, double-pulse form. Each is implemented as its own transient population in a tab below.
+and SN 2024ggi. The ordinary IIP model is a cut-off power-law shock-cooling decline, a plateau and a
+radioactive tail; the excess variant instead keeps an earlier two-exponential light curve with a logistic rise,
+and a photospheric temperature with an additional early reheating bump. Both have a line-blanketed
+blackbody photosphere, calibrated against Swift/UVOT UVW1 and UVW2 light curves. Type IIb events, which lost most but not all of their hydrogen, are modeled as
+the sum of a shock cooling flash and a radioactively powered main peak. Each is implemented as its own transient population in a tab below.
 (Hydrogen-free Type Ib and Ic supernovae are covered on the :ref:`Type I page <transients_type_i>`.)
 
 .. tab-set::
@@ -46,7 +48,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.95`
+           - :math:`z = 0.50`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -60,49 +62,79 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: SED Model
 
-      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` is two shared-onset exponential
-      components (an early cooling-phase decline onto a constant plateau) plus a switched
-      radioactive tail, together with a single-power-law cooling photospheric temperature:
+      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` is a cut-off power-law shock-cooling
+      decline, a hydrogen-recombination plateau and a radioactive tail, with a cooling, line-blanketed
+      blackbody photosphere:
 
       .. math::
 
-          L_\mathrm{bol}(t) = S_0(t)\,\bigl[1-S_P(t)\bigr]
-          \Bigl[L_\mathrm{pk}\,e^{-(t-t_0)/\tau_\mathrm{cool}} + L_p\Bigr]
+          L_\mathrm{bol}(t) = L_1\left(\frac{t}{1\,\mathrm{d}}\right)^{-\alpha} e^{-t/t_c}
+          + \bigl[1-S_P(t)\bigr]L_p
           + S_P(t)\, L_\mathrm{Co}\, e^{-(t-t_P)/\tau_\mathrm{Co}},
 
-      with two logistic switches
+      with the plateau-end switch
 
       .. math::
 
-          S_0(t) = \frac{1}{1+e^{-(t-t_0)/\tau_\mathrm{rise}}}, \qquad
           S_P(t) = \frac{1}{1+e^{-(t-t_P)/\tau_\mathrm{drop}}}.
 
-      :math:`S_0` turns the photospheric emission on at the explosion/rise epoch :math:`t_0`;
-      :math:`S_P` turns it back off -- and the radioactive tail on -- at the plateau-end epoch
-      :math:`t_P`. Between the rise and :math:`t_P`, :math:`L_\mathrm{bol}` is an early
-      cooling-phase decline from :math:`L_\mathrm{pk}` onto a constant plateau :math:`L_p`; after
-      :math:`t_P` it switches to a pure radioactive-tail exponential.
+      The first term is the shock-cooling decline of the extended envelope: a power law in time, cut off
+      exponentially once the emission comes from deeper in the envelope and hydrogen starts to recombine.
+      The cutoff has to sit inside this term, because adding a constant plateau to a bare power law can only
+      make the curve flatter. The second term is the hydrogen-recombination plateau at :math:`L_p`, and
+      :math:`S_P` turns it off, and the radioactive tail on, at the plateau-end epoch :math:`t_P`. The tail is
+      a pure :math:`^{56}\mathrm{Co}` exponential from :math:`L_\mathrm{Co}` at :math:`t_P`.
 
-      The temperature follows the same cooling law as the Type IIb and Villar supernova models:
+      There is no rise: the bolometric luminosity is largest at the earliest times, as it is for most of the
+      SNe II in the calibration sample. The power law is evaluated no earlier than :math:`0.1\ \mathrm{d}`, and
+      :math:`L_\mathrm{bol}` is zero before explosion. The planar shock-breakout phase,
+      :math:`L\propto t^{-4/3}` for the first few hours, is not modeled.
+
+      The photospheric temperature falls from a hot start to a cool floor as a logistic in :math:`\ln t`:
 
       .. math::
 
-          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
+          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\,\frac{1}{1 + (t/t_T)^{k_T}}.
 
-      It starts at :math:`T_0 \sim 5\times10^4` K at :math:`t=0`, the shock-heated photosphere, and
-      cools monotonically toward the hydrogen-recombination temperature :math:`T_\mathrm{floor}`
-      (:math:`\sim5.4\times10^3` K). The data only constrain :math:`T` from a few days after
-      explosion, where :math:`T - T_\mathrm{floor} \propto (T_0 - T_\mathrm{floor})\,
-      \tau_T^{\alpha_T}\,t^{-\alpha_T}`, so :math:`T_0` and :math:`\tau_T` are degenerate and
-      :math:`T_0` is set by the expected early-time temperature.
+      It sits near :math:`T_0` until a fraction of :math:`t_T`, is halfway to the floor at :math:`t_T`, and
+      falls as :math:`t^{-k_T}` afterwards. :math:`T_0` is set by expectation rather than by data: the
+      shock-heated photosphere is expected to start at :math:`\sim5\times10^4` K or hotter, and the prior is
+      centered on the cooler end of that. The transition epoch (:math:`\sim6` d) and steepness are tied to the
+      Swift/UVOT UVW1 light curves, which put the photosphere at :math:`\sim10^4` K by
+      :math:`\sim10`-:math:`15` d.
+
+      A plain blackbody does not describe the UV of a Type II SN well. Line blanketing makes the UV fainter
+      than a blackbody at the optical temperature, and the photosphere here is therefore line-blanketed in the
+      same way as the :ref:`Type Ia SED <transients_type_i>` (see its SED Model section for the form of the
+      suppression): the UV blueward of :math:`\nu_\mathrm{break}` falls as :math:`\nu^{-\beta}`, and the shape
+      is divided by its integral at each epoch, so that :math:`L_\mathrm{bol}(t)` is unchanged and the flux
+      removed from the UV is returned redward of the break. ``break_frequency`` (:math:`0.75\times10^{15}`
+      Hz) and ``beta`` (5) are fixed at the Type Ia values.
+
+      The temperature is a compromise between the UV and the optical data, and not a fit to the optical
+      temperatures. ``T_floor``, ``t_T`` and ``k_T`` were fit against the Swift/UVOT UVW1 light curves of
+      the Type IIP SNe in ``test_data/transients`` (epochs from 2 to 50 d), with ``T0`` held at its prior and
+      the optical temperatures of SN 1999em, SN 2003hn, SN 2012aw, SN 2012A and SN 2008in weighted down. The
+      UVOT light curves are mostly timed from discovery rather than explosion, which the calibration treats
+      as a random 0 to 5 d lag. That fit predates the line blanketing. After it was added, ``T_floor`` was
+      raised by hand to :math:`10^{3.74}\ \mathrm{K}` (about 5500 K, close to the hydrogen-recombination
+      temperature) and ``k_T`` lowered to between 1.5 and 2.0, giving a warmer, smoother cooling transition
+      than the fit alone.
 
       .. dropdown:: Parameter priors
 
-         Light-curve priors (``t0`` through ``tau_Co``) come from fitting the light-curve model to
-         SN 1999em and SN 2003hn. ``T0`` is set to the expected early-time temperature, and the
-         other temperature-law priors (``T_floor`` through ``alpha_T``) are tuned so that every
-         temperature point in the aggregate Type IIP dataset in the plot below falls inside the
-         prior band.
+         The light-curve priors come from fitting the bolometric form above to each curve in the Type IIP
+         calibration set (the curves of :footcite:t:`dallora2014`, :footcite:t:`faran2018`,
+         :footcite:t:`bersten2009` and the 35 comparison SNe II of :footcite:t:`jacobsongalan2024`), keeping
+         the 28 with a resolved plateau drop and a good fit, and then adjusting the prior widths until the
+         prior-predictive spread of :math:`L_\mathrm{bol}` matched the observed spread at epochs from 2 to
+         280 d. ``tau_drop`` is the median of the per-object fits. The fits prefer :math:`\alpha\simeq0` for
+         most objects (a plain exponential decline with :math:`t_c\sim14` d), so ``alpha`` is only bounded to
+         :math:`[0, 0.35]`. ``L_1`` is a truncated normal, limited to the range of the fitted values, which
+         keeps the bright tail of the population within what is observed. The priors are independent,
+         although in the data :math:`L_1` and :math:`L_p` are correlated, so the population is somewhat broader
+         than the observed one at fixed epoch pairs. The temperature-law and line-blanketing priors are
+         described above.
 
          .. list-table::
             :header-rows: 1
@@ -112,37 +144,33 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Symbol
               - Prior
               - Notes
-            * - ``t0``
-              - :math:`t_0`
-              - Uniform(4 d, 20 d)
-              - Explosion/rise reference epoch.
-            * - ``tau_rise``
-              - :math:`\tau_\mathrm{rise}`
-              - Normal(:math:`\log_{10}(\tau_\mathrm{rise}/\mathrm{d})`; mean=0, :math:`\sigma`\=0.2)
-              - Rise timescale (median 1 d).
-            * - ``L_pk``
-              - :math:`L_\mathrm{pk}`
-              - Normal(:math:`\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})`; mean=42.48, :math:`\sigma`\=0.3)
-              - Early cooling-phase peak luminosity scale (median :math:`\sim3\times10^{42}` erg/s).
-            * - ``tau_cool``
-              - :math:`\tau_\mathrm{cool}`
-              - Uniform(4 d, 10 d)
-              - Early cooling-phase decay timescale.
+            * - ``L_1``
+              - :math:`L_1`
+              - TruncatedNormal(:math:`\log_{10}(L_1/\mathrm{erg\,s^{-1}})`; mean=42.45, :math:`\sigma`\=1.1, bounds 41.3 to 43.5)
+              - Shock-cooling luminosity scale: the power law's value at 1 d, before the cutoff.
+            * - ``alpha``
+              - :math:`\alpha`
+              - Uniform(0, 0.35)
+              - Shock-cooling power-law decay index.
+            * - ``t_c``
+              - :math:`t_c`
+              - Uniform(9 d, 13 d)
+              - Exponential cutoff time of the shock-cooling decline.
             * - ``L_p``
               - :math:`L_p`
-              - Normal(:math:`\log_{10}(L_p/\mathrm{erg\,s^{-1}})`; mean=42.1, :math:`\sigma`\=0.2)
-              - Plateau luminosity.
+              - Normal(:math:`\log_{10}(L_p/\mathrm{erg\,s^{-1}})`; mean=41.76, :math:`\sigma`\=0.35)
+              - Plateau luminosity (median :math:`\sim6\times10^{41}` erg/s).
             * - ``t_P``
               - :math:`t_P`
-              - Uniform(50 d, 150 d)
+              - Uniform(75 d, 135 d)
               - Plateau-end / radioactive-tail-onset epoch.
             * - ``tau_drop``
               - :math:`\tau_\mathrm{drop}`
-              - Fixed (10.5 d)
+              - Fixed (7 d)
               - Plateau-end transition width.
             * - ``L_Co``
               - :math:`L_\mathrm{Co}`
-              - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41, :math:`\sigma`\=0.3)
+              - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41.03, :math:`\sigma`\=0.35)
               - Radioactive-tail luminosity at ``t_P``.
             * - ``tau_Co``
               - :math:`\tau_\mathrm{Co}`
@@ -151,20 +179,29 @@ a different, double-pulse form. Each is implemented as its own transient populat
                 time.
             * - ``T0``
               - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.7, :math:`\sigma`\=0.1)
+              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.7, :math:`\sigma`\=0.15)
               - Temperature at :math:`t=0` (median :math:`5\times10^4` K). Not constrained by data.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
-              - Normal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.73, :math:`\sigma`\=0.08)
-              - Late-time recombination temperature (median :math:`5.4\times10^3` K).
-            * - ``tau_T``
-              - :math:`\tau_T`
-              - Uniform(0.7 d, 2 d)
-              - Cooling timescale.
-            * - ``alpha_T``
-              - :math:`\alpha_T`
-              - Uniform(0.9, 1.2)
-              - Cooling power-law index.
+              - Normal(:math:`\log_{10}(T_\mathrm{floor}/\mathrm{K})`; mean=3.74, :math:`\sigma`\=0.04)
+              - Late-time temperature (median :math:`5.5\times10^3` K). Raised by hand after the line blanketing was added.
+            * - ``t_T``
+              - :math:`t_T`
+              - Normal(:math:`\log_{10}(t_T/\mathrm{d})`; mean=0.77, :math:`\sigma`\=0.2)
+              - Epoch at which the photosphere is halfway from :math:`T_0` to :math:`T_\mathrm{floor}`
+                (median :math:`\sim6` d). Fit to the Swift/UVOT UVW1 light curves.
+            * - ``k_T``
+              - :math:`k_T`
+              - Uniform(1.5, 2.0)
+              - Steepness of the cooling transition. Lowered by hand after the line blanketing was added.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed (:math:`0.75\times10^{15}` Hz)
+              - Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed (5)
+              - Power-law index of the line-blanketing suppression. The Type Ia value.
 
       .. rubric:: Simulated Light Curves
 
@@ -172,7 +209,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
       light curves and temperatures of several Type IIP SNe :footcite:p:`dallora2014,faran2018`. The
       bolometric panel also shows, in grey, the light curves of the 35 "comparison" SNe II of
-      :footcite:t:`jacobsongalan2024`, which show no early-time flash features.
+      :footcite:t:`jacobsongalan2024`, which show no early-time flash features. The temperature law was set
+      by the UV data (see above), so the temperature panel is not a fit to the optical temperatures shown.
 
       .. plot::
          :include-source: false
@@ -262,13 +300,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: UV Calibration
 
-      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
       Type IIP supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
-      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
       :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
       legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
+
+      The cooling-law parameters ``T_floor``, ``t_T`` and ``k_T`` were fit against the UVW1 light curves (see the SED
+      Model above), and the line-blanketing parameters are those of Type Ia, unchanged. 11 Type IIP supernovae have at
+      least four UVW1 detections, and 9 have at least four UVW2 detections.
 
       .. plot::
          :include-source: false
@@ -278,7 +320,18 @@ a different, double-pulse form. Each is implemented as its own transient populat
          from uvex_transients.models.supernovae import TypeIIPSED
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
-         plot_swift_uv_calibration(TypeIIPSED, "IIP")
+         plot_swift_uv_calibration(TypeIIPSED, "IIP", band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIPSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIPSED, "IIP", band="UVW2")
          plt.show()
 
       .. rubric:: Observability Summary
@@ -418,7 +471,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :attr:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe.RATE_CI` carries
              exactly the same relative uncertainty as ordinary Type IIP's.
          * - Redshift limit
-           - :math:`z = 1.1`
+           - :math:`z = 0.62`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -431,7 +484,9 @@ a different, double-pulse form. Each is implemented as its own transient populat
       .. rubric:: SED Model
 
       :class:`~uvex_transients.models.supernovae.IIp.TypeIIPExcessSED` is a subclass of
-      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`: the same light curve,
+      :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` that keeps the earlier light curve, two
+      shared-onset exponentials (an early cooling-phase decline onto a constant plateau) plus a switched
+      radioactive tail,
 
       .. math::
 
@@ -439,11 +494,12 @@ a different, double-pulse form. Each is implemented as its own transient populat
           \Bigl[L_\mathrm{pk}\,e^{-(t-t_0)/\tau_\mathrm{cool}} + L_p\Bigr]
           + S_P(t)\, L_\mathrm{Co}\, e^{-(t-t_P)/\tau_\mathrm{Co}},
 
-      with different priors: an earlier, faster rise (``t0``, ``tau_rise``) and a higher peak
-      luminosity (``L_pk``), shifted to match the brighter, faster early cooling phase seen in
-      SN 2023ixf and SN 2024ggi, rather than the smoother early decline of ordinary Type IIP SNe.
+      with logistic switches :math:`S_0(t) = [1+e^{-(t-t_0)/\tau_\mathrm{rise}}]^{-1}` and
+      :math:`S_P(t) = [1+e^{-(t-t_P)/\tau_\mathrm{drop}}]^{-1}`. The logistic rise at :math:`t_0` and the bright
+      early cooling-phase peak :math:`L_\mathrm{pk}` describe the brighter, faster early phase seen in
+      SN 2023ixf and SN 2024ggi, rather than the smooth, monotonic early decline of ordinary Type IIP SNe.
 
-      The temperature law differs. It is the cooling law of the ordinary Type IIP, now describing a
+      The temperature law also differs. It is a single-power-law cooling law, describing a
       hot initial flash (:math:`T_0 \sim 10^5` K) that has cooled by :math:`\sim1` d, plus a reheating
       bump that reproduces the rise of the photospheric temperature to :math:`\sim2\times10^4` K at
       :math:`\sim3` d seen in both objects:
@@ -460,12 +516,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
       temperature is therefore not monotonic: it cools from the flash to a trough of
       :math:`\sim1.3\times10^4` K at :math:`\sim1` d, rises to the bump, and cools again.
 
+      The blackbody is line-blanketed as for ordinary Type IIP (see the Type IIP tab and the
+      :ref:`Type Ia SED <transients_type_i>`), with the same ``break_frequency`` of
+      :math:`0.75\times10^{15}` Hz but a weaker suppression, ``beta`` = 3.5 instead of 5, tuned against the
+      Swift/UVOT light curves of SN 2023ixf and SN 2024ggi. The shape is divided by its integral, so
+      :math:`L_\mathrm{bol}(t)` is unchanged.
+
       .. dropdown:: Parameter priors
 
          Hand-tuned against SN 2023ixf :footcite:p:`hsu2025` and SN 2024ggi
          :footcite:p:`chen2024`, the only two objects of this kind currently in
-         ``test_data/transients``. Parameters not listed below (``tau_drop``, ``tau_Co``) are
-         fixed to the same values as ordinary Type IIP. There is no temperature data before
+         ``test_data/transients``. There is no temperature data before
          :math:`\sim0.8` d, so the flash parameters (``T0``, ``tau_T``, ``alpha_T``) are set by
          expectation. ``T_floor`` and the bump parameters come from fits to the two objects
          (with ``beta_bump`` only bounded below, :math:`\gtrsim5`).
@@ -484,8 +545,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Explosion/rise reference epoch.
             * - ``tau_rise``
               - :math:`\tau_\mathrm{rise}`
-              - Normal(:math:`\log_{10}(\tau_\mathrm{rise}/\mathrm{d})`; mean=-0.35, :math:`\sigma`\=0.15)
-              - Rise timescale (median :math:`\sim0.45` d).
+              - Normal(:math:`\log_{10}(\tau_\mathrm{rise}/\mathrm{d})`; mean=-0.2, :math:`\sigma`\=0.15)
+              - Rise timescale (median :math:`\sim0.63` d).
             * - ``L_pk``
               - :math:`L_\mathrm{pk}`
               - Normal(:math:`\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})`; mean=43.3, :math:`\sigma`\=0.25)
@@ -502,10 +563,18 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - :math:`t_P`
               - Uniform(50 d, 150 d)
               - Plateau-end / radioactive-tail-onset epoch.
+            * - ``tau_drop``
+              - :math:`\tau_\mathrm{drop}`
+              - Fixed (10.5 d)
+              - Plateau-end transition width.
             * - ``L_Co``
               - :math:`L_\mathrm{Co}`
               - Normal(:math:`\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})`; mean=41.5, :math:`\sigma`\=0.3)
               - Radioactive-tail luminosity at ``t_P``.
+            * - ``tau_Co``
+              - :math:`\tau_\mathrm{Co}`
+              - Fixed (111.4 d)
+              - Radioactive-tail decay timescale, fixed to the :math:`^{56}\mathrm{Co}` e-folding time.
             * - ``T0``
               - :math:`T_0`
               - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=5.0, :math:`\sigma`\=0.1)
@@ -538,6 +607,14 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - :math:`\alpha_\mathrm{bump}`
               - Uniform(1.6, 2.4)
               - Decay power-law index of the bump.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed (:math:`0.75\times10^{15}` Hz)
+              - Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed (3.5)
+              - Power-law index of the line-blanketing suppression. Weaker than the ordinary Type IIP value of 5.
 
       .. rubric:: Simulated Light Curves
 
@@ -607,13 +684,16 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: UV Calibration
 
-      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
       Type IIP + Excess supernovae (SN 2023ixf and SN 2024ggi) from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
-      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
       :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
       legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
+
+      These two supernovae are the whole Swift sample for this population, and the whole sample the SED was tuned
+      against, so the comparison is not independent of the priors.
 
       .. plot::
          :include-source: false
@@ -623,7 +703,18 @@ a different, double-pulse form. Each is implemented as its own transient populat
          from uvex_transients.models.supernovae import TypeIIPExcessSED
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
-         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP+Excess")
+         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP+Excess", band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIPExcessSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP+Excess", band="UVW2")
          plt.show()
 
       .. rubric:: Observability Summary
@@ -759,8 +850,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
          The shock cooling priors are those of :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
          and the nickel priors are those of the Type Ib SED
          (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`). Neither is a fit to Type IIb events, and
-         the redshift limit and duration below were derived for an earlier, phenomenological Type IIb SED.
-         They need to be recomputed.
+         the duration below was derived for an earlier, phenomenological Type IIb SED. It needs to be
+         recomputed.
 
       .. rubric:: Quick Facts
 
@@ -785,11 +876,12 @@ a different, double-pulse form. Each is implemented as its own transient populat
              :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
              same underlying Type IIb population, just with different SED models.
          * - Redshift limit
-           - :math:`z = 0.29`
+           - :math:`z = 1.8`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
-             rounded up. See the observability summary below.
+             rounded up. Only epochs after 0.1 d are considered, because the shock cooling
+             luminosity grows without bound toward :math:`t\to0`. See the observability summary below.
          * - Duration
            - 200 days
            - --
@@ -822,7 +914,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
          The shock cooling parameters have the priors of
          :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`, and the nickel and
          line-blanketing parameters those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except
-         ``M_Ni``.
+         ``M_Ni`` and ``beta``. The line blanketing applies to the nickel component only: the shock cooling
+         component is an unblanketed blackbody.
 
          .. list-table::
             :header-rows: 1
@@ -882,8 +975,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Frequency blueward of which line blanketing suppresses the nickel component.
             * - ``beta``
               - :math:`\beta`
-              - Fixed (5.0)
-              - Power-law index of the line-blanketing suppression.
+              - Fixed (4.0)
+              - Power-law index of the line-blanketing suppression. Weaker than the Type Ib value of 5.
 
       .. rubric:: Simulated Light Curves
 
@@ -989,13 +1082,17 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: UV Calibration
 
-      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
       Type IIb supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
-      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
       :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
       legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
+
+      Only the nickel component of this SED is line-blanketed (``beta`` = 4), so the UV in the first days is
+      set by the unblanketed shock cooling component. 7 Type IIb supernovae have at least four UVW1 detections, and
+      6 have at least four UVW2 detections.
 
       .. plot::
          :include-source: false
@@ -1005,7 +1102,18 @@ a different, double-pulse form. Each is implemented as its own transient populat
          from uvex_transients.models.supernovae import TypeIIbSED
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
-         plot_swift_uv_calibration(TypeIIbSED, "IIb")
+         plot_swift_uv_calibration(TypeIIbSED, "IIb", band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIbSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIbSED, "IIb", band="UVW2")
          plt.show()
 
       .. rubric:: Observability Summary
@@ -1017,8 +1125,9 @@ a different, double-pulse form. Each is implemented as its own transient populat
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.29`, is its value at :math:`m=24.5`, rounded up and derived on a
-      finer grid than this plot's.
+      adopted above, :math:`z=1.8`, is its value at :math:`m=24.5`, rounded up and derived on a
+      finer grid than this plot's. Epochs earlier than 0.1 d are excluded from the light curve, because the
+      shock cooling luminosity of this SED grows without bound toward :math:`t\to0`.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
       fraction of detected events, and it does not include Milky Way extinction or sky position.
@@ -1028,6 +1137,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
          import numpy as np
          import matplotlib.pyplot as plt
+         from astropy import units as u
 
          from uvex_transients.missions import uvex_fast as uvex
          from uvex_transients.transients.supernovae import TypeIIbSNe
@@ -1037,6 +1147,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          curve, grid = transient.get_detection_horizon(
              np.arange(22.0, 27.01, 0.5),
              uvex.detector.bandpasses,
+             t_min=0.1 * u.day,
              z_min=transient.redshift_limit / 4,
              z_max=4 * transient.redshift_limit,
              n_z=45,
