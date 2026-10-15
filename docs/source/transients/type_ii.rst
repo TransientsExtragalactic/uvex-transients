@@ -170,7 +170,9 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       The plot below draws 300 random parameter realizations from the priors above and shows the
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
-      light curves and temperatures of several Type IIP SNe :footcite:p:`dallora2014,faran2018`.
+      light curves and temperatures of several Type IIP SNe :footcite:p:`dallora2014,faran2018`. The
+      bolometric panel also shows, in grey, the light curves of the 35 "comparison" SNe II of
+      :footcite:t:`jacobsongalan2024`, which show no early-time flash features.
 
       .. plot::
          :include-source: false
@@ -235,18 +237,49 @@ a different, double-pulse form. Each is implemented as its own transient populat
                  label=label,
              )
 
+         comparison_sne = [e for e in archive.events("supernovae/IIP") if e.endswith("_jacobsongalan2024")]
+         for i, suffix in enumerate(comparison_sne):
+             lbol_obs = archive.table("supernovae/IIP", suffix, "L_bol")
+             ax_L.plot(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 color="0.6", lw=0.6, marker=".", ms=3, alpha=0.6, zorder=3,
+                 label=f"Jacobson-Galan+24 (n={len(comparison_sne)})" if i == 0 else None,
+             )
+
          ax_L.set_xscale("log")
          ax_L.set_yscale("log")
          ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
          ax_L.set_title("Type IIP SNe: simulated bolometric light curves (n=300)")
          ax_L.legend(loc="lower left", fontsize=8, frameon=False)
          ax_L.set_ylim([1e40,None])
+         ax_L.set_xlim(0.3, 300)
          ax_T.set_yscale("log")
          ax_T.set_xlabel("Time since explosion [days]")
          ax_T.set_ylabel("Photospheric temperature [K]")
          ax_T.set_ylim([1e3,None])
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type IIP supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIPSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIPSED, "IIP")
+         plt.show()
 
       .. rubric:: Observability Summary
 
@@ -571,6 +604,27 @@ a different, double-pulse form. Each is implemented as its own transient populat
          ax_T.set_ylim([1e3,None])
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type IIP supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIPExcessSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP")
+         plt.show()
 
       .. rubric:: Observability Summary
 
@@ -940,6 +994,27 @@ a different, double-pulse form. Each is implemented as its own transient populat
          fig.tight_layout()
 
 
+
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type IIb supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIIbSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIIbSED, "IIb")
+         plt.show()
 
       .. rubric:: Observability Summary
 
