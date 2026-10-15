@@ -79,15 +79,15 @@ class TypeIIPSED(SpectralModel):
     It sits near :math:`T_0` until a fraction of :math:`t_T`, is halfway to the floor at :math:`t_T`, and
     falls as :math:`t^{-k_T}` afterwards. :math:`T_0` is set by expectation rather than by data: the shock-heated
     photosphere is expected to start at :math:`\sim5\times10^4` K or hotter, and the prior is centered on
-    :math:`10^5` K. The transition epoch and steepness are tied to the Swift/UVOT UVW1 light curves, which put the
-    photosphere at :math:`\sim10^4` K by :math:`\sim10` d.
+    the cooler end of that, :math:`5\times10^4` K. The transition epoch (:math:`\sim6` d) and steepness are tied
+    to the Swift/UVOT UVW1 light curves, which put the photosphere at :math:`\sim10^4` K by :math:`\sim10`-:math:`15` d.
 
     A blackbody does not describe the UV of a Type II SN well. Line blanketing makes the UV fainter than a
     blackbody at the optical temperature, by up to a factor of :math:`\sim3` at :math:`10`-:math:`30` d. The
     temperature is therefore a compromise between the UV and the optical data, and not a fit to the optical
     temperatures: the floor is :math:`\sim4.5\times10^3` K, about :math:`25\%` below the observed optical
-    temperature at :math:`30`-:math:`100` d. The model is somewhat too bright in the UV from about 20 d (by
-    :math:`\sim0.2` dex) and too faint at :math:`\sim10`-:math:`15` d (by :math:`\lesssim0.3` dex).
+    temperature at :math:`30`-:math:`100` d. The model is somewhat too bright in the UV from about 25 d (by
+    :math:`\sim0.15` dex) and too faint at :math:`\sim14` d (by :math:`\sim0.2` dex).
 
     .. rubric:: Parameters
 
@@ -195,7 +195,7 @@ class TypeIIPSED(SpectralModel):
             latex=r"\tau_\mathrm{Co}",
         ),
         "T0": Parameter(
-            prior=NormalPrior(mean=5.0, sigma=0.25),
+            prior=NormalPrior(mean=4.7, sigma=0.15),
             scale=1.0 * u.K,
             transform="log10",
             description="Photospheric temperature at t=0 (the T(t) -> T0 limit), the hot shock-heated photosphere.",
@@ -209,14 +209,14 @@ class TypeIIPSED(SpectralModel):
             latex=r"T_\mathrm{floor}",
         ),
         "t_T": Parameter(
-            prior=NormalPrior(mean=0.30, sigma=0.23),
+            prior=NormalPrior(mean=0.77, sigma=0.20),
             scale=1 * u.day,
             transform="log10",
             description="Epoch at which the photosphere is halfway from T0 to T_floor.",
             latex=r"t_T",
         ),
         "k_T": Parameter(
-            prior=UniformPrior(lower=1.4, upper=2.0),
+            prior=UniformPrior(lower=2.0, upper=2.8),
             scale=1.0,
             description="Steepness of the photospheric cooling transition.",
             latex=r"k_T",
