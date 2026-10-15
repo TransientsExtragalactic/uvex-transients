@@ -464,318 +464,82 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">cooling_temperature_cgs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantPrior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">UniformPrior</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.lightcurves.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">TwoComponentBazinLightcurve</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.spectra.thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlackbodySpectrum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantPrior</span><span class="p">,</span> <span class="n">TruncatedNormalPrior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.shock_cooling.morag</span><span class="w"> </span><span class="kn">import</span> <span class="n">MoragShockCoolingArnettSED</span><span class="p">,</span> <span class="n">MoragShockCoolingSED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae.Ibc</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeIbSED</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TypeIIbSED"</span><span class="p">]</span>
 
 
 <span class="c1"># ======================================== #</span>
-<span class="c1"># Model: Two-Component SED                 #</span>
+<span class="c1"># Model: Shock Cooling + Nickel            #</span>
 <span class="c1"># ======================================== #</span>
 <div class="viewcode-block" id="TypeIIbSED">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIb.TypeIIbSED.html#uvex_transients.models.supernovae.IIb.TypeIIbSED">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TypeIIbSED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIIbSED</span><span class="p">(</span><span class="n">MoragShockCoolingArnettSED</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Phenomenological Type IIb supernova SED.</span>
+<span class="sd">    Type IIb supernova SED: Morag+24 shock cooling plus a Type Ib-like nickel component.</span>
 
-<span class="sd">    This is a purely empirical light-curve shape intended to span a full Type IIb light curve.</span>
-<span class="sd">    It fits real double- and single-peaked Type IIb events better than a single modulated pulse:</span>
-
-<span class="sd">    .. math::</span>
-
-<span class="sd">        L_\mathrm{bol}(t) =</span>
-<span class="sd">        A_0\,</span>
-<span class="sd">        \frac{\exp[-(t-t_0)/\tau_{\mathrm{fall},0}]}{1 + \exp[-(t-t_0)/\tau_{\mathrm{rise},0}]}</span>
-<span class="sd">        +</span>
-<span class="sd">        A_1\,</span>
-<span class="sd">        \frac{\exp[-(t-t_1)/\tau_{\mathrm{fall},1}]}{1 + \exp[-(t-t_1)/\tau_{\mathrm{rise},1}]},</span>
-
-<span class="sd">    The photospheric temperature follows the same single-power-law cooling law used elsewhere in this package</span>
-<span class="sd">    (:func:`~uvex_transients.models._util_functions.cooling_temperature_cgs`):</span>
+<span class="sd">    The sum of two emission components, with the spectral luminosities added,</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.</span>
+<span class="sd">        L_\nu(\nu, t) = L_\nu^\mathrm{shock}(\nu, t) + L_\nu^\mathrm{Ni}(\nu, t).</span>
+
+<span class="sd">    The first is the full shock cooling SED of :footcite:t:`2024MNRAS.528.7137M`</span>
+<span class="sd">    (:class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, Eq. A7), evaluated at every epoch</span>
+<span class="sd">    without the cut at the edges of that paper's regime of validity. It dominates the first days. The second is</span>
+<span class="sd">    the line-blanketed, diffusion-limited nickel light curve of</span>
+<span class="sd">    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (:footcite:t:`1982ApJ...253..785A`), which produces</span>
+<span class="sd">    the main peak at about 20 days. Together they give the Type IIb double structure: a luminous decline after</span>
+<span class="sd">    breakout, a trough, then the rise to the nickel peak.</span>
+
+<span class="sd">    The shock cooling priors are those of</span>
+<span class="sd">    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, and the nickel priors, including</span>
+<span class="sd">    the line-blanketing parameters ``break_frequency`` and ``beta``, are those of</span>
+<span class="sd">    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except ``M_Ni``, which is lowered to a</span>
+<span class="sd">    Type IIb-like truncated normal (mean :math:`0.1\,M_\odot`, :math:`\sigma=0.07\,M_\odot`, bounds 0.01 to 0.4). See</span>
+<span class="sd">    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED` for how the two components are</span>
+<span class="sd">    combined.</span>
 
 <span class="sd">    .. rubric:: Parameters</span>
 
-<span class="sd">    .. list-table::</span>
-<span class="sd">       :header-rows: 1</span>
-<span class="sd">       :widths: 18 18 64</span>
-
-<span class="sd">       * - Parameter</span>
-<span class="sd">         - Symbol</span>
-<span class="sd">         - Description</span>
-<span class="sd">       * - ``amplitude_0``</span>
-<span class="sd">         - :math:`A_0`</span>
-<span class="sd">         - Luminosity normalization of the early, shock-cooling peak.</span>
-<span class="sd">       * - ``t0``</span>
-<span class="sd">         - :math:`t_0`</span>
-<span class="sd">         - Characteristic transition time of the early peak.</span>
-<span class="sd">       * - ``rise_0``</span>
-<span class="sd">         - :math:`\tau_{\mathrm{rise},0}`</span>
-<span class="sd">         - Logistic rise timescale of the early peak.</span>
-<span class="sd">       * - ``fall_0``</span>
-<span class="sd">         - :math:`\tau_{\mathrm{fall},0}`</span>
-<span class="sd">         - Exponential decline timescale of the early peak.</span>
-<span class="sd">       * - ``amplitude_1``</span>
-<span class="sd">         - :math:`A_1`</span>
-<span class="sd">         - Luminosity normalization of the main, radioactively powered peak.</span>
-<span class="sd">       * - ``t1``</span>
-<span class="sd">         - :math:`t_1`</span>
-<span class="sd">         - Characteristic transition time of the main peak.</span>
-<span class="sd">       * - ``rise_1``</span>
-<span class="sd">         - :math:`\tau_{\mathrm{rise},1}`</span>
-<span class="sd">         - Logistic rise timescale of the main peak.</span>
-<span class="sd">       * - ``fall_1``</span>
-<span class="sd">         - :math:`\tau_{\mathrm{fall},1}`</span>
-<span class="sd">         - Exponential decline timescale of the main peak.</span>
-<span class="sd">       * - ``T0``</span>
-<span class="sd">         - :math:`T_0`</span>
-<span class="sd">         - Photospheric temperature at t=0 (the T(t) -&gt; T0 limit, not literally T at peak).</span>
-<span class="sd">       * - ``T_floor``</span>
-<span class="sd">         - :math:`T_\mathrm{floor}`</span>
-<span class="sd">         - Asymptotic late-time photospheric temperature (T(t) -&gt; T_floor as t -&gt; infinity).</span>
-<span class="sd">       * - ``tau_T``</span>
-<span class="sd">         - :math:`\tau_T`</span>
-<span class="sd">         - Photospheric cooling timescale.</span>
-<span class="sd">       * - ``alpha_T``</span>
-<span class="sd">         - :math:`\alpha_T`</span>
-<span class="sd">         - Photospheric cooling power-law index.</span>
+<span class="sd">    The five parameters of :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED` (``v_star``,</span>
+<span class="sd">    ``radius``, ``opacity``, ``envelope_mass``, ``core_mass``) and the eight of</span>
+<span class="sd">    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (``M_Ni``, ``M_ej``, ``v_ej``, ``kappa``,</span>
+<span class="sd">    ``kappa_gamma``, ``T_floor``, ``break_frequency``, ``beta``).</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    ``amplitude_0`` -- the early peak's normalization -- is uniform in</span>
-<span class="sd">    :math:`\log_{10}(A_0/\mathrm{erg\,s^{-1}})` between 39 and 43, spanning several decades from</span>
-<span class="sd">    far fainter than the main peak up to brighter than it. This single prior covers both</span>
-<span class="sd">    populations at once: draws where the early peak ends up negligible are effectively</span>
-<span class="sd">    single-peaked Type IIb light curves, and draws where it is comparable to or exceeds the main</span>
-<span class="sd">    peak are double-peaked -- roughly a third of draws from the default priors below are</span>
-<span class="sd">    double-peaked. ``t0`` and ``T_floor`` are held fixed; every other parameter is drawn from a</span>
-<span class="sd">    broad Uniform (or, for ``amplitude_1``/``T0``, Normal-in-log) prior over an</span>
-<span class="sd">    order-of-magnitude-motivated range, not yet a fit to any specific real Type IIb event (compare</span>
-<span class="sd">    :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`, whose light-curve priors do come</span>
-<span class="sd">    from fitting real SNe).</span>
+<span class="sd">    The shock cooling formulas are not valid before :math:`t_\mathrm{min}`, where the luminosity grows without</span>
+<span class="sd">    bound toward :math:`t \to 0`. The two components are independent, so nothing ties the envelope mass of the</span>
+<span class="sd">    shock cooling to the ejecta mass of the nickel component.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
 <span class="sd">    """</span>
 
+    <span class="n">_ARNETT_SED</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">TypeIbSED</span><span class="p">]]</span> <span class="o">=</span> <span class="n">TypeIbSED</span>
+    <span class="n">_ARNETT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">TypeIbSED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">)</span>
+
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"amplitude_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">39</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">43</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
-            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity normalization of the early, shock-cooling peak; uniform in "</span>
-            <span class="s2">"log10(amplitude_0 / erg/s) between 39 and 43, spanning far fainter to brighter than "</span>
-            <span class="s2">"the main peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A_0"</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">MoragShockCoolingSED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">TypeIbSED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">,</span>
+        <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass synthesized in the explosion."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{Ni}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="s2">"t0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Characteristic transition time of the early peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"rise_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale of the early peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{rise}</span><span class="s2">,0}"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"fall_0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale of the early peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{fall}</span><span class="s2">,0}"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"amplitude_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">42.5</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
-            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity normalization of the main, radioactively powered peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A_1"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"t1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Characteristic transition time of the main peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_1"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"rise_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Logistic rise timescale of the main peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{rise}</span><span class="s2">,1}"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"fall_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">55</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Exponential decline timescale of the main peak."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_{\mathrm</span><span class="si">{fall}</span><span class="s2">,1}"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"T0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
-            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric temperature at t=0 (the T(t) -&gt; T0 limit, not literally T at peak)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_0"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">4e3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Asymptotic late-time photospheric temperature (T(t) -&gt; T_floor as t -&gt; infinity)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"tau_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric cooling timescale."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_T"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"alpha_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">4.0</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric cooling power-law index."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_T"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
-    <span class="p">}</span>
-
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="c1"># Cooling Law: T(t)                       #</span>
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_temperature_cgs</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span>
-        <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">T0</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">T_floor</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">tau_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="n">alpha_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})(1 + t/\tau_T)^{-\alpha_T}`.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        t : numpy.ndarray</span>
-<span class="sd">            Time since explosion, in seconds.</span>
-<span class="sd">        T0, T_floor, tau_T, alpha_T : float or numpy.ndarray</span>
-<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
-<span class="sd">        **_ignored</span>
-<span class="sd">            Any other model parameter values, ignored.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            :math:`T(t)`, in Kelvin.</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">cooling_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">T0</span><span class="o">=</span><span class="n">T0</span><span class="p">,</span> <span class="n">T_floor</span><span class="o">=</span><span class="n">T_floor</span><span class="p">,</span> <span class="n">timescale</span><span class="o">=</span><span class="n">tau_T</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha_T</span><span class="p">)</span>
-
-<div class="viewcode-block" id="TypeIIbSED.temperature">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIb.TypeIIbSED.temperature.html#uvex_transients.models.supernovae.IIb.TypeIIbSED.temperature">[docs]</a>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`T(t)` in Kelvin.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        t : ~astropy.units.Quantity</span>
-<span class="sd">            Time since explosion.</span>
-<span class="sd">        **parameters</span>
-<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        ~astropy.units.Quantity</span>
-<span class="sd">            :math:`T(t)`, in Kelvin.</span>
-<span class="sd">        """</span>
-        <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
-
-
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="c1"># Bolometric Luminosity: L_bol(t)         #</span>
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`\log L_\mathrm{bol}(t)`, delegated directly to :class:`TwoComponentBazinLightcurve`.</span>
-
-<span class="sd">        Exact -- no integration needed.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        t : numpy.ndarray</span>
-<span class="sd">            Time since explosion, in seconds.</span>
-<span class="sd">        **parameters</span>
-<span class="sd">            This model's parameter values, in cgs units.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
-<span class="sd">        """</span>
-        <span class="n">lightcurve_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">TwoComponentBazinLightcurve</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">TwoComponentBazinLightcurve</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">lightcurve_parameters</span><span class="p">)</span>
-
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="c1"># Normalized Spectral Shape: S(nu, t)    #</span>
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`\log S(\nu, T(t))`, delegated to :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`.</span>
-
-<span class="sd">        Evaluated at this ``t``'s own cooling-law temperature.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        nu : numpy.ndarray</span>
-<span class="sd">            Frequency, in Hz.</span>
-<span class="sd">        t : numpy.ndarray</span>
-<span class="sd">            Time since explosion, in seconds.</span>
-<span class="sd">        **parameters</span>
-<span class="sd">            This model's parameter values, in cgs units.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
-<span class="sd">        """</span>
-        <span class="n">temperature</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
-
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="c1"># Spectral Luminosity: L_nu(nu, t)        #</span>
-    <span class="c1"># -------------------------------------- #</span>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`\log L_\nu(\nu, t) = \log L_\mathrm{bol}(t) + \log S(\nu, T(t))`.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        nu : numpy.ndarray</span>
-<span class="sd">            Frequency, in Hz.</span>
-<span class="sd">        t : numpy.ndarray</span>
-<span class="sd">            Time since explosion, in seconds.</span>
-<span class="sd">        **parameters</span>
-<span class="sd">            This model's parameter values, in cgs units.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
+    <span class="p">}</span></div>
 
 </pre></div>
 

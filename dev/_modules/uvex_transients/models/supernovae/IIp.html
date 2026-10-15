@@ -470,6 +470,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_log_sigmoid</span><span class="p">,</span>
     <span class="n">cooling_temperature_cgs</span><span class="p">,</span>
+    <span class="n">modified_blackbody_unit_shape_log_cgs</span><span class="p">,</span>
     <span class="n">sigmoid_temperature_cgs</span><span class="p">,</span>
     <span class="n">temperature_bump_cgs</span><span class="p">,</span>
 <span class="p">)</span>
@@ -477,7 +478,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantPrior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">TruncatedNormalPrior</span><span class="p">,</span> <span class="n">UniformPrior</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.spectra.thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlackbodySpectrum</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TypeIIPExcessSED"</span><span class="p">,</span> <span class="s2">"TypeIIPSED"</span><span class="p">]</span>
 
@@ -505,7 +505,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Type IIP supernova SED: a cut-off power-law shock-cooling decline, a plateau and a radioactive tail.</span>
 
-<span class="sd">    With a cooling blackbody photosphere.</span>
+<span class="sd">    With a cooling, line-blanketed blackbody photosphere.</span>
 
 <span class="sd">    .. math::</span>
 
@@ -583,6 +583,10 @@
 <span class="sd">         - :math:`t_T`</span>
 <span class="sd">       * - ``k_T``</span>
 <span class="sd">         - :math:`k_T`</span>
+<span class="sd">       * - ``break_frequency``</span>
+<span class="sd">         - :math:`\nu_\mathrm{break}`</span>
+<span class="sd">       * - ``beta``</span>
+<span class="sd">         - :math:`\beta`</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -598,11 +602,25 @@
 <span class="sd">    although in the data :math:`L_1` and :math:`L_p` are correlated, so the population is somewhat broader than</span>
 <span class="sd">    the observed one at fixed epoch pairs.</span>
 
+<span class="sd">    The blackbody is line-blanketed: the UV blueward of ``break_frequency`` is suppressed as :math:`\nu^{-\beta}`</span>
+<span class="sd">    (see :class:`~uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum`), and the shape is divided by</span>
+<span class="sd">    its integral (the shared table of</span>
+<span class="sd">    :func:`~uvex_transients.models._util_functions.get_modified_blackbody_norm_interpolator`) so that</span>
+<span class="sd">    :math:`L_\mathrm{bol}(t)` is unchanged. Both parameters start at the Type Ia values. The cooling-law</span>
+<span class="sd">    parameters below were fit before the blanketing was added.</span>
+
 <span class="sd">    ``T_floor``, ``t_T`` and ``k_T`` were fit against the Swift/UVOT UVW1 light curves of the Type IIP SNe in</span>
 <span class="sd">    ``test_data/transients`` (epochs from 2 to 50 d), with ``T0`` held at its prior and the optical temperatures of</span>
 <span class="sd">    SN 1999em, SN 2003hn, SN 2012aw, SN 2012A and SN 2008in weighted down. The UVOT light curves are mostly timed</span>
 <span class="sd">    from discovery rather than explosion, which the calibration treats as a random 0 to 5 d lag.</span>
+
+<span class="sd">    After the line blanketing was added, ``T_floor`` was raised by hand to :math:`10^{3.74}\,\mathrm{K}` (about</span>
+<span class="sd">    5500 K, close to the hydrogen-recombination temperature) and ``k_T`` lowered to 1.5 to 2.0, giving a warmer,</span>
+<span class="sd">    smoother cooling transition than the fit alone.</span>
 <span class="sd">    """</span>
+
+    <span class="n">SMOOTHING</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="w">    </span><span class="sd">"""float: The smoothing parameter :math:`s` of the line-blanketing break, fixed for every instance."""</span>
 
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"L_1"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
@@ -664,7 +682,7 @@
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_0"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">3.65</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.04</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">3.74</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.04</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
             <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Asymptotic late-time photospheric temperature (T(t) -&gt; T_floor as t -&gt; infinity)."</span><span class="p">,</span>
@@ -678,10 +696,22 @@
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_T"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"k_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.8</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.0</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Steepness of the photospheric cooling transition."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"k_T"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"break_frequency"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\nu_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">}</span>
 
@@ -784,9 +814,7 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`\log S(\nu, T(t))`, delegated to :class:`BlackbodySpectrum`.</span>
-
-<span class="sd">        Evaluated at this ``t``'s own cooling-law temperature.</span>
+<span class="sd">        :math:`\log S(\nu, t)`, the unit-integral line-blanketed blackbody at this ``t``'s own temperature.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -803,7 +831,9 @@
 <span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
 <span class="sd">        """</span>
         <span class="n">temperature</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">modified_blackbody_unit_shape_log_cgs</span><span class="p">(</span>
+            <span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"break_frequency"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"beta"</span><span class="p">],</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SMOOTHING</span>
+        <span class="p">)</span>
 
     <span class="c1"># -------------------------------------- #</span>
     <span class="c1"># Spectral Luminosity: L_nu(nu, t)       #</span>
@@ -879,13 +909,13 @@
 
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"t0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">3.5</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Explosion/rise reference epoch."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"tau_rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.15</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
             <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Rise timescale."</span><span class="p">,</span>
@@ -986,6 +1016,18 @@
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Decay power-law index of the reheating bump."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_\mathrm</span><span class="si">{bump}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"break_frequency"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\nu_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">3.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">}</span>
 

@@ -464,7 +464,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.arnett</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArnettDecaySED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.arnett</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineBlanketedArnettDecaySED</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantPrior</span><span class="p">,</span>
@@ -478,12 +478,13 @@
 
 <div class="viewcode-block" id="TypeIaSED">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TypeIaSED</span><span class="p">(</span><span class="n">ArnettDecaySED</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIaSED</span><span class="p">(</span><span class="n">LineBlanketedArnettDecaySED</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Type Ia supernova SED, with priors fit to a ZTF sample of SNe Ia.</span>
 
-<span class="sd">    Reuses :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s radioactive-decay Arnett diffusion and</span>
-<span class="sd">    floored-photosphere blackbody entirely; only :attr:`_DEFAULT_PARAMETERS` differs. The priors follow</span>
+<span class="sd">    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely (radioactive-decay Arnett</span>
+<span class="sd">    diffusion, floored photospheric temperature and a line-blanketed blackbody); only</span>
+<span class="sd">    :attr:`_DEFAULT_PARAMETERS` differs. The priors follow</span>
 <span class="sd">    :footcite:t:`sarin2026` (Sarin et al. 2026, a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and ``M_ej``</span>
 <span class="sd">    are the population-level Gaussians from that paper's hierarchical Arnett-model fit</span>
 <span class="sd">    (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;</span>
@@ -518,6 +519,12 @@
 <span class="sd">       * - ``T_floor``</span>
 <span class="sd">         - :math:`T_\mathrm{floor}`</span>
 <span class="sd">         - Minimum photospheric temperature.</span>
+<span class="sd">       * - ``break_frequency``</span>
+<span class="sd">         - :math:`\nu_\mathrm{break}`</span>
+<span class="sd">         - Frequency blueward of which line blanketing suppresses the flux.</span>
+<span class="sd">       * - ``beta``</span>
+<span class="sd">         - :math:`\beta`</span>
+<span class="sd">         - Power-law index of the suppression above the break.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -560,6 +567,18 @@
             <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Minimum photospheric temperature."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"break_frequency"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\nu_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">}</span></div>
 

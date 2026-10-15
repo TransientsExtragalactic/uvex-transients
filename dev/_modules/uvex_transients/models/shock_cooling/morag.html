@@ -882,7 +882,7 @@
 
 
 <div class="viewcode-block" id="MoragShockCoolingSED">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED.html#uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingSED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Full shock cooling SED with UV line suppression and a free-free correction (Eq. A7).</span>
@@ -947,7 +947,7 @@
 
 
 <div class="viewcode-block" id="MoragShockCoolingBlackbodySED">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingBlackbodySED.html#uvex_transients.models.shock_cooling.morag.MoragShockCoolingBlackbodySED">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingBlackbodySED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingBlackbodySED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Pure blackbody shock cooling SED (Eq. A8).</span>
@@ -989,7 +989,7 @@
 
 
 <div class="viewcode-block" id="MoragShockCoolingArnettSED">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.html#uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingArnettSED">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingArnettSED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Type IIb SED: Morag+24 shock cooling plus Arnett nickel decay.</span>
@@ -1028,6 +1028,9 @@
 <span class="sd">    ----------</span>
 <span class="sd">    .. footbibliography::</span>
 <span class="sd">    """</span>
+
+    <span class="n">_ARNETT_SED</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">ArnettDecaySED</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ArnettDecaySED</span>
+<span class="w">    </span><span class="sd">"""type of ArnettDecaySED: The nickel component. Subclasses swap in an SED with its own parameters and priors."""</span>
 
     <span class="n">_MORAG_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">)</span>
     <span class="n">_ARNETT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"M_Ni"</span><span class="p">,</span> <span class="s2">"M_ej"</span><span class="p">,</span> <span class="s2">"v_ej"</span><span class="p">,</span> <span class="s2">"kappa"</span><span class="p">,</span> <span class="s2">"kappa_gamma"</span><span class="p">,</span> <span class="s2">"T_floor"</span><span class="p">)</span>
@@ -1082,7 +1085,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="MoragShockCoolingArnettSED.temperature">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.temperature.html#uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.temperature">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.temperature.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingArnettSED.temperature">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
@@ -1105,9 +1108,9 @@
 <span class="sd">        """</span>
         <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
         <span class="n">L_morag</span> <span class="o">=</span> <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">)</span>
-        <span class="n">L_arnett</span> <span class="o">=</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+        <span class="n">L_arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
         <span class="n">T_morag</span> <span class="o">=</span> <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">)</span>
-        <span class="n">T_arnett</span> <span class="o">=</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+        <span class="n">T_arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">L_morag</span> <span class="o">*</span> <span class="n">T_morag</span> <span class="o">+</span> <span class="n">L_arnett</span> <span class="o">*</span> <span class="n">T_arnett</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">L_morag</span> <span class="o">+</span> <span class="n">L_arnett</span><span class="p">)</span></div>
 
 
@@ -1116,14 +1119,14 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\mathrm{bol}(t)` in erg/s, the sum of the two components."""</span>
         <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
-            <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+            <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\nu(\nu, t)` in erg/s/Hz, the sum of the two components."""</span>
         <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">))</span></div>
 
 </pre></div>
 
