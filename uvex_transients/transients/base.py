@@ -1418,6 +1418,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         order: str = "nested",
         jitter: bool = True,
         seed: _SeedType | None = None,
+        downsample: int | None = None,
     ) -> QTable:
         """
         Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.
@@ -1461,6 +1462,13 @@ class ExtragalacticTransient(TransientBase, ABC):
             this seed for every stochastic draw in this call -- including the event
             count itself -- so that no two draws (however many events end up being
             sampled) ever share a stream.
+        downsample : int, optional
+            If given, keep a random ``ceil(N / downsample)`` of the ``N`` events drawn, in
+            sample order, and build only those. Every draw is still made for all ``N`` events,
+            so the kept events are exactly the ones a full sample followed by the same random
+            selection would keep (and carry the same parameter seeds); only the per-event
+            construction (parameter seeds, sky coordinates, times) is skipped for the rest. The
+            selection is drawn from the next child of `seed`, after the six this method uses.
 
         Returns
         -------
@@ -1469,6 +1477,11 @@ class ExtragalacticTransient(TransientBase, ABC):
             for its columns. Empty (but still correctly typed) if zero events were
             sampled.
         """
+        if downsample is not None and (
+            isinstance(downsample, bool) or not isinstance(downsample, (int, np.integer)) or downsample < 1
+        ):
+            raise ValueError(f"`downsample` must be a positive integer or None, got {downsample!r}.")
+
         # Validate the duration and resolve the pixel selection down to a concrete
         # array of pixel indices.
         duration = self._resolve_duration(duration, t_start, t_end)
@@ -1515,13 +1528,8 @@ class ExtragalacticTransient(TransientBase, ABC):
             duration,
         )
 
-        event_buffer = self._create_event_table_buffer(
-            number_of_events,
-            time_scale=t_start.scale,
-        )
-
         if number_of_events == 0:
-            return event_buffer
+            return self._create_event_table_buffer(0, time_scale=t_start.scale)
 
         pixel_rng = np.random.default_rng(pixel_seed)
         jitter_rng = np.random.default_rng(jitter_seed)
@@ -1546,6 +1554,26 @@ class ExtragalacticTransient(TransientBase, ABC):
                 dtype=float,
             )
 
+        # Sample explosion times uniformly across the sampling window (as offsets for now).
+        time_offsets = time_rng.random(number_of_events)
+
+        # Everything above is drawn for all events so the streams do not depend on `downsample`. Choose
+        # the survivors now, so the costlier per-event construction below only runs for them.
+        if downsample is None:
+            keep = np.arange(number_of_events)
+        else:
+            downsample_rng = np.random.default_rng(root_seed.spawn(1)[0])
+            n_keep = -(-number_of_events // downsample)  # ceiling division
+            keep = np.sort(downsample_rng.choice(number_of_events, size=n_keep, replace=False))
+            redshifts, event_pixel, event_jitter, time_offsets = (
+                redshifts[keep],
+                event_pixel[keep],
+                event_jitter[keep],
+                time_offsets[keep],
+            )
+
+        event_buffer = self._create_event_table_buffer(len(keep), time_scale=t_start.scale)
+
         lon, lat = ah.healpix_to_lonlat(
             event_pixel,
             nside=nside,
@@ -1560,13 +1588,12 @@ class ExtragalacticTransient(TransientBase, ABC):
             frame=ICRS(),
         )
 
-        # Sample explosion times uniformly across the sampling window.
-        event_times = t_start + time_rng.random(number_of_events) * duration
+        event_times = t_start + time_offsets * duration
 
         # Draw independent, individually storable per-event seeds -- for regenerating
         # each event's physical lightcurve parameters later, on demand, without needing
         # to replay the draws for any other event (see `spawn_seeds`).
-        event_seed = spawn_seeds(parameter_spawn_seed, number_of_events)
+        event_seed = spawn_seeds(parameter_spawn_seed, number_of_events, indices=keep)
 
         # Populate the table buffer.
         event_buffer["healpix_id"] = event_pixel

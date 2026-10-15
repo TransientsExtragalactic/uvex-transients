@@ -247,6 +247,7 @@ def _stub_sample_events_on_healpix_grid(n_events):
         order="nested",
         jitter=True,
         seed=None,
+        downsample=None,
     ):
         rng = np.random.default_rng(seed)
         table = QTable()
@@ -257,6 +258,8 @@ def _stub_sample_events_on_healpix_grid(n_events):
         table["redshift"] = np.full(n_events, 0.01)
         table["t_explosion"] = t_start + rng.uniform(0, 1, n_events) * u.day
         table["parameter_seed"] = np.arange(n_events, dtype=np.uint64)
+        if downsample is not None:
+            table = table[np.sort(rng.choice(n_events, size=-(-n_events // downsample), replace=False))]
         return table
 
     return _stub
