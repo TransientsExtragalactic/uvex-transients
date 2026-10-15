@@ -201,6 +201,27 @@ are implemented as sibling transient classes below.
 
          fig.tight_layout()
 
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type Ia supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIaSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIaSED, "Ia")
+         plt.show()
+
       .. rubric:: Observability Summary
 
       The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
@@ -490,6 +511,27 @@ are implemented as sibling transient classes below.
 
          fig.tight_layout()
 
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type Ib supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIbSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIbSED, "Ib")
+         plt.show()
+
       .. rubric:: Observability Summary
 
       The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
@@ -767,6 +809,27 @@ are implemented as sibling transient classes below.
          ax_T.legend(loc="upper right", fontsize=7, frameon=False)
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type Ic supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcSED, "Ic", min_points=3)
+         plt.show()
 
       .. rubric:: Observability Summary
 
@@ -1050,6 +1113,27 @@ are implemented as sibling transient classes below.
          ax_T.set_title(f"Type Ic-BL: simulated photospheric temperatures (n={n_samples})")
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
+      Type Ic-BL supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcBLSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcBLSED, "Ic-BL", min_points=3)
+         plt.show()
 
       .. rubric:: Observability Summary
 
