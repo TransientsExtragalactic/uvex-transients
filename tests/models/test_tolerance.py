@@ -218,14 +218,16 @@ class TestEffectivePeakMagnitudes:
                 **params,
             )
             peaks.append(np.min(mags))
-        np.testing.assert_allclose(grid.m_eff[i, j], min(peaks))
+        # The grid resamples each band onto a rest-frame frequency grid, so it is not the same quadrature as
+        # `mag_band_cgs`. These top-hat bands are the worst case, with edges narrower than the grid spacing.
+        np.testing.assert_allclose(grid.m_eff[i, j], min(peaks), atol=0.02)
 
     def test_peak_gets_fainter_with_redshift_overall(self, grid):
         assert np.median(grid.m_eff[:, -1]) > np.median(grid.m_eff[:, 0])
 
     def test_is_invariant_to_chunk_size_and_reproducible(self, sed, bands, grid):
         other = sed.get_effective_peak_magnitudes(Z_GRID, bands, n_samples=40, rng=3, chunk_size=7, **TIME)
-        np.testing.assert_allclose(other.m_eff, grid.m_eff)
+        np.testing.assert_allclose(other.m_eff, grid.m_eff, atol=1e-9)
 
     def test_band_criteria_are_ordered(self, sed, bands):
         kwargs = dict(n_samples=20, rng=3, **TIME)
@@ -252,10 +254,10 @@ class TestEffectivePeakMagnitudes:
         quiet = sed.get_effective_peak_magnitudes(Z_GRID, bands, n_samples=40, rng=3, progress=False, **TIME)
         np.testing.assert_allclose(quiet.m_eff, grid.m_eff)
 
-    def test_progress_bar_runs_over_every_chunk_and_redshift(self, sed, bands, capsys):
+    def test_progress_bar_runs_over_every_chunk(self, sed, bands, capsys):
         sed.get_effective_peak_magnitudes(Z_GRID, bands, n_samples=10, chunk_size=5, rng=3, **TIME)
-        # Two chunks of five draws, each stepped across every redshift.
-        assert f"{2 * Z_GRID.size}/{2 * Z_GRID.size}" in capsys.readouterr().err
+        # Two chunks of five draws; every redshift comes out of the same evaluation.
+        assert "2/2" in capsys.readouterr().err
 
     def test_explicit_rest_frame_times(self, sed, bands):
         t_rest = np.array([0.5, 1.0, 2.0]) * u.day

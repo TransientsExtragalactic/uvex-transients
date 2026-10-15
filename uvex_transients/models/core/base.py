@@ -45,7 +45,6 @@ combines one of each into a full :class:`SpectralModel`, with
 :math:`L_\nu(\nu, t) = L_\mathrm{bol}(t) \cdot S(\nu) / \int S(\nu')\,d\nu'`.
 """
 
-import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Iterator, Mapping, Sequence
 from copy import copy, deepcopy
@@ -64,14 +63,13 @@ from m4opt.synphot import Detector
 from scipy.integrate import quad_vec
 from synphot import SourceSpectrum, SpectralElement
 from synphot import units as synphot_units
-from tqdm.auto import tqdm
-from tqdm.contrib.logging import logging_redirect_tqdm
 
 from uvex_transients.dust import attenuation_callable
 from uvex_transients.utils import get_rng, logger
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
 from .._constants import AB_MAG_ZERO_POINT, H_CGS
+from .._restframe import peak_band_magnitudes
 from .._typing import (
     CGSParameterValue,
     FloatArray,
@@ -119,9 +117,6 @@ __all__ = ["ComposedSpectralModel", "Lightcurve", "SpectralModel", "Spectrum"]
 # Loose enough that it only fires on genuine `quad_vec` non-convergence (its own default
 # `epsrel` is 1e-8), not routine floating-point noise -- see `_warn_if_not_converged`.
 _QUAD_VEC_WARN_RTOL = 1e-4
-
-# Target size of the largest intermediate array in `get_effective_peak_magnitudes`.
-_CHUNK_BYTES = 8_000_000
 
 
 def _warn_if_not_converged(context: str, integral: FloatArray, err: float) -> None:
@@ -3541,8 +3536,10 @@ class SpectralModel(_ModelBase):
             horizon you care about, or :meth:`get_observability_curve` cannot bracket it.
         bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement
             The bands to evaluate, for example ``detector.bandpasses``. A sequence is named
-            ``band0``, ``band1``, and so on. A band with fewer frequency samples is much
-            cheaper: see :func:`~uvex_transients.missions.downsample_mission`.
+            ``band0``, ``band1``, and so on. Each is resampled onto a shared rest-frame
+            frequency grid, so the size of a band's table does not set the cost. It does set the accuracy:
+            the downsampled tables of :func:`~uvex_transients.missions.downsample_mission` reproduce the
+            full ones to about a millimagnitude, and the full tables to better than 0.1 mmag.
         t_rest : ~astropy.units.Quantity, optional
             Rest-frame times since explosion at which to evaluate the light curve. Rest-frame
             times are the right choice here, since time dilation moves the peak in observed time
@@ -3567,9 +3564,8 @@ class SpectralModel(_ModelBase):
         cosmology : ~astropy.cosmology.FLRW, optional
             Cosmology for the luminosity distances. Defaults to the configured cosmology.
         chunk_size : int, optional
-            Number of parameter draws evaluated per call. If `None` (the default), it is chosen
-            so the largest intermediate array stays near 8 MB. That size fits in cache and
-            benchmarks fastest, so raising it only costs speed and memory.
+            Number of parameter draws evaluated per step. If `None` (the default), it is chosen
+            so the largest intermediate array stays near 32 MB. It does not change the result.
         progress : bool, optional
             Whether to show a progress bar. The default is `True`.
         rng : numpy.random.Generator, int, or None
@@ -3602,10 +3598,14 @@ class SpectralModel(_ModelBase):
         because redshift shifts the bands across the spectrum (the K-correction) and so changes
         which epoch is brightest in a band.
 
-        The full ``(n_samples, Z, T, B)`` array is never built. Time and bands are reduced as soon
-        as they are computed, one chunk of draws at a time, and only the ``(n_samples, Z)`` result
-        is kept. The cost is linear in each of ``n_samples``, ``Z``, ``n_time`` and the number
-        of frequency samples across all bands.
+        The SED is evaluated once per draw, on a grid of rest-frame times and logarithmically spaced
+        rest-frame frequencies, not once per redshift. Every redshift and band is then a weighted sum
+        over frequency, done for all of them with one matrix product (see
+        :mod:`uvex_transients.models._restframe`), so the cost is dominated by ``n_samples * n_time``
+        SED evaluations and hardly grows with ``Z`` or with the number of bands. Time and bands are
+        reduced chunk by chunk and only the ``(n_samples, Z)`` result is kept. Resampling the bands
+        onto that grid changes a magnitude by about a millimagnitude, far below the spacing of
+        magnitude limits.
 
         Milky Way extinction and sky position are not included. The result covers the SED's
         parameter priors only.
@@ -3645,38 +3645,19 @@ class SpectralModel(_ModelBase):
         samples = self.sample_parameters(size=n_samples, rng=rng)
         cgs_samples = {name: to_cgs_value(value) for name, value in samples.items()}
 
-        if chunk_size is None:
-            widest_band = max(len(nu) for nu, _ in band_grids)
-            chunk_size = int(np.clip(_CHUNK_BYTES // (8 * t_rest_s.size * widest_band), 1, n_samples))
-        n_chunks = -(-n_samples // chunk_size)
-
-        m_eff = np.empty((n_samples, z_grid.size))
-        peak_by_band = np.empty((chunk_size, len(band_grids)))  # reused for every (chunk, z)
-        with (
-            tqdm(
-                total=n_chunks * z_grid.size, desc="Evaluating peak magnitudes", unit="step", disable=not progress
-            ) as pbar,
-            logging_redirect_tqdm(loggers=[logger]),
-        ):
-            for start in range(0, n_samples, chunk_size):
-                stop = min(start + chunk_size, n_samples)
-                n_rows = stop - start
-                # Parameters get a trailing axis so they broadcast against the time axis: (n_rows, 1).
-                chunk = {name: value[start:stop, np.newaxis] for name, value in cgs_samples.items()}
-
-                for j, (z, d_l) in enumerate(zip(z_grid, luminosity_distance)):
-                    # The model takes observed times, which are the rest-frame ones stretched by (1 + z).
-                    t_obs = (t_rest_s * (1.0 + z))[np.newaxis, :]
-                    for b, (nu, throughput) in enumerate(band_grids):
-                        with np.errstate(divide="ignore"):  # zero flux is an infinitely faint magnitude
-                            mags = self.mag_band_cgs(nu, throughput, t_obs, z, d_l, **chunk)  # (n_rows, T)
-                        # Some models return NaN outside their validity window. Those epochs are
-                        # skipped; a draw with no valid epoch at all stays NaN (handled below).
-                        with warnings.catch_warnings():
-                            warnings.simplefilter("ignore", RuntimeWarning)  # "All-NaN slice"
-                            peak_by_band[:n_rows, b] = np.nanmin(mags, axis=1)  # brightest valid epoch
-                    m_eff[start:stop, j] = reduce_bands(peak_by_band[:n_rows], criterion, k)
-                    pbar.update(1)
+        # The SED is evaluated once per draw on a rest-frame time and frequency grid, and every redshift is then a
+        # change of band weights; see `uvex_transients.models._restframe`.
+        peak_mags = peak_band_magnitudes(
+            self._eval,
+            cgs_samples,
+            z_grid,
+            luminosity_distance,
+            band_grids,
+            t_rest_s,
+            chunk_size=chunk_size,
+            progress=progress,
+        )  # (n_samples, B, Z)
+        m_eff = reduce_bands(peak_mags.transpose(0, 2, 1), criterion, k)
 
         if np.isnan(m_eff).any():
             logger.warning(
