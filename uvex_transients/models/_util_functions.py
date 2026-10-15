@@ -1,6 +1,9 @@
 """Utility functions for working with models."""
 
+from collections.abc import Callable
+
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 
 from uvex_transients.models._constants import C_CGS, H_CGS, K_B_CGS, LOG_SIGMA_SB_CGS, SIGMA_SB_CGS
 from uvex_transients.models._typing import CGSParameterValue, FloatArray, NumericalInput
@@ -151,6 +154,177 @@ def planck_shape_log_cgs(nu: FloatArray, temperature: CGSParameterValue) -> Floa
     """
     temperature = np.asarray(temperature, dtype=np.float64)
     return planck_Bnu_log_cgs(nu, temperature) + np.log(np.pi) - LOG_SIGMA_SB_CGS - 4.0 * np.log(temperature)
+
+
+def modified_blackbody_intensity_log_cgs(
+    nu: FloatArray,
+    temperature: CGSParameterValue,
+    nu_break: CGSParameterValue,
+    beta: CGSParameterValue,
+    norm: CGSParameterValue,
+    s: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Natural log of a line-blanketed (UV-suppressed) blackbody intensity, in cgs.
+
+    Follows the truncated-blackbody prescription of Nicholl et al. 2017: a Planck function
+    multiplied by a smoothly broken power law that steepens the spectrum blueward of a break
+    frequency,
+
+    .. math::
+
+        I_\nu = N\,B_\nu(T) \left[1 + \left(\frac{\nu}{\nu_\mathrm{break}}\right)^{s}\right]^{-\beta/s}.
+
+    Well below the break the suppression factor is unity, and well above it falls as
+    :math:`(\nu/\nu_\mathrm{break})^{-\beta}`. Larger ``s`` gives a sharper transition, which
+    reduces leakage of flux across the break.
+
+    Parameters
+    ----------
+    nu : array_like
+        Frequency, in Hz.
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency :math:`\nu_\mathrm{break}`, in Hz (generally in the UV).
+    beta : array_like
+        Power-law index of the suppression above the break.
+    norm : array_like
+        Linear multiplicative normalization :math:`N` of the intensity.
+    s : array_like
+        Smoothing parameter controlling the sharpness of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`\log I_\nu`, in :math:`\mathrm{erg\,s^{-1}\,cm^{-2}\,Hz^{-1}\,sr^{-1}}`.
+    """
+    log_z = np.log(nu) - np.log(nu_break)
+    log_suppression = (beta / s) * np.logaddexp(0.0, s * log_z)
+    return np.log(norm) + planck_Bnu_log_cgs(nu, temperature) - log_suppression
+
+
+def normalize_modified_blackbody(
+    x_0: NumericalInput,
+    beta: NumericalInput,
+    s: NumericalInput,
+    x_min: float,
+    x_max: float,
+    n_x: int,
+) -> FloatArray:
+    r"""
+    Dimensionless integral of the line-blanketed Planck shape over :math:`x = h\nu/k_BT`.
+
+    Evaluates
+
+    .. math::
+
+        \int_{x_\min}^{x_\max} \frac{x^3}{e^x - 1}
+        \left[1 + \left(\frac{x}{x_0}\right)^{s}\right]^{-\beta/s} dx
+
+    (the suppression factor of :func:`modified_blackbody_intensity_log_cgs`, with
+    :math:`x_0 = h\nu_\mathrm{break}/k_BT`) by the trapezoid rule on a grid uniform in
+    :math:`\ln x`. Without suppression and over :math:`(0, \infty)` this is :math:`\pi^4/15`.
+
+    Parameters
+    ----------
+    x_0 : array_like
+        Dimensionless break frequency :math:`h\nu_\mathrm{break}/k_BT`.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : array_like
+        Smoothing parameter controlling the sharpness of the break.
+    x_min : float
+        Lower integration limit.
+    x_max : float
+        Upper integration limit.
+    n_x : int
+        Number of grid points.
+
+    Returns
+    -------
+    numpy.ndarray
+        The integral, broadcast over ``x_0``, ``beta`` and ``s``.
+    """
+    x_0, beta, s = np.broadcast_arrays(*(np.asarray(a, dtype=np.float64) for a in (x_0, beta, s)))
+
+    # The integration grid is the leading axis; the parameters broadcast over the trailing ones.
+    log_x = np.linspace(np.log(x_min), np.log(x_max), n_x).reshape((n_x,) + (1,) * x_0.ndim)
+    d_log_x = (np.log(x_max) - np.log(x_min)) / (n_x - 1)
+    x = np.exp(log_x)
+
+    # x^3 dx = x^4 dlnx, so integrate in ln x.
+    log_suppression = (beta / s) * np.logaddexp(0.0, s * (log_x - np.log(x_0)))
+    integrand = np.exp(4.0 * log_x - log_expm1(x) - log_suppression)
+
+    return d_log_x * (integrand.sum(axis=0) - 0.5 * (integrand[0] + integrand[-1]))
+
+
+def modified_blackbody_norm_interpolator(
+    s: float,
+    x_0_range: tuple[float, float],
+    beta_range: tuple[float, float],
+    n_x_0: int = 64,
+    n_beta: int = 32,
+    x_min: float = 1e-4,
+    x_max: float = 100.0,
+    n_x: int = 4000,
+) -> Callable[[NumericalInput, NumericalInput], FloatArray]:
+    r"""
+    Build a fast interpolator for :func:`normalize_modified_blackbody` at fixed smoothing ``s``.
+
+    The integral is evaluated once on a regular grid, log-spaced in :math:`x_0` and linear in
+    :math:`\beta`, and :math:`\ln(\mathrm{integral})` is interpolated linearly with
+    :class:`scipy.interpolate.RegularGridInterpolator`. Repeated calls over many
+    :math:`(x_0, \beta)` pairs then avoid the integration grid entirely.
+
+    Parameters
+    ----------
+    s : float
+        Smoothing parameter, held fixed.
+    x_0_range : tuple of float
+        ``(min, max)`` of the dimensionless break frequency :math:`x_0`. Must be positive.
+    beta_range : tuple of float
+        ``(min, max)`` of the suppression index :math:`\beta`.
+    n_x_0, n_beta : int, optional
+        Number of interpolation grid points along :math:`\ln x_0` and :math:`\beta`.
+    x_min, x_max, n_x : optional
+        Integration limits and number of integration points, as in
+        :func:`normalize_modified_blackbody`.
+
+    Returns
+    -------
+    callable
+        ``norm(x_0, beta)``, broadcasting over its arguments. Raises :class:`ValueError`
+        for inputs outside the ranges the interpolator was built on.
+    """
+    log_x_0 = np.linspace(np.log(x_0_range[0]), np.log(x_0_range[1]), n_x_0)
+    beta_grid = np.linspace(beta_range[0], beta_range[1], n_beta)
+
+    grid = normalize_modified_blackbody(np.exp(log_x_0)[:, None], beta_grid[None, :], s, x_min, x_max, n_x)
+    interpolator = RegularGridInterpolator((log_x_0, beta_grid), np.log(grid))
+
+    def norm(x_0: NumericalInput, beta: NumericalInput) -> FloatArray:
+        """
+        Interpolated normalization integral at ``(x_0, beta)``.
+
+        Parameters
+        ----------
+        x_0 : array_like
+            Dimensionless break frequency, within the range the interpolator was built on.
+        beta : array_like
+            Suppression index, within the range the interpolator was built on.
+
+        Returns
+        -------
+        numpy.ndarray
+            The integral, broadcast over ``x_0`` and ``beta``.
+        """
+        x_0, beta = np.broadcast_arrays(np.asarray(x_0, dtype=np.float64), np.asarray(beta, dtype=np.float64))
+        points = np.stack([np.log(x_0), beta], axis=-1).reshape(-1, 2)
+        return np.exp(interpolator(points)).reshape(x_0.shape)
+
+    return norm
 
 
 def cooling_temperature_cgs(
