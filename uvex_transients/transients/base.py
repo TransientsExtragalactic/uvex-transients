@@ -393,6 +393,14 @@ class ExtragalacticTransient(TransientBase, ABC):
     DEFAULT_Z_LIM = 10
     DEFAULT_Z_GRID_SIZE = 100
 
+    HORIZON_T_MIN: ClassVar[Quantity | None] = None
+    """~astropy.units.Quantity | None: Earliest rest-frame time of the `horizon_curve` light-curve grid.
+
+    `None` (the default) uses `~uvex_transients.transients.horizon.T_MIN`. Set it on a class whose SED is only
+    meaningful after some epoch, so that earlier times do not set the horizon (for example a shock-cooling component
+    whose luminosity grows without bound toward :math:`t\\to0`).
+    """
+
     HAS_STORED_HORIZON_CURVE: ClassVar[bool] = True
     """bool: Whether the package ships a stored `horizon_curve` file for this class.
 
