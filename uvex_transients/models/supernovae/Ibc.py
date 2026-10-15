@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from astropy import units as u
 
-from uvex_transients.models.arnett import ArnettDecaySED
+from uvex_transients.models.arnett import ArnettDecaySED, LineBlanketedArnettDecaySED
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import (
     ConstantPrior,
@@ -14,15 +14,15 @@ from uvex_transients.models.core.priors import (
 __all__ = ["TypeIbSED", "TypeIcSED"]
 
 
-class TypeIbSED(ArnettDecaySED):
+class TypeIbSED(LineBlanketedArnettDecaySED):
     r"""
     Type Ib supernova SED, with priors fit to a literature sample of stripped-envelope SNe.
 
-    Reuses :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s radioactive-decay Arnett
-    diffusion and floored-photosphere blackbody entirely, exactly as
-    :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` and
-    :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` do; only :attr:`_DEFAULT_PARAMETERS`
-    differs. The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are the SN Ib subsample statistics (mean,
+    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely, exactly as
+    :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` does (radioactive-decay Arnett diffusion,
+    floored photospheric temperature and a line-blanketed blackbody); only :attr:`_DEFAULT_PARAMETERS`
+    differs. ``break_frequency`` and ``beta`` start at the Type Ia values. The priors on ``M_Ni``, ``M_ej``
+    and ``v_ej`` are the SN Ib subsample statistics (mean,
     sample standard deviation of the analytical-model fits in Table 6 of :footcite:t:`lyman2016`, 13
     events). ``kappa`` is fixed at :math:`0.06\,\mathrm{cm^2\,g^{-1}}`, the single grey optical opacity
     value Lyman et al. 2016 assume (rather than fit) for every event in their sample. ``kappa_gamma``
@@ -59,6 +59,12 @@ class TypeIbSED(ArnettDecaySED):
        * - ``T_floor``
          - :math:`T_\mathrm{floor}`
          - Minimum photospheric temperature.
+       * - ``break_frequency``
+         - :math:`\nu_\mathrm{break}`
+         - Frequency blueward of which line blanketing suppresses the flux.
+       * - ``beta``
+         - :math:`\beta`
+         - Power-law index of the suppression above the break.
 
     References
     ----------
@@ -101,6 +107,18 @@ class TypeIbSED(ArnettDecaySED):
             scale=1 * u.K,
             description="Minimum photospheric temperature.",
             latex=r"T_\mathrm{floor}",
+        ),
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=5.0),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
         ),
     }
 
