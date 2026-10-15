@@ -194,6 +194,52 @@ def cooling_temperature_cgs(
     return T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
 
 
+def sigmoid_temperature_cgs(
+    t: FloatArray,
+    *,
+    T0: CGSParameterValue,
+    T_floor: CGSParameterValue,
+    t_transition: CGSParameterValue,
+    steepness: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Photospheric temperature that falls from a hot start to a cool floor as a logistic in :math:`\ln t`.
+
+    .. math::
+
+        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\,
+        \frac{1}{1 + (t/t_\mathrm{tr})^{k}}
+
+    :math:`T(t) \to T_0` as :math:`t \to 0` and :math:`T(t) \to T_\mathrm{floor}` as :math:`t \to \infty`, with
+    the excess over the floor halved at :math:`t_\mathrm{tr}` and falling as :math:`t^{-k}` well after it. Unlike
+    :func:`cooling_temperature_cgs`, whose early plateau gives way to a pure power law, this has two distinct
+    plateaus joined by a transition whose width in :math:`\ln t` is :math:`\sim1/k`.
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    T0 : array_like
+        Photospheric temperature as :math:`t \to 0`.
+    T_floor : array_like
+        Asymptotic late-time photospheric temperature.
+    t_transition : array_like
+        Epoch :math:`t_\mathrm{tr}` at which the temperature is halfway between :math:`T_0` and
+        :math:`T_\mathrm{floor}`, in s.
+    steepness : array_like
+        Steepness :math:`k` of the transition.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`T(t)`, in K.
+    """
+    # The logistic of -k ln(t/t_tr), through the stable log-sigmoid; t = 0 gives the T0 limit.
+    with np.errstate(divide="ignore"):
+        log_ratio = np.log(t) - np.log(t_transition)
+    return T_floor + (T0 - T_floor) * np.exp(_log_sigmoid(-steepness * log_ratio))
+
+
 def temperature_bump_cgs(
     t: FloatArray,
     *,
