@@ -301,7 +301,8 @@ def modified_blackbody_norm_interpolator(
     log_x_0 = np.linspace(np.log(x_0_range[0]), np.log(x_0_range[1]), n_x_0)
     beta_grid = np.linspace(beta_range[0], beta_range[1], n_beta)
 
-    grid = normalize_modified_blackbody(np.exp(log_x_0)[:, None], beta_grid[None, :], s, x_min, x_max, n_x)
+    # One row of x_0 at a time, so the (n_x_0, n_beta, n_x) integration cube is never held in memory.
+    grid = np.stack([normalize_modified_blackbody(np.exp(lx), beta_grid, s, x_min, x_max, n_x) for lx in log_x_0])
     interpolator = RegularGridInterpolator((log_x_0, beta_grid), np.log(grid))
 
     def norm(x_0: NumericalInput, beta: NumericalInput) -> FloatArray:
