@@ -10,12 +10,14 @@ import io
 from typing import Literal
 from urllib.parse import urlencode
 
+import numpy as np
 from astropy import units as u
 from astropy.io.votable import parse_single_table
 from astropy.table import Table
 from astropy.utils.data import clear_download_cache, download_file
+from synphot import Empirical1D, SpectralElement
 
-__all__ = ["SVO_URL", "clear_svo_cache", "get_filter_list", "get_transmission_data", "query_svo"]
+__all__ = ["SVO_URL", "clear_svo_cache", "get_bandpass", "get_filter_list", "get_transmission_data", "query_svo"]
 
 SVO_URL = "https://svo2.cab.inta-csic.es/theory/fps/fps.php"
 """str: Endpoint of the SVO Filter Profile Service."""
@@ -131,6 +133,31 @@ def get_transmission_data(filter_id: str, **kwargs) -> Table:
     if table["Wavelength"].unit is None:
         table["Wavelength"].unit = u.AA
     return table
+
+
+def get_bandpass(filter_id: str, **kwargs) -> SpectralElement:
+    """
+    Fetch one filter as a `~synphot.SpectralElement`.
+
+    The result can be passed straight to
+    :meth:`~uvex_transients.models.core.base.SpectralModel.mag_bandpass`.
+
+    Parameters
+    ----------
+    filter_id : str
+        SVO filter ID in ``facility/instrument.band`` form, e.g. ``"Swift/UVOT.UVW1"``.
+    **kwargs
+        Passed to `get_transmission_data`, e.g. ``cache`` and ``timeout``.
+
+    Returns
+    -------
+    synphot.SpectralElement
+        The transmission curve, with non-finite or negative values set to zero.
+    """
+    table = get_transmission_data(filter_id, **kwargs)
+    throughput = np.asarray(table["Transmission"], dtype=float)
+    throughput = np.where(np.isfinite(throughput) & (throughput >= 0.0), throughput, 0.0)
+    return SpectralElement(Empirical1D, points=table["Wavelength"].quantity.to(u.AA), lookup_table=throughput)
 
 
 def clear_svo_cache() -> None:

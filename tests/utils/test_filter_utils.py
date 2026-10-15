@@ -68,3 +68,9 @@ def test_swift_uvot_filters_from_svo():
     ids = list(filter_utils.get_filter_list("Swift", "UVOT")["filterID"])
     assert {"Swift/UVOT.UVW1", "Swift/UVOT.UVM2", "Swift/UVOT.UVW2"} <= set(ids)
     assert len(filter_utils.get_transmission_data("Swift/UVOT.UVW1")) > 10
+
+
+def test_get_bandpass_returns_spectral_element(fake_svo):
+    bandpass = filter_utils.get_bandpass("Swift/UVOT.UVW1")
+    assert bandpass(2100.0 * u.AA).value == pytest.approx(0.5)
+    assert bandpass.waveset.to_value(u.AA)[[0, -1]] == pytest.approx([2000.0, 2200.0])
