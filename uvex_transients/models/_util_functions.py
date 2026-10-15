@@ -1,6 +1,7 @@
 """Utility functions for working with models."""
 
 from collections.abc import Callable
+from functools import cache
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -326,6 +327,65 @@ def modified_blackbody_norm_interpolator(
         return np.exp(interpolator(points)).reshape(x_0.shape)
 
     return norm
+
+
+@cache
+def get_modified_blackbody_norm_interpolator(s: float) -> Callable[[NumericalInput, NumericalInput], FloatArray]:
+    r"""
+    Return the shared normalization table of the line-blanketed blackbody at smoothing ``s``.
+
+    Built lazily on the first request for a given ``s`` and cached for the life of the process, so every
+    caller with the same ``s`` reads the same table. Covers
+    :math:`10^{-2} \le x_0 \le 10^3` and :math:`0 \le \beta \le 10`, and is accurate to better than 1% there.
+
+    Parameters
+    ----------
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    callable
+        ``norm(x_0, beta)``, the interpolated integral of :func:`normalize_modified_blackbody`.
+    """
+    return modified_blackbody_norm_interpolator(
+        s, x_0_range=(1e-2, 1e3), beta_range=(0.0, 10.0), n_x_0=400, n_beta=81, n_x=1000
+    )
+
+
+def modified_blackbody_log_norm_cgs(
+    temperature: CGSParameterValue, nu_break: CGSParameterValue, beta: CGSParameterValue, s: float
+) -> FloatArray:
+    r"""
+    Natural log of :math:`\int S\,d\nu` for the Stefan-Boltzmann-scaled line-blanketed blackbody shape.
+
+    Equals :math:`\ln[(15/\pi^4)\,I(x_0, \beta)]` with :math:`x_0 = h\nu_\mathrm{break}/k_BT`, where :math:`I`
+    comes from :func:`get_modified_blackbody_norm_interpolator`. Subtracting it from the log of the shape
+    gives a unit-integral spectrum.
+
+    Parameters
+    ----------
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency, in Hz.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        The natural log of the shape integral.
+
+    Raises
+    ------
+    ValueError
+        If :math:`x_0` or ``beta`` fall outside the range of the shared table.
+    """
+    x_0 = H_CGS * np.asarray(nu_break, dtype=np.float64) / (K_B_CGS * np.asarray(temperature, dtype=np.float64))
+    return np.log(15.0 / np.pi**4 * get_modified_blackbody_norm_interpolator(s)(x_0, beta))
 
 
 def cooling_temperature_cgs(

@@ -13,16 +13,15 @@ blueward of a break frequency, mimicking the UV line blanketing of supernova pho
 (Nicholl et al. 2017). It is no longer normalized by construction, so its normalization is
 the Stefan-Boltzmann-scaled integral of the suppressed Planck function, looked up from an
 interpolation table (see
-:func:`~uvex_transients.models._util_functions.modified_blackbody_norm_interpolator`).
+:func:`~uvex_transients.models._util_functions.get_modified_blackbody_norm_interpolator`).
 """
 
-from functools import cache
 from typing import ClassVar
 
 import numpy as np
 from astropy import units as u
 
-from uvex_transients.models._constants import H_CGS, K_B_CGS, SIGMA_SB_CGS
+from uvex_transients.models._constants import SIGMA_SB_CGS
 from uvex_transients.models._typing import CGSParameterValue, FloatArray
 from uvex_transients.models.core.base import Spectrum
 from uvex_transients.models.core.parameters import Parameter
@@ -30,7 +29,7 @@ from uvex_transients.models.core.priors import ConstantPrior, LogNormalPrior
 
 from .._util_functions import (
     modified_blackbody_intensity_log_cgs,
-    modified_blackbody_norm_interpolator,
+    modified_blackbody_log_norm_cgs,
     planck_shape_log_cgs,
 )
 
@@ -102,14 +101,6 @@ class BlackbodySpectrum(Spectrum):
         construction -- see the class docstring.
         """
         return np.zeros_like(np.asarray(parameters["temperature"], dtype=np.float64))
-
-
-@cache
-def _norm_interpolator(smoothing: float):
-    """Build (once per ``smoothing``) the interpolated suppressed-Planck integral over ``(x_0, beta)``."""
-    return modified_blackbody_norm_interpolator(
-        smoothing, x_0_range=(1e-2, 1e3), beta_range=(0.0, 10.0), n_x_0=400, n_beta=81, n_x=1000
-    )
 
 
 class ModifiedBlackbodySpectrum(Spectrum):
@@ -212,7 +203,6 @@ class ModifiedBlackbodySpectrum(Spectrum):
         The :math:`15/\pi^4` factor is the Stefan-Boltzmann normalization, so that the
         unsuppressed integral is exactly 1.
         """
-        temperature = np.asarray(parameters["temperature"], dtype=np.float64)
-        x_0 = H_CGS * np.asarray(parameters["break_frequency"], dtype=np.float64) / (K_B_CGS * temperature)
-        integral = _norm_interpolator(cls.SMOOTHING)(x_0, parameters["beta"])
-        return np.log(15.0 / np.pi**4 * integral)
+        return modified_blackbody_log_norm_cgs(
+            parameters["temperature"], parameters["break_frequency"], parameters["beta"], cls.SMOOTHING
+        )
