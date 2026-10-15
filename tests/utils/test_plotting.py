@@ -16,6 +16,7 @@ from mocpy import MOC
 
 from uvex_transients.utils.config import config
 from uvex_transients.utils.plotting import (
+    plot_swift_uv_calibration,
     add_funnel_legend,
     compute_funnel_bounds,
     get_band_color,
@@ -496,3 +497,34 @@ class TestPlotDetectionHorizon:
         for ax in fig.axes:
             assert any("redshift limit, z = 0.5" in text.get_text() for text in ax.get_legend().get_texts())
         plt.close(fig)
+
+
+class TestPlotSwiftUVCalibration:
+    """`plot_swift_uv_calibration` overlays packaged Swift light curves on simulated ones."""
+
+    @pytest.fixture(autouse=True)
+    def offline_bandpass(self, monkeypatch):
+        """Stand in for the SVO UVW1 filter with a box, so no network request is made."""
+        from synphot import Empirical1D, SpectralElement
+
+        from uvex_transients.utils import filter_utils
+
+        box = SpectralElement(
+            Empirical1D, points=[2200.0, 2201.0, 3000.0, 3001.0] * u.AA, lookup_table=[0.0, 1.0, 1.0, 0.0]
+        )
+        monkeypatch.setattr(filter_utils, "get_bandpass", lambda filter_id, **kwargs: box)
+
+    def test_draws_models_and_observed_curves(self):
+        from uvex_transients.models.supernovae import TypeIaSED
+
+        fig = plot_swift_uv_calibration(TypeIaSED, "Ia", n_models=5, n_observed=3)
+        (ax,) = fig.axes
+        assert len(ax.lines) >= 5 + 3
+        assert ax.get_yscale() == "log"
+        plt.close(fig)
+
+    def test_unobserved_type_raises(self):
+        from uvex_transients.models.supernovae import TypeIaSED
+
+        with pytest.raises(ValueError, match="No 'NotAType'"):
+            plot_swift_uv_calibration(TypeIaSED, "NotAType")
