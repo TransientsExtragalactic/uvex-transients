@@ -11,6 +11,7 @@ from uvex_transients.models.core.base import Spectrum
 from uvex_transients.models.spectra import (
     BlackbodySpectrum,
     BrokenPowerLawSpectrum,
+    ModifiedBlackbodySpectrum,
     PowerLawSpectrum,
 )
 
@@ -19,6 +20,10 @@ from ._contracts import SpectrumContract, assert_full_coverage
 
 class TestBlackbodySpectrum(SpectrumContract):
     model_class = BlackbodySpectrum
+
+
+class TestModifiedBlackbodySpectrum(SpectrumContract):
+    model_class = ModifiedBlackbodySpectrum
 
 
 class TestPowerLawSpectrum(SpectrumContract):
