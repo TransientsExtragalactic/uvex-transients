@@ -388,6 +388,51 @@ def modified_blackbody_log_norm_cgs(
     return np.log(15.0 / np.pi**4 * get_modified_blackbody_norm_interpolator(s)(x_0, beta))
 
 
+def modified_blackbody_unit_shape_log_cgs(
+    nu: FloatArray,
+    temperature: CGSParameterValue,
+    nu_break: CGSParameterValue,
+    beta: CGSParameterValue,
+    s: float,
+) -> FloatArray:
+    r"""
+    Natural log of the unit-integral line-blanketed blackbody spectral shape, in 1/Hz.
+
+    The Stefan-Boltzmann-scaled shape of :func:`modified_blackbody_intensity_log_cgs`, divided by its
+    integral (:func:`modified_blackbody_log_norm_cgs`). Unlike the bare suppressed Planck shape, which loses
+    flux to the suppression, this integrates to 1 over frequency, so multiplying it by a bolometric
+    luminosity conserves that luminosity.
+
+    Parameters
+    ----------
+    nu : array_like
+        Frequency, in Hz.
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency, in Hz.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        The natural log of the unit-integral shape.
+
+    Raises
+    ------
+    ValueError
+        If :math:`h\nu_\mathrm{break}/k_BT` or ``beta`` fall outside the range of the shared table.
+    """
+    temperature = np.asarray(temperature, dtype=np.float64)
+    shape = modified_blackbody_intensity_log_cgs(
+        nu, temperature, nu_break, beta, np.pi / (SIGMA_SB_CGS * temperature**4), s
+    )
+    return shape - modified_blackbody_log_norm_cgs(temperature, nu_break, beta, s)
+
+
 def cooling_temperature_cgs(
     t: FloatArray,
     *,

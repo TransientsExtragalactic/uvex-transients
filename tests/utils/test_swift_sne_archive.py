@@ -51,7 +51,8 @@ def test_missing_object_raises(archive_path):
 def test_packaged_archive():
     """The packaged archive is detection-only and carries the expected columns."""
     archive = SwiftSNeArchive()
-    assert len(archive.objects()) == 334
+    assert len(archive.objects()) == 336
+    assert archive.objects(sn_type="IIP+Excess") == ["SN2023ixf", "SN2024ggi"]
     lc = archive.lightcurve("Gaia16apd", "UVM2")
     assert len(lc) == 12
     assert lc.colnames == ["t", "L", "L_err", "mjd"]

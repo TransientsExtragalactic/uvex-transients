@@ -480,12 +480,12 @@ a different, double-pulse form. Each is implemented as its own transient populat
               - Notes
             * - ``t0``
               - :math:`t_0`
-              - Uniform(2 d, 5 d)
+              - Uniform(0.5 d, 3.5 d)
               - Explosion/rise reference epoch.
             * - ``tau_rise``
               - :math:`\tau_\mathrm{rise}`
-              - Normal(:math:`\log_{10}(\tau_\mathrm{rise}/\mathrm{d})`; mean=-0.5, :math:`\sigma`\=0.2)
-              - Rise timescale (median :math:`\sim0.3` d).
+              - Normal(:math:`\log_{10}(\tau_\mathrm{rise}/\mathrm{d})`; mean=-0.35, :math:`\sigma`\=0.15)
+              - Rise timescale (median :math:`\sim0.45` d).
             * - ``L_pk``
               - :math:`L_\mathrm{pk}`
               - Normal(:math:`\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})`; mean=43.3, :math:`\sigma`\=0.25)
@@ -608,7 +608,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
       .. rubric:: UV Calibration
 
       The plot below overlays the Swift/UVOT UVW1 (2600 Å) light curves of
-      Type IIP supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      Type IIP + Excess supernovae (SN 2023ixf and SN 2024ggi) from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
       integrated through the UVW1 transmission curve from the SVO Filter Profile Service. Both are shown as
       :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
       legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
@@ -623,7 +623,7 @@ a different, double-pulse form. Each is implemented as its own transient populat
          from uvex_transients.models.supernovae import TypeIIPExcessSED
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
-         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP")
+         plot_swift_uv_calibration(TypeIIPExcessSED, "IIP+Excess")
          plt.show()
 
       .. rubric:: Observability Summary
@@ -746,9 +746,8 @@ a different, double-pulse form. Each is implemented as its own transient populat
       :math:`^{56}\mathrm{Ni}` decay, the same mechanism that powers most other core-collapse SN light
       curves. Others show only the single, radioactively powered peak, with no resolved early bump.
       Where :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` models only the shock-cooling
-      component from first principles, this population is a purely phenomenological light curve intended
-      to span the whole population -- single- and double-peaked events alike -- in a single functional
-      form.
+      component, cut at the edge of its regime of validity, this population adds the radioactively powered
+      main peak and evaluates the shock cooling at every epoch, so a single SED spans the whole light curve.
 
       This population is implemented by
       :class:`~uvex_transients.transients.supernovae.TypeIIbSNe`, pairing
@@ -757,9 +756,11 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. note::
 
-         The priors below are broad, order-of-magnitude-motivated ranges, not yet a fit to any specific
-         real Type IIb event. This page will be updated if/when they are recalibrated against data (as
-         :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED` was).
+         The shock cooling priors are those of :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
+         and the nickel priors are those of the Type Ib SED
+         (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`). Neither is a fit to Type IIb events, and
+         the redshift limit and duration below were derived for an earlier, phenomenological Type IIb SED.
+         They need to be recomputed.
 
       .. rubric:: Quick Facts
 
@@ -799,99 +800,90 @@ a different, double-pulse form. Each is implemented as its own transient populat
 
       .. rubric:: SED Model
 
-      :class:`~uvex_transients.models.supernovae.IIb.TypeIIbSED` pairs a superposition of two Bazin
-      pulses with the same single-power-law cooling blackbody photosphere used elsewhere in this package
-      (e.g. :class:`~uvex_transients.models.supernovae.VillarCoolingBlackbodySED`):
+      :class:`~uvex_transients.models.supernovae.IIb.TypeIIbSED` adds two emission components,
 
       .. math::
 
-          L_\mathrm{bol}(t) =
-          A_0\,
-          \frac{\exp[-(t-t_0)/\tau_{\mathrm{fall},0}]}{1 + \exp[-(t-t_0)/\tau_{\mathrm{rise},0}]}
-          +
-          A_1\,
-          \frac{\exp[-(t-t_1)/\tau_{\mathrm{fall},1}]}{1 + \exp[-(t-t_1)/\tau_{\mathrm{rise},1}]},
-          \qquad
-          T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\left(1 + \frac{t}{\tau_T}\right)^{-\alpha_T}.
+          L_\nu(\nu, t) = L_\nu^\mathrm{shock}(\nu, t) + L_\nu^\mathrm{Ni}(\nu, t).
 
-      The light curve is delegated directly to
-      :class:`~uvex_transients.models.lightcurves.generic.TwoComponentBazinLightcurve`: two ordinary
-      :class:`~uvex_transients.models.lightcurves.generic.BazinLightcurve` pulses, added rather than
-      multiplied -- an early one centered on :math:`t_0` standing in for the shock-cooling peak, and a
-      later one centered on :math:`t_1` for the radioactively powered main peak. Because the two
-      components are independent and additive, a single functional form covers both populations at once:
-      with the early component's amplitude :math:`A_0` much smaller than the main peak's :math:`A_1`,
-      only the main peak is visible (a single-peaked event); with :math:`A_0` comparable to :math:`A_1`,
-      both peaks show, with a dip between them where each pulse has decayed enough for the other to
-      dominate (a double-peaked event). This fits real double- and single-peaked Type IIb light curves
-      better than a single pulse reshaped by a multiplicative modulation.
+      The first is the full shock cooling SED of :footcite:t:`2024MNRAS.528.7137M`
+      (:class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`), which dominates the first
+      days. It is evaluated at every epoch, without the cut at the edges of that paper's regime of
+      validity, so it does not switch off after a day or two and the luminosity is not zero through the
+      trough. The price is that the formulas are not valid before :math:`t_\mathrm{min}`, where the
+      luminosity grows without bound toward :math:`t \to 0`. The second is the line-blanketed Arnett
+      nickel light curve of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, which produces the
+      main peak at about 20 days. Together they give a luminous decline after breakout, a trough, and a
+      rise to the nickel peak. The two components are independent, so nothing ties the envelope mass of the
+      shock cooling to the ejecta mass of the nickel component.
 
       .. dropdown:: Parameter priors
 
-         ``amplitude_0`` -- the early peak's normalization -- is uniform in
-         :math:`\log_{10}(A_0/\mathrm{erg\,s^{-1}})` between 39 and 43, i.e. from
-         :math:`10^{39}` to :math:`10^{43}\ \mathrm{erg\,s^{-1}}`: far fainter than the main peak (an
-         effectively single-peaked draw) up to brighter than it (a double-peaked, or even
-         early-peak-dominated, draw); roughly a third of draws from the priors below are double-peaked.
-         ``t0`` and ``T_floor`` are held fixed; every other parameter is drawn from a broad Uniform (or,
-         for ``amplitude_1``/``T0``, Normal-in-log) prior.
+         The shock cooling parameters have the priors of
+         :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`, and the nickel and
+         line-blanketing parameters those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except
+         ``M_Ni``.
 
          .. list-table::
             :header-rows: 1
-            :widths: 16 12 26 46
+            :widths: 16 12 38 34
 
             * - Parameter
               - Symbol
               - Prior
               - Notes
-            * - ``amplitude_0``
-              - :math:`A_0`
-              - LogUniform(:math:`10^{39}`, :math:`10^{43}\ \mathrm{erg\,s^{-1}}`)
-              - Early, shock-cooling peak normalization; spans negligible to brighter than the main peak.
-            * - ``t0``
-              - :math:`t_0`
-              - Fixed (2 d)
-              - Transition time of the early peak.
-            * - ``rise_0``
-              - :math:`\tau_{\mathrm{rise},0}`
-              - Uniform(0.3 d, 1 d)
-              - Logistic rise timescale of the early peak.
-            * - ``fall_0``
-              - :math:`\tau_{\mathrm{fall},0}`
-              - Uniform(3 d, 10 d)
-              - Exponential decline timescale of the early peak.
-            * - ``amplitude_1``
-              - :math:`A_1`
-              - Normal(:math:`\log_{10}(A_1/\mathrm{erg\,s^{-1}})`; mean=42.5, :math:`\sigma`\=0.1)
-              - Main, radioactively powered peak normalization (median :math:`\sim3\times10^{42}` erg/s).
-            * - ``t1``
-              - :math:`t_1`
-              - Uniform(10 d, 20 d)
-              - Transition time of the main peak.
-            * - ``rise_1``
-              - :math:`\tau_{\mathrm{rise},1}`
-              - Uniform(2 d, 4 d)
-              - Logistic rise timescale of the main peak.
-            * - ``fall_1``
-              - :math:`\tau_{\mathrm{fall},1}`
-              - Uniform(30 d, 55 d)
-              - Exponential decline timescale of the main peak.
-            * - ``T0``
-              - :math:`T_0`
-              - Normal(:math:`\log_{10}(T_0/\mathrm{K})`; mean=4.1, :math:`\sigma`\=0.05)
-              - Photospheric temperature as :math:`t \to 0` (median :math:`\sim1.3\times10^4` K).
+            * - ``v_star``
+              - :math:`v_*`
+              - LogNormal(:math:`\sigma`\=0.35) around :math:`6.3\times10^8` cm/s
+              - Scale velocity of the shock near the stellar surface.
+            * - ``radius``
+              - :math:`R`
+              - LogNormal(:math:`\sigma`\=0.85) around :math:`6\times10^{12}` cm
+              - Progenitor stellar radius.
+            * - ``opacity``
+              - :math:`\kappa`
+              - Fixed (0.34 cm\ :sup:`2` g\ :sup:`-1`)
+              - Electron-scattering opacity of the shock cooling.
+            * - ``envelope_mass``
+              - :math:`M_E`
+              - LogNormal(:math:`\sigma`\=1.0) around :math:`0.05\ M_\odot`
+              - Hydrogen-rich envelope mass.
+            * - ``core_mass``
+              - :math:`M_C`
+              - LogNormal(:math:`\sigma`\=0.35) around :math:`2.8\ M_\odot`
+              - Core mass.
+            * - ``M_Ni``
+              - :math:`M_\mathrm{Ni}`
+              - TruncatedNormal(mean=0.1, :math:`\sigma`\=0.07, bounds 0.01 to 0.4 :math:`M_\odot`)
+              - Nickel-56 mass. Lower than the Type Ib value.
+            * - ``M_ej``
+              - :math:`M_\mathrm{ej}`
+              - TruncatedNormal(mean=2.6, :math:`\sigma`\=1.1, bounds 0.1 to 8 :math:`M_\odot`)
+              - Ejecta mass.
+            * - ``v_ej``
+              - :math:`v_\mathrm{ej}`
+              - TruncatedNormal(mean=9.9, :math:`\sigma`\=1.4, bounds 4 to 16; units of :math:`10^3` km/s)
+              - Constant ejecta velocity.
+            * - ``kappa``
+              - :math:`\kappa`
+              - Fixed (0.06 cm\ :sup:`2` g\ :sup:`-1`)
+              - Grey optical opacity of the ejecta.
+            * - ``kappa_gamma``
+              - :math:`\kappa_\gamma`
+              - Fixed (0.04 cm\ :sup:`2` g\ :sup:`-1`)
+              - Opacity to high-energy photons.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
-              - Fixed (:math:`4\times10^3` K)
-              - Asymptotic late-time photospheric temperature.
-            * - ``tau_T``
-              - :math:`\tau_T`
-              - Uniform(5 d, 10 d)
-              - Photospheric cooling timescale.
-            * - ``alpha_T``
-              - :math:`\alpha_T`
-              - Uniform(0.7, 1.3)
-              - Photospheric cooling power-law index.
+              - TruncatedNormal(mean=5000 K, :math:`\sigma`\=1000 K, bounds 3000 K to 10000 K)
+              - Minimum photospheric temperature of the nickel component.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed (:math:`0.75\times10^{15}` Hz)
+              - Frequency blueward of which line blanketing suppresses the nickel component.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed (5.0)
+              - Power-law index of the line-blanketing suppression.
 
       .. rubric:: Simulated Light Curves
 
@@ -899,10 +891,10 @@ a different, double-pulse form. Each is implemented as its own transient populat
       resulting bolometric light curves and photospheric temperatures, overlaid with the observed
       light curves and temperatures of several Type IIb SNe
       :footcite:p:`richmond1994,taubenberger2011,moralesgaroffolo2014,moralesgaroffolo2015,yamanaka2025,prentice2019`.
-      The spread illustrates the single-/double-peaked split described above: most realizations show
-      only the main peak, with a minority showing a distinct early bump or, at the high end of the
-      ``amplitude_0`` prior, an early-dominated light curve -- both SN 1993J and SN 2011fu are
-      well-known double-peaked events, and show up as such in the overlaid data.
+      The spread shows the early shock cooling decline, the trough and the nickel peak, with the depth of
+      the trough set by the shock cooling parameters. The shock cooling is evaluated outside its regime of
+      validity at the earliest times, so the very early luminosity of the brightest draws should not be
+      read as a prediction.
 
       .. plot::
          :include-source: false

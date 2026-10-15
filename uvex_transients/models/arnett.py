@@ -34,7 +34,6 @@ from numba import njit
 from uvex_transients.models._constants import (
     C_CGS,
     MSUN_G,
-    SIGMA_SB_CGS,
     cobalt_decay_time,
     cobalt_decay_yield,
     nickel_decay_time,
@@ -42,8 +41,7 @@ from uvex_transients.models._constants import (
 )
 from uvex_transients.models._typing import CGSParameterValue, FloatArray, FloatValue, PhysicalInput
 from uvex_transients.models._util_functions import (
-    modified_blackbody_intensity_log_cgs,
-    modified_blackbody_log_norm_cgs,
+    modified_blackbody_unit_shape_log_cgs,
     photospheric_temperature_with_floor_cgs,
 )
 from uvex_transients.models._utils import ensure_in_units, to_cgs_value
@@ -1191,10 +1189,7 @@ class LineBlanketedArnettDecaySED(ArnettDecaySED):
         numpy.ndarray
             The natural log of the unit-integral spectral shape, in 1/Hz.
         """
-        shape = modified_blackbody_intensity_log_cgs(
-            nu, temperature, break_frequency, beta, np.pi / (SIGMA_SB_CGS * temperature**4), cls.SMOOTHING
-        )
-        return shape - modified_blackbody_log_norm_cgs(temperature, break_frequency, beta, cls.SMOOTHING)
+        return modified_blackbody_unit_shape_log_cgs(nu, temperature, break_frequency, beta, cls.SMOOTHING)
 
     @classmethod
     def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
