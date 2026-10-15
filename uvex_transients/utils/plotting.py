@@ -68,6 +68,7 @@ __all__ = [
     "add_funnel_legend",
     "plot_rate_bars",
     "plot_detection_horizon",
+    "plot_swift_uv_calibration",
 ]
 
 
@@ -970,5 +971,119 @@ def plot_detection_horizon(
     ax_limit.set_ylabel("Redshift horizon")
     ax_limit.legend(loc="upper left", fontsize=8, frameon=False)
 
+    fig.tight_layout()
+    return fig
+
+
+def plot_swift_uv_calibration(
+    sed,
+    sn_type: str,
+    *,
+    band: str = "UVW1",
+    n_models: int = 100,
+    n_observed: int = 20,
+    min_points: int = 4,
+    rng: np.random.Generator | int | None = 0,
+    ax: Axes | None = None,
+) -> Figure:
+    r"""
+    Overplot Swift/UVOT light curves on a supernova SED's simulated light curves in one UV band.
+
+    Parameters of `sed` are drawn from its priors, and each draw is integrated through the SVO transmission curve of
+    the UVOT filter (see `~uvex_transients.utils.filter_utils.get_bandpass`) at the median redshift of the plotted
+    supernovae. The result is expressed as the quantity the Swift archive stores,
+    :math:`\nu_\mathrm{eff} L_\nu = 4 \pi d_L^2 \nu_\mathrm{eff} f_\nu`, so model and data are compared directly.
+    Observed light curves are a random sample of the archive's supernovae of type `sn_type`. Those timed from an
+    estimated explosion date are drawn in black, and those timed from discovery in grey, since discovery lags
+    explosion by an unknown amount.
+
+    Parameters
+    ----------
+    sed : type
+        A `~uvex_transients.models.core.base.SpectralModel` subclass, e.g.
+        `~uvex_transients.models.supernovae.TypeIaSED`.
+    sn_type : str
+        The ``type_standard`` of the Swift supernovae to overplot, e.g. ``"Ia"`` or ``"SLSN-I"``.
+    band : str, optional
+        UVOT band, one of ``"UVW1"``, ``"UVM2"`` or ``"UVW2"``. The default is ``"UVW1"``, the best sampled.
+    n_models : int, optional
+        Number of simulated light curves. The default is 100.
+    n_observed : int, optional
+        Maximum number of observed supernovae to overplot. The default is 20.
+    min_points : int, optional
+        Minimum number of detections in `band` for a supernova to be eligible. The default is 4.
+    rng : numpy.random.Generator or int, optional
+        Random-number source for the parameter draws and the observed sample. The default is 0.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If `None`, a new figure is created.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The figure.
+    """
+    from . import get_rng
+    from .cosmology import get_cosmology
+    from .filter_utils import get_bandpass
+    from .swift_sne_archive import SwiftSNeArchive
+
+    rng = get_rng(rng)
+    archive = SwiftSNeArchive()
+    eligible = [
+        name
+        for name in archive.objects(sn_type=sn_type)
+        if band in archive.bands(name) and archive.meta(name, band)["n_det"] >= min_points
+    ]
+    if not eligible:
+        raise ValueError(f"No {sn_type!r} supernova has at least {min_points} {band} detections.")
+    chosen = sorted(rng.choice(eligible, size=min(n_observed, len(eligible)), replace=False))
+
+    z_ref = max(float(np.nanmedian([archive.meta(name)["redshift"] for name in chosen])), 1e-3)
+    lam_eff = archive.meta(chosen[0], band)["lambda_eff_AA"] * u.AA
+    nu_eff = lam_eff.to(u.Hz, equivalencies=u.spectral())
+    d_L = get_cosmology().luminosity_distance(z_ref)
+
+    curves = [archive.lightcurve(name, band) for name in chosen]
+    t_max = 1.1 * max(float(np.max(lc["t"].value)) for lc in curves)
+    t = np.linspace(0.5, t_max, 250) * u.day
+
+    params = sed().sample_parameters(size=n_models, rng=rng)
+    params_grid = {name: value[:, None] for name, value in params.items()}
+    mag = sed.mag_bandpass(get_bandpass(f"Swift/UVOT.{band}"), t, redshift=z_ref, **params_grid)
+    f_nu = mag.to(u.erg / u.s / u.cm**2 / u.Hz)
+    L_model = (4 * np.pi * d_L**2 * nu_eff * f_nu).to_value(u.erg / u.s)
+
+    fig, ax = resolve_fig_axes(axes=ax)
+    ax.plot(t.value, L_model.T, color="C0", lw=0.4, alpha=0.15)
+    n_explosion = 0
+    for name, lc in zip(chosen, curves):
+        from_explosion = archive.meta(name)["t0_source"] == "explosion"
+        n_explosion += from_explosion
+        ax.plot(
+            lc["t"].value,
+            lc["L"].value,
+            color="k" if from_explosion else "0.55",
+            lw=0.8,
+            marker="o",
+            ms=2.5,
+            alpha=0.8,
+        )
+    ax.plot([], [], color="k", marker="o", ms=2.5, label=f"Swift, from explosion (n={n_explosion})")
+    ax.plot([], [], color="0.55", marker="o", ms=2.5, label=f"Swift, from discovery (n={len(chosen) - n_explosion})")
+    ax.plot([], [], color="C0", label=f"model draws (n={n_models}, z={z_ref:.3g})")
+
+    ax.set_yscale("log")
+    ax.set_xlim(0, t_max)
+    model = L_model[np.isfinite(L_model) & (L_model > 0)]
+    observed = np.concatenate([lc["L"].value for lc in curves])
+    observed = observed[observed > 0]
+    ax.set_ylim(
+        min(observed.min(), max(model.min(), 1e-3 * model.max())) / 2,
+        3 * max(model.max(), observed.max()),
+    )
+    ax.set_xlabel("Observer-frame time since $t_0$ [days]")
+    ax.set_ylabel(rf"$\nu L_\nu$ ({band}) [erg s$^{{-1}}$]")
+    ax.set_title(f"{sn_type}: simulated {band} light curves vs Swift/UVOT")
+    ax.legend(loc="upper right", fontsize=8, frameon=False)
     fig.tight_layout()
     return fig
