@@ -485,7 +485,7 @@
 <span class="c1"># Footprint Type                         #</span>
 <span class="c1"># ====================================== #</span>
 <div class="viewcode-block" id="SurveyFootprint">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.base.SurveyFootprint">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SurveyFootprint</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -563,7 +563,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SurveyFootprint.clear_from_cache">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.clear_from_cache.html#uvex_transients.surveys.footprints.base.SurveyFootprint.clear_from_cache">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.clear_from_cache.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint.clear_from_cache">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_from_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Delete the cached MOC file, if any, and drop the in-memory copy."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cache_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -587,7 +587,7 @@
     <span class="c1"># Generator Action    #</span>
     <span class="c1"># ------------------- #</span>
 <div class="viewcode-block" id="SurveyFootprint.generate_MOC">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.generate_MOC.html#uvex_transients.surveys.footprints.base.SurveyFootprint.generate_MOC">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.generate_MOC.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint.generate_MOC">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_MOC</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MOC</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run `generator`, degrade to :attr:`MOC_max_order` if needed, and cache if :attr:`persist`.</span>
@@ -632,7 +632,7 @@
     <span class="c1"># Querying            #</span>
     <span class="c1"># ------------------- #</span>
 <div class="viewcode-block" id="SurveyFootprint.contains">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains.html#uvex_transients.surveys.footprints.base.SurveyFootprint.contains">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint.contains">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Test which sky positions fall inside the footprint.</span>
@@ -653,7 +653,7 @@
 
 
 <div class="viewcode-block" id="SurveyFootprint.contains_skycoord">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord.html#uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.contains_skycoord.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint.contains_skycoord">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">contains_skycoord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="n">SkyCoord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Test which positions of a `~astropy.coordinates.SkyCoord` fall inside the footprint.</span>
@@ -677,7 +677,7 @@
     <span class="c1"># Registering         #</span>
     <span class="c1"># ------------------- #</span>
 <div class="viewcode-block" id="SurveyFootprint.register">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.register.html#uvex_transients.surveys.footprints.base.SurveyFootprint.register">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.SurveyFootprint.register.html#uvex_transients.surveys.footprints.lsst.SurveyFootprint.register">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registry</span><span class="p">:</span> <span class="s2">"FootprintRegistry | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SurveyFootprint"</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add this footprint to a registry.</span>
@@ -712,7 +712,7 @@
 <span class="c1"># Footprint Registry                     #</span>
 <span class="c1"># ====================================== #</span>
 <div class="viewcode-block" id="FootprintRegistry">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.html#uvex_transients.surveys.footprints.base.FootprintRegistry">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FootprintRegistry</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Case-insensitive lookup of `SurveyFootprint` objects by :attr:`~SurveyFootprint.name`."""</span>
 
@@ -724,7 +724,7 @@
         <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
 <div class="viewcode-block" id="FootprintRegistry.register">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.register.html#uvex_transients.surveys.footprints.base.FootprintRegistry.register">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.register.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry.register">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">footprint</span><span class="p">:</span> <span class="n">SurveyFootprint</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add `footprint`, keyed on its name.</span>
@@ -748,7 +748,7 @@
 
 
 <div class="viewcode-block" id="FootprintRegistry.get">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.get.html#uvex_transients.surveys.footprints.base.FootprintRegistry.get">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.get.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveyFootprint</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Look up a footprint by its full name, e.g. ``"uvex:lmlz:wide"``.</span>
@@ -775,7 +775,7 @@
 
 
 <div class="viewcode-block" id="FootprintRegistry.resolve">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.resolve.html#uvex_transients.surveys.footprints.base.FootprintRegistry.resolve">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.resolve.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry.resolve">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">footprint</span><span class="p">:</span> <span class="s2">"SurveyFootprint | str"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SurveyFootprint</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return `footprint` itself if it is a `SurveyFootprint`, else look it up by name.</span>
@@ -807,7 +807,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_footprints</span>
 
 <div class="viewcode-block" id="FootprintRegistry.names">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.names.html#uvex_transients.surveys.footprints.base.FootprintRegistry.names">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.names.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry.names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        List registered names, optionally only those starting with `prefix`.</span>
@@ -826,7 +826,7 @@
 
 
 <div class="viewcode-block" id="FootprintRegistry.match">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.match.html#uvex_transients.surveys.footprints.base.FootprintRegistry.match">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.FootprintRegistry.match.html#uvex_transients.surveys.footprints.lsst.FootprintRegistry.match">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Test sky positions against several footprints.</span>
@@ -884,7 +884,7 @@
 
 
 <div class="viewcode-block" id="combine_MOC">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.combine_MOC.html#uvex_transients.surveys.footprints.base.combine_MOC">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.combine_MOC.html#uvex_transients.surveys.footprints.lsst.combine_MOC">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_MOC</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">max_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">operands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">operand_keys</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="n">MOC</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Registry-contract generator that combines the MOCs of registered footprints.</span>
@@ -927,7 +927,7 @@
 
 
 <div class="viewcode-block" id="combine_footprints">
-<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.combine_footprints.html#uvex_transients.surveys.footprints.base.combine_footprints">[docs]</a>
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.surveys.footprints.base.combine_footprints.html#uvex_transients.surveys.footprints.lsst.combine_footprints">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">combine_footprints</span><span class="p">(</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">operation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>

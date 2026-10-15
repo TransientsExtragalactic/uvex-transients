@@ -58,12 +58,22 @@ for suffix, label, marker, color in lbol_only_iip_sne:
         label=label,
     )
 
+comparison_sne = [e for e in archive.events("supernovae/IIP") if e.endswith("_jacobsongalan2024")]
+for i, suffix in enumerate(comparison_sne):
+    lbol_obs = archive.table("supernovae/IIP", suffix, "L_bol")
+    ax_L.plot(
+        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+        color="0.6", lw=0.6, marker=".", ms=3, alpha=0.6, zorder=3,
+        label=f"Jacobson-Galan+24 (n={len(comparison_sne)})" if i == 0 else None,
+    )
+
 ax_L.set_xscale("log")
 ax_L.set_yscale("log")
 ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
 ax_L.set_title("Type IIP SNe: simulated bolometric light curves (n=300)")
 ax_L.legend(loc="lower left", fontsize=8, frameon=False)
 ax_L.set_ylim([1e40,None])
+ax_L.set_xlim(0.3, 300)
 ax_T.set_yscale("log")
 ax_T.set_xlabel("Time since explosion [days]")
 ax_T.set_ylabel("Photospheric temperature [K]")

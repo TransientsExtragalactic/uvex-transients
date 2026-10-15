@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from uvex_transients.missions import uvex_fast as uvex
-from uvex_transients.transients.supernovae import TypeIcBLSNe
+from uvex_transients.transients.supernovae import TypeIcSNe
 from uvex_transients.utils.plotting import plot_detection_horizon
 
-transient = TypeIcBLSNe()
+transient = TypeIcSNe()
 curve, grid = transient.get_detection_horizon(
     np.arange(22.0, 27.01, 0.5),
     uvex.detector.bandpasses,

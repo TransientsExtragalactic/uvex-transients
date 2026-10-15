@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 from astropy import units as u
 
 from uvex_transients.missions import uvex_fast as uvex
-from uvex_transients.transients.supernovae import TypeIcBLSNe
+from uvex_transients.transients.supernovae import TypeIcSNe
 from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
-rng = np.random.default_rng(20260924)
+rng = np.random.default_rng(20260918)
 n_samples = 1000
 
-sn = TypeIcBLSNe()
+sn = TypeIcSNe()
 redshift = sn.sample_event_redshift(n_samples, rng=rng)
 params = sn.sed.sample_parameters(size=n_samples, rng=rng)
 params_grid = {pname: value[:, None] for pname, value in params.items()}
@@ -55,7 +55,7 @@ plot_rate_bars(
 )
 ax.set_yscale("log")
 ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
-ax.set_title("Peak-visible Type Ic-BL rate")
+ax.set_title("Peak-visible Type Ic rate")
 add_funnel_legend(ax, loc="lower right")
 
 fig.tight_layout()
