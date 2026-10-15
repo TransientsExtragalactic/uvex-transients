@@ -617,6 +617,7 @@
 </details></li>
 <li class="toctree-l3 current active has-children"><a aria-current="page" class="current reference internal" href="#">uvex_transients.models.spectra.thermal</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.spectra.thermal.BlackbodySpectrum.html">BlackbodySpectrum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum.html">ModifiedBlackbodySpectrum</a></li>
 </ul>
 </details></li>
 </ul>
@@ -1743,11 +1744,20 @@ arbitrary reference frequency to anchor it, a blackbody’s shape has no free
 normalization choice: the Planck function, normalized by the
 Stefan-Boltzmann law, already integrates to exactly 1 over all frequencies
 for any temperature.</p>
+<p><a class="reference internal" href="uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum.html#uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum" title="uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModifiedBlackbodySpectrum</span></code></a> multiplies that shape by a smooth suppression
+blueward of a break frequency, mimicking the UV line blanketing of supernova photospheres
+(Nicholl et al. 2017). It is no longer normalized by construction, so its normalization is
+the Stefan-Boltzmann-scaled integral of the suppressed Planck function, looked up from an
+interpolation table (see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">modified_blackbody_norm_interpolator()</span></code>).</p>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.spectra.thermal.BlackbodySpectrum.html#uvex_transients.models.spectra.thermal.BlackbodySpectrum" title="uvex_transients.models.spectra.thermal.BlackbodySpectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BlackbodySpectrum</span></code></a>(**overrides)</p></td>
 <td><p>Blackbody spectral shape, shaped entirely by a sampled <code class="docutils literal notranslate"><span class="pre">temperature</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum.html#uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum" title="uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModifiedBlackbodySpectrum</span></code></a>(**overrides)</p></td>
+<td><p>Line-blanketed blackbody spectral shape.</p></td>
 </tr>
 </tbody>
 </table>
