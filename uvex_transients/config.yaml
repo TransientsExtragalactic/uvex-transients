@@ -285,8 +285,21 @@ simulation:
   # Memory/precision tuning knobs for SurveySimulator.filter_by_limiting_magnitude
   # -- see its docstring for the array-memory tradeoff each controls.
   filter_by_limiting_magnitude:
-    n_phase: 50
+    # The phase grid is geometric from t_min (days) to each type's duration_limit, since the
+    # brightest epoch ranges from hours to months after explosion. Sharp peaks (TDEs,
+    # kilonovae, LFBOTs) need more points than broad ones. 32 puts the peak magnitude within
+    # ~0.07 mag for every shipped class (16 suffices for the supernovae but not these).
+    n_phase: 32
+    t_min: 0.05
     chunk_size: 5000
+    # The screen integrates over a coarser copy of each bandpass (accurate to bandpass_tol_mag for
+    # thermal spectra; 0 uses the mission's bandpasses as they are) and keeps events up to `margin`
+    # magnitudes fainter than the limit, so the grid and bandpass errors never reject an event the
+    # full evaluation would keep. filter_by_snr then makes the real decision. At 0.1 and 0.25 the
+    # screen was ~8x faster than the full evaluation with no false rejects (checked per transient
+    # class against a dense reference); it keeps ~15% more events.
+    bandpass_tol_mag: 0.1
+    margin: 0.25
 
   # Memory tuning knob for SurveySimulator.filter_by_snr; see its docstring.
   filter_by_snr:

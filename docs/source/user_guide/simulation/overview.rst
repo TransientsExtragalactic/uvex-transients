@@ -311,7 +311,7 @@ what remains.
       **Description:** Schedule-independent -- it never checks whether the schedule actually
       pointed anywhere near an event. For each transient type, every event's own physical
       parameters are regenerated from its stored ``parameter_seed`` and evaluated over a shared
-      ``linspace(0, duration_limit, n_phase)`` phase grid, the same grid for every event of that
+      log-spaced ``geomspace(t_min, duration_limit, n_phase)`` phase grid, the same grid for every event of that
       type; an event survives if its brightest requested band clears ``mag_limit`` at ``n_visits``
       or more of those phase samples.
 

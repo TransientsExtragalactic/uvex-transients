@@ -11,6 +11,7 @@ from m4opt.missions._uvex import uvex
 
 from uvex_transients.simulation.core import (
     SurveySimulator,
+    _phase_grid,
     _sample_parameters_from_seeds,
 )
 from uvex_transients.simulation.event_catalog import EventCatalog
@@ -469,3 +470,42 @@ def test_iter_epochs_validates_eagerly(make_schedule, hot_spot):
         sim.iter_epochs(catalog, uvex, chunk_size=0)
     with pytest.raises(ValueError, match="mask"):
         sim.iter_epochs(catalog, uvex, mask=np.ones(3, dtype=bool))
+
+
+def test_phase_grid_is_log_spaced_and_ends_at_the_duration():
+    grid = _phase_grid(200 * u.day, n_phase=16)
+    assert grid.shape == (16,)
+    assert grid.unit == u.day
+    assert grid[0].value == pytest.approx(0.05)
+    assert grid[-1].value == pytest.approx(200)
+    assert np.allclose(np.diff(np.log(grid.value)), np.diff(np.log(grid.value))[0])
+
+
+def test_phase_grid_start_never_exceeds_a_short_duration():
+    grid = _phase_grid(1 * u.hour, n_phase=8)
+    assert grid[0] < grid[-1]
+    assert grid[-1].to_value(u.hour) == pytest.approx(1)
+
+
+def test_filter_by_limiting_magnitude_screen_never_rejects_what_the_exact_cut_keeps(make_schedule, hot_spot):
+    """The coarse-bandpass, margin screen keeps a superset of the exact (margin=0, full bandpass) cut."""
+    transient = TidalDisruptionEvent()
+    sim = SurveySimulator(make_schedule(n_sched=5), transients={"tde": transient}, simulation_seed=1)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=200, seed=4)
+
+    exact = sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=19.0, margin=0.0, bandpass_tol_mag=0.0)
+    screen = sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=19.0)
+    wide = sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=19.0, margin=2.0)
+
+    exact_ids, screen_ids, wide_ids = (set(c.table["event_id"]) for c in (exact, screen, wide))
+    assert 0 < len(exact_ids) < len(catalog.table)
+    assert exact_ids <= screen_ids <= wide_ids
+
+
+@pytest.mark.parametrize("kwargs", [{"margin": -0.1}, {"bandpass_tol_mag": -0.1}])
+def test_filter_by_limiting_magnitude_rejects_negative_tolerances(make_schedule, hot_spot, kwargs):
+    transient = TidalDisruptionEvent()
+    sim = SurveySimulator(make_schedule(n_sched=5), transients={"tde": transient}, simulation_seed=1)
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=3)
+    with pytest.raises(ValueError, match="non-negative"):
+        sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0, **kwargs)
