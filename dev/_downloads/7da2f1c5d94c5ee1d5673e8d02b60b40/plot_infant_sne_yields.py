@@ -42,6 +42,7 @@ from erfa import ErfaWarning
 import uvex_transients.transients
 from uvex_transients.dust import log_attenuation
 from uvex_transients.missions import get_mission
+from uvex_transients.simulation import estimate_yield
 from uvex_transients.utils import get_results, get_rng
 
 # Reading the time columns triggers "dubious year" warnings; they're harmless.
@@ -233,11 +234,31 @@ if summary is not None:
 # stands for :math:`\mu_0 / n` real ones. Every cut is a subset of the one before it, except that the three
 # conditions are alternative ways of triggering on the infants. The overall detections dwarf everything else, so
 # they get a panel of their own.
+#
+# Each bar carries two uncertainties, from :func:`~uvex_transients.simulation.rates.estimate_yield`. The dark
+# bars are the Monte Carlo error of the finite sample (a Clopper-Pearson interval on the selected fraction of each
+# type, added in quadrature across types since the draws are independent). The light bars are the uncertainty on
+# the volumetric rates, summed across types, which assumes the types' rates are fully correlated and so is
+# conservative. Rare categories are dominated by the Monte Carlo error.
 
 
-def weighted_count(event_ids):
-    """Sum of the event weights over the given event ids."""
-    return float(np.sum(np.asarray(summary["weight"])[np.isin(summary["event_id"], event_ids)]))
+def yield_with_errors(event_ids):
+    """Expected events for the given event ids, with Monte Carlo and rate uncertainties.
+
+    Returns the total and, for each of the Monte Carlo and rate uncertainties, the (lower, upper) distance
+    from the total to its bounds.
+    """
+    per_type = estimate_yield(summary, mask=np.isin(summary["event_id"], event_ids))
+    expected = np.asarray(per_type["expected_events"])
+    mc_lower = expected - np.asarray(per_type["expected_events_binom_lower"])
+    mc_upper = np.asarray(per_type["expected_events_binom_upper"]) - expected
+    rate_lower = expected - np.asarray(per_type["expected_events_rate_lower"])
+    rate_upper = np.asarray(per_type["expected_events_rate_upper"]) - expected
+    return (
+        expected.sum(),
+        (np.hypot.reduce(mc_lower), np.hypot.reduce(mc_upper)),
+        (rate_lower.sum(), rate_upper.sum()),
+    )
 
 
 categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(b)", "(c)", "(a) OR (b)\nOR (c)"]
@@ -245,26 +266,42 @@ categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(
 if summary is not None:
     detected_ids = np.asarray(summary["event_id"])[np.asarray(summary["n_det"]) > 0]
     yields = [
-        weighted_count(detected_ids),
-        weighted_count(infant_summary["event_id"]),
-        weighted_count(infant_theory_ids),
-        weighted_count(cut_ids["a"]),
-        weighted_count(cut_ids["b"]),
-        weighted_count(cut_ids["c"]),
-        weighted_count(triggered_ids),
+        yield_with_errors(ids)
+        for ids in (
+            detected_ids,
+            infant_summary["event_id"],
+            infant_theory_ids,
+            cut_ids["a"],
+            cut_ids["b"],
+            cut_ids["c"],
+            triggered_ids,
+        )
     ]
+    for name, (total, mc, rate) in zip(categories, yields):
+        print(
+            f"{name.replace(chr(10), ' '):<24} {total:>8.1f}  MC +{mc[1]:.1f}/-{mc[0]:.1f}  "
+            f"rate +{rate[1]:.1f}/-{rate[0]:.1f}"
+        )
 
     # The overall detections dwarf everything else, so they get their own panel.
     fig, (ax_det, ax_rest) = plt.subplots(1, 2, figsize=(11, 4.5), gridspec_kw={"width_ratios": [1, 6], "wspace": 0.12})
-    for ax, cols, fmt in ((ax_det, [0], "%.0f"), (ax_rest, range(1, len(categories)), "%.1f")):
-        bars = ax.bar(np.arange(len(cols)), [yields[c] for c in cols], 0.7, color="#2a78d6")
-        ax.bar_label(bars, fmt=fmt, fontsize=8, padding=2)
-        ax.set_xticks(np.arange(len(cols)), [categories[c] for c in cols])
+    for ax, cols, fmt in ((ax_det, [0], "{:.0f}"), (ax_rest, range(1, len(categories)), "{:.1f}")):
+        x = np.arange(len(cols))
+        total = np.array([yields[c][0] for c in cols])
+        mc = np.array([yields[c][1] for c in cols]).T
+        rate = np.array([yields[c][2] for c in cols]).T
+        ax.bar(x, total, 0.7, color="#2a78d6")
+        ax.errorbar(x + 0.12, total, yerr=rate, fmt="none", ecolor="#9aa5b1", elinewidth=3, capsize=0)
+        ax.errorbar(x - 0.12, total, yerr=mc, fmt="none", ecolor="k", elinewidth=1.2, capsize=3)
+        for xi, t, top in zip(x, total, (total + np.maximum(mc[1], rate[1]))):
+            ax.annotate(fmt.format(t), (xi, top), xytext=(0, 3), textcoords="offset points", ha="center", fontsize=8)
+        ax.set_xticks(x, [categories[c] for c in cols])
+        ax.margins(y=0.12)
         ax.spines[["top", "right"]].set_visible(False)
     ax_det.set_ylabel("Expected events (weighted)")
     fig.suptitle(
         f"Yield (X={X_BRIGHTEN} mag, Y={Y_RATE} mag/day, Z={Z_ABS_MAG}, "
-        f"infant: m <= {INFANT_MAG} within {WINDOW_HR} hr)",
+        f"infant: m <= {INFANT_MAG} within {WINDOW_HR} hr)\nblack: Monte Carlo error, grey: rate uncertainty",
         fontsize=11,
     )
 
@@ -277,13 +314,19 @@ plt.show()
 # What kinds of events are the infant SNe? The raw counts, and the expected number (the sum of the weights).
 
 if summary is not None:
-    types, inverse = np.unique(np.asarray(infant_summary["transient_type"]), return_inverse=True)
-    n_raw = np.bincount(inverse, minlength=len(types))
-    n_weighted = np.bincount(inverse, weights=np.asarray(infant_summary["weight"]), minlength=len(types))
+    infant_yields = estimate_yield(summary, mask=np.isin(summary["event_id"], infant_ids))
+    types = np.asarray(infant_yields["transient_type"]).astype(str)
+    n_raw = np.asarray(infant_yields["n_selected"])
+    n_weighted = np.asarray(infant_yields["expected_events"])
+    mc_lower = n_weighted - np.asarray(infant_yields["expected_events_binom_lower"])
+    mc_upper = np.asarray(infant_yields["expected_events_binom_upper"]) - n_weighted
 
     print(f"{len(infant_summary)} infant SNe ({n_weighted.sum():.1f} expected)")
     for i in np.argsort(-n_weighted):
-        print(f"    {types[i]:<16} {n_raw[i]:>3} events  ({n_weighted[i]:.1f} expected)")
+        print(
+            f"    {types[i]:<16} {n_raw[i]:>3} events  "
+            f"({n_weighted[i]:.1f} +{mc_upper[i]:.1f}/-{mc_lower[i]:.1f} expected, Monte Carlo error)"
+        )
 
 # %%
 # Light curves
