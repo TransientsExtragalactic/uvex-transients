@@ -40,11 +40,14 @@ from uvex_transients.models._constants import (
     nickel_decay_yield,
 )
 from uvex_transients.models._typing import CGSParameterValue, FloatArray, FloatValue, PhysicalInput
-from uvex_transients.models._util_functions import photospheric_temperature_with_floor_cgs
+from uvex_transients.models._util_functions import (
+    modified_blackbody_unit_shape_log_cgs,
+    photospheric_temperature_with_floor_cgs,
+)
 from uvex_transients.models._utils import ensure_in_units, to_cgs_value
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import TruncatedNormalPrior, UniformPrior
+from uvex_transients.models.core.priors import ConstantPrior, TruncatedNormalPrior, UniformPrior
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
 
 __all__ = [
@@ -53,6 +56,7 @@ __all__ = [
     "compute_arnett_luminosity",
     "ArnettMagnetarSpindownSED",
     "ArnettDecaySED",
+    "LineBlanketedArnettDecaySED",
 ]
 
 
@@ -1073,3 +1077,162 @@ class ArnettDecaySED(SpectralModel):
         with np.errstate(divide="ignore"):
             log_luminosity = np.log(luminosity)
         return log_luminosity + BlackbodySpectrum._eval(nu, temperature=temperature)
+
+
+class LineBlanketedArnettDecaySED(ArnettDecaySED):
+    r"""
+    :class:`ArnettDecaySED` with a line-blanketed photosphere in place of the plain blackbody.
+
+    Keeps the radioactive-decay Arnett diffusion and the floored photospheric temperature, but suppresses the
+    UV blueward of ``break_frequency`` as :math:`\nu^{-\beta}` (Nicholl et al. 2017; see
+    :class:`~uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum`). The shape is divided by its
+    integral, taken from the shared table of
+    :func:`~uvex_transients.models._util_functions.get_modified_blackbody_norm_interpolator`, so
+    :math:`L_\mathrm{bol}(t)` is unchanged and the flux removed from the UV is returned redward of the break.
+
+    Subclasses set the physical priors in :attr:`_DEFAULT_PARAMETERS` and tune ``break_frequency`` and ``beta``
+    per transient class. The defaults here are the :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED`
+    values.
+
+    .. rubric:: Parameters
+
+    The parameters of :class:`ArnettDecaySED`, plus:
+
+    .. list-table::
+       :header-rows: 1
+       :widths: 18 18 64
+
+       * - Parameter
+         - Symbol
+         - Description
+       * - ``break_frequency``
+         - :math:`\nu_\mathrm{break}`
+         - Frequency blueward of which line blanketing suppresses the flux.
+       * - ``beta``
+         - :math:`\beta`
+         - Power-law index of the suppression above the break.
+
+    References
+    ----------
+    .. footbibliography::
+    """
+
+    _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
+        **ArnettDecaySED._DEFAULT_PARAMETERS,
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
+        ),
+        "beta": Parameter(
+            prior=ConstantPrior(value=5.0),
+            scale=1.0,
+            description="Power-law index of the suppression above the break.",
+            latex=r"\beta",
+        ),
+    }
+
+    SMOOTHING: ClassVar[float] = 10.0
+    """float: The smoothing parameter :math:`s` of the break, fixed for every instance."""
+
+    @classmethod
+    def _luminosity_and_temperature_cgs(  # type: ignore[override]
+        cls,
+        t: FloatArray,
+        *,
+        break_frequency: CGSParameterValue,
+        beta: CGSParameterValue,
+        **parameters: CGSParameterValue,
+    ) -> tuple[FloatArray, FloatArray]:
+        r"""
+        :math:`L(t)` and :math:`T(t)`, which do not depend on the line-blanketing parameters.
+
+        Parameters
+        ----------
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        break_frequency, beta : float or numpy.ndarray
+            Line-blanketing parameters; accepted and ignored here.
+        **parameters
+            The remaining parameters, passed to :meth:`ArnettDecaySED._luminosity_and_temperature_cgs`.
+
+        Returns
+        -------
+        tuple of (numpy.ndarray, numpy.ndarray)
+            :math:`L(t)`, in erg/s, and :math:`T(t)`, in Kelvin.
+        """
+        return super()._luminosity_and_temperature_cgs(t, **parameters)
+
+    @classmethod
+    def _log_shape(
+        cls,
+        nu: FloatArray,
+        temperature: FloatArray,
+        break_frequency: CGSParameterValue,
+        beta: CGSParameterValue,
+    ) -> FloatArray:
+        r"""
+        :math:`\log S(\nu)` of the line-blanketed blackbody, divided by its integral.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        temperature : numpy.ndarray
+            Photospheric temperature, in K.
+        break_frequency, beta : float or numpy.ndarray
+            Line-blanketing parameters, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the unit-integral spectral shape, in 1/Hz.
+        """
+        return modified_blackbody_unit_shape_log_cgs(nu, temperature, break_frequency, beta, cls.SMOOTHING)
+
+    @classmethod
+    def _eval_spectrum(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
+        r"""
+        :math:`\log S(\nu, t)`, the unit-integral line-blanketed blackbody at the floored photospheric temperature.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of the normalized spectral shape, in 1/Hz.
+        """
+        _, temperature = cls._luminosity_and_temperature_cgs(t, **parameters)
+        return cls._log_shape(nu, temperature, parameters["break_frequency"], parameters["beta"])
+
+    @classmethod
+    def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
+        r"""
+        :math:`\log L_\nu(\nu, t) = \log L(t) + \log S(\nu, t)`, with :math:`L` integrated only once.
+
+        Parameters
+        ----------
+        nu : numpy.ndarray
+            Frequency, in Hz.
+        t : numpy.ndarray
+            Time since explosion, in seconds.
+        **parameters
+            This model's parameter values, in cgs units.
+
+        Returns
+        -------
+        numpy.ndarray
+            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.
+        """
+        luminosity, temperature = cls._luminosity_and_temperature_cgs(t, **parameters)
+        with np.errstate(divide="ignore"):
+            log_luminosity = np.log(luminosity)
+        return log_luminosity + cls._log_shape(nu, temperature, parameters["break_frequency"], parameters["beta"])

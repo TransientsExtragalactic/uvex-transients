@@ -13,8 +13,12 @@ import numpy as np
 import pytest
 from astropy import units as u
 
+from uvex_transients.models.shock_cooling import (
+    MoragShockCoolingArnettSED,
+    MoragShockCoolingBlackbodySED,
+    MoragShockCoolingSED,
+)
 from uvex_transients.models.shock_cooling.morag import _components_log_cgs_morag24
-from uvex_transients.models.shock_cooling import MoragShockCoolingBlackbodySED, MoragShockCoolingSED
 
 MODELS = [MoragShockCoolingBlackbodySED, MoragShockCoolingSED]
 
@@ -170,3 +174,36 @@ class TestIIbLuminosityRegression:
         assert parameters["envelope_mass"].scale == 0.05 * u.Msun
         assert parameters["core_mass"].scale == 2.8 * u.Msun
         assert parameters["v_star"].scale == 2.0 * 10**8.5 * u.cm / u.s
+
+
+class TestIIbAtExplosion:
+    """GitHub issue #62: the Type IIb SED must be finite, and warn about nothing, at ``t = 0``."""
+
+    T_EXPLOSION = np.linspace(0.0, 1.0, 4)[:, np.newaxis] * 3 * u.day
+
+    def _draw(self):
+        return {name: value.scale for name, value in MoragShockCoolingArnettSED._DEFAULT_PARAMETERS.items()}
+
+    def test_bolometric_is_finite_at_zero(self, recwarn):
+        luminosity = MoragShockCoolingArnettSED.eval_bolometric(self.T_EXPLOSION, **self._draw()).ravel()
+        assert np.all(np.isfinite(luminosity.value))
+        assert luminosity[0] == 0 * u.erg / u.s
+        assert np.all(luminosity[1:] > 0 * u.erg / u.s)
+        assert not [w for w in recwarn if issubclass(w.category, RuntimeWarning)]
+
+    def test_spectral_luminosity_is_finite_at_zero(self, recwarn):
+        nu = np.array([1.5e15, 3.0e15]) * u.Hz
+        luminosity = MoragShockCoolingArnettSED.eval(nu[np.newaxis, :], self.T_EXPLOSION, **self._draw())
+        assert np.all(np.isfinite(luminosity.value))
+        assert np.all(luminosity[0] == 0 * u.erg / u.s / u.Hz)
+        assert not [w for w in recwarn if issubclass(w.category, RuntimeWarning)]
+
+    def test_peak_over_phases_is_finite(self):
+        """The reduction the simulation takes over a phase grid that starts at zero."""
+        peak = MoragShockCoolingArnettSED.eval_bolometric(self.T_EXPLOSION, **self._draw()).max()
+        assert np.isfinite(peak.value)
+
+    def test_before_explosion_is_zero(self):
+        t = np.array([-1.0, 0.0]) * u.day
+        luminosity = MoragShockCoolingArnettSED.eval_bolometric(t, **self._draw())
+        assert np.all(luminosity.value == 0)

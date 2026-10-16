@@ -239,6 +239,44 @@ luminosities derived from multi-band photometry.
    fig.tight_layout()
 
 
+UV Calibration
+~~~~~~~~~~~~~~~
+
+The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
+SLSNe-I from the Swift Optical/Ultraviolet Supernova Archive (SOUSA), supplemented with the host-subtracted,
+recalibrated photometry of `Hinkle et al. (2023) <https://arxiv.org/abs/2309.03270>`__, on 100 random draws from the priors above,
+integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
+:math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+an amount that differs from event to event.
+
+Unlike the Type I and Type II supernova SEDs, this model has a plain blackbody photosphere, with no line
+blanketing, so there is no UV-specific parameter. 22 SLSNe-I have at least three UVW1 detections, and 14 have at
+least three UVW2 detections.
+
+.. plot::
+   :include-source: false
+
+   import matplotlib.pyplot as plt
+
+   from uvex_transients.models.supernovae import ArnettMagnetarSpindownSED
+   from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+   plot_swift_uv_calibration(ArnettMagnetarSpindownSED, "SLSN-I", min_points=3, band="UVW1")
+   plt.show()
+
+.. plot::
+   :include-source: false
+
+   import matplotlib.pyplot as plt
+
+   from uvex_transients.models.supernovae import ArnettMagnetarSpindownSED
+   from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+   plot_swift_uv_calibration(ArnettMagnetarSpindownSED, "SLSN-I", min_points=3, band="UVW2")
+   plt.show()
+
 ----
 
 Observability Summary

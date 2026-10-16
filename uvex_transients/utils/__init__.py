@@ -3,7 +3,7 @@
 from typing import Union
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
@@ -190,7 +190,7 @@ def split_root_seed(
     return np.random.default_rng(draw_sequence), spawn_sequence
 
 
-def spawn_seeds(spawn_sequence: np.random.SeedSequence, n: int) -> NDArray[np.uint64]:
+def spawn_seeds(spawn_sequence: np.random.SeedSequence, n: int, indices: ArrayLike | None = None) -> NDArray[np.uint64]:
     """
     Derive ``n`` independent, reproducible, individually storable seeds.
 
@@ -211,13 +211,38 @@ def spawn_seeds(spawn_sequence: np.random.SeedSequence, n: int) -> NDArray[np.ui
         Typically the second element returned by :func:`split_root_seed`.
     n : int
         Number of seeds to derive.
+    indices : array_like of int, optional
+        If given, only the seeds at these positions of the full length-``n`` set are
+        returned, and the rest are never built. Each is identical to the same position
+        of the full set, since child ``i`` of a `~numpy.random.SeedSequence` is just the
+        sequence with ``spawn_key + (n_children_spawned + i,)``; building one directly
+        costs the same as spawning it, so a small subset of a large ``n`` is far cheaper.
+        Unlike a full spawn, this does not advance ``spawn_sequence.n_children_spawned``
+        (NumPy does not allow setting it), so only use it on a sequence that is not spawned from again.
 
     Returns
     -------
     numpy.ndarray
-        ``uint64`` array of shape ``(n,)``.
+        ``uint64`` array of shape ``(n,)``, or ``(len(indices),)`` if `indices` is given.
     """
+    if indices is None:
+        return np.array(
+            [child.generate_state(1, dtype=np.uint64)[0] for child in spawn_sequence.spawn(n)],
+            dtype=np.uint64,
+        )
+
+    indices = np.asarray(indices, dtype=np.int64)
+    if indices.size and (indices.min() < 0 or indices.max() >= n):
+        raise IndexError(f"`indices` must lie in [0, {n}).")
+    first = spawn_sequence.n_children_spawned
     return np.array(
-        [child.generate_state(1, dtype=np.uint64)[0] for child in spawn_sequence.spawn(n)],
+        [
+            np.random.SeedSequence(
+                spawn_sequence.entropy,
+                spawn_key=(*spawn_sequence.spawn_key, first + int(i)),
+                pool_size=spawn_sequence.pool_size,
+            ).generate_state(1, dtype=np.uint64)[0]
+            for i in indices
+        ],
         dtype=np.uint64,
     )

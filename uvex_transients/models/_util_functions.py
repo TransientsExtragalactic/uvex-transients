@@ -1,6 +1,10 @@
 """Utility functions for working with models."""
 
+from collections.abc import Callable
+from functools import cache
+
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 
 from uvex_transients.models._constants import C_CGS, H_CGS, K_B_CGS, LOG_SIGMA_SB_CGS, SIGMA_SB_CGS
 from uvex_transients.models._typing import CGSParameterValue, FloatArray, NumericalInput
@@ -153,6 +157,282 @@ def planck_shape_log_cgs(nu: FloatArray, temperature: CGSParameterValue) -> Floa
     return planck_Bnu_log_cgs(nu, temperature) + np.log(np.pi) - LOG_SIGMA_SB_CGS - 4.0 * np.log(temperature)
 
 
+def modified_blackbody_intensity_log_cgs(
+    nu: FloatArray,
+    temperature: CGSParameterValue,
+    nu_break: CGSParameterValue,
+    beta: CGSParameterValue,
+    norm: CGSParameterValue,
+    s: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Natural log of a line-blanketed (UV-suppressed) blackbody intensity, in cgs.
+
+    Follows the truncated-blackbody prescription of Nicholl et al. 2017: a Planck function
+    multiplied by a smoothly broken power law that steepens the spectrum blueward of a break
+    frequency,
+
+    .. math::
+
+        I_\nu = N\,B_\nu(T) \left[1 + \left(\frac{\nu}{\nu_\mathrm{break}}\right)^{s}\right]^{-\beta/s}.
+
+    Well below the break the suppression factor is unity, and well above it falls as
+    :math:`(\nu/\nu_\mathrm{break})^{-\beta}`. Larger ``s`` gives a sharper transition, which
+    reduces leakage of flux across the break.
+
+    Parameters
+    ----------
+    nu : array_like
+        Frequency, in Hz.
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency :math:`\nu_\mathrm{break}`, in Hz (generally in the UV).
+    beta : array_like
+        Power-law index of the suppression above the break.
+    norm : array_like
+        Linear multiplicative normalization :math:`N` of the intensity.
+    s : array_like
+        Smoothing parameter controlling the sharpness of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`\log I_\nu`, in :math:`\mathrm{erg\,s^{-1}\,cm^{-2}\,Hz^{-1}\,sr^{-1}}`.
+    """
+    log_z = np.log(nu) - np.log(nu_break)
+    log_suppression = (beta / s) * np.logaddexp(0.0, s * log_z)
+    return np.log(norm) + planck_Bnu_log_cgs(nu, temperature) - log_suppression
+
+
+def normalize_modified_blackbody(
+    x_0: NumericalInput,
+    beta: NumericalInput,
+    s: NumericalInput,
+    x_min: float,
+    x_max: float,
+    n_x: int,
+) -> FloatArray:
+    r"""
+    Dimensionless integral of the line-blanketed Planck shape over :math:`x = h\nu/k_BT`.
+
+    Evaluates
+
+    .. math::
+
+        \int_{x_\min}^{x_\max} \frac{x^3}{e^x - 1}
+        \left[1 + \left(\frac{x}{x_0}\right)^{s}\right]^{-\beta/s} dx
+
+    (the suppression factor of :func:`modified_blackbody_intensity_log_cgs`, with
+    :math:`x_0 = h\nu_\mathrm{break}/k_BT`) by the trapezoid rule on a grid uniform in
+    :math:`\ln x`. Without suppression and over :math:`(0, \infty)` this is :math:`\pi^4/15`.
+
+    Parameters
+    ----------
+    x_0 : array_like
+        Dimensionless break frequency :math:`h\nu_\mathrm{break}/k_BT`.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : array_like
+        Smoothing parameter controlling the sharpness of the break.
+    x_min : float
+        Lower integration limit.
+    x_max : float
+        Upper integration limit.
+    n_x : int
+        Number of grid points.
+
+    Returns
+    -------
+    numpy.ndarray
+        The integral, broadcast over ``x_0``, ``beta`` and ``s``.
+    """
+    x_0, beta, s = np.broadcast_arrays(*(np.asarray(a, dtype=np.float64) for a in (x_0, beta, s)))
+
+    # The integration grid is the leading axis; the parameters broadcast over the trailing ones.
+    log_x = np.linspace(np.log(x_min), np.log(x_max), n_x).reshape((n_x,) + (1,) * x_0.ndim)
+    d_log_x = (np.log(x_max) - np.log(x_min)) / (n_x - 1)
+    x = np.exp(log_x)
+
+    # x^3 dx = x^4 dlnx, so integrate in ln x.
+    log_suppression = (beta / s) * np.logaddexp(0.0, s * (log_x - np.log(x_0)))
+    integrand = np.exp(4.0 * log_x - log_expm1(x) - log_suppression)
+
+    return d_log_x * (integrand.sum(axis=0) - 0.5 * (integrand[0] + integrand[-1]))
+
+
+def modified_blackbody_norm_interpolator(
+    s: float,
+    x_0_range: tuple[float, float],
+    beta_range: tuple[float, float],
+    n_x_0: int = 64,
+    n_beta: int = 32,
+    x_min: float = 1e-4,
+    x_max: float = 100.0,
+    n_x: int = 4000,
+) -> Callable[[NumericalInput, NumericalInput], FloatArray]:
+    r"""
+    Build a fast interpolator for :func:`normalize_modified_blackbody` at fixed smoothing ``s``.
+
+    The integral is evaluated once on a regular grid, log-spaced in :math:`x_0` and linear in
+    :math:`\beta`, and :math:`\ln(\mathrm{integral})` is interpolated linearly with
+    :class:`scipy.interpolate.RegularGridInterpolator`. Repeated calls over many
+    :math:`(x_0, \beta)` pairs then avoid the integration grid entirely.
+
+    Parameters
+    ----------
+    s : float
+        Smoothing parameter, held fixed.
+    x_0_range : tuple of float
+        ``(min, max)`` of the dimensionless break frequency :math:`x_0`. Must be positive.
+    beta_range : tuple of float
+        ``(min, max)`` of the suppression index :math:`\beta`.
+    n_x_0, n_beta : int, optional
+        Number of interpolation grid points along :math:`\ln x_0` and :math:`\beta`.
+    x_min, x_max, n_x : optional
+        Integration limits and number of integration points, as in
+        :func:`normalize_modified_blackbody`.
+
+    Returns
+    -------
+    callable
+        ``norm(x_0, beta)``, broadcasting over its arguments. Raises :class:`ValueError`
+        for inputs outside the ranges the interpolator was built on.
+    """
+    log_x_0 = np.linspace(np.log(x_0_range[0]), np.log(x_0_range[1]), n_x_0)
+    beta_grid = np.linspace(beta_range[0], beta_range[1], n_beta)
+
+    # One row of x_0 at a time, so the (n_x_0, n_beta, n_x) integration cube is never held in memory.
+    grid = np.stack([normalize_modified_blackbody(np.exp(lx), beta_grid, s, x_min, x_max, n_x) for lx in log_x_0])
+    interpolator = RegularGridInterpolator((log_x_0, beta_grid), np.log(grid))
+
+    def norm(x_0: NumericalInput, beta: NumericalInput) -> FloatArray:
+        """
+        Interpolated normalization integral at ``(x_0, beta)``.
+
+        Parameters
+        ----------
+        x_0 : array_like
+            Dimensionless break frequency, within the range the interpolator was built on.
+        beta : array_like
+            Suppression index, within the range the interpolator was built on.
+
+        Returns
+        -------
+        numpy.ndarray
+            The integral, broadcast over ``x_0`` and ``beta``.
+        """
+        x_0, beta = np.broadcast_arrays(np.asarray(x_0, dtype=np.float64), np.asarray(beta, dtype=np.float64))
+        points = np.stack([np.log(x_0), beta], axis=-1).reshape(-1, 2)
+        return np.exp(interpolator(points)).reshape(x_0.shape)
+
+    return norm
+
+
+@cache
+def get_modified_blackbody_norm_interpolator(s: float) -> Callable[[NumericalInput, NumericalInput], FloatArray]:
+    r"""
+    Return the shared normalization table of the line-blanketed blackbody at smoothing ``s``.
+
+    Built lazily on the first request for a given ``s`` and cached for the life of the process, so every
+    caller with the same ``s`` reads the same table. Covers
+    :math:`10^{-2} \le x_0 \le 10^3` and :math:`0 \le \beta \le 10`, and is accurate to better than 1% there.
+
+    Parameters
+    ----------
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    callable
+        ``norm(x_0, beta)``, the interpolated integral of :func:`normalize_modified_blackbody`.
+    """
+    return modified_blackbody_norm_interpolator(
+        s, x_0_range=(1e-2, 1e3), beta_range=(0.0, 10.0), n_x_0=400, n_beta=81, n_x=1000
+    )
+
+
+def modified_blackbody_log_norm_cgs(
+    temperature: CGSParameterValue, nu_break: CGSParameterValue, beta: CGSParameterValue, s: float
+) -> FloatArray:
+    r"""
+    Natural log of :math:`\int S\,d\nu` for the Stefan-Boltzmann-scaled line-blanketed blackbody shape.
+
+    Equals :math:`\ln[(15/\pi^4)\,I(x_0, \beta)]` with :math:`x_0 = h\nu_\mathrm{break}/k_BT`, where :math:`I`
+    comes from :func:`get_modified_blackbody_norm_interpolator`. Subtracting it from the log of the shape
+    gives a unit-integral spectrum.
+
+    Parameters
+    ----------
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency, in Hz.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        The natural log of the shape integral.
+
+    Raises
+    ------
+    ValueError
+        If :math:`x_0` or ``beta`` fall outside the range of the shared table.
+    """
+    x_0 = H_CGS * np.asarray(nu_break, dtype=np.float64) / (K_B_CGS * np.asarray(temperature, dtype=np.float64))
+    return np.log(15.0 / np.pi**4 * get_modified_blackbody_norm_interpolator(s)(x_0, beta))
+
+
+def modified_blackbody_unit_shape_log_cgs(
+    nu: FloatArray,
+    temperature: CGSParameterValue,
+    nu_break: CGSParameterValue,
+    beta: CGSParameterValue,
+    s: float,
+) -> FloatArray:
+    r"""
+    Natural log of the unit-integral line-blanketed blackbody spectral shape, in 1/Hz.
+
+    The Stefan-Boltzmann-scaled shape of :func:`modified_blackbody_intensity_log_cgs`, divided by its
+    integral (:func:`modified_blackbody_log_norm_cgs`). Unlike the bare suppressed Planck shape, which loses
+    flux to the suppression, this integrates to 1 over frequency, so multiplying it by a bolometric
+    luminosity conserves that luminosity.
+
+    Parameters
+    ----------
+    nu : array_like
+        Frequency, in Hz.
+    temperature : array_like
+        Blackbody temperature, in K.
+    nu_break : array_like
+        Break frequency, in Hz.
+    beta : array_like
+        Power-law index of the suppression above the break.
+    s : float
+        Smoothing parameter of the break.
+
+    Returns
+    -------
+    numpy.ndarray
+        The natural log of the unit-integral shape.
+
+    Raises
+    ------
+    ValueError
+        If :math:`h\nu_\mathrm{break}/k_BT` or ``beta`` fall outside the range of the shared table.
+    """
+    temperature = np.asarray(temperature, dtype=np.float64)
+    shape = modified_blackbody_intensity_log_cgs(
+        nu, temperature, nu_break, beta, np.pi / (SIGMA_SB_CGS * temperature**4), s
+    )
+    return shape - modified_blackbody_log_norm_cgs(temperature, nu_break, beta, s)
+
+
 def cooling_temperature_cgs(
     t: FloatArray,
     *,
@@ -170,8 +450,8 @@ def cooling_temperature_cgs(
 
     :math:`T(t) \to T_0` as :math:`t \to 0` and :math:`T(t) \to T_\mathrm{floor}` as
     :math:`t \to \infty`. Shared by models whose photosphere cools according to this
-    single power law; a doubly-broken cooling law (e.g. a Type IIP's early/cooling/plateau
-    phases) is a genuinely different functional form and is not expressed in terms of this.
+    single power law. Models with an additional temperature rebrightening add
+    :func:`temperature_bump_cgs` on top of it.
 
     Parameters
     ----------
@@ -192,6 +472,100 @@ def cooling_temperature_cgs(
         :math:`T(t)`, in K.
     """
     return T_floor + (T0 - T_floor) * (1.0 + t / timescale) ** (-alpha)
+
+
+def sigmoid_temperature_cgs(
+    t: FloatArray,
+    *,
+    T0: CGSParameterValue,
+    T_floor: CGSParameterValue,
+    t_transition: CGSParameterValue,
+    steepness: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Photospheric temperature that falls from a hot start to a cool floor as a logistic in :math:`\ln t`.
+
+    .. math::
+
+        T(t) = T_\mathrm{floor} + (T_0 - T_\mathrm{floor})\,
+        \frac{1}{1 + (t/t_\mathrm{tr})^{k}}
+
+    :math:`T(t) \to T_0` as :math:`t \to 0` and :math:`T(t) \to T_\mathrm{floor}` as :math:`t \to \infty`, with
+    the excess over the floor halved at :math:`t_\mathrm{tr}` and falling as :math:`t^{-k}` well after it. Unlike
+    :func:`cooling_temperature_cgs`, whose early plateau gives way to a pure power law, this has two distinct
+    plateaus joined by a transition whose width in :math:`\ln t` is :math:`\sim1/k`.
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    T0 : array_like
+        Photospheric temperature as :math:`t \to 0`.
+    T_floor : array_like
+        Asymptotic late-time photospheric temperature.
+    t_transition : array_like
+        Epoch :math:`t_\mathrm{tr}` at which the temperature is halfway between :math:`T_0` and
+        :math:`T_\mathrm{floor}`, in s.
+    steepness : array_like
+        Steepness :math:`k` of the transition.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`T(t)`, in K.
+    """
+    # The logistic of -k ln(t/t_tr), through the stable log-sigmoid; t = 0 gives the T0 limit.
+    with np.errstate(divide="ignore"):
+        log_ratio = np.log(t) - np.log(t_transition)
+    return T_floor + (T0 - T_floor) * np.exp(_log_sigmoid(-steepness * log_ratio))
+
+
+def temperature_bump_cgs(
+    t: FloatArray,
+    *,
+    amplitude: CGSParameterValue,
+    t_peak: CGSParameterValue,
+    beta: CGSParameterValue,
+    alpha: CGSParameterValue,
+) -> FloatArray:
+    r"""
+    Temperature excess with a power-law rise and power-law decline, parametrized by its peak.
+
+    With :math:`x = t/\tau` and :math:`\tau = t_\mathrm{peak}\,\alpha/\beta`,
+
+    .. math::
+
+        \Delta T(t) = \Delta T_\mathrm{pk}\,\frac{g(x)}{g(\beta/\alpha)}, \qquad
+        g(x) = \frac{x^{\beta}}{(1 + x)^{\alpha + \beta}}.
+
+    :math:`g` rises as :math:`x^\beta` for :math:`x \ll 1`, falls as :math:`x^{-\alpha}` for
+    :math:`x \gg 1`, and peaks at :math:`x = \beta/\alpha`, so :math:`\Delta T` is zero at
+    :math:`t = 0`, reaches exactly ``amplitude`` at ``t = t_peak``, and decays to zero at late times.
+
+    Parameters
+    ----------
+    t : array_like
+        Time since explosion, in s.
+    amplitude : array_like
+        Peak value of the excess :math:`\Delta T_\mathrm{pk}`, in K.
+    t_peak : array_like
+        Time of the peak, in s.
+    beta : array_like
+        Rise index (:math:`\Delta T \propto t^\beta` at early times).
+    alpha : array_like
+        Decay index (:math:`\Delta T \propto t^{-\alpha}` at late times).
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`\Delta T(t)`, in K.
+    """
+    x_peak = beta / alpha
+    x = t / (t_peak / x_peak)
+    with np.errstate(divide="ignore"):
+        ln_g = beta * np.log(x) - (alpha + beta) * np.log1p(x)
+    ln_g_peak = beta * np.log(x_peak) - (alpha + beta) * np.log1p(x_peak)
+    return amplitude * np.exp(ln_g - ln_g_peak)
 
 
 def blackbody_temperature_cgs(L: CGSParameterValue, radius: CGSParameterValue) -> FloatArray:

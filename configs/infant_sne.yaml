@@ -52,68 +52,68 @@ mission: uvex_fast
 # The same supernova populations as `full_run.yaml`, each with the 3 day
 # selection window and 100 day photometry window described above.
 #
-# `z_limit` is set for that window and the 23 AB magnitude screen below, because
-# the class defaults assume the full light curve and a 24.5 AB limit. Each value
-# is the transient's horizon curve at 23 AB for a 3 day window: the redshift
+# `z_limit` is set for that window and for the 21 AB magnitude the follow-up selection needs (infants
+# reach 20 AB, with a magnitude of margin), because the class defaults assume the full light curve and a 24.5 AB
+# limit. Each value is the transient's horizon curve at 21 AB for a 3 day window: the redshift
 # beyond which, with 95% confidence, at most 1% of events are brighter than
-# 23 AB in either UVEX band within the first 3 days. These supernovae are much
+# 21 AB in either UVEX band within the first 3 days. These supernovae are much
 # fainter at 3 days than at peak, so the limits are well below the class
 # defaults. They are written as numbers so that the run does not regenerate the
 # curves (seconds to a minute per class, since a 3 day window has no stored
-# curve). The same lookup can be written inline as `z_limit: {mag_limit: 23.0}`,
+# curve). The same lookup can be written inline as `z_limit: {mag_limit: 21.0}`,
 # or reproduced for one class with
 #
 #     transient = TypeIIPSNe()
 #     transient.duration_limit = 3 * u.day
-#     transient.horizon_curve.z_limit(23.0)
+#     transient.horizon_curve.z_limit(21.0)
 #
 # Re-derive them if the magnitude screen, a window or an SED's priors change.
 transients:
   iip_sne:
     class: TypeIIPSNe
-    z_limit: 0.127
+    z_limit: 0.166
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   iip_excess_sne:
     class: TypeIIPExcessSNe
-    z_limit: 0.473
+    z_limit: 0.194
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   iib_sne:
     class: TypeIIbSNe
-    z_limit: 0.173
+    z_limit: 0.344
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   ib_sne:
     class: TypeIbSNe
-    z_limit: 0.171
+    z_limit: 0.034
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   ic_sne:
     class: TypeIcSNe
-    z_limit: 0.304
+    z_limit: 0.070
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   icbl_sne:
     class: TypeIcBLSNe
-    z_limit: 0.346
+    z_limit: 0.073
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   slsne:
     class: MagnetarSLSNe
-    z_limit: 0.644
+    z_limit: 0.270
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day
   ia_sne:
     class: TypeIaSNe
-    z_limit: 0.273
+    z_limit: 0.067
     duration_limit: 3 day
     photometry_pre_window: 30 day
     photometry_post_window: 100 day

@@ -341,6 +341,7 @@ class HorizonCurve:
         if unknown:
             raise TypeError(f"Unknown setting(s) {unknown}; available: {sorted(SETTINGS)}.")
         settings = {**SETTINGS, **settings}
+        t_min = T_MIN if transient.HORIZON_T_MIN is None else transient.HORIZON_T_MIN
         limits = MAG_LIMITS if mag_limits is None else np.atleast_1d(np.asarray(mag_limits, dtype=np.float64))
 
         logger.info(
@@ -355,7 +356,7 @@ class HorizonCurve:
             limits,
             uvex_fast.detector.bandpasses,
             z_min=Z_MIN,
-            t_min=T_MIN,
+            t_min=t_min,
             rng=SEED,
             progress=progress,
             interpolate=True,
@@ -373,7 +374,7 @@ class HorizonCurve:
             "duration_day": float(transient.duration_limit.to_value(u.day)),
             "cosmology": transient.cosmology.name,
             "seed": SEED,
-            "t_min_day": float(T_MIN.to_value(u.day)),
+            "t_min_day": float(t_min.to_value(u.day)),
             "z_min": Z_MIN,
             "criterion": "any",
             "interpolate": True,

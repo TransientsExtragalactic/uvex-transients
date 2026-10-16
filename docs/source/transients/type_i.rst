@@ -9,10 +9,12 @@ curves are powered by the radioactive decay of :math:`^{56}\mathrm{Ni}` and are 
 peak, roughly two to three weeks after explosion, followed by a decline; unlike Type IIb SNe
 (:ref:`transients_type_ii`) they lack a distinct early shock-cooling peak. All three subtypes on
 this page -- Ib, Ic and Ic-BL (broad-lined) -- are modeled with the same first-principles
-Arnett-style radioactive-decay diffusion physics as Type Ia
-(:class:`~uvex_transients.models.arnett.ArnettDecaySED`), differing only in their priors (and, for
+Arnett-style radioactive-decay diffusion physics as Type Ia, with a line-blanketed photosphere
+(:class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED`), differing only in their priors (and, for
 Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
-are implemented as sibling transient classes below.
+are implemented as sibling transient classes below. The line blanketing, which suppresses the UV, is
+calibrated against Swift/UVOT UVW1 and UVW2 light curves on the Type Ia tab and adopted unchanged by
+the others.
 
 .. note::
 
@@ -24,7 +26,8 @@ are implemented as sibling transient classes below.
    leakage-free formalism (the original Arnett 1982 diffusion model), so it is instead fixed at
    :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s Scalzo+14-derived value. Ib and Ic
    share this same construction and differ only in the subsample statistics and event rates. Type
-   Ic-BL instead uses sample statistics of its own explosion-property table -- see its tab below.
+   Ic-BL instead uses sample statistics of its own explosion-property table (see its tab below). All
+   three also take the line-blanketing parameters ``break_frequency`` and ``beta`` from Type Ia.
 
 .. tab-set::
 
@@ -69,7 +72,7 @@ are implemented as sibling transient classes below.
              :math:`\pm1\sigma` endpoints, rather than assumed analytically -- see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.77`
+           - :math:`z = 0.30`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -86,11 +89,13 @@ are implemented as sibling transient classes below.
       *Model Class*: :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED`
 
       :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` reuses
-      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
-      diffusion light curve and floored-photosphere blackbody entirely (the same
+      :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED`, which keeps the Arnett-style
+      radioactive-decay diffusion light curve and floored photospheric temperature of
+      :class:`~uvex_transients.models.arnett.ArnettDecaySED` (the same
       :math:`L(t)`/:math:`T(t)` machinery documented for the SLSNe-I model in
       :ref:`transients_slsne`, but driven by :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}`
-      decay heating rather than magnetar spin-down):
+      decay heating rather than magnetar spin-down) and replaces the plain blackbody photosphere with a
+      line-blanketed one:
 
       .. math::
 
@@ -100,7 +105,26 @@ are implemented as sibling transient classes below.
           T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
           T_\mathrm{floor}\right\}.
 
-      The priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and
+      A plain blackbody at the photospheric temperature is far too bright in the UV for a supernova. Line
+      blanketing, the absorption of UV photons by the dense forest of iron-group lines in the ejecta, removes most
+      of that flux. The spectral shape is therefore a blackbody multiplied by a smooth suppression blueward of a
+      break frequency :footcite:p:`2017ApJ...850...55N`,
+
+      .. math::
+
+          S(\nu, t) = \frac{\pi B_\nu[\nu, T(t)]}{\sigma_\mathrm{SB}\,T(t)^4}
+          \left[1 + \left(\frac{\nu}{\nu_\mathrm{break}}\right)^{s}\right]^{-\beta/s}
+          \Big/ \mathcal{N}(t),
+
+      which falls as :math:`\nu^{-\beta}` well above :math:`\nu_\mathrm{break}`, with the smoothing fixed at
+      :math:`s=10` (see :class:`~uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum`).
+      :math:`\mathcal{N}(t)` is the integral of the suppressed shape over frequency, so that
+      :math:`L_\mathrm{bol}(t)` is unchanged by the blanketing: the flux removed from the UV is returned redward of
+      the break, and only the UV-to-optical balance of the SED moves. ``break_frequency``
+      (:math:`0.75\times10^{15}` Hz, about 4000 Å) and ``beta`` (5) are fixed; they are the UV calibration of this
+      model, set against the Swift/UVOT UVW1 and UVW2 light curves shown below.
+
+      The remaining priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and
       ``M_ej`` are the population-level Gaussians from that paper's hierarchical Arnett-model fit
       (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;
       :math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`),
@@ -142,6 +166,16 @@ are implemented as sibling transient classes below.
               - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
               - Same floor as the other Arnett-based models on this site (see
                 :ref:`transients_slsne`); not calibrated against SNe Ia data specifically.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed, :math:`0.75\times10^{15}` Hz (about 4000 Å)
+              - Frequency blueward of which line blanketing suppresses the flux. Calibrated against
+                Swift/UVOT UVW1 and UVW2 (see below).
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed, 5
+              - Power-law index :math:`\nu^{-\beta}` of the suppression above the break. Calibrated
+                against Swift/UVOT UVW1 and UVW2.
 
       .. rubric:: Simulated Light Curves
 
@@ -201,6 +235,43 @@ are implemented as sibling transient classes below.
 
          fig.tight_layout()
 
+      .. rubric:: UV Calibration
+
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
+      Type Ia supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      Type Ia is the best-sampled class in the archive (130 supernovae with at least four UVW1 detections and
+      105 with at least four UVW2 detections), and the line-blanketing parameters ``break_frequency`` and ``beta`` were
+      set against these two bands. Because the line blanketing leaves :math:`L_\mathrm{bol}(t)` unchanged, it moves flux between
+      the UV and the optical, and the UV light curves are where it shows.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIaSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIaSED, "Ia", band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIaSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIaSED, "Ia", band="UVW2")
+         plt.show()
+
       .. rubric:: Observability Summary
 
       The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
@@ -210,7 +281,7 @@ are implemented as sibling transient classes below.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.77`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.30`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -241,7 +312,7 @@ are implemented as sibling transient classes below.
 
       The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
       that any event above the :math:`m<24.5` limit is detectable, and that the population is
-      isotropic and homogeneous in comoving volume out to :math:`z=0.77`:
+      isotropic and homogeneous in comoving volume out to :math:`z=0.30`:
 
       .. plot::
          :include-source: false
@@ -333,7 +404,7 @@ are implemented as sibling transient classes below.
              :attr:`~uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.47`
+           - :math:`z = 0.17`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -348,10 +419,9 @@ are implemented as sibling transient classes below.
       *Model Class*: :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`
 
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` reuses
-      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
-      diffusion light curve and floored-photosphere blackbody entirely -- the same
-      :math:`L(t)`/:math:`T(t)` machinery documented for `Type Ia` above -- with a single Ni-56 mass
-      decaying through :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}`:
+      :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely (the same
+      :math:`L(t)`/:math:`T(t)` machinery and line-blanketed photosphere documented for `Type Ia` above), with a
+      single Ni-56 mass decaying through :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}`:
 
       .. math::
 
@@ -368,7 +438,9 @@ are implemented as sibling transient classes below.
       ``kappa_gamma`` is fixed at :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s
       Scalzo+14-derived value, since Lyman et al. 2016's own analytical model has no gamma-ray
       leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
-      direct constraint on it. ``T_floor`` is left close to `Type Ia`'s value.
+      direct constraint on it. ``T_floor`` is left close to `Type Ia`'s value. ``break_frequency`` and ``beta``
+      are fixed at the `Type Ia` values, so the UV suppression is that calibrated against Swift/UVOT for
+      thermonuclear events, and not tuned to Type Ib specifically.
 
       .. dropdown:: Parameter priors
 
@@ -406,6 +478,14 @@ are implemented as sibling transient classes below.
               - TruncatedNormal(5000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
               - Same floor family as the other Arnett-based models on this site; not calibrated
                 against Ib data specifically.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed, :math:`0.75\times10^{15}` Hz
+              - Line-blanketing break frequency, the `Type Ia` value.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed, 5
+              - Line-blanketing suppression index, the `Type Ia` value.
 
       .. rubric:: Simulated Light Curves
 
@@ -489,6 +569,42 @@ are implemented as sibling transient classes below.
          ax_T.legend(loc="upper right", fontsize=7, frameon=False)
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
+      Type Ib supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      The line-blanketing parameters are those of Type Ia, unchanged. Few Type Ib supernovae have well sampled UV light
+      curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so these plots are a
+      consistency check on the Type Ia values rather than a fit.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIbSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIbSED, "Ib", band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIbSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIbSED, "Ib", band="UVW2")
+         plt.show()
 
       .. rubric:: Observability Summary
 
@@ -625,7 +741,7 @@ are implemented as sibling transient classes below.
              :attr:`~uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.54`
+           - :math:`z = 0.25`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -642,7 +758,8 @@ are implemented as sibling transient classes below.
       :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` shares its construction entirely
       with `Type Ib`'s :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (see its SED Model
       section above for the :math:`F_\mathrm{decay}(t)`/:math:`T(t)` math and the reasoning behind
-      ``kappa``, ``kappa_gamma`` and ``T_floor``), differing only in that ``M_Ni``, ``M_ej`` and
+      ``kappa``, ``kappa_gamma`` and ``T_floor``, and the line-blanketed photosphere with its fixed
+      ``break_frequency`` and ``beta``), differing only in that ``M_Ni``, ``M_ej`` and
       ``v_ej`` are drawn from the SN Ic subsample statistics of Table 6 of :footcite:t:`lyman2016`
       (8 events) instead of the Type Ib ones.
 
@@ -682,6 +799,14 @@ are implemented as sibling transient classes below.
               - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
               - Same floor family as the other Arnett-based models on this site; not calibrated
                 against Ic data specifically.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed, :math:`0.75\times10^{15}` Hz
+              - Line-blanketing break frequency, the `Type Ia` value.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed, 5
+              - Line-blanketing suppression index, the `Type Ia` value.
 
       .. rubric:: Simulated Light Curves
 
@@ -767,6 +892,42 @@ are implemented as sibling transient classes below.
          ax_T.legend(loc="upper right", fontsize=7, frameon=False)
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
+      Type Ic supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      The line-blanketing parameters are those of Type Ia, unchanged. The Swift sample is small: 6 Type Ic supernovae
+      have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
+      consistency check on the Type Ia values rather than a fit.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcSED, "Ic", min_points=3, band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcSED, "Ic", min_points=3, band="UVW2")
+         plt.show()
 
       .. rubric:: Observability Summary
 
@@ -913,7 +1074,7 @@ are implemented as sibling transient classes below.
              fraction is itself consistent with zero, so the combined lower `RATE_CI` factor is
              slightly negative; treat the lower bound as effectively zero rather than literally.
          * - Redshift limit
-           - :math:`z = 0.61`
+           - :math:`z = 0.26`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -928,10 +1089,9 @@ are implemented as sibling transient classes below.
       *Model Class*: :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`
 
       :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` reuses
-      :class:`~uvex_transients.models.arnett.ArnettDecaySED`'s Arnett-style radioactive-decay
-      diffusion light curve and floored-photosphere blackbody entirely (the same
-      :math:`L(t)`/:math:`T(t)` machinery documented for `Type Ia` above and for the SLSNe-I model
-      in :ref:`transients_slsne`):
+      :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely (the same
+      :math:`L(t)`/:math:`T(t)` machinery and line-blanketed photosphere documented for `Type Ia` above, and
+      for the SLSNe-I model in :ref:`transients_slsne`):
 
       .. math::
 
@@ -951,7 +1111,8 @@ are implemented as sibling transient classes below.
       photospheric velocities (``v_ph``), regardless of the epoch quoted. ``kappa`` and
       ``T_floor`` are not constrained by that table and are left at `Type Ia`'s values;
       ``kappa_gamma`` is instead fixed at a large value (full gamma-ray trapping across the
-      simulated window), unlike `Type Ia`'s Scalzo+14 value.
+      simulated window), unlike `Type Ia`'s Scalzo+14 value. ``break_frequency`` and ``beta`` are fixed
+      at the `Type Ia` values.
 
       .. dropdown:: Parameter priors
 
@@ -989,6 +1150,14 @@ are implemented as sibling transient classes below.
               - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
               - Same floor as the other Arnett-based models on this site; not calibrated against
                 Ic-BL data specifically.
+            * - ``break_frequency``
+              - :math:`\nu_\mathrm{break}`
+              - Fixed, :math:`0.75\times10^{15}` Hz
+              - Line-blanketing break frequency, the `Type Ia` value.
+            * - ``beta``
+              - :math:`\beta`
+              - Fixed, 5
+              - Line-blanketing suppression index, the `Type Ia` value.
 
       .. rubric:: Simulated Light Curves
 
@@ -1050,6 +1219,42 @@ are implemented as sibling transient classes below.
          ax_T.set_title(f"Type Ic-BL: simulated photospheric temperatures (n={n_samples})")
 
          fig.tight_layout()
+
+      .. rubric:: UV Calibration
+
+      The plots below overlay the Swift/UVOT UVW1 (2600 Å) and UVW2 (1928 Å) light curves of
+      Type Ic-BL supernovae from the Swift Optical/Ultraviolet Supernova Archive (SOUSA) on 100 random draws from the priors above,
+      integrated through the corresponding UVOT transmission curve from the SVO Filter Profile Service. Both are shown as
+      :math:`\nu L_\nu` in the observed band with no K-correction. Archive supernovae are drawn at random, and the
+      legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
+      the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
+      an amount that differs from event to event.
+
+      The line-blanketing parameters are those of Type Ia, unchanged. Only two Type Ic-BL supernovae have at least three
+      detections in either band, so this is the least constrained comparison on this page, and the model should not be
+      read as a fit to the Type Ic-BL UV light curves.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcBLSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcBLSED, "Ic-BL", min_points=3, band="UVW1")
+         plt.show()
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.models.supernovae import TypeIcBLSED
+         from uvex_transients.utils.plotting import plot_swift_uv_calibration
+
+         plot_swift_uv_calibration(TypeIcBLSED, "Ic-BL", min_points=3, band="UVW2")
+         plt.show()
 
       .. rubric:: Observability Summary
 

@@ -86,3 +86,18 @@ def test_packaged_llgrb_2006aj_bolometric_curve():
     assert table["time"][0].to_value(u.day) == pytest.approx(0.3428579833498397)
     assert table["L_bol"].max().to_value(u.erg / u.s) == pytest.approx(4.5230054065392354e42)
     assert table.meta["reference"] == "https://arxiv.org/abs/1104.5141"
+
+
+def test_packaged_iip_comparison_sample():
+    """The packaged archive carries the 35 Jacobson-Galan+24 comparison SNe II as Type IIP bolometric curves."""
+    archive = LightcurveArchive()
+    events = [e for e in archive.events("supernovae/IIP") if e.endswith("_jacobsongalan2024")]
+    assert len(events) == 35
+
+    table = archive.table("supernovae/IIP", "2013ab_jacobsongalan2024", "L_bol")
+    assert len(table) == 72
+    assert table["time"].unit == u.day
+    assert table["L_bol"].unit == u.erg / u.s
+    assert table["time"][0].to_value(u.day) == pytest.approx(3.790000000000873)
+    assert table["L_bol"][0].to_value(u.erg / u.s) == pytest.approx(1.6788040181225657e42)
+    assert table.meta["reference"] == "https://arxiv.org/abs/2403.02382"

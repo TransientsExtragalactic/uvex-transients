@@ -676,6 +676,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                         pixel_ids=pixel_ids,
                         order=order,
                         seed=bin_seeds[k],
+                        downsample=type_downsample,
                     )
 
                     # Interpolate this transient type's own cached D_L(z) grid at each sampled
@@ -695,15 +696,6 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
                     table["transient_type"] = name
                     table["time_bin"] = k
-                    if type_downsample is not None:
-                        # Spawned *after* `sample_events_on_healpix_grid` has already
-                        # drawn its own 6 children from `bin_seeds[k]` above, so this
-                        # doesn't perturb that draw; see its own docstring on why
-                        # spawn order off a shared `SeedSequence` matters.
-                        downsample_rng = np.random.default_rng(bin_seeds[k].spawn(1)[0])
-                        n_keep = -(-len(table) // type_downsample)  # ceiling division
-                        keep = np.sort(downsample_rng.choice(len(table), size=n_keep, replace=False))
-                        table = table[keep]
                     tables.append(table)
                     pbar.update(1)
 
