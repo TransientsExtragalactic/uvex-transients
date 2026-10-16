@@ -19,16 +19,14 @@ detections within 48 hours of the last non-detection in the same band:
 (b) The event is brightening at a rate of at least :math:`Y` AB mag / day in at least 1 band, from the limit at its
     last non-detection to the current detection.
 
-(c) The event has an absolute magnitude brighter than :math:`Z` (i.e. :math:`M \le Z`) in at least 1 band.
-
-An event is **triggered** if and only if (a) OR (b) OR (c) is satisfied. The thresholds :math:`X`, :math:`Y` and
-:math:`Z`, along with the infant magnitude and time window, are the settings below.
+An event is **triggered** if and only if (a) OR (b) is satisfied. The thresholds :math:`X` and :math:`Y`, along with
+the infant magnitude and time window, are the settings below.
 
 The analysis reads the event summary and photometry tables of the infant supernova run from the latest release,
 through :func:`~uvex_transients.utils.results.get_results`. The brightening in (a) and (b) is measured from the
 limit at the last non-detection, which is one of the photometry rows, so it needs the photometry to reach back
 before the explosion (``photometry_pre_window`` in ``configs/infant_sne.yaml``). A release cut without it cannot
-satisfy (a) or (b), and only (c) triggers.
+satisfy (a) or (b), so nothing triggers.
 """
 
 import warnings
@@ -60,9 +58,8 @@ WINDOW_HR = 48  # ... within this many hours of the last non-detection in the sa
 
 X_BRIGHTEN = 3.0  # (a) brightening since the last non-detection limit, mag
 Y_RATE = 3.0  # (b) brightening rate since the last non-detection limit, mag / day
-Z_ABS_MAG = -18.0  # (c) absolute magnitude brighter than this (M <= Z)
 
-USE_A, USE_B, USE_C = True, True, True  # which conditions enter the OR
+USE_A, USE_B = True, True  # which conditions enter the OR
 
 # %%
 # Load the tables
@@ -84,8 +81,8 @@ else:
 # Table manipulations
 # --------------------
 #
-# Each photometry row needs to know three things about its event: how long since the last non-detection in the
-# same band, its absolute magnitude, and the limit of that last non-detection.
+# Each photometry row needs to know two things about its event: how long since the last non-detection in the
+# same band, and the limit of that last non-detection.
 
 if summary is not None:
     # Row of the summary table for each photometry row (event_id is unique in the summary).
@@ -101,13 +98,6 @@ if summary is not None:
         dt[in_band] = photometry["obs_time"].mjd[in_band] - t_and_mjd[in_band]
     photometry["dt_last_nondet"] = dt
     photometry["dt_last_nondet"].unit = "d"
-
-    # The absolute magnitude of each epoch is its apparent magnitude minus the distance modulus. This is the
-    # observed-band absolute magnitude (m - mu), so Z in condition (c) is defined in the observed band.
-    d_l_pc = np.asarray(summary["luminosity_distance"], dtype=float) * 1e6  # Mpc to pc
-    distance_modulus = 5 * np.log10(d_l_pc / 10)
-    photometry["abs_mag"] = np.asarray(photometry["ab_mag"]) - distance_modulus[rows]
-    photometry["abs_mag"].unit = "mag"
 
     # The brightening in (a) and (b) is measured from the 5-sigma limiting magnitude of the last non-detection
     # (in the same band) to the current detection. That non-detection is one of the photometry rows, so look it
@@ -177,15 +167,14 @@ def earliest_passing_rows(photometry, epoch_mask):
 
 
 # %%
-# Cuts (a), (b) and (c)
-# ----------------------
+# Cuts (a) and (b)
+# -----------------
 #
 # For each infant SN, find the earliest epoch at which each condition holds: a :math:`\ge 5\sigma` detection
 # within ``WINDOW_HR`` of the last non-detection in the same band that
 #
 # - (a) has brightened by at least ``X_BRIGHTEN`` mag relative to the 5-sigma limit of that non-detection,
-# - (b) has brightened at a rate of at least ``Y_RATE`` mag / day since that limit,
-# - (c) is brighter than ``Z_ABS_MAG``.
+# - (b) has brightened at a rate of at least ``Y_RATE`` mag / day since that limit.
 #
 # Each returns the ``event_id`` of the infant SNe that pass, and the row of the photometry holding the earliest
 # passing epoch, which is the time at which that trigger would fire.
@@ -201,24 +190,22 @@ if summary is not None:
         brightening = np.asarray(infant_phot["m_last_nondet"]) - np.asarray(infant_phot["ab_mag"])
         meets_a = detected & in_window & (brightening >= X_BRIGHTEN)
         meets_b = detected & in_window & (brightening / dt >= Y_RATE)
-    meets_c = detected & in_window & (np.asarray(infant_phot["abs_mag"]) <= Z_ABS_MAG)
 
     cut_ids, cut_rows = {}, {}
-    for name, meets in (("a", meets_a), ("b", meets_b), ("c", meets_c)):
+    for name, meets in (("a", meets_a), ("b", meets_b)):
         cut_ids[name], cut_rows[name] = earliest_passing_rows(infant_phot, meets)
     print(f"(a) brightened >= {X_BRIGHTEN} mag: {len(cut_ids['a'])} of {len(infant_summary)} infant SNe")
     print(f"(b) rate >= {Y_RATE} mag/day: {len(cut_ids['b'])} of {len(infant_summary)} infant SNe")
-    print(f"(c) M <= {Z_ABS_MAG}: {len(cut_ids['c'])} of {len(infant_summary)} infant SNe")
 
 # %%
 # Union of the cuts
 # ------------------
 #
-# An infant SN is triggered if (a) OR (b) OR (c) holds, restricted to the conditions switched on by ``USE_A``,
-# ``USE_B`` and ``USE_C``.
+# An infant SN is triggered if (a) OR (b) holds, restricted to the conditions switched on by ``USE_A`` and
+# ``USE_B``.
 
 if summary is not None:
-    passing = [cut_ids[name] for name, use in (("a", USE_A), ("b", USE_B), ("c", USE_C)) if use]
+    passing = [cut_ids[name] for name, use in (("a", USE_A), ("b", USE_B)) if use]
     triggered_ids = (
         np.unique(np.concatenate(passing))
         if passing
@@ -231,7 +218,7 @@ if summary is not None:
 # -----------------
 #
 # The expected number of events in each category: the sum of the event weights, where each Monte Carlo event
-# stands for :math:`\mu_0 / n` real ones. Every cut is a subset of the one before it, except that the three
+# stands for :math:`\mu_0 / n` real ones. Every cut is a subset of the one before it, except that the two
 # conditions are alternative ways of triggering on the infants. The overall detections dwarf everything else, so
 # they get a panel of their own.
 #
@@ -261,7 +248,7 @@ def yield_with_errors(event_ids):
     )
 
 
-categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(b)", "(c)", "(a) OR (b)\nOR (c)"]
+categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(b)", "(a) OR (b)"]
 
 if summary is not None:
     detected_ids = np.asarray(summary["event_id"])[np.asarray(summary["n_det"]) > 0]
@@ -273,7 +260,6 @@ if summary is not None:
             infant_theory_ids,
             cut_ids["a"],
             cut_ids["b"],
-            cut_ids["c"],
             triggered_ids,
         )
     ]
@@ -300,7 +286,7 @@ if summary is not None:
         ax.spines[["top", "right"]].set_visible(False)
     ax_det.set_ylabel("Expected events (weighted)")
     fig.suptitle(
-        f"Yield (X={X_BRIGHTEN} mag, Y={Y_RATE} mag/day, Z={Z_ABS_MAG}, "
+        f"Yield (X={X_BRIGHTEN} mag, Y={Y_RATE} mag/day, "
         f"infant: m <= {INFANT_MAG} within {WINDOW_HR} hr)\nblack: Monte Carlo error, grey: rate uncertainty",
         fontsize=11,
     )

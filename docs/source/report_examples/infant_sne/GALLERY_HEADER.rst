@@ -37,11 +37,10 @@ What is an infant supernova?
 
 To make sure spectroscopic follow-up is possible, the event must reach **20 AB** or brighter in a 5 sigma detection
 within **48 hours** of the last non-detection in the same band. To trigger on one early, the alert stream needs a
-cut that can be applied to the first detection, and an event is **triggered** if any of three conditions holds on
+cut that can be applied to the first detection, and an event is **triggered** if either of two conditions holds on
 a 5 sigma detection within 48 hours of the last non-detection:
 
 - (a) it has **brightened** by at least a given number of magnitudes since the limit of that non-detection,
-- (b) it is **brightening** at at least a given rate, in magnitudes per day, since that limit,
-- (c) it is **intrinsically bright**, with an absolute magnitude brighter than a given value.
+- (b) it is **brightening** at at least a given rate, in magnitudes per day, since that limit.
 
 The analysis below counts the infants and the triggers, and shows the light curves of triggered events.
