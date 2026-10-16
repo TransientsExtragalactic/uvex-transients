@@ -517,9 +517,30 @@ class MoragShockCoolingBlackbodySED(_MoragShockCoolingBase):
 
 
 class _UncutMoragShockCoolingSED(MoragShockCoolingSED):
-    """The full Morag+24 SED evaluated at every epoch, ignoring its regime of validity."""
+    r"""
+    The full Morag+24 SED evaluated at every epoch after the explosion, ignoring its regime of validity.
+
+    The formulas are written in :math:`\ln t` and have no finite value at :math:`t = 0`, so the luminosity at
+    :math:`t \le 0` is set to zero (``-inf`` in the natural log) instead of evaluating them.
+    """
 
     _INVALID_FILL = None
+
+    @classmethod
+    def _eval(cls, nu: FloatArray, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
+        r"""As :meth:`MoragShockCoolingSED._eval`, but zero luminosity at :math:`t \le 0`."""
+        t = np.asarray(t, dtype=np.float64)
+        started = t > 0
+        log_L_nu = super()._eval(nu, np.where(started, t, 1.0), **parameters)
+        return np.where(started, log_L_nu, -np.inf)
+
+    @classmethod
+    def _eval_bolometric(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
+        r"""As :meth:`MoragShockCoolingSED._eval_bolometric`, but zero luminosity at :math:`t \le 0`."""
+        t = np.asarray(t, dtype=np.float64)
+        started = t > 0
+        log_L = super()._eval_bolometric(np.where(started, t, 1.0), **parameters)
+        return np.where(started, log_L, -np.inf)
 
 
 class MoragShockCoolingArnettSED(SpectralModel):
