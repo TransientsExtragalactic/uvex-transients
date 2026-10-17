@@ -38,18 +38,16 @@ detections within 48 hours of the last non-detection in the same band:
 (b) The event is brightening at a rate of at least :math:`Y` AB mag / day in at least 1 band, from the limit at its
     last non-detection to the current detection.
 
-(c) The event has an absolute magnitude brighter than :math:`Z` (i.e. :math:`M \le Z`) in at least 1 band.
-
-An event is **triggered** if and only if (a) OR (b) OR (c) is satisfied. The thresholds :math:`X`, :math:`Y` and
-:math:`Z`, along with the infant magnitude and time window, are the settings below.
+An event is **triggered** if and only if (a) OR (b) is satisfied. The thresholds :math:`X` and :math:`Y`, along with
+the infant magnitude and time window, are the settings below.
 
 The analysis reads the event summary and photometry tables of the infant supernova run from the latest release,
 through :func:`~uvex_transients.utils.results.get_results`. The brightening in (a) and (b) is measured from the
 limit at the last non-detection, which is one of the photometry rows, so it needs the photometry to reach back
 before the explosion (``photometry_pre_window`` in ``configs/infant_sne.yaml``). A release cut without it cannot
-satisfy (a) or (b), and only (c) triggers.
+satisfy (a) or (b), so nothing triggers.
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-51
+.. GENERATED FROM PYTHON SOURCE LINES 31-49
 
 .. code-block:: Python
 
@@ -78,14 +76,14 @@ satisfy (a) or (b), and only (c) triggers.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-56
+.. GENERATED FROM PYTHON SOURCE LINES 50-54
 
 Settings
 ---------
 
 The trigger configuration. Change any of these and everything below follows.
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-67
+.. GENERATED FROM PYTHON SOURCE LINES 54-64
 
 .. code-block:: Python
 
@@ -96,10 +94,8 @@ The trigger configuration. Change any of these and everything below follows.
 
     X_BRIGHTEN = 3.0  # (a) brightening since the last non-detection limit, mag
     Y_RATE = 3.0  # (b) brightening rate since the last non-detection limit, mag / day
-    Z_ABS_MAG = -18.0  # (c) absolute magnitude brighter than this (M <= Z)
 
-    USE_A, USE_B, USE_C = True, True, True  # which conditions enter the OR
-
+    USE_A, USE_B = True, True  # which conditions enter the OR
 
 
 
@@ -107,14 +103,15 @@ The trigger configuration. Change any of these and everything below follows.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-72
+
+.. GENERATED FROM PYTHON SOURCE LINES 65-69
 
 Load the tables
 ----------------
 
 The event summary has one row per detected event, and the photometry one row per observation of those events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-83
+.. GENERATED FROM PYTHON SOURCE LINES 69-80
 
 .. code-block:: Python
 
@@ -137,20 +134,22 @@ The event summary has one row per detected event, and the photometry one row per
 
  .. code-block:: none
 
-    Skipping this page's analysis, the release data is not available: Release v0.5.0alpha has no simulation 'infant_sne' (no asset 'infant_sne.zip'). Available simulations: [].
+    Extracting event_summary.ecsv:   0%|          | 0.00/3.62M [00:00<?, ?B/s]    Extracting event_summary.ecsv: 100%|██████████| 3.62M/3.62M [00:00<00:00, 483MB/s]
+    Extracting photometry.ecsv:   0%|          | 0.00/32.4M [00:00<?, ?B/s]    Extracting photometry.ecsv:   3%|▎         | 1.00M/32.4M [00:00<00:10, 3.05MB/s]    Extracting photometry.ecsv:  12%|█▏        | 4.00M/32.4M [00:00<00:04, 6.99MB/s]    Extracting photometry.ecsv:  22%|██▏       | 7.00M/32.4M [00:00<00:03, 8.04MB/s]    Extracting photometry.ecsv:  28%|██▊       | 9.00M/32.4M [00:01<00:03, 7.56MB/s]    Extracting photometry.ecsv:  37%|███▋      | 12.0M/32.4M [00:01<00:02, 8.33MB/s]    Extracting photometry.ecsv:  46%|████▋     | 15.0M/32.4M [00:02<00:02, 8.42MB/s]    Extracting photometry.ecsv:  52%|█████▏    | 17.0M/32.4M [00:02<00:02, 8.03MB/s]    Extracting photometry.ecsv:  62%|██████▏   | 20.0M/32.4M [00:02<00:01, 8.59MB/s]    Extracting photometry.ecsv:  71%|███████   | 23.0M/32.4M [00:02<00:01, 9.10MB/s]    Extracting photometry.ecsv:  77%|███████▋  | 25.0M/32.4M [00:03<00:00, 8.85MB/s]    Extracting photometry.ecsv:  86%|████████▋ | 28.0M/32.4M [00:03<00:00, 9.09MB/s]    Extracting photometry.ecsv:  93%|█████████▎| 30.0M/32.4M [00:03<00:00, 8.07MB/s]    Extracting photometry.ecsv: 100%|██████████| 32.4M/32.4M [00:03<00:00, 8.80MB/s]
+    Loaded 4709 events and 145562 photometry rows.
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-89
+.. GENERATED FROM PYTHON SOURCE LINES 81-86
 
 Table manipulations
 --------------------
 
-Each photometry row needs to know three things about its event: how long since the last non-detection in the
-same band, its absolute magnitude, and the limit of that last non-detection.
+Each photometry row needs to know two things about its event: how long since the last non-detection in the
+same band, and the limit of that last non-detection.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-133
+.. GENERATED FROM PYTHON SOURCE LINES 86-123
 
 .. code-block:: Python
 
@@ -169,13 +168,6 @@ same band, its absolute magnitude, and the limit of that last non-detection.
             dt[in_band] = photometry["obs_time"].mjd[in_band] - t_and_mjd[in_band]
         photometry["dt_last_nondet"] = dt
         photometry["dt_last_nondet"].unit = "d"
-
-        # The absolute magnitude of each epoch is its apparent magnitude minus the distance modulus. This is the
-        # observed-band absolute magnitude (m - mu), so Z in condition (c) is defined in the observed band.
-        d_l_pc = np.asarray(summary["luminosity_distance"], dtype=float) * 1e6  # Mpc to pc
-        distance_modulus = 5 * np.log10(d_l_pc / 10)
-        photometry["abs_mag"] = np.asarray(photometry["ab_mag"]) - distance_modulus[rows]
-        photometry["abs_mag"].unit = "mag"
 
         # The brightening in (a) and (b) is measured from the 5-sigma limiting magnitude of the last non-detection
         # (in the same band) to the current detection. That non-detection is one of the photometry rows, so look it
@@ -205,7 +197,7 @@ same band, its absolute magnitude, and the limit of that last non-detection.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-143
+.. GENERATED FROM PYTHON SOURCE LINES 124-133
 
 Cut: infant SNe
 ----------------
@@ -217,7 +209,7 @@ triggered on it, such an SN is a candidate for follow-up spectroscopy.
 The "theory" infants are the same, but with the window anchored on the true explosion time instead of the last
 non-detection, so they do not depend on the cadence. They are what a survey that observed continuously would find.
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-179
+.. GENERATED FROM PYTHON SOURCE LINES 133-169
 
 .. code-block:: Python
 
@@ -261,25 +253,30 @@ non-detection, so they do not depend on the cadence. They are what a survey that
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    There are 14 infant SNe, and 90 in theory.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-192
 
-Cuts (a), (b) and (c)
-----------------------
+.. GENERATED FROM PYTHON SOURCE LINES 170-181
+
+Cuts (a) and (b)
+-----------------
 
 For each infant SN, find the earliest epoch at which each condition holds: a :math:`\ge 5\sigma` detection
 within ``WINDOW_HR`` of the last non-detection in the same band that
 
 - (a) has brightened by at least ``X_BRIGHTEN`` mag relative to the 5-sigma limit of that non-detection,
-- (b) has brightened at a rate of at least ``Y_RATE`` mag / day since that limit,
-- (c) is brighter than ``Z_ABS_MAG``.
+- (b) has brightened at a rate of at least ``Y_RATE`` mag / day since that limit.
 
 Each returns the ``event_id`` of the infant SNe that pass, and the row of the photometry holding the earliest
 passing epoch, which is the time at which that trigger would fire.
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-213
+.. GENERATED FROM PYTHON SOURCE LINES 181-200
 
 .. code-block:: Python
 
@@ -295,37 +292,42 @@ passing epoch, which is the time at which that trigger would fire.
             brightening = np.asarray(infant_phot["m_last_nondet"]) - np.asarray(infant_phot["ab_mag"])
             meets_a = detected & in_window & (brightening >= X_BRIGHTEN)
             meets_b = detected & in_window & (brightening / dt >= Y_RATE)
-        meets_c = detected & in_window & (np.asarray(infant_phot["abs_mag"]) <= Z_ABS_MAG)
 
         cut_ids, cut_rows = {}, {}
-        for name, meets in (("a", meets_a), ("b", meets_b), ("c", meets_c)):
+        for name, meets in (("a", meets_a), ("b", meets_b)):
             cut_ids[name], cut_rows[name] = earliest_passing_rows(infant_phot, meets)
         print(f"(a) brightened >= {X_BRIGHTEN} mag: {len(cut_ids['a'])} of {len(infant_summary)} infant SNe")
         print(f"(b) rate >= {Y_RATE} mag/day: {len(cut_ids['b'])} of {len(infant_summary)} infant SNe")
-        print(f"(c) M <= {Z_ABS_MAG}: {len(cut_ids['c'])} of {len(infant_summary)} infant SNe")
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    (a) brightened >= 3.0 mag: 14 of 14 infant SNe
+    (b) rate >= 3.0 mag/day: 5 of 14 infant SNe
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-219
+
+.. GENERATED FROM PYTHON SOURCE LINES 201-206
 
 Union of the cuts
 ------------------
 
-An infant SN is triggered if (a) OR (b) OR (c) holds, restricted to the conditions switched on by ``USE_A``,
-``USE_B`` and ``USE_C``.
+An infant SN is triggered if (a) OR (b) holds, restricted to the conditions switched on by ``USE_A`` and
+``USE_B``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-229
+.. GENERATED FROM PYTHON SOURCE LINES 206-216
 
 .. code-block:: Python
 
 
     if summary is not None:
-        passing = [cut_ids[name] for name, use in (("a", USE_A), ("b", USE_B), ("c", USE_C)) if use]
+        passing = [cut_ids[name] for name, use in (("a", USE_A), ("b", USE_B)) if use]
         triggered_ids = (
             np.unique(np.concatenate(passing))
             if passing
@@ -337,16 +339,22 @@ An infant SN is triggered if (a) OR (b) OR (c) holds, restricted to the conditio
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Triggered on 14 of 14 infant SNe.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 230-243
+
+.. GENERATED FROM PYTHON SOURCE LINES 217-230
 
 Yield comparison
 -----------------
 
 The expected number of events in each category: the sum of the event weights, where each Monte Carlo event
-stands for :math:`\mu_0 / n` real ones. Every cut is a subset of the one before it, except that the three
+stands for :math:`\mu_0 / n` real ones. Every cut is a subset of the one before it, except that the two
 conditions are alternative ways of triggering on the infants. The overall detections dwarf everything else, so
 they get a panel of their own.
 
@@ -356,7 +364,7 @@ type, added in quadrature across types since the draws are independent). The lig
 the volumetric rates, summed across types, which assumes the types' rates are fully correlated and so is
 conservative. Rare categories are dominated by the Monte Carlo error.
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-310
+.. GENERATED FROM PYTHON SOURCE LINES 230-296
 
 .. code-block:: Python
 
@@ -381,7 +389,7 @@ conservative. Rare categories are dominated by the Monte Carlo error.
         )
 
 
-    categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(b)", "(c)", "(a) OR (b)\nOR (c)"]
+    categories = ["Detections\n(overall)", "Infants", "Infants\n(theory)", "(a)", "(b)", "(a) OR (b)"]
 
     if summary is not None:
         detected_ids = np.asarray(summary["event_id"])[np.asarray(summary["n_det"]) > 0]
@@ -393,7 +401,6 @@ conservative. Rare categories are dominated by the Monte Carlo error.
                 infant_theory_ids,
                 cut_ids["a"],
                 cut_ids["b"],
-                cut_ids["c"],
                 triggered_ids,
             )
         ]
@@ -420,7 +427,7 @@ conservative. Rare categories are dominated by the Monte Carlo error.
             ax.spines[["top", "right"]].set_visible(False)
         ax_det.set_ylabel("Expected events (weighted)")
         fig.suptitle(
-            f"Yield (X={X_BRIGHTEN} mag, Y={Y_RATE} mag/day, Z={Z_ABS_MAG}, "
+            f"Yield (X={X_BRIGHTEN} mag, Y={Y_RATE} mag/day, "
             f"infant: m <= {INFANT_MAG} within {WINDOW_HR} hr)\nblack: Monte Carlo error, grey: rate uncertainty",
             fontsize=11,
         )
@@ -430,18 +437,34 @@ conservative. Rare categories are dominated by the Monte Carlo error.
 
 
 
+.. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_001.png
+   :alt: Yield (X=3.0 mag, Y=3.0 mag/day, infant: m <= 20.0 within 48 hr) black: Monte Carlo error, grey: rate uncertainty
+   :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Detections (overall)       4743.4  MC +106.4/-103.4  rate +1532.3/-1702.7
+    Infants                      14.1  MC +11.0/-5.4  rate +4.2/-4.7
+    Infants (theory)             90.4  MC +19.4/-14.7  rate +28.4/-32.0
+    (a)                          14.1  MC +11.0/-5.4  rate +4.2/-4.7
+    (b)                           5.0  MC +9.5/-2.8  rate +1.5/-1.7
+    (a) OR (b)                   14.1  MC +11.0/-5.4  rate +4.2/-4.7
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 311-315
+.. GENERATED FROM PYTHON SOURCE LINES 297-301
 
 Infant population
 ------------------
 
 What kinds of events are the infant SNe? The raw counts, and the expected number (the sum of the weights).
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-331
+.. GENERATED FROM PYTHON SOURCE LINES 301-317
 
 .. code-block:: Python
 
@@ -465,10 +488,24 @@ What kinds of events are the infant SNe? The raw counts, and the expected number
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    14 infant SNe (14.1 expected)
+        iip_sne           13 events  (13.1 +7.7/-5.3 expected, Monte Carlo error)
+        iip_excess_sne     1 events  (1.0 +3.8/-1.0 expected, Monte Carlo error)
+        ia_sne             0 events  (0.0 +3.2/-0.0 expected, Monte Carlo error)
+        ib_sne             0 events  (0.0 +2.2/-0.0 expected, Monte Carlo error)
+        icbl_sne           0 events  (0.0 +2.3/-0.0 expected, Monte Carlo error)
+        ic_sne             0 events  (0.0 +2.9/-0.0 expected, Monte Carlo error)
+        iib_sne            0 events  (0.0 +3.0/-0.0 expected, Monte Carlo error)
+        slsne              0 events  (0.0 +3.3/-0.0 expected, Monte Carlo error)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-342
+
+.. GENERATED FROM PYTHON SOURCE LINES 318-328
 
 Light curves
 -------------
@@ -481,7 +518,7 @@ lines are the last non-detection of each band. The inset zooms in on the first d
 
 ``EVENT_IDS`` picks the events. By default ``N_EXAMPLES`` of the triggered ones are drawn at random.
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-474
+.. GENERATED FROM PYTHON SOURCE LINES 328-460
 
 .. code-block:: Python
 
@@ -620,6 +657,30 @@ lines are the last non-detection of each band. The inset zooms in on the first d
 
 
 
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_002.png
+         :alt: Event 28918 (iip_sne, z = 0.062)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_003.png
+         :alt: Event 4595 (iip_sne, z = 0.013)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_004.png
+         :alt: Event 29907 (iip_sne, z = 0.052)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_004.png
+         :class: sphx-glr-multi-img
+
 
 
 
@@ -627,7 +688,7 @@ lines are the last non-detection of each band. The inset zooms in on the first d
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.741 seconds)
+   **Total running time of the script:** (0 minutes 7.838 seconds)
 
 
 .. _sphx_glr_download_report_infant_sne_plot_infant_sne_yields.py:

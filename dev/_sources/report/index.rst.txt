@@ -25,10 +25,10 @@ of that release, and the pages are regenerated when the documentation is rebuilt
 
 .. note::
 
-   No published release report is available yet (or it could not be fetched during this
-   documentation build, see the build log for details). Once a ``vX.Y.Z`` release with
-   ``event_summary.ecsv`` attached is published, this page will be generated automatically on
-   the next documentation build.
+   This page is generated from the latest published release, `v0.5.0alpha <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.5.0alpha>`__, specifically
+   its ``event_summary.ecsv`` data product. Every data product (the event catalog, photometry,
+   exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
+   listed on the `releases page <https://github.com/TransientsExtragalactic/uvex-transients/releases>`__.
 
 
 .. seealso::
@@ -63,6 +63,77 @@ full scale; the others each target one science case.
    * - Infant Supernovae
      - The rate of internal triggers for early supernova spectroscopy. An infant supernova has at least one detection brighter than 20 AB within 48 hours of its last non-detection. These events are extremely rare, and the aim is to get on target as quickly as possible.
      - :doc:`1 analysis <infant_sne/index>`
+
+Transient Detection Report
+--------------------------
+
+The **0th-order** result of the TYR is the number of transients UVEX *detects* over its 2-year prime
+mission. Here, an event is **detected** if the survey observes its position after it explodes and, in at
+least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
+event whose only such observation is the first-ever visit to that field is not counted, since there is no
+reference image to detect it against. A detection says only that UVEX *sees* the event: it does not mean
+the event can be characterized or classified, which needs more observations and is a subject for
+downstream analysis.
+
+The table gives, for each transient type of the Standard Run, the expected number of real events that
+UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
+Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
+percentage of those detected events whose sky position lies inside the footprint of ZTF
+(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
+only, and do not account for whether those surveys observed the event at the right time.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 38 14 14
+
+   * - Transient Type
+     - Expected Detections
+     - % ZTF Overlap
+     - % Rubin Overlap
+   * - :doc:`Type Ia SNe <../transients/type_i>`
+     - :math:`10,072^{+754}_{-714}\,{}^{+775}_{-775}`
+     - 81.4%
+     - 69.6%
+   * - :doc:`Type Ib SNe <../transients/type_i>`
+     - :math:`669^{+206}_{-168}\,{}^{+301}_{-317}`
+     - 81.1%
+     - 64.9%
+   * - :doc:`Type Ic SNe <../transients/type_i>`
+     - :math:`566^{+200}_{-158}\,{}^{+289}_{-301}`
+     - 73.3%
+     - 90.0%
+   * - :doc:`Type Ic-BL SNe <../transients/type_i>`
+     - :math:`176^{+113}_{-77.0}\,{}^{+149}_{-176}`
+     - 63.6%
+     - 90.9%
+   * - :doc:`Type IIb SNe <../transients/type_ii>`
+     - :math:`4,479^{+524}_{-481}\,{}^{+2,036}_{-2,142}`
+     - 85.7%
+     - 66.5%
+   * - :doc:`Type IIP SNe (Excess) <../transients/type_ii>`
+     - :math:`27,200^{+1,230}_{-1,189}\,{}^{+8,045}_{-9,113}`
+     - 82.3%
+     - 69.0%
+   * - :doc:`Type IIP SNe <../transients/type_ii>`
+     - :math:`26,486^{+1,221}_{-1,179}\,{}^{+7,834}_{-8,874}`
+     - 82.6%
+     - 68.9%
+   * - :doc:`Kilonova <../transients/kilonovae>`
+     - :math:`0^{+3.97}_{-0}\,{}^{+0}_{-0}`
+     - --
+     - --
+   * - :doc:`LFBOT <../transients/lfbots>`
+     - :math:`459^{+145}_{-119}\,{}^{+115}_{-418}`
+     - 84.8%
+     - 69.7%
+   * - :doc:`SLSNe (Magnetar) <../transients/slsne>`
+     - :math:`15,214^{+865}_{-833}\,{}^{+5,692}_{-8,244}`
+     - 81.2%
+     - 66.9%
+   * - :doc:`Tidal Disruption Event <../transients/tdes>`
+     - :math:`6,259^{+585}_{-548}\,{}^{+1,211}_{-2,019}`
+     - 80.4%
+     - 71.0%
 
 Simulations
 -----------

@@ -53,6 +53,7 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'report/index';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
@@ -512,10 +513,10 @@ starting from the released data products.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>No published release report is available yet (or it could not be fetched during this
-documentation build, see the build log for details). Once a <code class="docutils literal notranslate"><span class="pre">vX.Y.Z</span></code> release with
-<code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> attached is published, this page will be generated automatically on
-the next documentation build.</p>
+<p>This page is generated from the latest published release, <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.5.0alpha">v0.5.0alpha</a>, specifically
+its <code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> data product. Every data product (the event catalog, photometry,
+exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
+listed on the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases">releases page</a>.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -531,7 +532,8 @@ actions applied to them, and <a class="reference internal" href="../user_guide/c
 <p class="topic-title">On this page</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#available-simulations" id="id1">Available Simulations</a></p></li>
-<li><p><a class="reference internal" href="#simulations" id="id2">Simulations</a></p></li>
+<li><p><a class="reference internal" href="#transient-detection-report" id="id2">Transient Detection Report</a></p></li>
+<li><p><a class="reference internal" href="#simulations" id="id3">Simulations</a></p></li>
 </ul>
 </nav>
 <section id="available-simulations">
@@ -564,8 +566,97 @@ full scale; the others each target one science case.</p>
 </table>
 </div>
 </section>
+<section id="transient-detection-report">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Transient Detection Report</a><a class="headerlink" href="#transient-detection-report" title="Link to this heading">#</a></h2>
+<p>The <strong>0th-order</strong> result of the TYR is the number of transients UVEX <em>detects</em> over its 2-year prime
+mission. Here, an event is <strong>detected</strong> if the survey observes its position after it explodes and, in at
+least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
+event whose only such observation is the first-ever visit to that field is not counted, since there is no
+reference image to detect it against. A detection says only that UVEX <em>sees</em> the event: it does not mean
+the event can be characterized or classified, which needs more observations and is a subject for
+downstream analysis.</p>
+<p>The table gives, for each transient type of the Standard Run, the expected number of real events that
+UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
+Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
+percentage of those detected events whose sky position lies inside the footprint of ZTF
+(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
+only, and do not account for whether those surveys observed the event at the right time.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 38.0%" />
+<col style="width: 14.0%" />
+<col style="width: 14.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Transient Type</p></th>
+<th class="head"><p>Expected Detections</p></th>
+<th class="head"><p>% ZTF Overlap</p></th>
+<th class="head"><p>% Rubin Overlap</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ia SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(10,072^{+754}_{-714}\,{}^{+775}_{-775}\)</span></p></td>
+<td><p>81.4%</p></td>
+<td><p>69.6%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ib SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(669^{+206}_{-168}\,{}^{+301}_{-317}\)</span></p></td>
+<td><p>81.1%</p></td>
+<td><p>64.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(566^{+200}_{-158}\,{}^{+289}_{-301}\)</span></p></td>
+<td><p>73.3%</p></td>
+<td><p>90.0%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic-BL SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(176^{+113}_{-77.0}\,{}^{+149}_{-176}\)</span></p></td>
+<td><p>63.6%</p></td>
+<td><p>90.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIb SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(4,479^{+524}_{-481}\,{}^{+2,036}_{-2,142}\)</span></p></td>
+<td><p>85.7%</p></td>
+<td><p>66.5%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIP SNe (Excess)</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(27,200^{+1,230}_{-1,189}\,{}^{+8,045}_{-9,113}\)</span></p></td>
+<td><p>82.3%</p></td>
+<td><p>69.0%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIP SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(26,486^{+1,221}_{-1,179}\,{}^{+7,834}_{-8,874}\)</span></p></td>
+<td><p>82.6%</p></td>
+<td><p>68.9%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/kilonovae.html"><span class="doc">Kilonova</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(0^{+3.97}_{-0}\,{}^{+0}_{-0}\)</span></p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/lfbots.html"><span class="doc">LFBOT</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(459^{+145}_{-119}\,{}^{+115}_{-418}\)</span></p></td>
+<td><p>84.8%</p></td>
+<td><p>69.7%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/slsne.html"><span class="doc">SLSNe (Magnetar)</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(15,214^{+865}_{-833}\,{}^{+5,692}_{-8,244}\)</span></p></td>
+<td><p>81.2%</p></td>
+<td><p>66.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/tdes.html"><span class="doc">Tidal Disruption Event</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(6,259^{+585}_{-548}\,{}^{+1,211}_{-2,019}\)</span></p></td>
+<td><p>80.4%</p></td>
+<td><p>71.0%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="simulations">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Simulations</a><a class="headerlink" href="#simulations" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Simulations</a><a class="headerlink" href="#simulations" title="Link to this heading">#</a></h2>
 <p>Each <strong>simulation</strong> is its own run of the pipeline, built for one science case: its own transient classes,
 parameter priors, sampling and selection cuts, and therefore its own data products. Each card below opens a
 gallery of the analyses done on that simulation. The examples download its data from the latest release with
@@ -654,6 +745,7 @@ rebuilt with the docs, so they follow the latest release.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-simulations">Available Simulations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transient-detection-report">Transient Detection Report</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulations">Simulations</a></li>
 </ul>
   </nav></div>
