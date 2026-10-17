@@ -21,7 +21,7 @@ that can have optical follow-up or pre-discovery data from LSST. We'll:
 # ------------------------------------
 #
 # This follows :ref:`the end-to-end TDE example <sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py>`:
-# draw a downsampled Monte Carlo population, then keep the events detected above
+# draw a thinned Monte Carlo population, then keep the events detected above
 # :math:`\mathrm{SNR}=5` at an observation the schedule actually made.
 
 from astropy import units as u
@@ -45,7 +45,7 @@ NSIDE = 64
 DOWNSAMPLE = 20
 SNR_THRESHOLD = 5.0
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 detected = simulator.filter_by_snr(catalog, uvex, snr_threshold=SNR_THRESHOLD)
 print(f"{len(catalog) * DOWNSAMPLE} TDEs sampled, {len(detected) * DOWNSAMPLE} detected by UVEX.")
 

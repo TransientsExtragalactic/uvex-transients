@@ -504,7 +504,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EffectivePeakGrid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core._tolerance</span><span class="w"> </span><span class="kn">import</span> <span class="n">first_crossing</span><span class="p">,</span> <span class="n">tolerance_limit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.horizon</span><span class="w"> </span><span class="kn">import</span> <span class="n">HorizonCurve</span><span class="p">,</span> <span class="n">curve_path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">spawn_seeds</span><span class="p">,</span> <span class="n">split_root_seed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_rng</span><span class="p">,</span>
+    <span class="n">get_seed_sequence</span><span class="p">,</span>
+    <span class="n">logger</span><span class="p">,</span>
+    <span class="n">spawn_seeds</span><span class="p">,</span>
+    <span class="n">split_root_seed</span><span class="p">,</span>
+    <span class="n">validate_sampling_factor</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
 
 <span class="n">_SeedType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
@@ -1818,6 +1825,7 @@
         <span class="n">t_start</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">t_end</span><span class="p">:</span> <span class="n">Time</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="n">_SeedType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sample the number of events in a given solid angle and duration.</span>
@@ -1834,12 +1842,18 @@
 <span class="sd">            isn't supplied directly. See `_resolve_duration`.</span>
 <span class="sd">        seed : numpy.random.SeedSequence, int, or None, optional</span>
 <span class="sd">            Root seed for reproducibility; see `uvex_transients.utils.split_root_seed`.</span>
+<span class="sd">        sampling_factor : float, optional</span>
+<span class="sd">            Multiplier on the physical rate, so the count is drawn from a Poisson distribution with mean</span>
+<span class="sd">            ``sampling_factor`` times the expected number of events. The default is `None` (1, the</span>
+<span class="sd">            physical rate). See `sample_events_on_healpix_grid`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            The sampled number of events.</span>
 <span class="sd">        """</span>
+        <span class="n">sampling_factor</span> <span class="o">=</span> <span class="n">validate_sampling_factor</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span>
+
         <span class="c1"># Validate the duration.</span>
         <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_duration</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">)</span>
 
@@ -1849,6 +1863,7 @@
 
         <span class="c1"># Determine the rate in this time period and solid angle.</span>
         <span class="n">n_expected</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrated_rate</span> <span class="o">*</span> <span class="n">solid_angle</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span>
+        <span class="n">n_expected</span> <span class="o">*=</span> <span class="n">sampling_factor</span>
 
         <span class="c1"># Generate the random realization.</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_root_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
@@ -1912,7 +1927,7 @@
         <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nested"</span><span class="p">,</span>
         <span class="n">jitter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="n">_SeedType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.</span>
@@ -1956,13 +1971,15 @@
 <span class="sd">            this seed for every stochastic draw in this call -- including the event</span>
 <span class="sd">            count itself -- so that no two draws (however many events end up being</span>
 <span class="sd">            sampled) ever share a stream.</span>
-<span class="sd">        downsample : int, optional</span>
-<span class="sd">            If given, keep a random ``ceil(N / downsample)`` of the ``N`` events drawn, in</span>
-<span class="sd">            sample order, and build only those. Every draw is still made for all ``N`` events,</span>
-<span class="sd">            so the kept events are exactly the ones a full sample followed by the same random</span>
-<span class="sd">            selection would keep (and carry the same parameter seeds); only the per-event</span>
-<span class="sd">            construction (parameter seeds, sky coordinates, times) is skipped for the rest. The</span>
-<span class="sd">            selection is drawn from the next child of `seed`, after the six this method uses.</span>
+<span class="sd">        sampling_factor : float, optional</span>
+<span class="sd">            Multiplier on the physical event rate, a positive number. The number of events is drawn</span>
+<span class="sd">            from a Poisson distribution with mean ``sampling_factor`` times the expected number, so</span>
+<span class="sd">            ``0.05`` draws about one event in twenty and ``2`` about twice as many. This is exactly</span>
+<span class="sd">            thinning (or superposing) the Poisson process, so every event of a type stands for the</span>
+<span class="sd">            same ``1 / sampling_factor`` real events: the expected total divided by the number of</span>
+<span class="sd">            events generated is the correct weight, however many events fall in any one window.</span>
+<span class="sd">            Only the events that are drawn are built. The default is `None`, which is 1 (the physical</span>
+<span class="sd">            rate).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1971,10 +1988,7 @@
 <span class="sd">            for its columns. Empty (but still correctly typed) if zero events were</span>
 <span class="sd">            sampled.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
-            <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">downsample</span> <span class="o">&lt;</span> <span class="mi">1</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`downsample` must be a positive integer or None, got </span><span class="si">{</span><span class="n">downsample</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">sampling_factor</span> <span class="o">=</span> <span class="n">validate_sampling_factor</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span>
 
         <span class="c1"># Validate the duration and resolve the pixel selection down to a concrete</span>
         <span class="c1"># array of pixel indices.</span>
@@ -2010,6 +2024,7 @@
             <span class="n">solid_angle</span><span class="o">=</span><span class="n">total_solid_angle</span><span class="p">,</span>
             <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">count_seed</span><span class="p">,</span>
+            <span class="n">sampling_factor</span><span class="o">=</span><span class="n">sampling_factor</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
@@ -2051,22 +2066,7 @@
         <span class="c1"># Sample explosion times uniformly across the sampling window (as offsets for now).</span>
         <span class="n">time_offsets</span> <span class="o">=</span> <span class="n">time_rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">)</span>
 
-        <span class="c1"># Everything above is drawn for all events so the streams do not depend on `downsample`. Choose</span>
-        <span class="c1"># the survivors now, so the costlier per-event construction below only runs for them.</span>
-        <span class="k">if</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">downsample_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">root_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">n_keep</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">number_of_events</span> <span class="o">//</span> <span class="n">downsample</span><span class="p">)</span>  <span class="c1"># ceiling division</span>
-            <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">downsample_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_keep</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-            <span class="n">redshifts</span><span class="p">,</span> <span class="n">event_pixel</span><span class="p">,</span> <span class="n">event_jitter</span><span class="p">,</span> <span class="n">time_offsets</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">redshifts</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-                <span class="n">event_pixel</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-                <span class="n">event_jitter</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-                <span class="n">time_offsets</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span>
-            <span class="p">)</span>
-
-        <span class="n">event_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_event_table_buffer</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">),</span> <span class="n">time_scale</span><span class="o">=</span><span class="n">t_start</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">event_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_event_table_buffer</span><span class="p">(</span><span class="n">number_of_events</span><span class="p">,</span> <span class="n">time_scale</span><span class="o">=</span><span class="n">t_start</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
 
         <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">ah</span><span class="o">.</span><span class="n">healpix_to_lonlat</span><span class="p">(</span>
             <span class="n">event_pixel</span><span class="p">,</span>
@@ -2087,7 +2087,7 @@
         <span class="c1"># Draw independent, individually storable per-event seeds -- for regenerating</span>
         <span class="c1"># each event's physical lightcurve parameters later, on demand, without needing</span>
         <span class="c1"># to replay the draws for any other event (see `spawn_seeds`).</span>
-        <span class="n">event_seed</span> <span class="o">=</span> <span class="n">spawn_seeds</span><span class="p">(</span><span class="n">parameter_spawn_seed</span><span class="p">,</span> <span class="n">number_of_events</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">keep</span><span class="p">)</span>
+        <span class="n">event_seed</span> <span class="o">=</span> <span class="n">spawn_seeds</span><span class="p">(</span><span class="n">parameter_spawn_seed</span><span class="p">,</span> <span class="n">number_of_events</span><span class="p">)</span>
 
         <span class="c1"># Populate the table buffer.</span>
         <span class="n">event_buffer</span><span class="p">[</span><span class="s2">"healpix_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_pixel</span>

@@ -68,7 +68,7 @@ A freshly sampled catalog, with no screening applied yet.
     NSIDE = 32
     DOWNSAMPLE = 50
 
-    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
     print(f"Sampled {len(catalog) * DOWNSAMPLE} SLSNe across {TIME_BINS} time bin(s) at NSIDE={NSIDE}.")
 
 
@@ -79,8 +79,9 @@ A freshly sampled catalog, with no screening applied yet.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.55s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.55s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.56s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.56s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.69bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
-    Sampled 169050 SLSNe across 10 time bin(s) at NSIDE=32.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]                                                                                   Building HEALPix coverage index for (nside=32, order='nested'); this can be slow for a long schedule.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.12s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.12s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<01:20, 10.12s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:10<01:10, 10.12s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.95s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.95s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:10<00:09,  1.95s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:10<00:07,  1.95s/bin, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:10<00:01,  1.07bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:10<00:00,  1.07bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.83bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.05s/bin, bin=10/10, type=slsn]
+    Sampled 126550 SLSNe across 10 time bin(s) at NSIDE=32.
 
 
 
@@ -116,16 +117,14 @@ clear the limit at more than one sampled phase, not just momentarily.
 
  .. code-block:: none
 
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
-      return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.23s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.23s/chunk, chunk=1/1, type=slsn]
-    mag_limit=22.0: 5400 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]
-    mag_limit=23.5: 15550 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.03s/chunk, chunk=1/1, type=slsn]
-    mag_limit=25.0: 36300 survive.
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.12s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.12s/chunk, chunk=1/1, type=slsn]
-    mag_limit=25.0, n_visits=3: 32450 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.37chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.37chunk/s, chunk=1/1, type=slsn]
+    mag_limit=22.0: 6500 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.24chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.24chunk/s, chunk=1/1, type=slsn]
+    mag_limit=23.5: 19100 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.38chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.38chunk/s, chunk=1/1, type=slsn]
+    mag_limit=25.0: 41250 survive.
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.39chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.39chunk/s, chunk=1/1, type=slsn]
+    mag_limit=25.0, n_visits=3: 37950 survive.
 
 
 
@@ -163,7 +162,7 @@ The falling survival count
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 38.957 seconds)
+   **Total running time of the script:** (0 minutes 15.319 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_limiting_magnitude.py:

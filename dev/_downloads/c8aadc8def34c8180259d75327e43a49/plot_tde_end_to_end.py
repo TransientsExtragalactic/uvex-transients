@@ -58,14 +58,14 @@ simulator = SurveySimulator(schedule, transients={"tde": tde}, simulation_seed=4
 #
 # .. note::
 #
-#   For events with very high intrinsic rates, it can be useful to provide a ``downsample`` value to
-#   reduce the number of simulated events. This can then be used to rescale to the total number of events
-#   at a later point in the analysis.
+#   For events with very high intrinsic rates, it can be useful to provide a ``sampling_factor`` below 1 to
+#   reduce the number of simulated events. Here ``1 / DOWNSAMPLE`` of the physical rate is simulated, and
+#   multiplying by ``DOWNSAMPLE`` rescales to the total number of events at a later point in the analysis.
 TIME_BINS = 20
 NSIDE = 64
 DOWNSAMPLE = 20
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 print(f"Sampled {len(catalog) * DOWNSAMPLE} TDEs across {TIME_BINS} time bin(s) at NSIDE={NSIDE}.")
 
 # %%

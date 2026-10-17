@@ -1133,7 +1133,7 @@
     <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Compute per-stage MC and rate bounds for a detection-funnel's raw (undownsampled) counts.</span>
+<span class="sd">    Compute per-stage MC and rate bounds for a detection-funnel's raw (unweighted) counts.</span>
 
 <span class="sd">    ``stage_counts[0]`` is taken as the funnel's binomial denominator :math:`n` -- the number of raw</span>
 <span class="sd">    Monte Carlo draws in the "sampled" stage -- and every later stage's count :math:`k_i` is treated</span>
@@ -1150,7 +1150,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    stage_counts : sequence of int</span>
-<span class="sd">        Raw (undownsampled) event counts at each funnel stage, in order, e.g.</span>
+<span class="sd">        Raw (unweighted) event counts at each funnel stage, in order, e.g.</span>
 <span class="sd">        ``(len(catalog), len(mag_filtered), len(detected))``. Each entry must not exceed</span>
 <span class="sd">        ``stage_counts[0]``.</span>
 <span class="sd">    rate_ci : tuple of float, optional</span>
@@ -1162,18 +1162,18 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    mc_lower : numpy.ndarray</span>
-<span class="sd">        Per-stage Clopper-Pearson lower bound, in the same (undownsampled) count units.</span>
+<span class="sd">        Per-stage Clopper-Pearson lower bound, in the same (unweighted) count units.</span>
 <span class="sd">    mc_upper : numpy.ndarray</span>
-<span class="sd">        Per-stage Clopper-Pearson upper bound, in the same (undownsampled) count units.</span>
+<span class="sd">        Per-stage Clopper-Pearson upper bound, in the same (unweighted) count units.</span>
 <span class="sd">    rate_lower : numpy.ndarray</span>
-<span class="sd">        Per-stage rate-normalization lower bound, in the same (undownsampled) count units.</span>
+<span class="sd">        Per-stage rate-normalization lower bound, in the same (unweighted) count units.</span>
 <span class="sd">    rate_upper : numpy.ndarray</span>
-<span class="sd">        Per-stage rate-normalization upper bound, in the same (undownsampled) count units.</span>
+<span class="sd">        Per-stage rate-normalization upper bound, in the same (unweighted) count units.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    To plot alongside a downsample-rescaled ``counts`` array, multiply all four returned arrays by</span>
-<span class="sd">    the same downsample factor first.</span>
+<span class="sd">    To plot alongside a weight-rescaled ``counts`` array (counts times ``1 / sampling_factor``), multiply</span>
+<span class="sd">    all four returned arrays by the same weight first.</span>
 <span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">mc_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stage_counts</span><span class="p">))</span>
@@ -1232,9 +1232,9 @@
 <span class="sd">    x : numpy.ndarray</span>
 <span class="sd">        Bar center positions, one per stage.</span>
 <span class="sd">    counts : numpy.ndarray</span>
-<span class="sd">        Bar heights (downsample-rescaled stage counts), one per stage.</span>
+<span class="sd">        Bar heights (weight-rescaled stage counts), one per stage.</span>
 <span class="sd">    mc_lower, mc_upper, rate_lower, rate_upper : numpy.ndarray</span>
-<span class="sd">        Bound arrays from `compute_funnel_bounds`, rescaled by the same downsample factor as</span>
+<span class="sd">        Bound arrays from `compute_funnel_bounds`, rescaled by the same weight as</span>
 <span class="sd">        `counts`.</span>
 <span class="sd">    color : str or sequence of str, optional</span>
 <span class="sd">        Bar (and rate-band) color: either one color shared by every bar, or one color per bar</span>

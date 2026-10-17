@@ -491,7 +491,13 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">dust_map</span><span class="p">,</span> <span class="n">log_attenuation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">downsample_bandpass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">get_seed_sequence</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">resolve_healpix_resolution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">get_seed_sequence</span><span class="p">,</span>
+    <span class="n">logger</span><span class="p">,</span>
+    <span class="n">resolve_healpix_resolution</span><span class="p">,</span>
+    <span class="n">validate_sampling_factor</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.keyed_noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">time_key</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
@@ -1041,7 +1047,7 @@
         <span class="n">time_bins</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sample a Monte Carlo realization of every registered transient type over a time grid.</span>
@@ -1073,13 +1079,16 @@
 <span class="sd">        order : str, optional</span>
 <span class="sd">            HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``). If `None` (the</span>
 <span class="sd">            default), uses ``config["healpix.default_order"]``.</span>
-<span class="sd">        downsample : int or Mapping of str to int, optional</span>
-<span class="sd">            Downsample the number of events generated, by drawing a random subset</span>
-<span class="sd">            (without replacement) of each per-bin, per-type table rather than a fixed</span>
-<span class="sd">            stride, seeded reproducibly off `simulation_seed`. Either a single factor</span>
-<span class="sd">            applied to every registered transient type, or a ``{type key: factor}``</span>
-<span class="sd">            mapping giving a different factor per type (a type left out of the mapping</span>
-<span class="sd">            is not downsampled at all). The default is ``None`` (no downsampling).</span>
+<span class="sd">        sampling_factor : float or Mapping of str to float, optional</span>
+<span class="sd">            Multiplier on the physical event rate, so the number of events drawn for each</span>
+<span class="sd">            per-bin, per-type table is Poisson with mean `sampling_factor` times its expected</span>
+<span class="sd">            count: ``0.05`` generates about one event in twenty, ``1`` the physical population,</span>
+<span class="sd">            and ``2`` about twice as many. Because this thins (or superposes) the Poisson process</span>
+<span class="sd">            itself, every event of a type stands for the same number of real events, and</span>
+<span class="sd">            `run_event_summary_action` weights them accordingly. Either a single factor applied</span>
+<span class="sd">            to every registered transient type, or a ``{type key: factor}`` mapping giving a</span>
+<span class="sd">            different factor per type (a type left out of the mapping is sampled at its</span>
+<span class="sd">            physical rate). The default is ``None`` (every type at its physical rate).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1089,18 +1098,25 @@
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If `downsample` is a mapping naming a key not in `self._transients`.</span>
+<span class="sd">            If `sampling_factor` is a mapping naming a key not in `self._transients`, or any</span>
+<span class="sd">            factor is not a finite, positive number.</span>
 <span class="sd">        """</span>
         <span class="c1"># Validate the inputs and ensure that there are actually registered transients to model.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No transient types registered in `transient_collection`; nothing to sample."</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"`downsample` names unknown transient key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="sa">f</span><span class="s2">"`sampling_factor` names unknown transient key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; "</span>
+                    <span class="sa">f</span><span class="s2">"available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
                 <span class="p">)</span>
+            <span class="c1"># Plain floats, so the factors recorded on the catalog (and written to its ECSV header)</span>
+            <span class="c1"># are not whatever subclass a YAML loader handed in, such as ruamel's `ScalarFloat`.</span>
+            <span class="n">sampling_factor</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">):</span> <span class="n">validate_sampling_factor</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">sampling_factor</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">elif</span> <span class="n">sampling_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sampling_factor</span> <span class="o">=</span> <span class="n">validate_sampling_factor</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span>
 
         <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
 
@@ -1119,11 +1135,11 @@
         <span class="c1"># of the transient types to construct the sample of events. This is ALL events within the redshift limit</span>
         <span class="c1"># which occur within the footprint of the survey. At this stage, the only event reduction is based in the</span>
         <span class="c1"># redshift limit and the survey footprint.</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">downsample</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling the number of events per-type by </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling the number of events by a factor of </span><span class="si">{</span><span class="n">downsample</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sampling_factor</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Scaling the event rate per-type by </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sampling_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Scaling the event rate by a factor of </span><span class="si">{</span><span class="n">sampling_factor</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="s2">"Generating events for </span><span class="si">%d</span><span class="s2"> type(s) </span><span class="si">%s</span><span class="s2"> over </span><span class="si">%d</span><span class="s2"> time bin(s) (nside=</span><span class="si">%d</span><span class="s2">, order=</span><span class="si">%r</span><span class="s2">)."</span><span class="p">,</span>
@@ -1141,7 +1157,9 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">type_seed</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">,</span> <span class="n">type_seeds</span><span class="p">):</span>
                 <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">bin_seeds</span> <span class="o">=</span> <span class="n">type_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
-                <span class="n">type_downsample</span> <span class="o">=</span> <span class="n">downsample</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">downsample</span>
+                <span class="n">type_sampling_factor</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">sampling_factor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">sampling_factor</span>
+                <span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
                     <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">bin</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bins</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1181,7 +1199,7 @@
                         <span class="n">pixel_ids</span><span class="o">=</span><span class="n">pixel_ids</span><span class="p">,</span>
                         <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
                         <span class="n">seed</span><span class="o">=</span><span class="n">bin_seeds</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
-                        <span class="n">downsample</span><span class="o">=</span><span class="n">type_downsample</span><span class="p">,</span>
+                        <span class="n">sampling_factor</span><span class="o">=</span><span class="n">type_sampling_factor</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="c1"># Interpolate this transient type's own cached D_L(z) grid at each sampled</span>
@@ -1229,7 +1247,7 @@
             <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
             <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">,</span>
-            <span class="n">downsample</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">downsample</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downsample</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">downsample</span><span class="p">,</span>
+            <span class="n">sampling_factor</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">sampling_factor</span><span class="p">,</span>
             <span class="n">pre_cut_counts</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">},</span>
         <span class="p">)</span></div>
 
@@ -3671,7 +3689,9 @@
 <span class="sd">              name (for example ``in_uvex_lmlz_deep``).</span>
 <span class="sd">            - ``weight``: the expected number of real events each sampled event stands for,</span>
 <span class="sd">              ``expected_events[type] / n_pre_cut[type]``. Summing it over any selection gives that</span>
-<span class="sd">              selection's expected yield.</span>
+<span class="sd">              selection's expected yield. Every event of a type shares it, which is exact because</span>
+<span class="sd">              ``sampling_factor`` thins the Poisson process itself, so all of a type's events have</span>
+<span class="sd">              the same inclusion probability.</span>
 <span class="sd">            - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations of the event's position</span>
 <span class="sd">              after the explosion, and the times of the first and last.</span>
 <span class="sd">            - ``n_det``, ``t_first_det``, ``t_last_det``: detections, and the times of the first</span>

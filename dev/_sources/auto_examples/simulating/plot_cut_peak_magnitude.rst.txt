@@ -51,7 +51,7 @@ intrinsic-plus-distance screen, distinct from
     NSIDE = 32
     DOWNSAMPLE = 50
 
-    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
     print(f"{len(catalog) * DOWNSAMPLE} events sampled.")
 
 
@@ -62,8 +62,9 @@ intrinsic-plus-distance screen, distinct from
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.63s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:11<00:36,  4.60s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.67s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.25s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.37bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.71bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.71bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.13bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.68bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.34s/bin, bin=10/10, type=slsn]
-    169050 events sampled.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]                                                                                   Building HEALPix coverage index for (nside=32, order='nested'); this can be slow for a long schedule.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:32, 10.24s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:32, 10.24s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<01:21, 10.24s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:10<01:11, 10.24s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.98s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.98s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:10<00:09,  1.98s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:10<00:07,  1.98s/bin, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.06bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.06bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:10<00:01,  1.06bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:10<00:00,  1.06bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.81bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.07s/bin, bin=10/10, type=slsn]
+    126550 events sampled.
 
 
 
@@ -96,14 +97,12 @@ magnitude is allowed to be.
 
  .. code-block:: none
 
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
-      return np.log(numerator / denominator)
-    Evaluating peak band flux: 100%|██████████| 1/1 [00:09<00:00,  9.02s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:09<00:00,  9.02s/chunk, chunk=1/1, type=slsn]
-    max_mag=21.0: 3450 events peak this bright.
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.88s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.88s/chunk, chunk=1/1, type=slsn]
-    max_mag=22.0: 8450 events peak this bright.
-    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:01<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:06<00:00,  6.11s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:06<00:00,  6.11s/chunk, chunk=1/1, type=slsn]
-    max_mag=23.5: 26000 events peak this bright.
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.83s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:05<00:00,  5.83s/chunk, chunk=1/1, type=slsn]
+    max_mag=21.0: 3600 events peak this bright.
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.79s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.79s/chunk, chunk=1/1, type=slsn]
+    max_mag=22.0: 9550 events peak this bright.
+    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s]    Evaluating peak band flux:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.77s/chunk, chunk=1/1, type=slsn]    Evaluating peak band flux: 100%|██████████| 1/1 [00:02<00:00,  2.77s/chunk, chunk=1/1, type=slsn]
+    max_mag=23.5: 27850 events peak this bright.
 
 
 
@@ -141,7 +140,7 @@ The rising survival count
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (4 minutes 43.790 seconds)
+   **Total running time of the script:** (0 minutes 52.865 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_peak_magnitude.py:

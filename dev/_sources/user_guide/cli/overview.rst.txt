@@ -283,7 +283,7 @@ Generating Events
     generate:
       time_bins: 20
       nside: 64
-      downsample: 20
+      sampling_factor: 0.05
       seed: 42
 
 A direct pass-through to
@@ -293,17 +293,17 @@ artifact -- the starting point every ``steps:`` entry ultimately traces back to 
 an :class:`~uvex_transients.simulation.exposure_catalog.ExposureCatalog` over the same
 ``time_bins``/``nside``/``order`` is always available too, under the reserved id ``"exposure"``.
 
-``downsample:`` can also give a different factor per transient type instead of one number for
-every type -- keys are the ``transients:`` section's own keys, and a type left out isn't
-downsampled at all:
+``sampling_factor:`` can also give a different factor per transient type instead of one number for
+every type -- keys are the ``transients:`` section's own keys, and a type left out is sampled at
+its physical rate:
 
 .. code-block:: yaml
 
     generate:
       time_bins: 20
-      downsample:
-        tde: 20
-        kilonova: 5
+      sampling_factor:
+        tde: 0.05
+        kilonova: 0.2
       seed: 42
 
 .. code-block:: bash
@@ -327,12 +327,14 @@ downsampled at all:
      - str
      - HEALPix pixel ordering (``"nested"`` or ``"ring"``). Optional; falls back to the package's
        ``healpix.default_order``.
-   * - ``downsample``
-     - int or mapping of str to int
-     - Draw a random ``1/downsample`` subset instead of the full population. Either a single
+   * - ``sampling_factor``
+     - float or mapping of str to float
+     - Multiplier on the physical event rate: the number of events is Poisson with this
+       multiple of the expected count, so ``0.05`` generates one event in twenty and ``2``
+       twice as many (replacing the earlier ``downsample: k``, which is ``1/k``). Either a single
        factor applied to every registered transient type, or a ``{transient key: factor}``
-       mapping to downsample types individually (a type left out of the mapping is not
-       downsampled). Optional; no downsampling by default.
+       mapping to scale types individually (a type left out of the mapping is sampled at its
+       physical rate). Optional; every type at its physical rate by default.
    * - ``seed``
      - int
      - Root seed for :class:`~uvex_transients.simulation.core.SurveySimulator`. Optional.

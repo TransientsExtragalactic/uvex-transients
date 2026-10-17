@@ -55,10 +55,10 @@ the events worth the cost.
     MAG_LIMIT = 25.0
     SNR_THRESHOLD = 5.0
 
-    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
     mag_filtered = simulator.filter_by_limiting_magnitude(catalog, uvex, mag_limit=MAG_LIMIT)
     detected = simulator.filter_by_snr(mag_filtered, uvex, snr_threshold=SNR_THRESHOLD)
-    print(f"{len(detected)} events detected (before scaling by downsample).")
+    print(f"{len(detected)} events detected (before scaling by DOWNSAMPLE).")
 
 
 
@@ -68,12 +68,11 @@ the events worth the cost.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.57s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:35, 10.57s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.57s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.57s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.65s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.65s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.75s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:12<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.72bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.14bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.68bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.33s/bin, bin=10/10, type=slsn]
-    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]/home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2611: RuntimeWarning: divide by zero encountered in log
-      return np.log(numerator / denominator)
-    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.05s/chunk, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:06<00:00,  6.05s/chunk, chunk=1/1, type=slsn]
-    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.65s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:01<00:00,  1.65s/chunk, type=slsn]
-    222 events detected (before scaling by downsample).
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]                                                                                   Building HEALPix coverage index for (nside=32, order='nested'); this can be slow for a long schedule.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.16s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.16s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<01:21, 10.16s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:10<01:11, 10.16s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.96s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.96s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:10<00:09,  1.96s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:10<00:07,  1.96s/bin, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:10<00:01,  1.07bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:10<00:00,  1.07bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.82bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.06s/bin, bin=10/10, type=slsn]
+    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s]    Filtering by mag limit:   0%|          | 0/1 [00:00<?, ?chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.38chunk/s, chunk=1/1, type=slsn]    Filtering by mag limit: 100%|██████████| 1/1 [00:00<00:00,  1.38chunk/s, chunk=1/1, type=slsn]
+    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s]    Computing epochs:   0%|          | 0/1 [00:00<?, ?chunk/s, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:02<00:00,  2.35s/chunk, type=slsn]    Computing epochs: 100%|██████████| 1/1 [00:02<00:00,  2.36s/chunk, type=slsn]
+    286 events detected (before scaling by DOWNSAMPLE).
 
 
 
@@ -107,16 +106,16 @@ actually present in `catalog` are simulated.
 
  .. code-block:: none
 
-    Simulating photometry:   0%|          | 0/5 [00:00<?, ?event/s]    Simulating photometry:  40%|████      | 2/5 [00:00<00:00, 11.35event/s]    Simulating photometry:  80%|████████  | 4/5 [00:00<00:00, 11.53event/s]    Simulating photometry: 100%|██████████| 5/5 [00:00<00:00, 11.58event/s]
-    274 (event, observation, band) rows for 5 events.
+    Simulating photometry:   0%|          | 0/5 [00:00<?, ?event/s]    Simulating photometry:  20%|██        | 1/5 [00:00<00:00,  4.95event/s]    Simulating photometry:  40%|████      | 2/5 [00:00<00:00,  4.79event/s]    Simulating photometry:  60%|██████    | 3/5 [00:00<00:00,  4.96event/s]    Simulating photometry:  80%|████████  | 4/5 [00:00<00:00,  5.14event/s]    Simulating photometry: 100%|██████████| 5/5 [00:00<00:00,  5.40event/s]    Simulating photometry: 100%|██████████| 5/5 [00:00<00:00,  5.20event/s]
+    140 (event, observation, band) rows for 5 events.
     event_id         obs_time        band         snr               ab_mag      
     -------- ----------------------- ---- ------------------- ------------------
-        1220 2030-08-21 01:43:07.478  FUV -0.7418200897763175                nan
-        1220 2030-08-21 01:43:07.478  NUV   2.695137140232624 25.472072313502583
-        1220 2030-08-21 04:30:36.345  FUV  0.5975112701915052 26.836571623331572
-        1220 2030-08-21 04:30:36.345  NUV   3.433386577886319 25.207870823958576
-        1220 2030-08-21 05:04:04.812  FUV -1.0402685672193366                nan
-        1220 2030-08-21 05:04:04.812  NUV   2.293331283532604 25.645741275166106
+         881 2030-08-19 09:56:54.699  FUV -0.9721808313843824                nan
+         881 2030-08-19 09:56:54.699  NUV  1.1862327068766298 26.432550669288766
+         881 2030-08-21 07:59:09.589  FUV -1.3857180492759416                nan
+         881 2030-08-21 07:59:09.589  NUV   5.462402581614813 24.765287388937818
+         947 2030-08-04 21:37:43.184  FUV 0.40361082729618386 27.271201148511103
+         947 2030-08-04 21:37:43.184  NUV  1.6103203024080017 26.215000464309547
 
 
 
@@ -163,17 +162,10 @@ One event's light curve
 
 
 .. image-sg:: /auto_examples/simulating/images/sphx_glr_plot_action_photometry_001.png
-   :alt: Event 2425 (z=0.630)
+   :alt: Event 1885 (z=0.551)
    :srcset: /auto_examples/simulating/images/sphx_glr_plot_action_photometry_001.png
    :class: sphx-glr-single-img
 
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/uvex-transients/uvex-transients/uvex_transients/models/core/base.py:2856: RuntimeWarning: divide by zero encountered in log10
-      return -2.5 * np.log10(F_nu / AB_MAG_ZERO_POINT)
 
 
 
@@ -181,7 +173,7 @@ One event's light curve
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 23.246 seconds)
+   **Total running time of the script:** (0 minutes 16.141 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_action_photometry.py:

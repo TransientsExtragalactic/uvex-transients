@@ -52,7 +52,7 @@ avoidance.
     NSIDE = 32
     DOWNSAMPLE = 50
 
-    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+    catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
     print(f"{len(catalog) * DOWNSAMPLE} events sampled.")
 
 
@@ -63,8 +63,9 @@ avoidance.
 
  .. code-block:: none
 
-    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.52s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:34, 10.52s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.55s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<00:36,  4.55s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:11<00:18,  2.64s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:11<00:10,  1.74s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:11<00:06,  1.24s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:12<00:03,  1.08bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:12<00:02,  1.38bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:12<00:01,  1.73bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:13<00:00,  2.15bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  2.70bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:13<00:00,  1.32s/bin, bin=10/10, type=slsn]
-    169050 events sampled.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s]    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]                                                                                   Building HEALPix coverage index for (nside=32, order='nested'); this can be slow for a long schedule.
+    Generating events:   0%|          | 0/10 [00:00<?, ?bin/s, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.18s/bin, bin=1/10, type=slsn]    Generating events:  10%|█         | 1/10 [00:10<01:31, 10.18s/bin, bin=2/10, type=slsn]    Generating events:  20%|██        | 2/10 [00:10<01:21, 10.18s/bin, bin=3/10, type=slsn]    Generating events:  30%|███       | 3/10 [00:10<01:11, 10.18s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.97s/bin, bin=4/10, type=slsn]    Generating events:  40%|████      | 4/10 [00:10<00:11,  1.97s/bin, bin=5/10, type=slsn]    Generating events:  50%|█████     | 5/10 [00:10<00:09,  1.97s/bin, bin=6/10, type=slsn]    Generating events:  60%|██████    | 6/10 [00:10<00:07,  1.97s/bin, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=7/10, type=slsn]    Generating events:  70%|███████   | 7/10 [00:10<00:02,  1.07bin/s, bin=8/10, type=slsn]    Generating events:  80%|████████  | 8/10 [00:10<00:01,  1.07bin/s, bin=9/10, type=slsn]    Generating events:  90%|█████████ | 9/10 [00:10<00:00,  1.07bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.82bin/s, bin=10/10, type=slsn]    Generating events: 100%|██████████| 10/10 [00:10<00:00,  1.06s/bin, bin=10/10, type=slsn]
+    126550 events sampled.
 
 
 
@@ -96,7 +97,7 @@ full-sky defaults.
 
  .. code-block:: none
 
-    141950 events survive Galactic-plane avoidance.
+    105550 events survive Galactic-plane avoidance.
 
 
 
@@ -141,7 +142,7 @@ Sky positions, before and after
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 14.564 seconds)
+   **Total running time of the script:** (0 minutes 12.096 seconds)
 
 
 .. _sphx_glr_download_auto_examples_simulating_plot_cut_sky_position.py:

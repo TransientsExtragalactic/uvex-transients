@@ -485,7 +485,42 @@
     <span class="s2">"split_root_seed"</span><span class="p">,</span>
     <span class="s2">"spawn_seeds"</span><span class="p">,</span>
     <span class="s2">"resolve_healpix_resolution"</span><span class="p">,</span>
+    <span class="s2">"validate_sampling_factor"</span><span class="p">,</span>
 <span class="p">]</span>
+
+
+<div class="viewcode-block" id="validate_sampling_factor">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.utils.validate_sampling_factor.html#uvex_transients.utils.validate_sampling_factor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_sampling_factor</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check a ``sampling_factor`` and return it as a `float`, with `None` meaning 1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampling_factor : float or None</span>
+<span class="sd">        The multiplier on the physical event rate.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        `sampling_factor` as a float, or 1.0 if it was `None`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `sampling_factor` is not a finite, positive real number (a `bool` is rejected).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">sampling_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">))</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">sampling_factor</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`sampling_factor` must be a finite, positive number or None, got </span><span class="si">{</span><span class="n">sampling_factor</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="resolve_healpix_resolution">

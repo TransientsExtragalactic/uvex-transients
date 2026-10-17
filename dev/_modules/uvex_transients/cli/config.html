@@ -910,7 +910,7 @@
     <span class="n">time_bins</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">downsample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+    <span class="n">sampling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 
@@ -1139,11 +1139,17 @@
             <span class="n">section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_section</span><span class="p">(</span><span class="s2">"generate"</span><span class="p">,</span> <span class="s2">"generate"</span><span class="p">)</span>
             <span class="k">if</span> <span class="s2">"time_bins"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'generate:' is missing required key 'time_bins'."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"downsample"</span> <span class="ow">in</span> <span class="n">section</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"'generate:' key 'downsample' was replaced by 'sampling_factor', a multiplier on the event "</span>
+                    <span class="s2">"rate rather than a divisor: use 'sampling_factor: 1/k' (for example 0.05) in place of "</span>
+                    <span class="s2">"'downsample: k' (20)."</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span> <span class="o">=</span> <span class="n">GenerateConfig</span><span class="p">(</span>
                 <span class="n">time_bins</span><span class="o">=</span><span class="n">section</span><span class="p">[</span><span class="s2">"time_bins"</span><span class="p">],</span>
                 <span class="n">nside</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nside"</span><span class="p">),</span>
                 <span class="n">order</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"order"</span><span class="p">),</span>
-                <span class="n">downsample</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"downsample"</span><span class="p">),</span>
+                <span class="n">sampling_factor</span><span class="o">=</span><span class="n">section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sampling_factor"</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span>
 

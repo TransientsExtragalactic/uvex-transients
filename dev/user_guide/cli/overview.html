@@ -834,7 +834,7 @@ or a <code class="docutils literal notranslate"><span class="pre">!prior</span><
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generate</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">time_bins</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
 <span class="w">  </span><span class="nt">nside</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
-<span class="w">  </span><span class="nt">downsample</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">sampling_factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
 <span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
 </pre></div>
 </div>
@@ -844,14 +844,14 @@ or a <code class="docutils literal notranslate"><span class="pre">!prior</span><
 artifact – the starting point every <code class="docutils literal notranslate"><span class="pre">steps:</span></code> entry ultimately traces back to (see below) – and
 an <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.exposure_catalog.ExposureCatalog.html#uvex_transients.simulation.exposure_catalog.ExposureCatalog" title="uvex_transients.simulation.exposure_catalog.ExposureCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposureCatalog</span></code></a> over the same
 <code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code> is always available too, under the reserved id <code class="docutils literal notranslate"><span class="pre">&quot;exposure&quot;</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">downsample:</span></code> can also give a different factor per transient type instead of one number for
-every type – keys are the <code class="docutils literal notranslate"><span class="pre">transients:</span></code> section’s own keys, and a type left out isn’t
-downsampled at all:</p>
+<p><code class="docutils literal notranslate"><span class="pre">sampling_factor:</span></code> can also give a different factor per transient type instead of one number for
+every type – keys are the <code class="docutils literal notranslate"><span class="pre">transients:</span></code> section’s own keys, and a type left out is sampled at
+its physical rate:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">generate</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">time_bins</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-<span class="w">  </span><span class="nt">downsample</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">tde</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-<span class="w">    </span><span class="nt">kilonova</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">sampling_factor</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">tde</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
+<span class="w">    </span><span class="nt">kilonova</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span>
 <span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span>
 </pre></div>
 </div>
@@ -885,12 +885,14 @@ downsampled at all:</p>
 <td><p>HEALPix pixel ordering (<code class="docutils literal notranslate"><span class="pre">&quot;nested&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;ring&quot;</span></code>). Optional; falls back to the package’s
 <code class="docutils literal notranslate"><span class="pre">healpix.default_order</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">downsample</span></code></p></td>
-<td><p>int or mapping of str to int</p></td>
-<td><p>Draw a random <code class="docutils literal notranslate"><span class="pre">1/downsample</span></code> subset instead of the full population. Either a single
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sampling_factor</span></code></p></td>
+<td><p>float or mapping of str to float</p></td>
+<td><p>Multiplier on the physical event rate: the number of events is Poisson with this
+multiple of the expected count, so <code class="docutils literal notranslate"><span class="pre">0.05</span></code> generates one event in twenty and <code class="docutils literal notranslate"><span class="pre">2</span></code>
+twice as many (replacing the earlier <code class="docutils literal notranslate"><span class="pre">downsample:</span> <span class="pre">k</span></code>, which is <code class="docutils literal notranslate"><span class="pre">1/k</span></code>). Either a single
 factor applied to every registered transient type, or a <code class="docutils literal notranslate"><span class="pre">{transient</span> <span class="pre">key:</span> <span class="pre">factor}</span></code>
-mapping to downsample types individually (a type left out of the mapping is not
-downsampled). Optional; no downsampling by default.</p></td>
+mapping to scale types individually (a type left out of the mapping is sampled at its
+physical rate). Optional; every type at its physical rate by default.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p>int</p></td>
