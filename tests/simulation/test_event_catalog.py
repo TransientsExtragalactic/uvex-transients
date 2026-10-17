@@ -54,24 +54,46 @@ def test_simulate_photometry_respects_bands(make_schedule, hot_spot):
 
 
 # --------------------------------------------------------------------------- #
-# to_disk / from_disk: downsample round-trip                                 #
+# to_disk / from_disk: sampling_factor round-trip                            #
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("downsample", [None, 20, {"tde": 5, "kilonova": 2}])
-def test_to_disk_from_disk_round_trips_downsample(tmp_path, hot_spot, downsample):
-    """`downsample` (int, mapping, or `None`) survives an ECSV `to_disk`/`from_disk` round trip."""
+@pytest.mark.parametrize("sampling_factor", [None, 0.05, {"tde": 0.2, "kilonova": 2.0}])
+def test_to_disk_from_disk_round_trips_sampling_factor(tmp_path, hot_spot, sampling_factor):
+    """`sampling_factor` (number, mapping, or `None`) survives an ECSV `to_disk`/`from_disk` round trip."""
     transient = TidalDisruptionEvent()
     catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=1)
-    catalog.downsample = downsample
+    catalog.sampling_factor = sampling_factor
 
     path = tmp_path / "catalog.ecsv"
     catalog.to_disk(path)
     reloaded = EventCatalog.from_disk(path)
 
-    assert reloaded.downsample == downsample
+    assert reloaded.sampling_factor == sampling_factor
 
 
-def test_from_disk_defaults_downsample_to_none_when_absent_from_older_files(tmp_path, hot_spot):
-    """A catalog file written before `downsample` existed still reads back fine, defaulting to `None`."""
+@pytest.mark.parametrize("legacy, expected", [(20, 0.05), ({"tde": 5, "kilonova": 2}, {"tde": 0.2, "kilonova": 0.5})])
+def test_from_disk_reads_a_legacy_downsample_as_its_reciprocal(tmp_path, hot_spot, legacy, expected):
+    """A file written when the option was called `downsample` (a divisor) reads back as a `sampling_factor`."""
+    transient = TidalDisruptionEvent()
+    catalog, *_ = _make_catalog(transient, hot_spot, n_events=2, seed=1)
+
+    path = tmp_path / "catalog.ecsv"
+    table = catalog.table.copy()
+    table.meta.update(
+        {
+            "nside": catalog.nside,
+            "order": catalog.order,
+            "time_bins": catalog.time_bins,
+            "seed": catalog.seed,
+            "downsample": legacy,
+        }
+    )
+    table.write(path)
+
+    assert EventCatalog.from_disk(path).sampling_factor == pytest.approx(expected)
+
+
+def test_from_disk_defaults_sampling_factor_to_none_when_absent_from_older_files(tmp_path, hot_spot):
+    """A catalog file written before `sampling_factor` existed still reads back fine, defaulting to `None`."""
     transient = TidalDisruptionEvent()
     catalog, *_ = _make_catalog(transient, hot_spot, n_events=2, seed=1)
 
@@ -83,7 +105,7 @@ def test_from_disk_defaults_downsample_to_none_when_absent_from_older_files(tmp_
     table.write(path)
 
     reloaded = EventCatalog.from_disk(path)
-    assert reloaded.downsample is None
+    assert reloaded.sampling_factor is None
 
 
 # --------------------------------------------------------------------------- #

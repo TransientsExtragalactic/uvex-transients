@@ -25,7 +25,39 @@ __all__ = [
     "split_root_seed",
     "spawn_seeds",
     "resolve_healpix_resolution",
+    "validate_sampling_factor",
 ]
+
+
+def validate_sampling_factor(sampling_factor) -> float:
+    """
+    Check a ``sampling_factor`` and return it as a `float`, with `None` meaning 1.
+
+    Parameters
+    ----------
+    sampling_factor : float or None
+        The multiplier on the physical event rate.
+
+    Returns
+    -------
+    float
+        `sampling_factor` as a float, or 1.0 if it was `None`.
+
+    Raises
+    ------
+    ValueError
+        If `sampling_factor` is not a finite, positive real number (a `bool` is rejected).
+    """
+    if sampling_factor is None:
+        return 1.0
+    if (
+        isinstance(sampling_factor, (bool, np.bool_))
+        or not isinstance(sampling_factor, (int, float, np.integer, np.floating))
+        or not np.isfinite(sampling_factor)
+        or sampling_factor <= 0
+    ):
+        raise ValueError(f"`sampling_factor` must be a finite, positive number or None, got {sampling_factor!r}.")
+    return float(sampling_factor)
 
 
 def resolve_healpix_resolution(

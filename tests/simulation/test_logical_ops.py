@@ -19,7 +19,7 @@ def _subset(catalog, ids):
         order=catalog.order,
         time_bins=catalog.time_bins,
         seed=catalog.seed,
-        downsample=catalog.downsample,
+        sampling_factor=catalog.sampling_factor,
         pre_cut_counts=catalog.pre_cut_counts,
     )
 
@@ -36,7 +36,7 @@ def _assert_metadata_carried_from_first(result, first):
     assert result.order == first.order
     assert np.array_equal(result.time_bins.jd, first.time_bins.jd)
     assert result.seed == first.seed
-    assert result.downsample == first.downsample
+    assert result.sampling_factor == first.sampling_factor
     assert result.pre_cut_counts == first.pre_cut_counts
 
 
@@ -146,7 +146,7 @@ def test_mismatched_nside_raises(hot_spot):
         order=catalog.order,
         time_bins=catalog.time_bins,
         seed=catalog.seed,
-        downsample=catalog.downsample,
+        sampling_factor=catalog.sampling_factor,
     )
     with pytest.raises(ValueError, match=r"same \(nside, order\)"):
         union([catalog, other])
@@ -162,7 +162,7 @@ def test_mismatched_order_raises(hot_spot):
         order=other_order,
         time_bins=catalog.time_bins,
         seed=catalog.seed,
-        downsample=catalog.downsample,
+        sampling_factor=catalog.sampling_factor,
     )
     with pytest.raises(ValueError, match=r"same \(nside, order\)"):
         difference([catalog, other])

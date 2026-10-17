@@ -31,7 +31,13 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 
 from uvex_transients.dust import dust_map, log_attenuation
 from uvex_transients.missions import downsample_bandpass
-from uvex_transients.utils import config, get_seed_sequence, logger, resolve_healpix_resolution
+from uvex_transients.utils import (
+    config,
+    get_seed_sequence,
+    logger,
+    resolve_healpix_resolution,
+    validate_sampling_factor,
+)
 from uvex_transients.utils.keyed_noise import time_key
 
 from ..surveys.base import SurveySchedule
@@ -574,7 +580,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         time_bins: Time | int,
         nside: int | None = None,
         order: str | None = None,
-        downsample: int | Mapping[str, int] | None = None,
+        sampling_factor: float | Mapping[str, float] | None = None,
     ) -> EventCatalog:
         """
         Sample a Monte Carlo realization of every registered transient type over a time grid.
@@ -606,13 +612,16 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         order : str, optional
             HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``). If `None` (the
             default), uses ``config["healpix.default_order"]``.
-        downsample : int or Mapping of str to int, optional
-            Downsample the number of events generated, by drawing a random subset
-            (without replacement) of each per-bin, per-type table rather than a fixed
-            stride, seeded reproducibly off `simulation_seed`. Either a single factor
-            applied to every registered transient type, or a ``{type key: factor}``
-            mapping giving a different factor per type (a type left out of the mapping
-            is not downsampled at all). The default is ``None`` (no downsampling).
+        sampling_factor : float or Mapping of str to float, optional
+            Multiplier on the physical event rate, so the number of events drawn for each
+            per-bin, per-type table is Poisson with mean `sampling_factor` times its expected
+            count: ``0.05`` generates about one event in twenty, ``1`` the physical population,
+            and ``2`` about twice as many. Because this thins (or superposes) the Poisson process
+            itself, every event of a type stands for the same number of real events, and
+            `run_event_summary_action` weights them accordingly. Either a single factor applied
+            to every registered transient type, or a ``{type key: factor}`` mapping giving a
+            different factor per type (a type left out of the mapping is sampled at its
+            physical rate). The default is ``None`` (every type at its physical rate).
 
         Returns
         -------
@@ -622,18 +631,24 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         Raises
         ------
         ValueError
-            If `downsample` is a mapping naming a key not in `self._transients`.
+            If `sampling_factor` is a mapping naming a key not in `self._transients`, or any
+            factor is not a finite, positive number.
         """
         # Validate the inputs and ensure that there are actually registered transients to model.
         if not self._transients:
             raise ValueError("No transient types registered in `transient_collection`; nothing to sample.")
 
-        if isinstance(downsample, Mapping):
-            unknown = sorted(set(downsample) - set(self._transients))
+        if isinstance(sampling_factor, Mapping):
+            unknown = sorted(set(sampling_factor) - set(self._transients))
             if unknown:
                 raise ValueError(
-                    f"`downsample` names unknown transient key(s) {unknown}; available: {sorted(self._transients)}."
+                    f"`sampling_factor` names unknown transient key(s) {unknown}; "
+                    f"available: {sorted(self._transients)}."
                 )
+            for factor in sampling_factor.values():
+                validate_sampling_factor(factor)
+        else:
+            validate_sampling_factor(sampling_factor)
 
         nside, order = resolve_healpix_resolution(nside, order)
 
@@ -652,11 +667,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         # of the transient types to construct the sample of events. This is ALL events within the redshift limit
         # which occur within the footprint of the survey. At this stage, the only event reduction is based in the
         # redshift limit and the survey footprint.
-        if isinstance(downsample, Mapping):
-            if downsample:
-                logger.info(f"Downsampling the number of events per-type by {dict(downsample)}.")
-        elif downsample is not None:
-            logger.info(f"Downsampling the number of events by a factor of {downsample}.")
+        if isinstance(sampling_factor, Mapping):
+            if sampling_factor:
+                logger.info(f"Scaling the event rate per-type by {dict(sampling_factor)}.")
+        elif sampling_factor is not None:
+            logger.info(f"Scaling the event rate by a factor of {sampling_factor}.")
         tables = []
         logger.info(
             "Generating events for %d type(s) %s over %d time bin(s) (nside=%d, order=%r).",
@@ -674,7 +689,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             for name, type_seed in zip(sorted_names, type_seeds):
                 transient = self._transients[name]
                 bin_seeds = type_seed.spawn(n_bins)
-                type_downsample = downsample.get(name) if isinstance(downsample, Mapping) else downsample
+                type_sampling_factor = (
+                    sampling_factor.get(name) if isinstance(sampling_factor, Mapping) else sampling_factor
+                )
 
                 for k in range(n_bins):
                     pbar.set_postfix(type=name, bin=f"{k + 1}/{n_bins}")
@@ -714,7 +731,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                         pixel_ids=pixel_ids,
                         order=order,
                         seed=bin_seeds[k],
-                        downsample=type_downsample,
+                        sampling_factor=type_sampling_factor,
                     )
 
                     # Interpolate this transient type's own cached D_L(z) grid at each sampled
@@ -762,7 +779,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             order=order,
             time_bins=edges,
             seed=self._simulation_seed,
-            downsample=dict(downsample) if isinstance(downsample, Mapping) else downsample,
+            sampling_factor=dict(sampling_factor) if isinstance(sampling_factor, Mapping) else sampling_factor,
             pre_cut_counts={name: int(np.sum(generated_types == name)) for name in sorted_names},
         )
 
@@ -3138,7 +3155,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
               name (for example ``in_uvex_lmlz_deep``).
             - ``weight``: the expected number of real events each sampled event stands for,
               ``expected_events[type] / n_pre_cut[type]``. Summing it over any selection gives that
-              selection's expected yield.
+              selection's expected yield. Every event of a type shares it, which is exact because
+              ``sampling_factor`` thins the Poisson process itself, so all of a type's events have
+              the same inclusion probability.
             - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations of the event's position
               after the explosion, and the times of the first and last.
             - ``n_det``, ``t_first_det``, ``t_last_det``: detections, and the times of the first

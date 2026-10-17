@@ -448,7 +448,7 @@ class GenerateConfig:
     time_bins: int
     nside: int | None = None
     order: str | None = None
-    downsample: int | dict[str, int] | None = None
+    sampling_factor: float | dict[str, float] | None = None
 
 
 @dataclass
@@ -665,11 +665,17 @@ class RunConfig:
             section = self._require_section("generate", "generate")
             if "time_bins" not in section:
                 raise ValueError("'generate:' is missing required key 'time_bins'.")
+            if "downsample" in section:
+                raise ValueError(
+                    "'generate:' key 'downsample' was replaced by 'sampling_factor', a multiplier on the event "
+                    "rate rather than a divisor: use 'sampling_factor: 1/k' (for example 0.05) in place of "
+                    "'downsample: k' (20)."
+                )
             self._generate = GenerateConfig(
                 time_bins=section["time_bins"],
                 nside=section.get("nside"),
                 order=section.get("order"),
-                downsample=section.get("downsample"),
+                sampling_factor=section.get("sampling_factor"),
             )
         return self._generate
 
