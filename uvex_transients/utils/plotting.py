@@ -638,7 +638,7 @@ def compute_funnel_bounds(
     confidence: float = 0.9,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     r"""
-    Compute per-stage MC and rate bounds for a detection-funnel's raw (undownsampled) counts.
+    Compute per-stage MC and rate bounds for a detection-funnel's raw (unweighted) counts.
 
     ``stage_counts[0]`` is taken as the funnel's binomial denominator :math:`n` -- the number of raw
     Monte Carlo draws in the "sampled" stage -- and every later stage's count :math:`k_i` is treated
@@ -655,7 +655,7 @@ def compute_funnel_bounds(
     Parameters
     ----------
     stage_counts : sequence of int
-        Raw (undownsampled) event counts at each funnel stage, in order, e.g.
+        Raw (unweighted) event counts at each funnel stage, in order, e.g.
         ``(len(catalog), len(mag_filtered), len(detected))``. Each entry must not exceed
         ``stage_counts[0]``.
     rate_ci : tuple of float, optional
@@ -667,18 +667,18 @@ def compute_funnel_bounds(
     Returns
     -------
     mc_lower : numpy.ndarray
-        Per-stage Clopper-Pearson lower bound, in the same (undownsampled) count units.
+        Per-stage Clopper-Pearson lower bound, in the same (unweighted) count units.
     mc_upper : numpy.ndarray
-        Per-stage Clopper-Pearson upper bound, in the same (undownsampled) count units.
+        Per-stage Clopper-Pearson upper bound, in the same (unweighted) count units.
     rate_lower : numpy.ndarray
-        Per-stage rate-normalization lower bound, in the same (undownsampled) count units.
+        Per-stage rate-normalization lower bound, in the same (unweighted) count units.
     rate_upper : numpy.ndarray
-        Per-stage rate-normalization upper bound, in the same (undownsampled) count units.
+        Per-stage rate-normalization upper bound, in the same (unweighted) count units.
 
     Notes
     -----
-    To plot alongside a downsample-rescaled ``counts`` array, multiply all four returned arrays by
-    the same downsample factor first.
+    To plot alongside a weight-rescaled ``counts`` array (counts times ``1 / sampling_factor``), multiply
+    all four returned arrays by the same weight first.
     """
     n = int(stage_counts[0])
     mc_lower = np.empty(len(stage_counts))
@@ -734,9 +734,9 @@ def plot_detection_funnel(
     x : numpy.ndarray
         Bar center positions, one per stage.
     counts : numpy.ndarray
-        Bar heights (downsample-rescaled stage counts), one per stage.
+        Bar heights (weight-rescaled stage counts), one per stage.
     mc_lower, mc_upper, rate_lower, rate_upper : numpy.ndarray
-        Bound arrays from `compute_funnel_bounds`, rescaled by the same downsample factor as
+        Bound arrays from `compute_funnel_bounds`, rescaled by the same weight as
         `counts`.
     color : str or sequence of str, optional
         Bar (and rate-band) color: either one color shared by every bar, or one color per bar

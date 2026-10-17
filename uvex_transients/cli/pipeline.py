@@ -35,7 +35,7 @@ def run_generate(config: RunConfig) -> EventCatalog:
         time_bins=settings.time_bins,
         nside=settings.nside,
         order=settings.order,
-        downsample=settings.downsample,
+        sampling_factor=settings.sampling_factor,
     )
 
 
@@ -201,7 +201,7 @@ def dry_run_report(
         seed = (config._raw.get("generate") or {}).get("seed")
         lines.append(
             f"generate:  time_bins={settings.time_bins}, nside={settings.nside or 'default'}, "
-            f"order={settings.order or 'default'}, downsample={settings.downsample or 'none'}, seed={seed}"
+            f"order={settings.order or 'default'}, sampling_factor={settings.sampling_factor or 'none'}, seed={seed}"
         )
 
     if command == "run":

@@ -20,7 +20,7 @@
 #
 # Full-scale sampling is not cheap: expect this to take substantially longer
 # than the quickstart config, since `generate:` below neither shrinks
-# `nside`/`time_bins` below the package default nor downsamples any
+# `nside`/`time_bins` below the package default nor thins any
 # population beyond what its own event rate needs to stay tractable.
 
 # Pinned to the latest uvex-scheduler release so the data products are reproducible. The
@@ -60,28 +60,28 @@ transients:
 # `nside`/`order` are left unset (package default: `healpix.default_nside`/
 # `healpix.default_order` in `uvex_transients/config.yaml`). `time_bins` is
 # generous enough to resolve the full mission window at that resolution.
-# `downsample` is a `{transient key: factor}` mapping (see
-# `docs/source/user_guide/cli/overview.rst`), and a type left out of it is not
-# downsampled at all. Every supernova class is kept at 1/20, except Type IIb at
-# 1/40, which keeps the high-rate populations (Type IIb and IIP SNe, with
-# millions of raw events) tractable. The kilonova, LFBOT and TDE populations are rare enough to be
-# sampled in full, so they carry no downsampling noise. Counts are rescaled
-# back up by each type's own factor automatically once sampled.
-#
-# Downsampling is applied per time bin and rounds up (`ceil(N / factor)` events
-# are kept in a bin of N), so a type with only a few events per bin is barely
-# downsampled whatever its factor.
+# `sampling_factor` is a `{transient key: factor}` mapping (see
+# `docs/source/user_guide/cli/overview.rst`) of multipliers on each type's
+# physical event rate, and a type left out of it is sampled at its physical
+# rate. Every supernova class is kept at 0.05 (one event in twenty), except
+# Type IIb at 0.025 (one in forty), which keeps the high-rate populations
+# (Type IIb and IIP SNe, with millions of raw events) tractable. The kilonova,
+# LFBOT and TDE populations are rare enough to be sampled in full, so they carry
+# no thinning noise. The event count is drawn from a Poisson distribution at the
+# scaled rate, so each type's events all carry the same weight, which is
+# applied automatically once sampled. A rare type keeps few events at a small
+# factor, so choose one that leaves enough of them for the cuts that follow.
 generate:
   time_bins: 800
-  downsample:
-    iip_sne: 20
-    iip_excess_sne: 20
-    iib_sne: 40
-    ib_sne: 20
-    ic_sne: 20
-    icbl_sne: 20
-    slsne: 20
-    ia_sne: 20
+  sampling_factor:
+    iip_sne: 0.05
+    iip_excess_sne: 0.05
+    iib_sne: 0.025
+    ib_sne: 0.05
+    ic_sne: 0.05
+    icbl_sne: 0.05
+    slsne: 0.05
+    ia_sne: 0.05
   seed: 42
 
 # Two `cut` steps, chained, then a `photometry` action and an `event_summary`

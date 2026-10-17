@@ -9,6 +9,7 @@ from astropy.table import QTable
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
 
+from uvex_transients.cli.yaml_tags import get_run_yaml
 from uvex_transients.simulation.core import (
     SurveySimulator,
     _phase_grid,
@@ -186,20 +187,20 @@ def test_filter_by_snr_empty_catalog(make_schedule, hot_spot):
 
 
 def test_filter_by_snr_and_filter_by_limiting_magnitude_carry_downsample_through(make_schedule, hot_spot):
-    """A cut's output catalog keeps the input catalog's `downsample` unchanged, empty or not."""
+    """A cut's output catalog keeps the input catalog's `sampling_factor` unchanged, empty or not."""
     transient = TidalDisruptionEvent()
     schedule = make_schedule(n_sched=5)
     sim = SurveySimulator(schedule, transients={"tde": transient}, simulation_seed=1)
 
     catalog, *_ = _make_catalog(transient, hot_spot, n_events=0)
-    catalog.downsample = {"tde": 5}
-    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).downsample == {"tde": 5}
-    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).downsample == {"tde": 5}
+    catalog.sampling_factor = {"tde": 0.2}
+    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).sampling_factor == {"tde": 0.2}
+    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).sampling_factor == {"tde": 0.2}
 
     catalog, *_ = _make_catalog(transient, hot_spot, n_events=3, seed=2)
-    catalog.downsample = 20
-    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).downsample == 20
-    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).downsample == 20
+    catalog.sampling_factor = 0.05
+    assert sim.filter_by_snr(catalog, uvex, snr_threshold=5.0).sampling_factor == 0.05
+    assert sim.filter_by_limiting_magnitude(catalog, uvex, mag_limit=25.0).sampling_factor == 0.05
 
 
 def test_filter_by_snr_unknown_transient_type_raises(make_schedule, hot_spot):
@@ -226,13 +227,14 @@ def test_filter_by_snr_unknown_band_raises(make_schedule, hot_spot):
 
 
 # --------------------------------------------------------------------------- #
-# generate_events: per-type downsample                                       #
+# generate_events: per-type sampling_factor                                   #
 # --------------------------------------------------------------------------- #
-def _stub_sample_events_on_healpix_grid(n_events):
-    """Build a monkeypatch replacement for `sample_events_on_healpix_grid` returning exactly `n_events` rows.
+def _stub_sample_events_on_healpix_grid(n_events_physical):
+    """Build a monkeypatch replacement for `sample_events_on_healpix_grid` returning `n_events_physical` rows
+    at a `sampling_factor` of 1, and that times `sampling_factor` otherwise.
 
     Sidesteps the real volumetric-rate sampling (whose event counts, for a tiny test
-    schedule, are too small/random to assert precise downsample ratios against) while
+    schedule, are too small/random to assert precise scaling ratios against) while
     keeping every column `SurveySimulator.generate_events` actually reads.
     """
 
@@ -248,9 +250,10 @@ def _stub_sample_events_on_healpix_grid(n_events):
         order="nested",
         jitter=True,
         seed=None,
-        downsample=None,
+        sampling_factor=None,
     ):
         rng = np.random.default_rng(seed)
+        n_events = int(round(n_events_physical * (1.0 if sampling_factor is None else sampling_factor)))
         table = QTable()
         table["healpix_id"] = np.zeros(n_events, dtype=np.int64)
         table["healpix_dx"] = np.full(n_events, 0.5)
@@ -259,53 +262,87 @@ def _stub_sample_events_on_healpix_grid(n_events):
         table["redshift"] = np.full(n_events, 0.01)
         table["t_explosion"] = t_start + rng.uniform(0, 1, n_events) * u.day
         table["parameter_seed"] = np.arange(n_events, dtype=np.uint64)
-        if downsample is not None:
-            table = table[np.sort(rng.choice(n_events, size=-(-n_events // downsample), replace=False))]
         return table
 
     return _stub
 
 
-def test_generate_events_downsample_int_applies_to_every_type(monkeypatch, make_schedule):
-    """A single `downsample` int applies uniformly across every registered transient type."""
+def test_generate_events_sampling_factor_number_applies_to_every_type(monkeypatch, make_schedule):
+    """A single `sampling_factor` number applies uniformly across every registered transient type."""
     monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
 
     schedule = make_schedule(n_sched=20)
     sim = SurveySimulator(
         schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
     )
-    catalog = sim.generate_events(time_bins=1, nside=16, downsample=5)
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor=0.2)
 
     counts = np.unique(catalog.table["transient_type"], return_counts=True)
-    assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 8}  # ceil(40 / 5)
-    assert catalog.downsample == 5
+    assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 8}  # 0.2 * 40
+    assert catalog.sampling_factor == 0.2
 
 
-def test_generate_events_downsample_mapping_applies_per_type(monkeypatch, make_schedule):
-    """A `{type key: factor}` `downsample` mapping downsamples only the named type(s)."""
+def test_generate_events_sampling_factor_mapping_applies_per_type(monkeypatch, make_schedule):
+    """A `{type key: factor}` `sampling_factor` mapping scales only the named type(s); the others stay physical."""
     monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
 
     schedule = make_schedule(n_sched=20)
     sim = SurveySimulator(
         schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
     )
-    catalog = sim.generate_events(time_bins=1, nside=16, downsample={"tde_a": 5})
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor={"tde_a": 0.2, "tde_b": 2})
 
     counts = np.unique(catalog.table["transient_type"], return_counts=True)
-    # `tde_a` is downsampled (ceil(40 / 5) == 8); `tde_b`, left out of the mapping, keeps every event.
+    assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 80}  # thinned and oversampled
+    assert catalog.sampling_factor == {"tde_a": 0.2, "tde_b": 2}
+
+
+def test_generate_events_yaml_loaded_sampling_factor_is_recorded_as_plain_floats_and_writes(
+    monkeypatch, make_schedule, tmp_path
+):
+    """Factors parsed from a run-config YAML (ruamel's `ScalarFloat`) are stored as plain floats, so `to_disk` works."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    loaded = get_run_yaml().load("sampling_factor:\n  tde_a: 0.2\n  tde_b: 0.5\n")["sampling_factor"]
+    assert type(loaded["tde_a"]) is not float  # the premise: the YAML loader's float is a subclass
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor=loaded)
+
+    assert all(type(factor) is float for factor in catalog.sampling_factor.values())
+    assert type(catalog.sampling_factor) is dict
+
+    path = tmp_path / "catalog.ecsv"
+    catalog.to_disk(path)
+    assert EventCatalog.from_disk(path).sampling_factor == {"tde_a": 0.2, "tde_b": 0.5}
+
+
+def test_generate_events_sampling_factor_mapping_leaves_other_types_physical(monkeypatch, make_schedule):
+    """A type left out of a `sampling_factor` mapping is sampled at its physical rate."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor={"tde_a": 0.2})
+
+    counts = np.unique(catalog.table["transient_type"], return_counts=True)
     assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 40}
-    assert catalog.downsample == {"tde_a": 5}
 
 
 def test_generate_events_records_pre_cut_counts_after_downsampling(monkeypatch, make_schedule):
-    """`pre_cut_counts` is the per-type count of what was actually generated, downsampling included."""
+    """`pre_cut_counts` is the per-type count of what was actually generated, `sampling_factor` included."""
     monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
 
     schedule = make_schedule(n_sched=20)
     sim = SurveySimulator(
         schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
     )
-    catalog = sim.generate_events(time_bins=1, nside=16, downsample={"tde_a": 5})
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor={"tde_a": 0.2})
 
     assert catalog.pre_cut_counts == {"tde_a": 8, "tde_b": 40}
 
@@ -323,13 +360,24 @@ def test_cuts_do_not_change_pre_cut_counts(make_schedule, hot_spot):
     assert cut.pre_cut_counts == {"tde": 12}
 
 
-def test_generate_events_downsample_mapping_unknown_key_raises(make_schedule):
-    """A `downsample` mapping naming a key not in `transients:` raises."""
+def test_generate_events_sampling_factor_mapping_unknown_key_raises(make_schedule):
+    """A `sampling_factor` mapping naming a key not in `transients:` raises."""
     schedule = make_schedule(n_sched=5)
     sim = SurveySimulator(schedule, transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
 
     with pytest.raises(ValueError, match="unknown transient key"):
-        sim.generate_events(time_bins=1, nside=16, downsample={"not-a-real-key": 5})
+        sim.generate_events(time_bins=1, nside=16, sampling_factor={"not-a-real-key": 0.2})
+
+
+@pytest.mark.parametrize("bad", [0, -1.0, True, float("nan"), float("inf")])
+@pytest.mark.parametrize("as_mapping", [False, True])
+def test_generate_events_bad_sampling_factor_raises_before_sampling(make_schedule, bad, as_mapping):
+    """A non-positive or non-finite `sampling_factor` raises up front, whether single or per type."""
+    schedule = make_schedule(n_sched=5)
+    sim = SurveySimulator(schedule, transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
+
+    with pytest.raises(ValueError, match="sampling_factor"):
+        sim.generate_events(time_bins=1, nside=16, sampling_factor={"tde": bad} if as_mapping else bad)
 
 
 # --------------------------------------------------------------------------- #

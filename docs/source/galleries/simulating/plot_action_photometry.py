@@ -32,10 +32,10 @@ DOWNSAMPLE = 50
 MAG_LIMIT = 25.0
 SNR_THRESHOLD = 5.0
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 mag_filtered = simulator.filter_by_limiting_magnitude(catalog, uvex, mag_limit=MAG_LIMIT)
 detected = simulator.filter_by_snr(mag_filtered, uvex, snr_threshold=SNR_THRESHOLD)
-print(f"{len(detected)} events detected (before scaling by downsample).")
+print(f"{len(detected)} events detected (before scaling by DOWNSAMPLE).")
 
 # %%
 # Running photometry on a handful of events

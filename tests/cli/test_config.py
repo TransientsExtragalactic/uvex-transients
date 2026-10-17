@@ -191,13 +191,20 @@ def test_generate_parses_optional_fields():
     config = _config_from("generate:\n  time_bins: 10\n  nside: 32\n")
     assert config.generate.time_bins == 10
     assert config.generate.nside == 32
-    assert config.generate.downsample is None
+    assert config.generate.sampling_factor is None
 
 
-def test_generate_downsample_accepts_a_per_type_mapping():
-    """`generate: downsample:` may be a `{transient key: factor}` mapping instead of a single int."""
-    config = _config_from("generate:\n  time_bins: 10\n  downsample:\n    tde: 5\n    kilonova: 2\n")
-    assert config.generate.downsample == {"tde": 5, "kilonova": 2}
+def test_generate_sampling_factor_accepts_a_per_type_mapping():
+    """`generate: sampling_factor:` may be a `{transient key: factor}` mapping instead of a single number."""
+    config = _config_from("generate:\n  time_bins: 10\n  sampling_factor:\n    tde: 0.2\n    kilonova: 2\n")
+    assert config.generate.sampling_factor == {"tde": 0.2, "kilonova": 2}
+
+
+def test_generate_rejects_the_replaced_downsample_key():
+    """A config still using `downsample:` fails loudly rather than silently running at the full rate."""
+    config = _config_from("generate:\n  time_bins: 10\n  downsample: 20\n")
+    with pytest.raises(ValueError, match="sampling_factor"):
+        config.generate
 
 
 def test_steps_defaults_to_empty_list_when_omitted():

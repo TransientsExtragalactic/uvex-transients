@@ -44,7 +44,14 @@ from uvex_transients.models import SpectralModel
 from uvex_transients.models.core import EffectivePeakGrid
 from uvex_transients.models.core._tolerance import first_crossing, tolerance_limit
 from uvex_transients.transients.horizon import HorizonCurve, curve_path
-from uvex_transients.utils import get_rng, get_seed_sequence, logger, spawn_seeds, split_root_seed
+from uvex_transients.utils import (
+    get_rng,
+    get_seed_sequence,
+    logger,
+    spawn_seeds,
+    split_root_seed,
+    validate_sampling_factor,
+)
 from uvex_transients.utils.cosmology import get_cosmology
 
 _SeedType = Union[np.random.SeedSequence, int]
@@ -1330,6 +1337,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         t_start: Time = None,
         t_end: Time = None,
         seed: _SeedType | None = None,
+        sampling_factor: float | None = None,
     ) -> int:
         """
         Sample the number of events in a given solid angle and duration.
@@ -1346,12 +1354,18 @@ class ExtragalacticTransient(TransientBase, ABC):
             isn't supplied directly. See `_resolve_duration`.
         seed : numpy.random.SeedSequence, int, or None, optional
             Root seed for reproducibility; see `uvex_transients.utils.split_root_seed`.
+        sampling_factor : float, optional
+            Multiplier on the physical rate, so the count is drawn from a Poisson distribution with mean
+            ``sampling_factor`` times the expected number of events. The default is `None` (1, the
+            physical rate). See `sample_events_on_healpix_grid`.
 
         Returns
         -------
         int
             The sampled number of events.
         """
+        sampling_factor = validate_sampling_factor(sampling_factor)
+
         # Validate the duration.
         duration = self._resolve_duration(duration, t_start, t_end)
 
@@ -1361,6 +1375,7 @@ class ExtragalacticTransient(TransientBase, ABC):
 
         # Determine the rate in this time period and solid angle.
         n_expected = (self.integrated_rate * solid_angle * duration).to_value(u.dimensionless_unscaled)
+        n_expected *= sampling_factor
 
         # Generate the random realization.
         rng, _ = split_root_seed(seed)
@@ -1418,7 +1433,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         order: str = "nested",
         jitter: bool = True,
         seed: _SeedType | None = None,
-        downsample: int | None = None,
+        sampling_factor: float | None = None,
     ) -> QTable:
         """
         Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.
@@ -1462,13 +1477,15 @@ class ExtragalacticTransient(TransientBase, ABC):
             this seed for every stochastic draw in this call -- including the event
             count itself -- so that no two draws (however many events end up being
             sampled) ever share a stream.
-        downsample : int, optional
-            If given, keep a random ``ceil(N / downsample)`` of the ``N`` events drawn, in
-            sample order, and build only those. Every draw is still made for all ``N`` events,
-            so the kept events are exactly the ones a full sample followed by the same random
-            selection would keep (and carry the same parameter seeds); only the per-event
-            construction (parameter seeds, sky coordinates, times) is skipped for the rest. The
-            selection is drawn from the next child of `seed`, after the six this method uses.
+        sampling_factor : float, optional
+            Multiplier on the physical event rate, a positive number. The number of events is drawn
+            from a Poisson distribution with mean ``sampling_factor`` times the expected number, so
+            ``0.05`` draws about one event in twenty and ``2`` about twice as many. This is exactly
+            thinning (or superposing) the Poisson process, so every event of a type stands for the
+            same ``1 / sampling_factor`` real events: the expected total divided by the number of
+            events generated is the correct weight, however many events fall in any one window.
+            Only the events that are drawn are built. The default is `None`, which is 1 (the physical
+            rate).
 
         Returns
         -------
@@ -1477,10 +1494,7 @@ class ExtragalacticTransient(TransientBase, ABC):
             for its columns. Empty (but still correctly typed) if zero events were
             sampled.
         """
-        if downsample is not None and (
-            isinstance(downsample, bool) or not isinstance(downsample, (int, np.integer)) or downsample < 1
-        ):
-            raise ValueError(f"`downsample` must be a positive integer or None, got {downsample!r}.")
+        sampling_factor = validate_sampling_factor(sampling_factor)
 
         # Validate the duration and resolve the pixel selection down to a concrete
         # array of pixel indices.
@@ -1516,6 +1530,7 @@ class ExtragalacticTransient(TransientBase, ABC):
             solid_angle=total_solid_angle,
             duration=duration,
             seed=count_seed,
+            sampling_factor=sampling_factor,
         )
 
         logger.debug(
@@ -1557,22 +1572,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         # Sample explosion times uniformly across the sampling window (as offsets for now).
         time_offsets = time_rng.random(number_of_events)
 
-        # Everything above is drawn for all events so the streams do not depend on `downsample`. Choose
-        # the survivors now, so the costlier per-event construction below only runs for them.
-        if downsample is None:
-            keep = np.arange(number_of_events)
-        else:
-            downsample_rng = np.random.default_rng(root_seed.spawn(1)[0])
-            n_keep = -(-number_of_events // downsample)  # ceiling division
-            keep = np.sort(downsample_rng.choice(number_of_events, size=n_keep, replace=False))
-            redshifts, event_pixel, event_jitter, time_offsets = (
-                redshifts[keep],
-                event_pixel[keep],
-                event_jitter[keep],
-                time_offsets[keep],
-            )
-
-        event_buffer = self._create_event_table_buffer(len(keep), time_scale=t_start.scale)
+        event_buffer = self._create_event_table_buffer(number_of_events, time_scale=t_start.scale)
 
         lon, lat = ah.healpix_to_lonlat(
             event_pixel,
@@ -1593,7 +1593,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         # Draw independent, individually storable per-event seeds -- for regenerating
         # each event's physical lightcurve parameters later, on demand, without needing
         # to replay the draws for any other event (see `spawn_seeds`).
-        event_seed = spawn_seeds(parameter_spawn_seed, number_of_events, indices=keep)
+        event_seed = spawn_seeds(parameter_spawn_seed, number_of_events)
 
         # Populate the table buffer.
         event_buffer["healpix_id"] = event_pixel

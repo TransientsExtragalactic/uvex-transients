@@ -162,17 +162,24 @@ schedule's real footprint more closely, at the cost of more pixels to sample per
 
 .. tip::
 
-   For a transient type with a very high intrinsic rate, ``downsample=k`` draws a random
-   ``1/k`` subset of each per-bin, per-type table (without replacement, seeded off
-   ``simulation_seed``) instead of sampling the full population. Multiply any downstream count
-   by ``k`` to get back an estimate of the true yield; see the
-   :ref:`simulating_gallery` example for this in practice. ``downsample`` can instead be a
-   ``{transient key: k}`` mapping to downsample types individually -- a type left out of the
-   mapping isn't downsampled at all. Either form is stashed on the returned
-   :class:`~uvex_transients.simulation.event_catalog.EventCatalog` as
-   :attr:`~uvex_transients.simulation.event_catalog.EventCatalog.downsample`, purely as
-   provenance (nothing rescales counts back up automatically), and every cut carries it through
-   to its own output catalog unchanged.
+   ``sampling_factor`` is a multiplier on each transient type's physical event rate. For a type
+   with a very high intrinsic rate, ``sampling_factor=0.05`` generates events at 1/20th of the
+   physical rate instead of sampling the full population, and a value above 1 oversamples a rare
+   type. The number of events in each per-bin, per-type table is drawn from a Poisson
+   distribution with the scaled mean (seeded off ``simulation_seed``), which is exactly a thinned
+   (or superposed) Poisson process, so every event of a type stands for the same
+   ``1 / sampling_factor`` real events regardless of how many fall in any one bin. Dividing a
+   downstream count by ``sampling_factor`` gives back an estimate of the true yield, and the
+   ``weight`` column of the event summary
+   (:meth:`~uvex_transients.simulation.core.SurveySimulator.run_event_summary_action`) does this
+   for you; see the :ref:`simulating_gallery` example for this in practice. ``sampling_factor``
+   can instead be a ``{transient key: factor}`` mapping to scale types individually -- a type
+   left out of the mapping is sampled at its physical rate. Either form is stashed on the
+   returned :class:`~uvex_transients.simulation.event_catalog.EventCatalog` as
+   :attr:`~uvex_transients.simulation.event_catalog.EventCatalog.sampling_factor`, purely as
+   provenance, and every cut carries it through to its own output catalog unchanged. A type
+   with few events overall keeps few of them at a small factor, so pick one that leaves enough
+   for the cuts that follow.
 
 Two columns are computed once here, rather than being left for every later step to re-derive: each
 event's ``luminosity_distance`` (interpolated off that transient type's own cached
@@ -200,11 +207,11 @@ makes it trivially picklable and safe to round-trip to disk:
     reloaded = EventCatalog.from_disk("tde_catalog.ecsv")
 
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.to_disk` writes the table as ECSV
-with ``nside``/``order``/``time_bins``/``seed``/``downsample`` stashed in the file's header, so
+with ``nside``/``order``/``time_bins``/``seed``/``sampling_factor`` stashed in the file's header, so
 :meth:`~uvex_transients.simulation.event_catalog.EventCatalog.from_disk` can reconstruct a
 complete ``EventCatalog`` from the one file alone. (A file written by an older version of the
-package, with no ``downsample`` in its header, still reads back fine -- it just defaults to
-`None`.)
+package, with no ``sampling_factor`` in its header, still reads back fine -- it just defaults to
+`None`, and a legacy ``downsample`` entry reads back as its reciprocal.)
 
 Every column of ``catalog.table`` is also available as a convenience property, returning a plain
 array (or :class:`~astropy.units.Quantity`/:class:`~astropy.time.Time`/
@@ -271,7 +278,7 @@ undetectable. A **cut** is a screening step that takes an
 :class:`~uvex_transients.simulation.event_catalog.EventCatalog` and a
 :class:`~m4opt.missions.Mission` (for its :class:`~m4opt.synphot.Detector`'s bandpasses, even for
 the cuts that don't use it, so every cut shares one call signature) and returns a new
-``EventCatalog`` over the surviving rows -- ``nside``/``order``/``time_bins``/``seed``/``downsample``
+``EventCatalog`` over the surviving rows -- ``nside``/``order``/``time_bins``/``seed``/``sampling_factor``
 unchanged, ``pre_cut_counts`` unchanged, and original ``event_id`` values preserved rather than
 renumbered.
 
