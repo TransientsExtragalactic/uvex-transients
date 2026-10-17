@@ -645,10 +645,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                     f"`sampling_factor` names unknown transient key(s) {unknown}; "
                     f"available: {sorted(self._transients)}."
                 )
-            for factor in sampling_factor.values():
-                validate_sampling_factor(factor)
-        else:
-            validate_sampling_factor(sampling_factor)
+            # Plain floats, so the factors recorded on the catalog (and written to its ECSV header)
+            # are not whatever subclass a YAML loader handed in, such as ruamel's `ScalarFloat`.
+            sampling_factor = {str(name): validate_sampling_factor(factor) for name, factor in sampling_factor.items()}
+        elif sampling_factor is not None:
+            sampling_factor = validate_sampling_factor(sampling_factor)
 
         nside, order = resolve_healpix_resolution(nside, order)
 

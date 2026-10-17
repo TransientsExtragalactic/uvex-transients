@@ -9,6 +9,7 @@ from astropy.table import QTable
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
 
+from uvex_transients.cli.yaml_tags import get_run_yaml
 from uvex_transients.simulation.core import (
     SurveySimulator,
     _phase_grid,
@@ -294,6 +295,29 @@ def test_generate_events_sampling_factor_mapping_applies_per_type(monkeypatch, m
     counts = np.unique(catalog.table["transient_type"], return_counts=True)
     assert dict(zip(*counts)) == {"tde_a": 8, "tde_b": 80}  # thinned and oversampled
     assert catalog.sampling_factor == {"tde_a": 0.2, "tde_b": 2}
+
+
+def test_generate_events_yaml_loaded_sampling_factor_is_recorded_as_plain_floats_and_writes(
+    monkeypatch, make_schedule, tmp_path
+):
+    """Factors parsed from a run-config YAML (ruamel's `ScalarFloat`) are stored as plain floats, so `to_disk` works."""
+    monkeypatch.setattr(TidalDisruptionEvent, "sample_events_on_healpix_grid", _stub_sample_events_on_healpix_grid(40))
+
+    loaded = get_run_yaml().load("sampling_factor:\n  tde_a: 0.2\n  tde_b: 0.5\n")["sampling_factor"]
+    assert type(loaded["tde_a"]) is not float  # the premise: the YAML loader's float is a subclass
+
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(
+        schedule, transients={"tde_a": TidalDisruptionEvent(), "tde_b": TidalDisruptionEvent()}, simulation_seed=1
+    )
+    catalog = sim.generate_events(time_bins=1, nside=16, sampling_factor=loaded)
+
+    assert all(type(factor) is float for factor in catalog.sampling_factor.values())
+    assert type(catalog.sampling_factor) is dict
+
+    path = tmp_path / "catalog.ecsv"
+    catalog.to_disk(path)
+    assert EventCatalog.from_disk(path).sampling_factor == {"tde_a": 0.2, "tde_b": 0.5}
 
 
 def test_generate_events_sampling_factor_mapping_leaves_other_types_physical(monkeypatch, make_schedule):
