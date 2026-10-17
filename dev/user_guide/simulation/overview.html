@@ -805,7 +805,7 @@ Limiting Magnitude</label><div class="sd-tab-content docutils">
 <p><strong>Description:</strong> Schedule-independent – it never checks whether the schedule actually
 pointed anywhere near an event. For each transient type, every event’s own physical
 parameters are regenerated from its stored <code class="docutils literal notranslate"><span class="pre">parameter_seed</span></code> and evaluated over a shared
-<code class="docutils literal notranslate"><span class="pre">linspace(0,</span> <span class="pre">duration_limit,</span> <span class="pre">n_phase)</span></code> phase grid, the same grid for every event of that
+log-spaced <code class="docutils literal notranslate"><span class="pre">geomspace(t_min,</span> <span class="pre">duration_limit,</span> <span class="pre">n_phase)</span></code> phase grid, the same grid for every event of that
 type; an event survives if its brightest requested band clears <code class="docutils literal notranslate"><span class="pre">mag_limit</span></code> at <code class="docutils literal notranslate"><span class="pre">n_visits</span></code>
 or more of those phase samples.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mag_filtered</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_limiting_magnitude</span><span class="p">(</span>
