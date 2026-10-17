@@ -28,7 +28,7 @@ TIME_BINS = 10
 NSIDE = 32
 DOWNSAMPLE = 50
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 print(f"{len(catalog) * DOWNSAMPLE} events sampled.")
 
 # %%

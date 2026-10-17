@@ -28,7 +28,7 @@ TIME_BINS = 10
 NSIDE = 32
 DOWNSAMPLE = 200
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 for name in sorted(simulator.transient_collection):
     n = int((catalog.table["transient_type"] == name).sum())
     print(f"{name}: {n * DOWNSAMPLE} sampled.")

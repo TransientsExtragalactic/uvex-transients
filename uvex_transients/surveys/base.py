@@ -1381,8 +1381,11 @@ class SurveySchedule:
         query_pixel = np.asarray(hpx.skycoord_to_healpix(coord_array), dtype=np.int64)
 
         # Broad phase: each query's own pixel and its (up to) eight neighbours. `neighbours`
-        # marks a missing neighbour (at a base-pixel corner) with -1, which is skipped.
-        pixels = np.concatenate([query_pixel[None, :], np.asarray(hpx.neighbours(query_pixel), dtype=np.int64)])
+        # marks a missing neighbour (at a base-pixel corner) with -1, which is skipped; it also
+        # raises a numpy "invalid value" RuntimeWarning for those pixels, which is expected here.
+        with np.errstate(invalid="ignore"):
+            neighbour_pixels = np.asarray(hpx.neighbours(query_pixel), dtype=np.int64)
+        pixels = np.concatenate([query_pixel[None, :], neighbour_pixels])
         n_rows = len(observe_rows)
         candidate_query, candidate_row = [], []
         for pixel in pixels:

@@ -67,7 +67,7 @@ def union(catalogs: list[EventCatalog]) -> EventCatalog:
     -------
     EventCatalog
         A new catalog over the union of every input's rows, carrying `catalogs[0]`'s own
-        `nside`/`order`/`time_bins`/`seed`/`downsample`.
+        `nside`/`order`/`time_bins`/`seed`/`sampling_factor`.
 
     Raises
     ------

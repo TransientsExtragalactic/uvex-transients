@@ -30,7 +30,14 @@ from tqdm.auto import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from uvex_transients.dust import dust_map, log_attenuation
-from uvex_transients.utils import config, get_seed_sequence, logger, resolve_healpix_resolution
+from uvex_transients.missions import downsample_bandpass
+from uvex_transients.utils import (
+    config,
+    get_seed_sequence,
+    logger,
+    resolve_healpix_resolution,
+    validate_sampling_factor,
+)
 from uvex_transients.utils.keyed_noise import time_key
 
 from ..surveys.base import SurveySchedule
@@ -62,6 +69,35 @@ _SUMMARY_FOOTPRINTS = ("uvex:lmlz:wide", "uvex:lmlz:deep", "uvex:mc")
 # ============================================ #
 # Utility Functions                            #
 # ============================================ #
+def _phase_grid(duration: u.Quantity, n_phase: int | None = None) -> u.Quantity:
+    """
+    Shared log-spaced phase grid the schedule-independent cuts evaluate each transient type on.
+
+    Geometric spacing from ``config["simulation.filter_by_limiting_magnitude.t_min"]`` to `duration`,
+    because the brightest epoch of a transient can sit anywhere from hours (shock cooling, kilonovae)
+    to months (nickel-powered peaks) after explosion. A uniform grid over the full duration steps
+    over the early peaks entirely.
+
+    Parameters
+    ----------
+    duration : ~astropy.units.Quantity
+        The transient type's ``duration_limit``; the last grid point.
+    n_phase : int, optional
+        Number of grid points. If `None` (the default), uses
+        ``config["simulation.filter_by_limiting_magnitude.n_phase"]``.
+
+    Returns
+    -------
+    ~astropy.units.Quantity
+        Rest-frame times since explosion, in days, shape ``(n_phase,)``.
+    """
+    if n_phase is None:
+        n_phase = config["simulation.filter_by_limiting_magnitude.n_phase"]
+    end = duration.to_value(u.day)
+    start = min(config["simulation.filter_by_limiting_magnitude.t_min"], 1e-2 * end)
+    return np.geomspace(start, end, n_phase) * u.day
+
+
 def _sample_parameters_from_seeds(sed, seeds) -> dict:
     """
     Regenerate each event's own physical SED parameters from its stored `parameter_seed`.
@@ -87,8 +123,16 @@ def _sample_parameters_from_seeds(sed, seeds) -> dict:
     """
     if len(seeds) == 0:
         return {name: np.array([]) for name in sed.sample_parameters(size=0)}
-    per_event = [sed.sample_parameters(size=1, rng=np.random.default_rng(int(seed))) for seed in seeds]
-    return {name: np.concatenate([sample[name] for sample in per_event]) for name in per_event[0]}
+    # `Parameter.sample` is a latent draw followed by an elementwise transform. Only the draws depend on the
+    # per-event stream, so they are made one event at a time, in parameter order, and the transform (the
+    # expensive part, since it builds an astropy Quantity) is applied once to each whole column.
+    parameters = sed._parameters
+    latent = {name: np.empty(len(seeds)) for name in parameters}
+    for i, seed in enumerate(seeds):
+        rng = np.random.default_rng(int(seed))
+        for name, parameter in parameters.items():
+            latent[name][i] = parameter.sample_latent_variable(size=1, rng=rng)[0]
+    return {name: parameters[name].transform_latent_to_physical(latent[name]) for name in parameters}
 
 
 def event_boundaries(event_id) -> tuple[np.ndarray, np.ndarray]:
@@ -536,7 +580,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         time_bins: Time | int,
         nside: int | None = None,
         order: str | None = None,
-        downsample: int | Mapping[str, int] | None = None,
+        sampling_factor: float | Mapping[str, float] | None = None,
     ) -> EventCatalog:
         """
         Sample a Monte Carlo realization of every registered transient type over a time grid.
@@ -568,13 +612,16 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         order : str, optional
             HEALPix pixel ordering scheme (``"nested"`` or ``"ring"``). If `None` (the
             default), uses ``config["healpix.default_order"]``.
-        downsample : int or Mapping of str to int, optional
-            Downsample the number of events generated, by drawing a random subset
-            (without replacement) of each per-bin, per-type table rather than a fixed
-            stride, seeded reproducibly off `simulation_seed`. Either a single factor
-            applied to every registered transient type, or a ``{type key: factor}``
-            mapping giving a different factor per type (a type left out of the mapping
-            is not downsampled at all). The default is ``None`` (no downsampling).
+        sampling_factor : float or Mapping of str to float, optional
+            Multiplier on the physical event rate, so the number of events drawn for each
+            per-bin, per-type table is Poisson with mean `sampling_factor` times its expected
+            count: ``0.05`` generates about one event in twenty, ``1`` the physical population,
+            and ``2`` about twice as many. Because this thins (or superposes) the Poisson process
+            itself, every event of a type stands for the same number of real events, and
+            `run_event_summary_action` weights them accordingly. Either a single factor applied
+            to every registered transient type, or a ``{type key: factor}`` mapping giving a
+            different factor per type (a type left out of the mapping is sampled at its
+            physical rate). The default is ``None`` (every type at its physical rate).
 
         Returns
         -------
@@ -584,18 +631,25 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         Raises
         ------
         ValueError
-            If `downsample` is a mapping naming a key not in `self._transients`.
+            If `sampling_factor` is a mapping naming a key not in `self._transients`, or any
+            factor is not a finite, positive number.
         """
         # Validate the inputs and ensure that there are actually registered transients to model.
         if not self._transients:
             raise ValueError("No transient types registered in `transient_collection`; nothing to sample.")
 
-        if isinstance(downsample, Mapping):
-            unknown = sorted(set(downsample) - set(self._transients))
+        if isinstance(sampling_factor, Mapping):
+            unknown = sorted(set(sampling_factor) - set(self._transients))
             if unknown:
                 raise ValueError(
-                    f"`downsample` names unknown transient key(s) {unknown}; available: {sorted(self._transients)}."
+                    f"`sampling_factor` names unknown transient key(s) {unknown}; "
+                    f"available: {sorted(self._transients)}."
                 )
+            # Plain floats, so the factors recorded on the catalog (and written to its ECSV header)
+            # are not whatever subclass a YAML loader handed in, such as ruamel's `ScalarFloat`.
+            sampling_factor = {str(name): validate_sampling_factor(factor) for name, factor in sampling_factor.items()}
+        elif sampling_factor is not None:
+            sampling_factor = validate_sampling_factor(sampling_factor)
 
         nside, order = resolve_healpix_resolution(nside, order)
 
@@ -614,11 +668,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         # of the transient types to construct the sample of events. This is ALL events within the redshift limit
         # which occur within the footprint of the survey. At this stage, the only event reduction is based in the
         # redshift limit and the survey footprint.
-        if isinstance(downsample, Mapping):
-            if downsample:
-                logger.info(f"Downsampling the number of events per-type by {dict(downsample)}.")
-        elif downsample is not None:
-            logger.info(f"Downsampling the number of events by a factor of {downsample}.")
+        if isinstance(sampling_factor, Mapping):
+            if sampling_factor:
+                logger.info(f"Scaling the event rate per-type by {dict(sampling_factor)}.")
+        elif sampling_factor is not None:
+            logger.info(f"Scaling the event rate by a factor of {sampling_factor}.")
         tables = []
         logger.info(
             "Generating events for %d type(s) %s over %d time bin(s) (nside=%d, order=%r).",
@@ -636,7 +690,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             for name, type_seed in zip(sorted_names, type_seeds):
                 transient = self._transients[name]
                 bin_seeds = type_seed.spawn(n_bins)
-                type_downsample = downsample.get(name) if isinstance(downsample, Mapping) else downsample
+                type_sampling_factor = (
+                    sampling_factor.get(name) if isinstance(sampling_factor, Mapping) else sampling_factor
+                )
 
                 for k in range(n_bins):
                     pbar.set_postfix(type=name, bin=f"{k + 1}/{n_bins}")
@@ -676,7 +732,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                         pixel_ids=pixel_ids,
                         order=order,
                         seed=bin_seeds[k],
-                        downsample=type_downsample,
+                        sampling_factor=type_sampling_factor,
                     )
 
                     # Interpolate this transient type's own cached D_L(z) grid at each sampled
@@ -724,7 +780,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             order=order,
             time_bins=edges,
             seed=self._simulation_seed,
-            downsample=dict(downsample) if isinstance(downsample, Mapping) else downsample,
+            sampling_factor=dict(sampling_factor) if isinstance(sampling_factor, Mapping) else sampling_factor,
             pre_cut_counts={name: int(np.sum(generated_types == name)) for name in sorted_names},
         )
 
@@ -1185,8 +1241,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Which of `mission.detector`'s bandpasses to evaluate. Defaults to every
             bandpass the detector has.
         n_phase : int, optional
-            Number of phase-grid samples per transient type, spanning
-            ``[0, transient.duration_limit]``. If `None` (the default), uses
+            Number of log-spaced phase-grid samples per transient type, spanning
+            ``[t_min, transient.duration_limit]`` (see `_phase_grid`). If `None` (the default), uses
             ``config["simulation.filter_by_limiting_magnitude.n_phase"]``.
         chunk_size : int, optional
             Number of events (per transient type) evaluated per `flux_band` call. If
@@ -1267,7 +1323,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 seeds_all = np.asarray(table["parameter_seed"])[idx]
                 sed_params_all = _sample_parameters_from_seeds(transient.sed, seeds_all)
 
-                t_grid = np.linspace(0.0, 1.0, n_phase) * transient.duration_limit
+                t_grid = _phase_grid(transient.duration_limit, n_phase)
 
                 for chunk_num, start in enumerate(range(0, n, chunk_size), start=1):
                     stop = min(start + chunk_size, n)
@@ -1535,14 +1591,18 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         n_phase: int | None = None,
         chunk_size: int | None = None,
         n_visits: int = 1,
+        margin: float | None = None,
+        bandpass_tol_mag: float | None = None,
     ) -> EventCatalog:
         """
         Cheaply cut an `EventCatalog` down to events that could ever plausibly be seen.
 
         Deliberately not synthetic photometry: no schedule, no background, no SNR formula,
         no per-event noise realization. Each event's brightest band is evaluated over a
-        shared phase grid and compared against `mag_limit`; an event survives if at least
-        `n_visits` phase samples clear the limit.
+        shared phase grid and compared against `mag_limit` plus `margin`; an event survives if
+        at least `n_visits` phase samples clear that limit. This is a screen, not a detection
+        criterion: it errs on the side of keeping an event, so that `filter_by_snr` makes the
+        actual decision.
 
         Parameters
         ----------
@@ -1560,19 +1620,31 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Which of `mission.detector`'s bandpasses to evaluate. Defaults to every bandpass
             the detector has.
         n_phase : int, optional
-            Number of phase-grid samples per transient type, spanning
-            ``[0, transient.duration_limit]``. If `None` (the default), uses
-            ``config["simulation.filter_by_limiting_magnitude.n_phase"]`` (50 out of the
-            box).
+            Number of log-spaced phase-grid samples per transient type, spanning
+            ``[t_min, transient.duration_limit]`` (see `_phase_grid`). If `None` (the
+            default), uses ``config["simulation.filter_by_limiting_magnitude.n_phase"]``
+            (32 out of the box).
         chunk_size : int, optional
             Number of events (per transient type) evaluated per `flux_band` call. If
             `None` (the default), uses
             ``config["simulation.filter_by_limiting_magnitude.chunk_size"]`` (5000 out of
             the box). Lower it for a very fine `n_phase` or a very densely sampled bandpass.
         n_visits : int, optional
-            Minimum number of phase-grid samples that must clear `mag_limit` for an event to
-            survive. The default is 1, i.e. an event survives if it is ever bright enough at
-            even a single sampled phase.
+            Minimum number of phase-grid samples that must clear `mag_limit` (plus `margin`)
+            for an event to survive. The default is 1, i.e. an event survives if it is ever
+            bright enough at even a single sampled phase.
+        margin : float, optional
+            Magnitudes by which an event may miss `mag_limit` and still survive, absorbing the
+            error of the coarse bandpass and phase grid so the screen never rejects an event
+            the full evaluation would keep. If `None` (the default), uses
+            ``config["simulation.filter_by_limiting_magnitude.margin"]``. ``0`` applies
+            `mag_limit` exactly.
+        bandpass_tol_mag : float, optional
+            Tolerance, in magnitudes, of the downsampled copy of each bandpass this screen
+            integrates over (see `~uvex_transients.missions.downsample_bandpass`); a larger
+            value gives fewer wavelength samples and a faster screen. If `None` (the default),
+            uses ``config["simulation.filter_by_limiting_magnitude.bandpass_tol_mag"]``. ``0``
+            integrates over `mission`'s bandpasses as they are.
 
         Returns
         -------
@@ -1592,8 +1664,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         `simulate_photometry` realization is guaranteed to match what was screened here,
         not an independent draw from the same population.
 
-        `mag_limit` is compared against the same ``linspace(0, duration_limit, n_phase)``
-        phase grid for every event of a type, regardless of whether the schedule ever
+        `mag_limit` is compared against the same log-spaced phase grid (``geomspace(t_min,
+        duration_limit, n_phase)``) for every event of a type, regardless of whether the schedule ever
         actually pointed there at that phase. Raising `n_visits` above 1 is therefore only
         a coarse stand-in for "detected on at least `n_visits` visits", since this method
         never consults the actual schedule; `filter_by_snr` does.
@@ -1624,6 +1696,14 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             n_phase = config["simulation.filter_by_limiting_magnitude.n_phase"]
         if chunk_size is None:
             chunk_size = config["simulation.filter_by_limiting_magnitude.chunk_size"]
+        if margin is None:
+            margin = config["simulation.filter_by_limiting_magnitude.margin"]
+        if bandpass_tol_mag is None:
+            bandpass_tol_mag = config["simulation.filter_by_limiting_magnitude.bandpass_tol_mag"]
+        if margin < 0:
+            raise ValueError(f"'margin' must be non-negative, got {margin!r}.")
+        if bandpass_tol_mag < 0:
+            raise ValueError(f"'bandpass_tol_mag' must be non-negative, got {bandpass_tol_mag!r}.")
 
         detector = mission.detector
         if detector is None:
@@ -1643,10 +1723,14 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             return self._filtered(catalog, np.ones(0, dtype=bool))
 
         # Bandpass wavelength/throughput/frequency grids are the same for every transient
-        # type and event; sampled once here, not per type.
+        # type and event; sampled once here, not per type. The bandpass integral is the
+        # costliest axis of `flux_band`, so the screen integrates over a coarser copy of each
+        # bandpass; `margin` pays for the error that introduces.
         band_grids = {}
         for band in band_names:
             bp = detector.bandpasses[band]
+            if bandpass_tol_mag > 0:
+                bp = downsample_bandpass(bp, tol_mag=bandpass_tol_mag)
             wave = bp.waveset
             band_grids[band] = (
                 wave,
@@ -1692,7 +1776,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 # see `_sample_parameters_from_seeds`.
                 sed_params_all = _sample_parameters_from_seeds(transient.sed, seeds_all)
 
-                t_grid = np.linspace(0.0, 1.0, n_phase) * transient.duration_limit
+                t_grid = _phase_grid(transient.duration_limit, n_phase)
 
                 for chunk_num, start in enumerate(range(0, n, chunk_size), start=1):
                     stop = min(start + chunk_size, n)
@@ -1726,7 +1810,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                     with np.errstate(invalid="ignore", divide="ignore"):
                         mag_by_phase = best_flux_by_phase.to_value(u.ABmag)  # shape (n_phase, chunk_size)
 
-                    n_visits_cleared = np.count_nonzero(mag_by_phase <= mag_limit, axis=0)  # shape (chunk_size,)
+                    n_visits_cleared = np.count_nonzero(mag_by_phase <= mag_limit + margin, axis=0)  # (chunk_size,)
                     keep[chunk_idx[n_visits_cleared >= n_visits]] = True
 
                     pbar.update(1)
@@ -2170,7 +2254,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
         Purely intrinsic: no bands, no distance, no dust, no schedule.
         `~uvex_transients.models.core.base.SpectralModel.eval_bolometric` is evaluated
-        over a shared ``[0, transient.duration_limit]`` phase grid (rest-frame time since
+        over a shared log-spaced ``[t_min, transient.duration_limit]`` phase grid (rest-frame time since
         explosion, the same grid `_peak_band_flux` uses as an *observed*-time grid),
         reduced to each event's own maximum.
 
@@ -2262,7 +2346,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
                 seeds_all = np.asarray(table["parameter_seed"])[idx]
                 sed_params_all = _sample_parameters_from_seeds(transient.sed, seeds_all)
-                t_grid = np.linspace(0.0, 1.0, n_phase) * transient.duration_limit
+                t_grid = _phase_grid(transient.duration_limit, n_phase)
 
                 for chunk_num, start in enumerate(range(0, n, chunk_size), start=1):
                     stop = min(start + chunk_size, n)
@@ -3072,7 +3156,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
               name (for example ``in_uvex_lmlz_deep``).
             - ``weight``: the expected number of real events each sampled event stands for,
               ``expected_events[type] / n_pre_cut[type]``. Summing it over any selection gives that
-              selection's expected yield.
+              selection's expected yield. Every event of a type shares it, which is exact because
+              ``sampling_factor`` thins the Poisson process itself, so all of a type's events have
+              the same inclusion probability.
             - ``n_obs``, ``t_first_obs``, ``t_last_obs``: observations of the event's position
               after the explosion, and the times of the first and last.
             - ``n_det``, ``t_first_det``, ``t_last_det``: detections, and the times of the first

@@ -29,7 +29,7 @@ DOWNSAMPLE = 50
 MAG_LIMIT = 25.0
 SNR_THRESHOLD = 5.0
 
-catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, downsample=DOWNSAMPLE)
+catalog = simulator.generate_events(time_bins=TIME_BINS, nside=NSIDE, sampling_factor=1 / DOWNSAMPLE)
 mag_filtered = simulator.filter_by_limiting_magnitude(catalog, uvex, mag_limit=MAG_LIMIT)
 print(f"{len(mag_filtered) * DOWNSAMPLE} events available before the delay cut.")
 

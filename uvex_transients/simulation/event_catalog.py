@@ -37,6 +37,24 @@ def _counts_from_meta(counts) -> dict[str, int] | None:
     return None if counts is None else {str(name): int(count) for name, count in dict(counts).items()}
 
 
+def _sampling_factor_from_meta(meta: dict) -> float | dict[str, float] | None:
+    """
+    Read the ``sampling_factor`` header entry, falling back to the legacy ``downsample`` one.
+
+    Catalogs written before the rename recorded ``downsample`` (an integer ``k`` keeping about
+    ``1 / k`` of the events), which is a ``sampling_factor`` of ``1 / k``. Pops both keys.
+    """
+    sampling_factor = meta.pop("sampling_factor", None)
+    legacy = meta.pop("downsample", None)
+    if sampling_factor is None and legacy is not None:
+        if isinstance(legacy, dict):
+            return {str(name): 1.0 / float(factor) for name, factor in legacy.items()}
+        return 1.0 / float(legacy)
+    if isinstance(sampling_factor, dict):
+        return {str(name): float(factor) for name, factor in sampling_factor.items()}
+    return None if sampling_factor is None else float(sampling_factor)
+
+
 def _seed_to_meta(seed: _SeedType) -> int | None:
     """Reduce a root seed to something ECSV-header-serializable, for `EventCatalog.to_disk`."""
     if seed is None or isinstance(seed, (int, np.integer)):
@@ -86,20 +104,21 @@ class EventCatalog:
     seed: _SeedType = None
     """numpy.random.SeedSequence, int, or None: The root seed this catalog was generated from."""
 
-    downsample: int | dict[str, int] | None = None
-    """int, dict of str to int, or None: The downsample factor(s) generation was run with.
+    sampling_factor: float | dict[str, float] | None = None
+    """float, dict of str to float, or None: The event-rate multiplier(s) generation was run with.
 
     Either a single factor applied to every transient type, a ``{transient key: factor}``
-    mapping giving a per-type factor (a type missing from the mapping wasn't downsampled), or
-    `None` if generation wasn't downsampled at all -- see
-    `~uvex_transients.simulation.core.SurveySimulator.generate_events`.
+    mapping giving a per-type factor (a type missing from the mapping was sampled at its physical
+    rate), or `None` if every type was -- see
+    `~uvex_transients.simulation.core.SurveySimulator.generate_events`. A catalog written before
+    this was renamed from ``downsample`` reads back with the reciprocal of that factor.
     """
 
     pre_cut_counts: dict[str, int] | None = None
     """dict of str to int, or None: The number of events of each transient type when generated.
 
     Counted once, at the end of `~uvex_transients.simulation.core.SurveySimulator.generate_events`
-    (after any downsampling), and never changed by a cut, a set operation, or any other row
+    (after any scaling by `sampling_factor`), and never changed by a cut, a set operation, or any other row
     selection. It is the binomial denominator of every later detection fraction, so a selection
     of rows can be turned into an efficiency, and its Monte Carlo error, without the original
     catalog. `None` for a catalog built by hand or read from a file written before this field
@@ -413,7 +432,7 @@ class EventCatalog:
                 "order": self.order,
                 "time_bins": self.time_bins,
                 "seed": _seed_to_meta(self.seed),
-                "downsample": self.downsample,
+                "sampling_factor": self.sampling_factor,
                 "pre_cut_counts": self.pre_cut_counts,
             }
         )
@@ -454,7 +473,7 @@ class EventCatalog:
             order=meta.pop("order"),
             time_bins=meta.pop("time_bins"),
             seed=meta.pop("seed", None),
-            downsample=meta.pop("downsample", None),
+            sampling_factor=_sampling_factor_from_meta(meta),
             pre_cut_counts=_counts_from_meta(meta.pop("pre_cut_counts", None)),
         )
 
@@ -473,7 +492,8 @@ def get_example_event_catalog(path: Union[str, Path, None] = None) -> EventCatal
     (pre-cut) catalog of 598 events -- 344 `~uvex_transients.transients.supernovae.MagnetarSLSNe`
     ("slsn") and 254 `~uvex_transients.transients.TDEs.TidalDisruptionEvent` ("tde") -- generated
     once against the default schedule (see `~uvex_transients.surveys.get_schedule`) with
-    ``simulation_seed=42``, ``time_bins=10``, ``nside=32``, ``downsample=500``. Sphinx gallery
+    ``simulation_seed=42``, ``time_bins=10``, ``nside=32`` and a 1/500 subset of the events (the earlier
+    ``downsample=500``, read back as a ``sampling_factor`` of 0.002). Sphinx gallery
     examples that only need a representative catalog to demonstrate a cut/action on can load this
     instead of re-running `SurveySimulator.generate_events` -- a nontrivial Monte Carlo draw --
     on every doc build.

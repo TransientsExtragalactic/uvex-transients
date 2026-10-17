@@ -53,11 +53,12 @@ transients:
     #   amplitude: !prior {type: power_law, alpha: 2.41, lower: 1.0e+43, upper: 1.0e+46}
     #   sigma_rise: 1.0 day
 
-# Read by `generate`/`run`. `downsample` trades sample size for speed: a
+# Read by `generate`/`run`. `sampling_factor` trades sample size for speed: a
 # high-rate population like TDEs can produce hundreds of thousands of events
 # over a full-mission schedule, most of them far too faint to ever matter;
-# `downsample: 20` draws a random 1/20th subset instead (rescale counts back up
-# by this factor afterward). `nside`/`order` fall back to the package default
+# `sampling_factor: 0.05` draws the events at 1/20th of the physical rate
+# instead (the counts are weighted back up by this factor afterward).
+# `nside`/`order` fall back to the package default
 # (`healpix.default_nside`/`healpix.default_order`) if omitted. Its output is
 # always available to `steps:` below under the reserved id "baseline"; a
 # tabulated exposure over the same footprint is always available under
@@ -65,7 +66,7 @@ transients:
 generate:
   time_bins: 20
   nside: 64
-  downsample: 20
+  sampling_factor: 0.05
   seed: 42
 
 # Read by `run` (and, ad hoc, by `cut`/`photometry`, which
