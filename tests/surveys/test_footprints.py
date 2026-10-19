@@ -1,5 +1,7 @@
 """Tests for `uvex_transients.surveys.footprints`: registry, MOC caching, shape generators, and LSST gating."""
 
+import urllib.error
+
 import numpy as np
 import pytest
 from astropy import units as u
@@ -7,6 +9,7 @@ from astropy.coordinates import SkyCoord
 from regions import PointSkyRegion, Regions
 
 from uvex_transients.surveys.footprints import base, lsst
+from uvex_transients.surveys.footprints import utils as footprint_utils
 from uvex_transients.surveys.footprints.base import FootprintRegistry, SurveyFootprint, combine_footprints
 from uvex_transients.surveys.footprints.utils import (
     convert_region_to_MOC,
@@ -143,6 +146,44 @@ class TestCaching:
         footprint = SurveyFootprint(name="test:bad", generator=lambda **_: "not a moc")
         with pytest.raises(TypeError, match="not a MOC"):
             footprint.moc
+
+
+class TestDownloadFileCached:
+    """`download_file_cached` retries against the system CA store only when certificate verification fails."""
+
+    @staticmethod
+    def _patch(monkeypatch, errors):
+        """Replace `download_file` with one that raises `errors` in turn, then returns a path; returns its call log."""
+        calls = []
+        pending = list(errors)
+
+        def fake(url, **kwargs):
+            calls.append(kwargs)
+            if pending:
+                raise pending.pop(0)
+            return "/cached/file"
+
+        monkeypatch.setattr(footprint_utils, "download_file", fake)
+        return calls
+
+    def test_no_retry_on_success(self, monkeypatch):
+        calls = self._patch(monkeypatch, [])
+        footprint_utils.download_file_cached("https://example.org/f")
+        assert len(calls) == 1
+        assert "ssl_context" not in calls[0]
+
+    def test_retries_with_system_store_on_certificate_failure(self, monkeypatch):
+        error = urllib.error.URLError("Verification of TLS/SSL certificate at https://example.org/f failed")
+        calls = self._patch(monkeypatch, [error])
+        assert str(footprint_utils.download_file_cached("https://example.org/f")) == "/cached/file"
+        assert len(calls) == 2
+        assert calls[1]["ssl_context"] == {"cafile": None}
+
+    def test_other_url_errors_are_not_retried(self, monkeypatch):
+        calls = self._patch(monkeypatch, [urllib.error.URLError("connection refused")])
+        with pytest.raises(urllib.error.URLError, match="connection refused"):
+            footprint_utils.download_file_cached("https://example.org/f")
+        assert len(calls) == 1
 
 
 class TestGenerators:
