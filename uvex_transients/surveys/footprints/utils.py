@@ -7,6 +7,7 @@ Every generator here follows the registry contract ``generator(*, max_order, **p
 analytic shapes (`all_sky_MOC`, `dec_band_MOC`, `union_of_galactic_boxes_MOC`).
 """
 
+import urllib.error
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -38,6 +39,11 @@ def download_file_cached(url: str, cache: bool = True, show_progress: bool = Tru
     This is the same cache `uvex_transients.dust.dust_map` uses. The cached path
     does not keep the URL's filename or extension.
 
+    Astropy verifies TLS against ``certifi``'s CA bundle when it is installed. If that fails
+    certificate verification (e.g. a root that a newer ``certifi`` has dropped but the operating
+    system still trusts, as with the Stanford host serving the Rubin scheduler data), the download is
+    retried once against the system CA store. Verification is never disabled.
+
     Parameters
     ----------
     url : str
@@ -52,7 +58,13 @@ def download_file_cached(url: str, cache: bool = True, show_progress: bool = Tru
     pathlib.Path
         Local path to the (cached) file.
     """
-    return Path(download_file(url, cache=cache, show_progress=show_progress))
+    try:
+        return Path(download_file(url, cache=cache, show_progress=show_progress))
+    except urllib.error.URLError as exc:
+        if "certificate" not in str(exc).lower():
+            raise
+        # A `cafile` key, even `None`, stops astropy from substituting certifi's bundle.
+        return Path(download_file(url, cache=cache, show_progress=show_progress, ssl_context={"cafile": None}))
 
 
 # ====================================== #
