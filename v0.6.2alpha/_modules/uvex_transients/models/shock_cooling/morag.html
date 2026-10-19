@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.shock_cooling.morag &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/shock_cooling/morag';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.2alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.shock_cooling.morag</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.shock_cooling.morag</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Shock cooling emission with deviations from blackbody (Morag+24).</span>
+
+<span class="sd">Implements the analytic model of :footcite:t:`2024MNRAS.528.7137M` for the early emission of a star with an</span>
+<span class="sd">extended envelope (mass :math:`M_E`) around a core (mass :math:`M_C`), shocked to a surface velocity scale</span>
+<span class="sd">:math:`v_*`.</span>
+
+<span class="sd">As discussed in :footcite:t:`2024MNRAS.528.7137M`, this model is suitable only for a relatively short window</span>
+<span class="sd">between shock breakout and the onset of recombination. A detailed read of the paper should be conducted before</span>
+<span class="sd">using this class to ensure that it is being applied properly.</span>
+
+<span class="sd">References</span>
+<span class="sd">----------</span>
+<span class="sd">.. footbibliography::</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._constants</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">C_CGS</span><span class="p">,</span>
+    <span class="n">LOG_EV_TO_ERG</span><span class="p">,</span>
+    <span class="n">LOG_H_CGS</span><span class="p">,</span>
+    <span class="n">LOG_KELVIN_PER_EV</span><span class="p">,</span>
+    <span class="n">MSUN_G</span><span class="p">,</span>
+    <span class="n">SECONDS_PER_DAY</span><span class="p">,</span>
+    <span class="n">SECONDS_PER_HOUR</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">planck_Bnu_log_cgs</span><span class="p">,</span> <span class="n">planck_shape_log_cgs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.arnett</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArnettDecaySED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantPrior</span><span class="p">,</span> <span class="n">LogNormalPrior</span><span class="p">,</span> <span class="n">TruncatedNormalPrior</span><span class="p">,</span> <span class="n">UniformPrior</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"MoragShockCoolingArnettSED"</span><span class="p">,</span> <span class="s2">"MoragShockCoolingBlackbodySED"</span><span class="p">,</span> <span class="s2">"MoragShockCoolingSED"</span><span class="p">]</span>
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Constants                                         #</span>
+<span class="c1"># ================================================= #</span>
+<span class="n">_LOG_A9_PREFACTOR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">))</span>
+<span class="sd">"""float: Natural log of the geometric prefactor :math:`(4\\pi)^2 / \\sqrt{3}` of Eq. A9."""</span>
+
+<span class="n">_INVALID_FILLS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"zero"</span><span class="p">:</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="s2">"nan"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="kc">None</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+<span class="sd">"""dict: Natural-log value written to a luminosity outside the regime of validity, per fill setting."""</span>
+
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Physics (log, CGS)                                #</span>
+<span class="c1"># ================================================= #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_components_log_cgs_morag24</span><span class="p">(</span>
+    <span class="n">log_t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">log_v_star</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_radius</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute the scalings, break points, and regime of validity shared by all of the Morag+24 relations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_t : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the time since explosion, in s.</span>
+<span class="sd">    log_v_star : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the shock velocity scale near the surface, in cm/s (Eqs. 2 and 3 of Morag+24).</span>
+<span class="sd">    log_radius : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the stellar radius, in cm.</span>
+<span class="sd">    log_opacity : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the Rosseland mean opacity, in cm^2/g.</span>
+<span class="sd">    log_envelope_mass : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the envelope mass, in g.</span>
+<span class="sd">    log_core_mass : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the core mass, in g.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    types.SimpleNamespace</span>
+<span class="sd">        The scalings and break points shared by the temperature, luminosity, and spectral luminosity.</span>
+<span class="sd">        ``log_kappa`` and ``log_R`` are normalized to the fiducial scalings of the paper, ``log_t_break`` (s),</span>
+<span class="sd">        ``log_T_break`` (K), ``log_L_break`` (erg/s), and ``log_t_tr`` (s) are in CGS, and ``valid`` is the</span>
+<span class="sd">        boolean mask of the epochs inside the regime of validity.</span>
+<span class="sd">    """</span>
+    <span class="c1"># The fits are normalized to v = 10^8.5 cm/s, R = 1e13 cm, kappa = 0.34 cm^2/g, and masses in solar masses.</span>
+    <span class="n">log_v</span> <span class="o">=</span> <span class="n">log_v_star</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mf">8.5</span><span class="p">)</span>
+    <span class="n">log_R</span> <span class="o">=</span> <span class="n">log_radius</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e13</span><span class="p">)</span>
+    <span class="n">log_kappa</span> <span class="o">=</span> <span class="n">log_opacity</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.34</span><span class="p">)</span>
+    <span class="n">log_M_E</span> <span class="o">=</span> <span class="n">log_envelope_mass</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">MSUN_G</span><span class="p">)</span>
+    <span class="n">log_M_C</span> <span class="o">=</span> <span class="n">log_core_mass</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">MSUN_G</span><span class="p">)</span>
+
+    <span class="c1"># The polytropic coefficient f_rho times the total mass in solar masses.</span>
+    <span class="n">log_f_rho_M</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_M_E</span> <span class="o">-</span> <span class="n">log_M_C</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">log_M_C</span><span class="p">,</span> <span class="n">log_M_E</span><span class="p">)</span>
+
+    <span class="c1"># The break from the planar to the spherical phase, and the temperature and luminosity there.</span>
+    <span class="n">log_t_break</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.86</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.26</span> <span class="o">*</span> <span class="n">log_R</span> <span class="o">-</span> <span class="mf">1.13</span> <span class="o">*</span> <span class="n">log_v</span> <span class="o">-</span> <span class="mf">0.13</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_f_rho_M</span> <span class="o">+</span> <span class="n">log_kappa</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">SECONDS_PER_HOUR</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">log_T_break</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">8.19</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.32</span> <span class="o">*</span> <span class="n">log_R</span> <span class="o">+</span> <span class="mf">0.58</span> <span class="o">*</span> <span class="n">log_v</span> <span class="o">+</span> <span class="mf">0.03</span> <span class="o">*</span> <span class="n">log_f_rho_M</span> <span class="o">-</span> <span class="mf">0.22</span> <span class="o">*</span> <span class="n">log_kappa</span> <span class="o">+</span> <span class="n">LOG_KELVIN_PER_EV</span>
+    <span class="n">log_L_break</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">3.69e42</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.78</span> <span class="o">*</span> <span class="n">log_R</span> <span class="o">+</span> <span class="mf">2.11</span> <span class="o">*</span> <span class="n">log_v</span> <span class="o">+</span> <span class="mf">0.11</span> <span class="o">*</span> <span class="n">log_f_rho_M</span> <span class="o">-</span> <span class="mf">0.89</span> <span class="o">*</span> <span class="n">log_kappa</span>
+
+    <span class="c1"># The regime of validity (Eqs. 17 and 18 of Morag+24): after the light crossing (times 3) and breakout times, and</span>
+    <span class="c1"># before t_0.7 and half the transparency time.</span>
+    <span class="n">log_t_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">19.5</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_kappa</span> <span class="o">+</span> <span class="n">log_M_E</span> <span class="o">-</span> <span class="n">log_v</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">SECONDS_PER_DAY</span><span class="p">)</span>
+    <span class="n">log_t_light</span> <span class="o">=</span> <span class="n">log_radius</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C_CGS</span><span class="p">)</span>
+    <span class="n">log_t_breakout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.16</span> <span class="o">*</span> <span class="n">log_R</span> <span class="o">-</span> <span class="mf">1.58</span> <span class="o">*</span> <span class="n">log_v</span> <span class="o">-</span> <span class="mf">0.58</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_f_rho_M</span> <span class="o">+</span> <span class="n">log_kappa</span><span class="p">)</span>
+    <span class="n">log_t_07</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">6.86</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.56</span> <span class="o">*</span> <span class="n">log_R</span> <span class="o">+</span> <span class="mf">0.16</span> <span class="o">*</span> <span class="n">log_v</span> <span class="o">-</span> <span class="mf">0.61</span> <span class="o">*</span> <span class="n">log_kappa</span> <span class="o">-</span> <span class="mf">0.06</span> <span class="o">*</span> <span class="n">log_f_rho_M</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">SECONDS_PER_DAY</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">log_t_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">log_t_light</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">log_t_breakout</span><span class="p">)</span>
+    <span class="n">log_t_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">log_t_07</span><span class="p">,</span> <span class="n">log_t_tr</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
+        <span class="n">log_kappa</span><span class="o">=</span><span class="n">log_kappa</span><span class="p">,</span>
+        <span class="n">log_R</span><span class="o">=</span><span class="n">log_R</span><span class="p">,</span>
+        <span class="n">log_t_break</span><span class="o">=</span><span class="n">log_t_break</span><span class="p">,</span>
+        <span class="n">log_T_break</span><span class="o">=</span><span class="n">log_T_break</span><span class="p">,</span>
+        <span class="n">log_L_break</span><span class="o">=</span><span class="n">log_L_break</span><span class="p">,</span>
+        <span class="n">log_t_tr</span><span class="o">=</span><span class="n">log_t_tr</span><span class="p">,</span>
+        <span class="n">valid</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">log_t</span> <span class="o">&gt;</span> <span class="n">log_t_min</span><span class="p">,</span> <span class="n">log_t</span> <span class="o">&lt;</span> <span class="n">log_t_max</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_temperature_log_cgs_morag24</span><span class="p">(</span>
+    <span class="n">log_t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">log_v_star</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_radius</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_fill</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Natural log of the color temperature in K.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_t, log_v_star, log_radius, log_opacity, log_envelope_mass, log_core_mass : ~numpy.ndarray or float</span>
+<span class="sd">        As in :func:`_components_log_cgs_morag24`.</span>
+<span class="sd">    log_fill : float, optional</span>
+<span class="sd">        If given, the natural-log value written outside the regime of validity. By default the formula is</span>
+<span class="sd">        evaluated everywhere.</span>
+<span class="sd">    """</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="n">_components_log_cgs_morag24</span><span class="p">(</span>
+        <span class="n">log_t</span><span class="p">,</span> <span class="n">log_v_star</span><span class="p">,</span> <span class="n">log_radius</span><span class="p">,</span> <span class="n">log_opacity</span><span class="p">,</span> <span class="n">log_envelope_mass</span><span class="p">,</span> <span class="n">log_core_mass</span>
+    <span class="p">)</span>
+    <span class="n">log_t_rel</span> <span class="o">=</span> <span class="n">log_t</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_break</span>
+    <span class="n">log_T</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_T_break</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.97</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">log_t_rel</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.45</span> <span class="o">*</span> <span class="n">log_t_rel</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">log_T</span> <span class="k">if</span> <span class="n">log_fill</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_T</span><span class="p">,</span> <span class="n">log_fill</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_luminosity_log_cgs_morag24</span><span class="p">(</span>
+    <span class="n">log_t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">log_v_star</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_radius</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_fill</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Natural log of the bolometric luminosity in erg/s (Eq. A1 of Morag+24).</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = L_\mathrm{break} \left[ \tilde t^{-4/3} + 0.9\,e^{-\sqrt{2t/t_\mathrm{tr}}}\,\tilde t^{-0.17} \right],</span>
+<span class="sd">        \quad \tilde t = t / t_\mathrm{break}.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_t, log_v_star, log_radius, log_opacity, log_envelope_mass, log_core_mass : ~numpy.ndarray or float</span>
+<span class="sd">        As in :func:`_components_log_cgs_morag24`.</span>
+<span class="sd">    log_fill : float, optional</span>
+<span class="sd">        If given, the natural-log value written outside the regime of validity (``-inf`` for zero luminosity,</span>
+<span class="sd">        ``nan`` for undefined). By default the formula is evaluated everywhere, including where it is known to</span>
+<span class="sd">        be wrong.</span>
+<span class="sd">    """</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="n">_components_log_cgs_morag24</span><span class="p">(</span>
+        <span class="n">log_t</span><span class="p">,</span> <span class="n">log_v_star</span><span class="p">,</span> <span class="n">log_radius</span><span class="p">,</span> <span class="n">log_opacity</span><span class="p">,</span> <span class="n">log_envelope_mass</span><span class="p">,</span> <span class="n">log_core_mass</span>
+    <span class="p">)</span>
+    <span class="n">log_t_rel</span> <span class="o">=</span> <span class="n">log_t</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_break</span>
+    <span class="n">sqrt_2t_over_t_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_t</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_tr</span><span class="p">))</span>
+    <span class="n">log_L</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_L_break</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+        <span class="o">-</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">log_t_rel</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)</span> <span class="o">-</span> <span class="n">sqrt_2t_over_t_tr</span> <span class="o">-</span> <span class="mf">0.17</span> <span class="o">*</span> <span class="n">log_t_rel</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">log_L</span> <span class="k">if</span> <span class="n">log_fill</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L</span><span class="p">,</span> <span class="n">log_fill</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_spectral_luminosity_log_cgs_morag24</span><span class="p">(</span>
+    <span class="n">log_t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">log_nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">log_v_star</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_radius</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="n">log_fill</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Natural log of the full specific luminosity :math:`L_\nu` in erg/s/Hz (Eq. A7 of Morag+24).</span>
+
+<span class="sd">    A blackbody at the color temperature with the UV suppressed above :math:`h\nu = 3.5\,T_\mathrm{col}`, plus a</span>
+<span class="sd">    free-free correction below it (Eqs. A9 to A12). Unlike the pure blackbody (Eq. A8), this does not integrate back</span>
+<span class="sd">    to the bolometric luminosity of Eq. A1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_t : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the time since explosion, in s.</span>
+<span class="sd">    log_nu : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the rest-frame frequency, in Hz.</span>
+<span class="sd">    log_v_star, log_radius, log_opacity, log_envelope_mass, log_core_mass : ~numpy.ndarray or float</span>
+<span class="sd">        Natural log of the model parameters in CGS; see :func:`_components_log_cgs_morag24`.</span>
+<span class="sd">    log_fill : float, optional</span>
+<span class="sd">        As in :func:`_luminosity_log_cgs_morag24`.</span>
+<span class="sd">    """</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_nu</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_t</span><span class="p">,</span> <span class="n">log_v_star</span><span class="p">,</span> <span class="n">log_radius</span><span class="p">,</span> <span class="n">log_opacity</span><span class="p">,</span> <span class="n">log_envelope_mass</span><span class="p">,</span> <span class="n">log_core_mass</span><span class="p">)</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="n">_components_log_cgs_morag24</span><span class="p">(</span><span class="o">*</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">log_t_rel</span> <span class="o">=</span> <span class="n">log_t</span> <span class="o">-</span> <span class="n">components</span><span class="o">.</span><span class="n">log_t_break</span>
+    <span class="n">log_T</span> <span class="o">=</span> <span class="n">_temperature_log_cgs_morag24</span><span class="p">(</span><span class="o">*</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">log_L</span> <span class="o">=</span> <span class="n">_luminosity_log_cgs_morag24</span><span class="p">(</span><span class="o">*</span><span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># Eqs. A9 to A12 are fit with T and h*nu in eV, so only the blackbody evaluations below convert to Kelvin.</span>
+    <span class="n">log_T_eV</span> <span class="o">=</span> <span class="n">log_T</span> <span class="o">-</span> <span class="n">LOG_KELVIN_PER_EV</span>
+    <span class="n">log_Tb</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_T_break</span> <span class="o">-</span> <span class="n">LOG_KELVIN_PER_EV</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">log_Lb</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_L_break</span> <span class="o">-</span> <span class="mf">42.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+    <span class="n">log_hnu</span> <span class="o">=</span> <span class="n">LOG_H_CGS</span> <span class="o">+</span> <span class="n">log_nu</span> <span class="o">-</span> <span class="n">LOG_EV_TO_ERG</span>
+    <span class="n">log_k</span> <span class="o">=</span> <span class="n">components</span><span class="o">.</span><span class="n">log_kappa</span>
+
+    <span class="c1"># The thermal depth in the low-absorption regime: radius [cm], temperature [eV], free-free opacity [cm^2/g].</span>
+    <span class="n">log_r_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+        <span class="n">log_radius</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.18e13</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.48</span> <span class="o">*</span> <span class="n">log_Lb</span> <span class="o">-</span> <span class="mf">1.97</span> <span class="o">*</span> <span class="n">log_Tb</span> <span class="o">-</span> <span class="mf">0.07</span> <span class="o">*</span> <span class="n">log_k</span> <span class="o">+</span> <span class="mf">0.80</span> <span class="o">*</span> <span class="n">log_t_rel</span> <span class="o">-</span> <span class="mf">0.08</span> <span class="o">*</span> <span class="n">log_hnu</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># Eq. A10</span>
+    <span class="n">log_T_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">5.47</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">log_Lb</span> <span class="o">+</span> <span class="mf">0.92</span> <span class="o">*</span> <span class="n">log_Tb</span> <span class="o">+</span> <span class="mf">0.22</span> <span class="o">*</span> <span class="n">log_k</span> <span class="o">-</span> <span class="mf">0.42</span> <span class="o">*</span> <span class="n">log_t_rel</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">log_hnu</span>  <span class="c1"># A11</span>
+    <span class="n">log_k_ff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.03</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.37</span> <span class="o">*</span> <span class="n">log_Lb</span> <span class="o">+</span> <span class="mf">0.56</span> <span class="o">*</span> <span class="n">log_Tb</span> <span class="o">-</span> <span class="mf">0.47</span> <span class="o">*</span> <span class="n">log_k</span> <span class="o">-</span> <span class="mf">0.19</span> <span class="o">*</span> <span class="n">log_t_rel</span> <span class="o">-</span> <span class="mf">1.66</span> <span class="o">*</span> <span class="n">log_hnu</span>  <span class="c1"># A12</span>
+    <span class="n">log_eps</span> <span class="o">=</span> <span class="n">log_k_ff</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">log_k_ff</span><span class="p">,</span> <span class="n">log_opacity</span><span class="p">)</span>
+    <span class="n">sqrt_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_eps</span><span class="p">)</span>
+
+    <span class="n">log_B_nu</span> <span class="o">=</span> <span class="n">planck_Bnu_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T_nu</span> <span class="o">+</span> <span class="n">LOG_KELVIN_PER_EV</span><span class="p">))</span>
+    <span class="n">log_L_eps</span> <span class="o">=</span> <span class="n">_LOG_A9_PREFACTOR</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">log_r_col</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_eps</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">sqrt_eps</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_B_nu</span>  <span class="c1"># Eq. A9</span>
+
+    <span class="c1"># Eq. A7 for h*nu &lt; 3.5 T_col: a smooth minimum (m = 5) of the blackbody and the free-free emission.</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="n">log_L_blackbody</span> <span class="o">=</span> <span class="n">log_L</span> <span class="o">+</span> <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.85</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_T_eV</span> <span class="o">+</span> <span class="n">LOG_KELVIN_PER_EV</span><span class="p">))</span>
+    <span class="n">log_low</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="o">-</span><span class="n">m</span> <span class="o">*</span> <span class="n">log_L_blackbody</span><span class="p">,</span> <span class="o">-</span><span class="n">m</span> <span class="o">*</span> <span class="n">log_L_eps</span><span class="p">)</span>
+
+    <span class="c1"># Eq. A7 for h*nu &gt; 3.5 T_col: a cooler blackbody with line suppression.</span>
+    <span class="n">log_t_days</span> <span class="o">=</span> <span class="n">log_t</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">SECONDS_PER_DAY</span><span class="p">)</span>
+    <span class="n">log_T_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.85</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.13</span> <span class="o">*</span> <span class="n">components</span><span class="o">.</span><span class="n">log_R</span> <span class="o">-</span> <span class="mf">0.13</span> <span class="o">*</span> <span class="n">log_t_days</span> <span class="o">+</span> <span class="n">log_T_eV</span> <span class="o">+</span> <span class="n">LOG_KELVIN_PER_EV</span>
+    <span class="n">log_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_L</span> <span class="o">+</span> <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T_high</span><span class="p">))</span>
+
+    <span class="n">log_L_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">log_hnu</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">3.5</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_T_eV</span><span class="p">,</span> <span class="n">log_low</span><span class="p">,</span> <span class="n">log_high</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">log_L_nu</span> <span class="k">if</span> <span class="n">log_fill</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">valid</span><span class="p">,</span> <span class="n">log_L_nu</span><span class="p">,</span> <span class="n">log_fill</span><span class="p">)</span>
+
+
+<span class="c1"># ================================================= #</span>
+<span class="c1"># Models                                            #</span>
+<span class="c1"># ================================================= #</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_MoragShockCoolingBase</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Parameters and regime of validity shared by the Morag+24 shock cooling SEDs.</span>
+
+<span class="sd">    Not instantiable directly (``_eval`` is left abstract). :class:`MoragShockCoolingSED` and</span>
+<span class="sd">    :class:`MoragShockCoolingBlackbodySED` share this parameter set and differ only in their spectral shape.</span>
+<span class="sd">    Based on :footcite:t:`2024MNRAS.528.7137M`.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``v_star``</span>
+<span class="sd">         - :math:`v_*`</span>
+<span class="sd">         - Scale velocity of the shock near the stellar surface.</span>
+<span class="sd">       * - ``radius``</span>
+<span class="sd">         - :math:`R`</span>
+<span class="sd">         - Progenitor stellar radius.</span>
+<span class="sd">       * - ``opacity``</span>
+<span class="sd">         - :math:`\kappa`</span>
+<span class="sd">         - Rosseland mean opacity. Fixed at the electron-scattering value.</span>
+<span class="sd">       * - ``envelope_mass``</span>
+<span class="sd">         - :math:`M_E`</span>
+<span class="sd">         - Hydrogen-rich envelope mass.</span>
+<span class="sd">       * - ``core_mass``</span>
+<span class="sd">         - :math:`M_C`</span>
+<span class="sd">         - Core mass.</span>
+
+<span class="sd">    .. rubric:: Regime of validity</span>
+
+<span class="sd">    The relations hold only between :math:`t_\mathrm{min} = \max(3R/c, t_\mathrm{bo})` and</span>
+<span class="sd">    :math:`t_\mathrm{max} = \min(t_{0.7}, t_\mathrm{tr}/2)` (Eqs. 17 and 18 of Morag+24). For Type IIb-like</span>
+<span class="sd">    parameters that is only about a day or two. Outside it the luminosity is not just inaccurate: it diverges</span>
+<span class="sd">    toward early times, reaching :math:`10^{45}\,\mathrm{erg\,s^{-1}}` in the unmasked tail of the priors. What is</span>
+<span class="sd">    written there is set by ``_INVALID_FILL``.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">_INVALID_FILL</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"zero"</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    str or None: What to write where the model is outside its regime of validity.</span>
+
+<span class="sd">    ``"zero"`` gives zero luminosity (``-inf`` in log space), so an epoch the model cannot describe reads as</span>
+<span class="sd">    a non-detection and cannot poison a minimum or maximum taken over epochs. ``"nan"`` marks it undefined, for</span>
+<span class="sd">    plots and diagnostics. ``None`` evaluates the formulas everywhere, including where they are known to be</span>
+<span class="sd">    wrong (the luminosity grows without bound toward early times, so this overstates the early emission by orders</span>
+<span class="sd">    of magnitude). The color temperature is always ``nan`` outside the regime of validity unless this is ``None``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"v_star"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.35</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mf">8.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Scale velocity of the shock near the stellar surface."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"v_*"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"radius"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.85</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">6e12</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Progenitor stellar radius."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"R"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"opacity"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.34</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Rosseland mean opacity. Fixed at the electron-scattering value."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"envelope_mass"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Hydrogen-rich envelope mass."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_E"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"core_mass"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.35</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Core mass."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_C"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_fill</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Resolve ``_INVALID_FILL`` to the natural-log value written to an invalid luminosity.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or None</span>
+<span class="sd">            ``-inf``, ``nan``, or ``None`` when masking is off.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``_INVALID_FILL`` is not ``"zero"``, ``"nan"`` or ``None``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_INVALID_FILLS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"_INVALID_FILL must be one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">_INVALID_FILLS</span><span class="p">))</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span><span class="si">!r}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_INVALID_FILLS</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_arguments</span><span class="p">(</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">v_star</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">radius</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">opacity</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">envelope_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">core_mass</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Natural logs of the CGS time and parameters, keyed by the argument names of the Morag+24 functions."""</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"log_t"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="s2">"log_v_star"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v_star</span><span class="p">),</span>
+            <span class="s2">"log_radius"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">radius</span><span class="p">),</span>
+            <span class="s2">"log_opacity"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">opacity</span><span class="p">),</span>
+            <span class="s2">"log_envelope_mass"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">envelope_mass</span><span class="p">),</span>
+            <span class="s2">"log_core_mass"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">core_mass</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Color temperature :math:`T_\mathrm{col}(t)`, shared by both SEDs.</span>
+
+<span class="sd">        For :class:`MoragShockCoolingSED` this is the underlying blackbody temperature that Eq. A7 of</span>
+<span class="sd">        Morag+24 reshapes in frequency, not a temperature that alone characterizes its spectrum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            :math:`T_\mathrm{col}(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">cgs_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">log_fill</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_temperature_log_cgs_morag24</span><span class="p">(</span><span class="n">log_fill</span><span class="o">=</span><span class="n">log_fill</span><span class="p">,</span> <span class="o">**</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_arguments</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span>
+
+
+<div class="viewcode-block" id="MoragShockCoolingSED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingSED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingSED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Full shock cooling SED with UV line suppression and a free-free correction (Eq. A7).</span>
+
+<span class="sd">    Based on :footcite:t:`2024MNRAS.528.7137M`. See :class:`MoragShockCoolingBlackbodySED` for the simpler</span>
+<span class="sd">    pure blackbody (Eq. A8).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This SED has no closed-form bolometric luminosity. The reshaping of Eq. A7 does not conserve the Eq. A1</span>
+<span class="sd">    luminosity upon frequency integration (by as much as 15 to 20 percent, depending on epoch), so</span>
+<span class="sd">    :meth:`_eval_bolometric` integrates :meth:`_eval` itself. A generic adaptive integral over</span>
+<span class="sd">    :math:`(0, \infty)` converges too slowly through the line suppression kink to be practical, so it uses a fixed,</span>
+<span class="sd">    log-spaced grid in :math:`h\nu` from 0.1 eV to :math:`10^4` eV (comfortably spanning the Wien tail on both</span>
+<span class="sd">    sides of any physically reasonable :math:`T_\mathrm{col}`) with a trapezoidal rule in :math:`\ln\nu`. This</span>
+<span class="sd">    agrees with an adaptive reference to better than 0.2 percent across the whole regime of validity, and is</span>
+<span class="sd">    orders of magnitude faster.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LOG_HNU_EV_GRID</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">1e-1</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">,</span> <span class="mi">300</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: Natural log of the :math:`h\\nu` grid in eV used by :meth:`_eval_bolometric`."""</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\nu(\nu, t)` in erg/s/Hz, from :func:`_spectral_luminosity_log_cgs_morag24`."""</span>
+        <span class="k">return</span> <span class="n">_spectral_luminosity_log_cgs_morag24</span><span class="p">(</span>
+            <span class="n">log_nu</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">nu</span><span class="p">),</span> <span class="n">log_fill</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">(),</span> <span class="o">**</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_arguments</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\mathrm{bol}(t)` in erg/s, by the fixed grid quadrature of the class notes."""</span>
+        <span class="n">t_grid</span><span class="p">,</span> <span class="o">*</span><span class="n">param_arrays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="o">*</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">param_grids</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">param_arrays</span><span class="p">))</span>
+
+        <span class="c1"># A new leading frequency axis, broadcasting against every existing `t`/parameter axis.</span>
+        <span class="n">expand</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,)</span> <span class="o">*</span> <span class="n">t_grid</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="n">nu_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="bp">cls</span><span class="o">.</span><span class="n">_LOG_HNU_EV_GRID</span> <span class="o">+</span> <span class="n">LOG_EV_TO_ERG</span> <span class="o">-</span> <span class="n">LOG_H_CGS</span><span class="p">)[</span><span class="n">expand</span><span class="p">])</span>
+
+        <span class="n">log_L_nu</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span>
+            <span class="n">nu_grid</span><span class="p">,</span>
+            <span class="n">t_grid</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">param_grids</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+        <span class="p">)</span>
+        <span class="c1"># With d(ln nu) the integrand is L_nu * nu, integrated by the trapezoidal rule in ln(nu).</span>
+        <span class="n">integrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">log_L_nu</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_L_nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">nu_grid</span><span class="p">)</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_LOG_HNU_EV_GRID</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">integral</span><span class="p">)</span>
+
+        <span class="c1"># With a zero fill an invalid epoch integrates to exactly zero (log_L == -inf). Otherwise it is nan</span>
+        <span class="c1"># wherever every frequency sample was masked invalid.</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="o">==</span> <span class="s2">"zero"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">log_L</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">log_L_nu</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">log_L</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MoragShockCoolingBlackbodySED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingBlackbodySED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingBlackbodySED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingBlackbodySED</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Pure blackbody shock cooling SED (Eq. A8).</span>
+
+<span class="sd">    Based on :footcite:t:`2024MNRAS.528.7137M`. A blackbody at the color temperature :math:`T_\mathrm{col}(t)`</span>
+<span class="sd">    that integrates exactly to the bolometric luminosity :math:`L(t)` of Eq. A1, so it needs no numerical frequency</span>
+<span class="sd">    integration. See :class:`MoragShockCoolingSED` for the full SED (Eq. A7), which does not conserve it.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\mathrm{bol}(t)` in erg/s, Eq. A1 of Morag+24 (exact, no integration)."""</span>
+        <span class="k">return</span> <span class="n">_luminosity_log_cgs_morag24</span><span class="p">(</span><span class="n">log_fill</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_fill</span><span class="p">(),</span> <span class="o">**</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_arguments</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of the normalized blackbody shape :math:`S(\nu, T_\mathrm{col}(t))` in 1/Hz."""</span>
+        <span class="c1"># Only a nan fill masks the shape. For a zero fill it stays finite, because the bolometric luminosity it is</span>
+        <span class="c1"># added to in `_eval` is already -inf, and -inf + nan is nan.</span>
+        <span class="n">log_fill</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_INVALID_FILL</span> <span class="o">==</span> <span class="s2">"nan"</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">log_T</span> <span class="o">=</span> <span class="n">_temperature_log_cgs_morag24</span><span class="p">(</span><span class="n">log_fill</span><span class="o">=</span><span class="n">log_fill</span><span class="p">,</span> <span class="o">**</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_arguments</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_T</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\nu(\nu, t) = L_\mathrm{bol}(t)\,S(\nu, T_\mathrm{col}(t))` in erg/s/Hz."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_spectrum</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_UncutMoragShockCoolingSED</span><span class="p">(</span><span class="n">MoragShockCoolingSED</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    The full Morag+24 SED evaluated at every epoch after the explosion, ignoring its regime of validity.</span>
+
+<span class="sd">    The formulas are written in :math:`\ln t` and have no finite value at :math:`t = 0`, so the luminosity at</span>
+<span class="sd">    :math:`t \le 0` is set to zero (``-inf`` in the natural log) instead of evaluating them.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_INVALID_FILL</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""As :meth:`MoragShockCoolingSED._eval`, but zero luminosity at :math:`t \le 0`."""</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">log_L_nu</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">log_L_nu</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""As :meth:`MoragShockCoolingSED._eval_bolometric`, but zero luminosity at :math:`t \le 0`."""</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">started</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">log_L</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">log_L</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MoragShockCoolingArnettSED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingArnettSED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MoragShockCoolingArnettSED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Type IIb SED: Morag+24 shock cooling plus Arnett nickel decay.</span>
+
+<span class="sd">    The sum of two emission components, with the spectral luminosities added,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\nu(\nu, t) = L_\nu^\mathrm{shock}(\nu, t) + L_\nu^\mathrm{Ni}(\nu, t).</span>
+
+<span class="sd">    The first is the full shock cooling SED of :footcite:t:`2024MNRAS.528.7137M` (:class:`MoragShockCoolingSED`,</span>
+<span class="sd">    Eq. A7), which dominates in the first days. The second is the diffusion-limited, nickel powered light curve of</span>
+<span class="sd">    :footcite:t:`1982ApJ...253..785A` with a floored photospheric blackbody</span>
+<span class="sd">    (:class:`~uvex_transients.models.arnett.ArnettDecaySED`), which produces the main peak at about 20 days.</span>
+<span class="sd">    Together they give the characteristic Type IIb double structure: a luminous decline after breakout, a trough,</span>
+<span class="sd">    then the rise to the nickel peak.</span>
+
+<span class="sd">    The shock cooling component is evaluated at every epoch, without the cut at the edges of the regime of validity</span>
+<span class="sd">    of Morag+24 that :class:`MoragShockCoolingSED` applies by default. The cut zeroes the shock cooling after about a</span>
+<span class="sd">    day or two, which leaves the nickel component alone through the trough. The price is that the formulas are</span>
+<span class="sd">    not valid before :math:`t_\mathrm{min}`, where the luminosity grows without bound toward :math:`t \to 0`.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The five parameters of :class:`MoragShockCoolingSED` (``v_star``, ``radius``, ``opacity``, ``envelope_mass``,</span>
+<span class="sd">    ``core_mass``) and the six of :class:`~uvex_transients.models.arnett.ArnettDecaySED` (``M_Ni``, ``M_ej``,</span>
+<span class="sd">    ``v_ej``, ``kappa``, ``kappa_gamma``, ``T_floor``).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The two components are independent, so nothing ties the envelope mass of the shock cooling to the ejecta mass</span>
+<span class="sd">    of the nickel component. The nickel priors are broad, Type IIb-like placeholders, and have not been fit to</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">_ARNETT_SED</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">ArnettDecaySED</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ArnettDecaySED</span>
+<span class="w">    </span><span class="sd">"""type of ArnettDecaySED: The nickel component. Subclasses swap in an SED with its own parameters and priors."""</span>
+
+    <span class="n">_MORAG_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_MoragShockCoolingBase</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">)</span>
+    <span class="n">_ARNETT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"M_Ni"</span><span class="p">,</span> <span class="s2">"M_ej"</span><span class="p">,</span> <span class="s2">"v_ej"</span><span class="p">,</span> <span class="s2">"kappa"</span><span class="p">,</span> <span class="s2">"kappa_gamma"</span><span class="p">,</span> <span class="s2">"T_floor"</span><span class="p">)</span>
+
+    <span class="c1"># TODO: The nickel priors below (M_Ni through kappa_gamma) are placeholders, not fits to data.</span>
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">_MoragShockCoolingBase</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">,</span>
+        <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.08</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.02</span><span class="p">),</span> <span class="n">upper</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass synthesized in the explosion."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{Ni}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"M_ej"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">2.5</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.8</span><span class="p">),</span> <span class="n">upper</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">8.0</span><span class="p">)),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Ejecta mass."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{ej}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"v_ej"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e4</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Constant ejecta velocity, identified with the photospheric velocity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"v_\mathrm</span><span class="si">{ej}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"kappa"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.12</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Grey optical opacity of the ejecta."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"kappa_gamma"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=-</span><span class="mf">1.7</span><span class="p">,</span> <span class="n">upper</span><span class="o">=-</span><span class="mf">1.2</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Opacity to high-energy photons."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa_\gamma"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">[</span><span class="s2">"T_floor"</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split_parameters</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Split the parameters into those of the shock cooling and of the nickel components."""</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_MORAG_PARAMETERS</span><span class="p">},</span>
+            <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_PARAMETERS</span><span class="p">},</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MoragShockCoolingArnettSED.temperature">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED.temperature.html#uvex_transients.models.supernovae.IIb.MoragShockCoolingArnettSED.temperature">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Luminosity-weighted mean of the temperatures of the two components.</span>
+
+<span class="sd">        This is a heuristic summary of a two-component spectrum. It follows the shock cooling color temperature</span>
+<span class="sd">        early on, and the photospheric temperature of the nickel component once that dominates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The temperature, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">L_morag</span> <span class="o">=</span> <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">)</span>
+        <span class="n">L_arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+        <span class="n">T_morag</span> <span class="o">=</span> <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">)</span>
+        <span class="n">T_arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">L_morag</span> <span class="o">*</span> <span class="n">T_morag</span> <span class="o">+</span> <span class="n">L_arnett</span> <span class="o">*</span> <span class="n">T_arnett</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">L_morag</span> <span class="o">+</span> <span class="n">L_arnett</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\mathrm{bol}(t)` in erg/s, the sum of the two components."""</span>
+        <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Natural log of :math:`L_\nu(\nu, t)` in erg/s/Hz, the sum of the two components."""</span>
+        <span class="n">morag</span><span class="p">,</span> <span class="n">arnett</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">_UncutMoragShockCoolingSED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">morag</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_SED</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">arnett</span><span class="p">))</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
