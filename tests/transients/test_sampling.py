@@ -144,3 +144,39 @@ def test_bad_sampling_factor_raises(transient, bad):
         transient.sample_events_on_healpix_grid(_NSIDE, sampling_factor=bad, **_KWARGS)
     with pytest.raises(ValueError, match="sampling_factor"):
         transient.sample_event_count(solid_angle=1 * u.sr, duration=1 * u.day, seed=0, sampling_factor=bad)
+
+
+# --------------------------------------------------------------------------- #
+# n_events: a fixed count in place of the Poisson draw                        #
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("n", [1, 7, 250])
+def test_n_events_draws_exactly_that_many(transient, n):
+    table = transient.sample_events_on_healpix_grid(_NSIDE, n_events=n, **_KWARGS)
+    assert len(table) == n
+    assert np.isin(table["healpix_id"], _KWARGS["pixel_ids"]).all()
+
+
+def test_n_events_zero_is_an_empty_table(transient):
+    assert len(transient.sample_events_on_healpix_grid(_NSIDE, n_events=0, **_KWARGS)) == 0
+
+
+def test_n_events_places_events_as_the_poisson_draw_would(transient):
+    """Fixing the count to what the Poisson draw gave leaves every other column identical."""
+    default = transient.sample_events_on_healpix_grid(_NSIDE, **_KWARGS)
+    fixed = transient.sample_events_on_healpix_grid(_NSIDE, n_events=len(default), **_KWARGS)
+
+    assert len(default) > 0
+    for column in ("healpix_id", "healpix_dx", "healpix_dy", "redshift", "parameter_seed"):
+        np.testing.assert_array_equal(default[column], fixed[column])
+    assert (default["t_explosion"] == fixed["t_explosion"]).all()
+
+
+def test_n_events_and_sampling_factor_are_mutually_exclusive(transient):
+    with pytest.raises(ValueError, match="at most one of `n_events` and `sampling_factor`"):
+        transient.sample_events_on_healpix_grid(_NSIDE, n_events=5, sampling_factor=0.5, **_KWARGS)
+
+
+@pytest.mark.parametrize("bad", [-1, 2.5, True, "3"])
+def test_bad_n_events_raises(transient, bad):
+    with pytest.raises((TypeError, ValueError), match="n_events"):
+        transient.sample_events_on_healpix_grid(_NSIDE, n_events=bad, **_KWARGS)

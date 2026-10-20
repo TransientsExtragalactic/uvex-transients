@@ -1434,6 +1434,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         jitter: bool = True,
         seed: _SeedType | None = None,
         sampling_factor: float | None = None,
+        n_events: int | None = None,
     ) -> QTable:
         """
         Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.
@@ -1486,6 +1487,13 @@ class ExtragalacticTransient(TransientBase, ABC):
             events generated is the correct weight, however many events fall in any one window.
             Only the events that are drawn are built. The default is `None`, which is 1 (the physical
             rate).
+        n_events : int, optional
+            Exact number of events to draw, in place of the Poisson count. The events are placed
+            exactly as they would be otherwise, so this only fixes how many there are. It is the
+            caller's job to choose a count that keeps every event of a type at the same weight (see
+            `~uvex_transients.simulation.core.SurveySimulator.sample_N_events`). Mutually exclusive
+            with `sampling_factor`. The default is `None`, which draws the count from the Poisson
+            distribution.
 
         Returns
         -------
@@ -1493,7 +1501,22 @@ class ExtragalacticTransient(TransientBase, ABC):
             Event table with one row per sampled event; see `_create_event_table_buffer`
             for its columns. Empty (but still correctly typed) if zero events were
             sampled.
+
+        Raises
+        ------
+        ValueError
+            If both `n_events` and `sampling_factor` are given, or `n_events` is negative.
+        TypeError
+            If `n_events` is not an integer.
         """
+        if n_events is not None:
+            if sampling_factor is not None:
+                raise ValueError("Provide at most one of `n_events` and `sampling_factor`.")
+            if isinstance(n_events, bool) or not isinstance(n_events, (int, np.integer)):
+                raise TypeError(f"`n_events` must be an integer, got {type(n_events).__name__}.")
+            if n_events < 0:
+                raise ValueError(f"`n_events` must be non-negative, got {n_events}.")
+
         sampling_factor = validate_sampling_factor(sampling_factor)
 
         # Validate the duration and resolve the pixel selection down to a concrete
@@ -1525,13 +1548,16 @@ class ExtragalacticTransient(TransientBase, ABC):
             parameter_spawn_seed,
         ) = root_seed.spawn(6)
 
-        # Compute the expected number of events that we will be generating.
-        number_of_events = self.sample_event_count(
-            solid_angle=total_solid_angle,
-            duration=duration,
-            seed=count_seed,
-            sampling_factor=sampling_factor,
-        )
+        # Compute the number of events that we will be generating: fixed by the caller, or Poisson.
+        if n_events is not None:
+            number_of_events = int(n_events)
+        else:
+            number_of_events = self.sample_event_count(
+                solid_angle=total_solid_angle,
+                duration=duration,
+                seed=count_seed,
+                sampling_factor=sampling_factor,
+            )
 
         logger.debug(
             "%s: sampled %d events over %d pixels (nside=%d), solid angle %s, duration %s.",
