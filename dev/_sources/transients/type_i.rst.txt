@@ -72,7 +72,7 @@ the others.
              :math:`\pm1\sigma` endpoints, rather than assumed analytically -- see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.30`
+           - :math:`z = 0.33`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -281,7 +281,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.30`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.33`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -312,7 +312,7 @@ the others.
 
       The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
       that any event above the :math:`m<24.5` limit is detectable, and that the population is
-      isotropic and homogeneous in comoving volume out to :math:`z=0.30`:
+      isotropic and homogeneous in comoving volume out to :math:`z=0.33`:
 
       .. plot::
          :include-source: false
@@ -404,7 +404,7 @@ the others.
              :attr:`~uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.17`
+           - :math:`z = 0.23`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -615,7 +615,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.47`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.23`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -741,7 +741,7 @@ the others.
              :attr:`~uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.25`
+           - :math:`z = 0.24`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -938,7 +938,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.54`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.24`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -1074,7 +1074,7 @@ the others.
              fraction is itself consistent with zero, so the combined lower `RATE_CI` factor is
              slightly negative; treat the lower bound as effectively zero rather than literally.
          * - Redshift limit
-           - :math:`z = 0.26`
+           - :math:`z = 0.27`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -1265,7 +1265,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.61`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.27`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the

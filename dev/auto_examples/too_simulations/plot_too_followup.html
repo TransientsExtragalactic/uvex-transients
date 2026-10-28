@@ -580,7 +580,7 @@ TDE happens to be observed.</p>
 </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="s2">SED parameters:</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="dict"><span class="n">params</span></a><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="p">)</span><span class="p">}</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>E(B-V) at target: 0.007
-SED parameters: {'amplitude': '1.2e+43 erg / s', 'sigma_rise': '3.58 d', 'tau_decline': '26 d', 'temperature': '1.22e+04 K'}
+SED parameters: {'amplitude': '1.2e+43 erg / s', 'sigma_rise': '16.8 d', 'tau_decline': '33.6 d', 'temperature': '1.82e+04 K'}
 </pre></div>
 </div>
 </section>
@@ -624,15 +624,15 @@ own docstring for exactly when that placeholder default is (and isn’t) safe.</
 </span><span class="p">)</span><span class="w">
 </span><span class="nb">print</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">band</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">snr</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">ab_mag</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">[</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span> t   band         snr               ab_mag
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span> t   band         snr                ab_mag
  d
----- ---- ------------------- ------------------
- 0.0  FUV 0.12777293884208749  28.55818299831677
- 0.0  NUV   0.236334140816305 28.575101852271324
- 7.0  FUV   3.409821732759805 24.743187374015932
- 7.0  NUV   14.31037044738681 23.216402575634717
-14.0  FUV   45.03621733645027  20.24936120509542
-14.0  NUV     130.79888738454 18.707112314181767
+---- ---- -------------------- ------------------
+ 0.0  FUV  0.13119952630297602  28.52920612584359
+ 0.0  NUV  0.23870518463335083  28.56410664174313
+ 7.0  FUV -0.09419558182510325                nan
+ 7.0  NUV  -0.8818992494882213                nan
+14.0  FUV   0.8614324604056147 26.470672895561606
+14.0  NUV   0.5174222976581752 27.677354796301074
 </pre></div>
 </div>
 </section>
@@ -712,11 +712,11 @@ light actually depends on both.</p>
 </span>    <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64"><span class="n">with_zodi</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.nanmedian.html#numpy.nanmedian" title="numpy.nanmedian"><span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span></a><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot_with_zodi</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">snr</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">[</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">phot_with_zodi</span></a><span class="p">[</span><span class="s2">&quot;</span><span class="s2">band</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">==</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="p">]</span><span class="p">)</span><span class="w">
 </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">band</span></a><span class="si">}</span><span class="s2">: median SNR </span><span class="si">{</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64"><span class="n">galactic_only</span></a><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> (Galactic only) vs </span><span class="si">{</span><a class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64"><span class="n">with_zodi</span></a><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> (+ zodiacal)</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>FUV: median SNR 8.8 (Galactic only) vs 8.8 (+ zodiacal)
-NUV: median SNR 31.6 (Galactic only) vs 31.1 (+ zodiacal)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>FUV: median SNR 38.6 (Galactic only) vs 38.6 (+ zodiacal)
+NUV: median SNR 74.6 (Galactic only) vs 74.2 (+ zodiacal)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.658 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.859 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-too-simulations-plot-too-followup-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/9d8765fd946b508ccc83918bdc029bbe/plot_too_followup.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_too_followup.ipynb</span></code></a></p>

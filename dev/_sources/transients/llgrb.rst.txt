@@ -36,7 +36,7 @@ Quick Facts
        :ref:`user_guide_transients_rate_uncertainty` for the general mechanism). It is a local measurement that
        constrains no redshift evolution, so it is taken as constant in :math:`z`.
    * - Redshift limit
-     - :math:`z = 2.41`
+     - :math:`z = 2.45`
      - --
      - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's priors are
        brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up. It is set by the bright
@@ -287,7 +287,7 @@ bands, over the whole rest-frame light curve. The left panel shows each draw's p
 magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
 where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
 beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
-magnitude limit. The redshift limit adopted above, :math:`z=2.41`, is its value at :math:`m=24.5`,
+magnitude limit. The redshift limit adopted above, :math:`z=2.45`, is its value at :math:`m=24.5`,
 rounded up and derived on a finer grid than this plot's.
 
 The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
@@ -320,7 +320,7 @@ crosses the limit near :math:`z\sim1`, and only the brightest 1% reach the adopt
 
 The anticipated rate of llGRBs detectable by UVEX at these limits is as follows, assuming that any event whose
 brightest epoch in the first 30 observer-frame days is above the :math:`m<24.5` limit is detectable, and that the
-population is isotropic and homogeneous in comoving volume out to :math:`z=2.41`:
+population is isotropic and homogeneous in comoving volume out to :math:`z=2.45`:
 
 .. plot::
    :include-source: false
@@ -397,7 +397,7 @@ population is isotropic and homogeneous in comoving volume out to :math:`z=2.41`
 
 These rates are upper bounds on what UVEX will see. They count every event that is above the limit at its
 brightest epoch, with no survey cadence, footprint or exposure, so they say how many llGRBs are bright enough, not
-how many are observed. They also extrapolate the local rate of :footcite:t:`soderberg2006` to :math:`z=2.41`: most
+how many are observed. They also extrapolate the local rate of :footcite:t:`soderberg2006` to :math:`z=2.45`: most
 of the volume, and so most of the events, lie at :math:`z\gtrsim0.5`, far beyond the :math:`d<200` Mpc that
 rate was measured in. The systematic band is the 90% range of that local rate only.
 
