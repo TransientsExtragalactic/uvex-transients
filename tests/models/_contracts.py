@@ -326,6 +326,27 @@ class ModelContract:
             assert np.shape(arr) == (size,)
             assert np.all(np.isfinite(np.asarray(arr, dtype=np.float64)))
 
+    def test_sample_parameters_integer_seed_matches_generator(self):
+        instance = self.model_class()
+        from_int = instance.sample_parameters(size=50, rng=self.seed)
+        from_generator = instance.sample_parameters(size=50, rng=np.random.default_rng(self.seed))
+        for name in from_int:
+            np.testing.assert_array_equal(
+                getattr(from_int[name], "value", from_int[name]),
+                getattr(from_generator[name], "value", from_generator[name]),
+            )
+
+    def test_sample_parameters_integer_seed_draws_are_independent(self):
+        instance = self.model_class()
+        samples = instance.sample_parameters(size=500, rng=self.seed)
+        values = [np.asarray(getattr(v, "value", v), dtype=np.float64) for v in samples.values()]
+        values = [v for v in values if np.ptp(v) > 0]
+        if len(values) < 2:
+            pytest.skip("fewer than two sampled parameters")
+        correlation = np.corrcoef(np.vstack(values))
+        np.fill_diagonal(correlation, 0.0)
+        assert np.max(np.abs(correlation)) < 0.5
+
 
 # =========================================================================== #
 # Lightcurve Contract                                                        #

@@ -522,6 +522,9 @@ class _ModelBase(Mapping[str, Parameter], ABC):
         if parameters is None:
             parameters = list(self._parameters.keys())
 
+        # Resolve once so an integer seed advances a single stream across parameters instead of
+        # restarting the same seed for each one (which would make same-family priors perfectly correlated).
+        rng = get_rng(rng)
         return {
             parameter_name: parameter.sample(size=size, rng=rng)
             for parameter_name, parameter in self._parameters.items()
