@@ -33,14 +33,14 @@ class LowLuminosityGRB(ExtragalacticTransient):
 
     Modeled with `LLGRBSED` (an Arnett-powered Ic-BL supernova plus an early thermal excess with a
     power-law cooling photosphere), a constant volumetric rate of
-    :math:`230\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (Soderberg et al. 2006) out to :math:`z=2.41`, and a
+    :math:`230\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}` (Soderberg et al. 2006) out to :math:`z=2.45`, and a
     30-day duration window.
 
     The rate is the local rate of sub-energetic GRBs from two detected events, with a 90% confidence
     range of :math:`40`-:math:`720\ \mathrm{Gpc}^{-3}\,\mathrm{yr}^{-1}`. It is a local measurement, and
     is taken to be constant with redshift because nothing constrains its evolution.
 
-    The :math:`z=2.41` redshift limit is the redshift beyond which, with 95% confidence, at most 1% of
+    The :math:`z=2.45` redshift limit is the redshift beyond which, with 95% confidence, at most 1% of
     llGRBs drawn from the SED's priors are brighter than :math:`m=24.5` AB in either UVEX band (see
     `ExtragalacticTransient.get_detection_horizon`), rounded up. It is set by the bright tail of the priors on the early
     excess, which are broad and calibrated to a single event, and the typical draw is detectable only to
@@ -57,7 +57,7 @@ class LowLuminosityGRB(ExtragalacticTransient):
     DEFAULT_DURATION = 30 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 2.41
+    DEFAULT_Z_LIM = 2.45
     RATE_CI = _LLGRB_RATE_CI
 
     @property

@@ -39,7 +39,7 @@ Quick Facts
        mechanism). Taken as constant in :math:`z`, since LFBOTs are too rare for their redshift
        evolution to yet be meaningfully constrained.
    * - Redshift limit
-     - :math:`z = 4.3`
+     - :math:`z = 3.73`
      - --
      - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
        priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up.
@@ -221,7 +221,7 @@ bands, over the whole rest-frame light curve. The left panel shows each draw's p
 magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
 where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
 beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
-magnitude limit. The redshift limit adopted above, :math:`z=4.3`, is its value at :math:`m=24.5`,
+magnitude limit. The redshift limit adopted above, :math:`z=3.73`, is its value at :math:`m=24.5`,
 rounded up and derived on a finer grid than this plot's.
 
 The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
@@ -252,7 +252,7 @@ detected events, and it does not include Milky Way extinction or sky position.
 
 The anticipated rate of LFBOTs detectable by UVEX at these limits is as follows assuming that
 any event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and homogeneous
-in comoving volume out to :math:`z=4.3`:
+in comoving volume out to :math:`z=3.73`:
 
 .. plot::
    :include-source: false

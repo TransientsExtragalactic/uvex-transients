@@ -48,7 +48,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
              :attr:`~uvex_transients.transients.supernovae.TypeIIPSNe.RATE_CI`; see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.50`
+           - :math:`z = 0.51`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -343,7 +343,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.95`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.51`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -471,7 +471,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
              :attr:`~uvex_transients.transients.supernovae.TypeIIPExcessSNe.RATE_CI` carries
              exactly the same relative uncertainty as ordinary Type IIP's.
          * - Redshift limit
-           - :math:`z = 0.62`
+           - :math:`z = 0.53`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -726,7 +726,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=1.1`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.53`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -876,7 +876,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
              :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
              same underlying Type IIb population, just with different SED models.
          * - Redshift limit
-           - :math:`z = 1.8`
+           - :math:`z = 0.99`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -1125,7 +1125,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=1.8`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.99`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's. Epochs earlier than 0.1 d are excluded from the light curve, because the
       shock cooling luminosity of this SED grows without bound toward :math:`t\to0`.
 
