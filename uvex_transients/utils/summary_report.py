@@ -130,6 +130,7 @@ STANDARD_POPULATIONS = {
     "iib_sne": PopulationSpec("Type IIb", max_gap=7.0),
     "slsne": PopulationSpec("SLSN-I", max_gap=60.0),
     "tde": PopulationSpec("TDE", max_gap=30.0),
+    "llgrb": PopulationSpec("llGRB", max_gap=1.0),
     "lfbot": PopulationSpec("LFBOT", max_gap=5.0),
     "kilonova": PopulationSpec("Kilonova", max_gap=3.0),
 }
@@ -144,7 +145,7 @@ POPULATION_GROUPS = {
     "Type I SNe": ["ia_sne", "ib_sne", "ic_sne", "icbl_sne"],
     "Type II SNe": ["iip_sne", "iip_excess_sne", "iib_sne"],
     "SLSNe": ["slsne"],
-    "Exotic transients": ["tde", "lfbot", "kilonova"],
+    "Exotic transients": ["tde", "llgrb", "lfbot", "kilonova"],
 }
 """dict: `STANDARD_POPULATIONS` keys collected into the few groups the figures are split into, one panel each."""
 

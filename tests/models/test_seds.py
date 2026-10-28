@@ -28,6 +28,7 @@ from uvex_transients.models.shock_cooling import (
 )
 from uvex_transients.models.shock_cooling.morag import _UncutMoragShockCoolingSED
 from uvex_transients.models.supernovae import (
+    LLGRBSED,
     ArnettMagnetarSpindownSED,
     TypeIaSED,
     TypeIbSED,
@@ -117,6 +118,10 @@ class TestTypeIcSED(SpectralModelContract):
 
 class TestTypeIcBLSED(SpectralModelContract):
     model_class = TypeIcBLSED
+
+
+class TestLLGRBSED(SpectralModelContract):
+    model_class = LLGRBSED
 
 
 class TestVanVelzenTDESED(SpectralModelContract):
