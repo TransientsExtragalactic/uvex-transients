@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.supernovae.llgrb &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/supernovae/llgrb';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.supernovae.llgrb</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.supernovae.llgrb</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""SED model for low-luminosity GRBs (llGRBs) and their broad-lined supernovae."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">SECONDS_PER_DAY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.arnett</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArnettDecaySED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">NormalPrior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.lightcurves.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BazinLightcurve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.spectra.thermal</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlackbodySpectrum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae.IcBL</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeIcBLSED</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"LLGRBSED"</span><span class="p">]</span>
+
+<span class="c1">#: Earliest epoch, in days, at which the early excess's power-law temperature is evaluated. The power law</span>
+<span class="c1">#: diverges as :math:`t\to0`. Holding it at its value here, about 15 minutes after the burst and well before the</span>
+<span class="c1">#: first UVOT epoch at 0.065 d, keeps the blackbody shape finite at :math:`t=0`.</span>
+<span class="n">_T_BUMP_MIN_DAYS</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+
+<span class="c1"># ======================================== #</span>
+<span class="c1"># Model                                    #</span>
+<span class="c1"># ======================================== #</span>
+<div class="viewcode-block" id="LLGRBSED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.llgrb.LLGRBSED.html#uvex_transients.models.supernovae.llgrb.LLGRBSED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LLGRBSED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Low-luminosity GRB SED: an early thermal excess plus a radioactively powered Ic-BL supernova.</span>
+
+<span class="sd">    The emission is the sum of two blackbody components, each a unit-integral blackbody shape</span>
+<span class="sd">    (:class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`) scaled by its own bolometric light curve,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\nu(\nu, t) = L_\mathrm{SN}(t)\,S_\mathrm{BB}\!\left[\nu, T_\mathrm{SN}(t)\right]</span>
+<span class="sd">        + L_\mathrm{bump}(t)\,S_\mathrm{BB}\!\left[\nu, T_\mathrm{bump}(t)\right],</span>
+
+<span class="sd">    so that :math:`L_\mathrm{bol}(t) = L_\mathrm{SN}(t) + L_\mathrm{bump}(t)` exactly.</span>
+
+<span class="sd">    .. rubric:: Supernova</span>
+
+<span class="sd">    :math:`L_\mathrm{SN}` is the Arnett diffusion light curve of</span>
+<span class="sd">    :class:`~uvex_transients.models.arnett.ArnettDecaySED`, powered by :math:`^{56}\mathrm{Ni}` decay, with its floored</span>
+<span class="sd">    photospheric temperature :math:`T_\mathrm{SN}(t)` and a plain blackbody (no line blanketing). It produces the late</span>
+<span class="sd">    bump, which peaks at roughly :math:`10` d.</span>
+
+<span class="sd">    .. rubric:: Early excess</span>
+
+<span class="sd">    :math:`L_\mathrm{bump}` is a :class:`~uvex_transients.models.lightcurves.generic.BazinLightcurve`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\mathrm{bump}(t) = A\,\frac{e^{-(t-t_0)/\tau_\mathrm{fall}}}{1 + e^{-(t-t_0)/\tau_\mathrm{rise}}},</span>
+
+<span class="sd">    with a power-law photospheric temperature,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        T_\mathrm{bump}(t) = T_1\left(\frac{t}{1\,\mathrm{d}}\right)^{-\alpha_T},</span>
+
+<span class="sd">    which is held at its :math:`0.01` d value at earlier times and has no floor. The excess is attributed to shock</span>
+<span class="sd">    breakout and cooling of material around the progenitor.</span>
+
+<span class="sd">    The Bazin maximum is at :math:`t_0 - \tau_\mathrm{rise}\ln[\tau_\mathrm{rise}/(\tau_\mathrm{fall} -</span>
+<span class="sd">    \tau_\mathrm{rise})]`, which is before the burst for the default priors. The excess is then already declining at</span>
+<span class="sd">    :math:`t=0`, where :math:`L_\mathrm{bump}\sim8\times10^{43}` erg/s, and the rise of the UV light curves over the</span>
+<span class="sd">    first :math:`\sim0.5` d comes from the photosphere cooling, not from the bolometric luminosity.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The first six parameters are those of :class:`~uvex_transients.models.arnett.ArnettDecaySED`, with the priors of</span>
+<span class="sd">    :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`. The last six describe the early excess.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``M_Ni``</span>
+<span class="sd">         - :math:`M_\mathrm{Ni}`</span>
+<span class="sd">         - Nickel-56 mass synthesized in the explosion.</span>
+<span class="sd">       * - ``M_ej``</span>
+<span class="sd">         - :math:`M_\mathrm{ej}`</span>
+<span class="sd">         - Ejecta mass.</span>
+<span class="sd">       * - ``v_ej``</span>
+<span class="sd">         - :math:`v_\mathrm{ej}`</span>
+<span class="sd">         - Ejecta velocity, taken to be constant and equal to the photospheric velocity.</span>
+<span class="sd">       * - ``kappa``</span>
+<span class="sd">         - :math:`\kappa`</span>
+<span class="sd">         - Grey optical opacity.</span>
+<span class="sd">       * - ``kappa_gamma``</span>
+<span class="sd">         - :math:`\kappa_\gamma`</span>
+<span class="sd">         - Opacity to high-energy photons.</span>
+<span class="sd">       * - ``T_floor``</span>
+<span class="sd">         - :math:`T_\mathrm{floor}`</span>
+<span class="sd">         - Minimum photospheric temperature of the supernova.</span>
+<span class="sd">       * - ``A_bump``</span>
+<span class="sd">         - :math:`A`</span>
+<span class="sd">         - Bazin normalization of the early excess.</span>
+<span class="sd">       * - ``t0_bump``</span>
+<span class="sd">         - :math:`t_0`</span>
+<span class="sd">         - Bazin transition time of the early excess.</span>
+<span class="sd">       * - ``tau_rise``</span>
+<span class="sd">         - :math:`\tau_\mathrm{rise}`</span>
+<span class="sd">         - Bazin rise timescale of the early excess.</span>
+<span class="sd">       * - ``tau_fall``</span>
+<span class="sd">         - :math:`\tau_\mathrm{fall}`</span>
+<span class="sd">         - Bazin decline timescale of the early excess.</span>
+<span class="sd">       * - ``T_bump``</span>
+<span class="sd">         - :math:`T_1`</span>
+<span class="sd">         - Photospheric temperature of the early excess at 1 d.</span>
+<span class="sd">       * - ``alpha_T``</span>
+<span class="sd">         - :math:`\alpha_T`</span>
+<span class="sd">         - Cooling power-law index of the early excess.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    uvex_transients.models.arnett.ArnettDecaySED : The supernova component on its own.</span>
+<span class="sd">    uvex_transients.models.supernovae.IcBL.TypeIcBLSED : The Ic-BL population this model's supernova priors come from.</span>
+<span class="sd">    uvex_transients.models.lightcurves.generic.BazinLightcurve : The early-excess light curve.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from astropy import units as u</span>
+<span class="sd">    &gt;&gt;&gt; from uvex_transients.models import LLGRBSED</span>
+<span class="sd">    &gt;&gt;&gt; sed = LLGRBSED()</span>
+<span class="sd">    &gt;&gt;&gt; params = sed.sample_parameters(</span>
+<span class="sd">    ...     size=1, rng=np.random.default_rng(0)</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; t = np.array([0.1, 1.0, 10.0]) * u.day</span>
+<span class="sd">    &gt;&gt;&gt; sed.eval_bolometric(t, **params)  # doctest: +SKIP</span>
+<span class="sd">    """</span>
+
+    <span class="n">_ARNETT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""tuple of str: The parameters handed to the Arnett light curve."""</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">TypeIcBLSED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">},</span>
+        <span class="s2">"A_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">44.19</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Bazin normalization of the early excess."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"A"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t0_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.25</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Bazin transition time of the early excess."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_rise"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.34</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Bazin rise timescale of the early excess."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{rise}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_fall"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">0.16</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Bazin decline timescale of the early excess."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_\mathrm</span><span class="si">{fall}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"T_bump"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">4.21</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric temperature of the early excess at 1 d."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_1"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"alpha_T"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Cooling power-law index of the early excess."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\alpha_T"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Components: L(t) and T(t)               #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bump_temperature_cgs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">T_bump</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="n">alpha_T</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_ignored</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T_\mathrm{bump}(t) = T_1\,(t / 1\,\mathrm{d})^{-\alpha_T}`, held at its :math:`0.01` d value earlier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        T_bump, alpha_T : float or numpy.ndarray</span>
+<span class="sd">            This model's parameter values, in cgs units; see the class docstring.</span>
+<span class="sd">        **_ignored</span>
+<span class="sd">            Any other model parameter values, ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`T_\mathrm{bump}(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">t_days</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">_T_BUMP_MIN_DAYS</span> <span class="o">*</span> <span class="n">SECONDS_PER_DAY</span><span class="p">)</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
+        <span class="k">return</span> <span class="n">T_bump</span> <span class="o">*</span> <span class="n">t_days</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">alpha_T</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_components_cgs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Evaluate the bolometric luminosity and temperature of each component, with the Arnett integral done once.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of numpy.ndarray</span>
+<span class="sd">            :math:`\ln L_\mathrm{SN}` in erg/s, :math:`T_\mathrm{SN}` in K, :math:`\ln L_\mathrm{bump}` in erg/s and</span>
+<span class="sd">            :math:`T_\mathrm{bump}` in K, in that order.</span>
+<span class="sd">        """</span>
+        <span class="n">L_sn</span><span class="p">,</span> <span class="n">T_sn</span> <span class="o">=</span> <span class="n">ArnettDecaySED</span><span class="o">.</span><span class="n">_luminosity_and_temperature_cgs</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_ARNETT_PARAMETERS</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">ln_L_bump</span> <span class="o">=</span> <span class="n">BazinLightcurve</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">amplitude</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"A_bump"</span><span class="p">],</span>
+            <span class="n">t0</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"t0_bump"</span><span class="p">],</span>
+            <span class="n">rise</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"tau_rise"</span><span class="p">],</span>
+            <span class="n">fall</span><span class="o">=</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"tau_fall"</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">ln_L_sn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">L_sn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">T_sn</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_bump_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LLGRBSED.temperature">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.llgrb.LLGRBSED.temperature.html#uvex_transients.models.supernovae.llgrb.LLGRBSED.temperature">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return :math:`T_\mathrm{SN}(t)` and :math:`T_\mathrm{bump}(t)`, the temperature of each component.</span>
+
+<span class="sd">        The two blackbodies are summed, so there is no single photospheric temperature.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of ~astropy.units.Quantity</span>
+<span class="sd">            :math:`T_\mathrm{SN}(t)` and :math:`T_\mathrm{bump}(t)`, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">cgs_parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">T_sn</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">T_bump</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components_cgs</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">T_sn</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">T_bump</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Bolometric Luminosity: L_bol(t)         #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\mathrm{bol}(t) = \ln\left[L_\mathrm{SN}(t) + L_\mathrm{bump}(t)\right]`, exactly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
+        <span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">)</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Spectral Luminosity: L_nu(nu, t)        #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\nu(\nu, t)`, the sum of the two blackbody components.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
+        <span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">T_sn</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">,</span> <span class="n">T_bump</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="n">ln_L_sn</span> <span class="o">+</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">T_sn</span><span class="p">),</span>
+            <span class="n">ln_L_bump</span> <span class="o">+</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">T_bump</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln S(\nu, t) = \ln L_\nu - \ln L_\mathrm{bol}`, with the Arnett integral evaluated once.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the normalized spectral shape, in 1/Hz.</span>
+<span class="sd">        """</span>
+        <span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">T_sn</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">,</span> <span class="n">T_bump</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_components_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">ln_L_nu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+            <span class="n">ln_L_sn</span> <span class="o">+</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">T_sn</span><span class="p">),</span>
+            <span class="n">ln_L_bump</span> <span class="o">+</span> <span class="n">BlackbodySpectrum</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="n">T_bump</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ln_L_nu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">ln_L_sn</span><span class="p">,</span> <span class="n">ln_L_bump</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

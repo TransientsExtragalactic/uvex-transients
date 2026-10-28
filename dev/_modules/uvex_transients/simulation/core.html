@@ -905,6 +905,13 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">array</span><span class="p">),</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_event_count</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check a per-type event count for `SurveySimulator.sample_N_events` and return it as an `int`."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Event counts must be positive integers, got </span><span class="si">{</span><span class="n">count</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+
+
 <span class="c1"># ===================================== #</span>
 <span class="c1"># Survey Simulation Base Class          #</span>
 <span class="c1"># ===================================== #</span>
@@ -1057,7 +1064,10 @@
 <span class="sd">        between ``t_k`` and ``t_{k+1} + transient.duration_limit``, i.e. only where an event</span>
 <span class="sd">        exploding in this bin could plausibly still be caught by an observation before it fades</span>
 <span class="sd">        below relevance. Explosion times themselves are drawn only within ``[t_k, t_{k+1})``, so</span>
-<span class="sd">        no event is double-counted across adjacent bins.</span>
+<span class="sd">        no event is double-counted across adjacent bins. The observed pixels are dilated by their</span>
+<span class="sd">        neighbours (see `SurveySchedule.get_observed_healpix_ids`), so the sampled region contains</span>
+<span class="sd">        every position the schedule can later match to an observation, including those whose own pixel</span>
+<span class="sd">        center lies just outside a footprint. The extra events at the edge are simply never detected.</span>
 
 <span class="sd">        Two columns are computed once here, at generation time, so nothing downstream needs to</span>
 <span class="sd">        re-derive them: ``luminosity_distance`` (interpolated per transient type off its own</span>
@@ -1173,6 +1183,7 @@
                         <span class="n">t_end</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
                         <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
                         <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                        <span class="n">dilate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="c1"># Determine the tiled area for this timestep and provide the debug info to console.</span>
@@ -1248,6 +1259,243 @@
             <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">,</span>
             <span class="n">sampling_factor</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_factor</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">sampling_factor</span><span class="p">,</span>
+            <span class="n">pre_cut_counts</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySimulator.sample_N_events">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.sample_N_events.html#uvex_transients.simulation.core.SurveySimulator.sample_N_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_N_events</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">time_bins</span><span class="p">:</span> <span class="n">Time</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Sample a fixed number of events of every registered transient type over a time grid.</span>
+
+<span class="sd">        The fixed-count counterpart of :meth:`generate_events`, with the same (dilated) footprint.</span>
+<span class="sd">        The count is divided among the time bins in proportion to each bin's effective exposure</span>
+<span class="sd">        :math:`\mathcal E_k = F(t_k, t_{k+1}+\tau)\,(t_{k+1}-t_k)` (see `compute_effective_exposure`),</span>
+<span class="sd">        by a single multinomial draw per type:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            (N_1, \dots, N_K) \sim \mathrm{Multinomial}\left(N, \mathcal E_k / \sum_j \mathcal E_j\right).</span>
+
+<span class="sd">        Because the rate is constant in time, :math:`\mathcal E_k` is proportional to the expected</span>
+<span class="sd">        number of events in bin :math:`k`, so the events are independent draws from the</span>
+<span class="sd">        footprint-weighted population and every event of a type stands for the same</span>
+<span class="sd">        ``expected_events[type] / count[type]`` real events.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        count : int or Mapping of str to int</span>
+<span class="sd">            The number of events to sample. Either a single count applied to every registered</span>
+<span class="sd">            transient type, or a ``{type key: count}`` mapping naming every registered type. Each</span>
+<span class="sd">            count must be a positive integer.</span>
+<span class="sd">        time_bins : ~astropy.time.Time or int</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+<span class="sd">        nside : int, optional</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+<span class="sd">        order : str, optional</span>
+<span class="sd">            Same semantics as `generate_events`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EventCatalog</span>
+<span class="sd">            One row per sampled event, across every registered transient type and time bin, with</span>
+<span class="sd">            the same columns as `generate_events`. Its ``pre_cut_counts`` are `count` and its</span>
+<span class="sd">            ``sampling_factor`` is `None`, since the count was fixed instead of scaled.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `count` is a mapping that names an unknown transient type or leaves a registered one</span>
+<span class="sd">            out, any count is not a positive integer, or a transient type has no survey exposure</span>
+<span class="sd">            over `time_bins` to place its events in.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Validate the inputs and ensure that there are actually registered transients to model.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No transient types registered in `transient_collection`; nothing to sample."</span><span class="p">)</span>
+
+        <span class="n">sorted_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"`count` names unknown transient key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">count</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`count` must name every registered transient type; missing </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">_validate_event_count</span><span class="p">(</span><span class="n">count</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">_validate_event_count</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">}</span>
+
+        <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+
+        <span class="c1"># Set up the time bins so that we can perform the windowing analysis properly.</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_time_bins</span><span class="p">(</span><span class="n">time_bins</span><span class="p">)</span>
+        <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">bin_widths</span> <span class="o">=</span> <span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+        <span class="c1"># Set up the RNG. The per-type and per-bin streams are spawned exactly as in `generate_events`.</span>
+        <span class="c1"># The allocation of each type's count among its bins needs streams of its own, spawned after</span>
+        <span class="c1"># them so that they cannot collide with any of the sampling streams.</span>
+        <span class="n">root_seed</span> <span class="o">=</span> <span class="n">get_seed_sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">)</span>
+        <span class="n">type_seeds</span> <span class="o">=</span> <span class="n">root_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">))</span>
+        <span class="n">allocation_seeds</span> <span class="o">=</span> <span class="n">root_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">))</span>
+
+        <span class="c1"># --- Begin Allocation Section --- #</span>
+        <span class="c1"># The count of each type is split among its bins in proportion to the effective exposure of each,</span>
+        <span class="c1"># so this needs the visited solid angle of every bin before any event is drawn. Only the pixel</span>
+        <span class="c1"># counts are kept here; the pixels themselves are queried again below, which is a lookup in the</span>
+        <span class="c1"># schedule's cached coverage index rather than a second rasterization.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Allocating </span><span class="si">%s</span><span class="s2"> events among </span><span class="si">%d</span><span class="s2"> time bin(s) (nside=</span><span class="si">%d</span><span class="s2">, order=</span><span class="si">%r</span><span class="s2">)."</span><span class="p">,</span>
+            <span class="n">counts</span><span class="p">,</span>
+            <span class="n">n_bins</span><span class="p">,</span>
+            <span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">allocations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">allocation_seed</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">,</span> <span class="n">allocation_seeds</span><span class="p">):</span>
+            <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="n">n_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="nb">len</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_survey_schedule</span><span class="o">.</span><span class="n">get_observed_healpix_ids</span><span class="p">(</span>
+                            <span class="n">edges</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                            <span class="n">edges</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
+                            <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+                            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                            <span class="n">dilate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Only the ratios of the exposures matter, so the pixel area and the rate cancel.</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">n_pixels</span> <span class="o">*</span> <span class="n">bin_widths</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exposure</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Transient type </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no survey exposure over `time_bins`, "</span>
+                    <span class="s2">"so there is nowhere to place its events."</span>
+                <span class="p">)</span>
+            <span class="n">allocations</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">allocation_seed</span><span class="p">)</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span>
+                <span class="n">counts</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">exposure</span> <span class="o">/</span> <span class="n">exposure</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="c1"># --- Begin Iteration Section --- #</span>
+        <span class="c1"># In this code-section, we iterate through each window (t_i, t_i+1 + duration) and through each</span>
+        <span class="c1"># of the transient types to construct the sample of events, drawing the number allocated to</span>
+        <span class="c1"># each window above instead of a Poisson count.</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Sampling events for </span><span class="si">%d</span><span class="s2"> type(s) </span><span class="si">%s</span><span class="s2"> over </span><span class="si">%d</span><span class="s2"> time bin(s) (nside=</span><span class="si">%d</span><span class="s2">, order=</span><span class="si">%r</span><span class="s2">)."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">),</span>
+            <span class="n">sorted_names</span><span class="p">,</span>
+            <span class="n">n_bins</span><span class="p">,</span>
+            <span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">with</span> <span class="p">(</span>
+            <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Sampling events"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+            <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">type_seed</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sorted_names</span><span class="p">,</span> <span class="n">type_seeds</span><span class="p">):</span>
+                <span class="n">transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="n">bin_seeds</span> <span class="o">=</span> <span class="n">type_seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">):</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">bin</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bins</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+                    <span class="c1"># A bin with nothing allocated to it (including any with no exposure) has no events to draw.</span>
+                    <span class="n">n_bin_events</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">allocations</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">k</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">n_bin_events</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+                    <span class="c1"># Determine which set of the healpix IDs intersect at all with the</span>
+                    <span class="c1"># FOV of the survey.</span>
+                    <span class="n">pixel_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_schedule</span><span class="o">.</span><span class="n">get_observed_healpix_ids</span><span class="p">(</span>
+                        <span class="n">t_start</span><span class="p">,</span>
+                        <span class="n">t_end</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
+                        <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+                        <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                        <span class="n">dilate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                        <span class="s2">"Transient Type: </span><span class="si">%s</span><span class="s2">, Bin: </span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2">, Time Window: </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">, "</span>
+                        <span class="s2">"N Pixels Visited: </span><span class="si">%d</span><span class="s2">, N Events Allocated: </span><span class="si">%d</span><span class="s2">"</span><span class="p">,</span>
+                        <span class="n">name</span><span class="p">,</span>
+                        <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">n_bins</span><span class="p">,</span>
+                        <span class="n">t_start</span><span class="o">.</span><span class="n">iso</span><span class="p">,</span>
+                        <span class="n">t_end</span><span class="o">.</span><span class="n">iso</span><span class="p">,</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">pixel_ids</span><span class="p">),</span>
+                        <span class="n">n_bin_events</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># Extract a random sample of transients which occur within the</span>
+                    <span class="c1"># relevant footprint.</span>
+                    <span class="n">table</span> <span class="o">=</span> <span class="n">transient</span><span class="o">.</span><span class="n">sample_events_on_healpix_grid</span><span class="p">(</span>
+                        <span class="n">nside</span><span class="p">,</span>
+                        <span class="n">t_start</span><span class="o">=</span><span class="n">t_start</span><span class="p">,</span>
+                        <span class="n">t_end</span><span class="o">=</span><span class="n">t_end</span><span class="p">,</span>
+                        <span class="n">pixel_ids</span><span class="o">=</span><span class="n">pixel_ids</span><span class="p">,</span>
+                        <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="n">bin_seeds</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                        <span class="n">n_events</span><span class="o">=</span><span class="n">n_bin_events</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># Interpolate this transient type's own cached D_L(z) grid at each sampled</span>
+                    <span class="c1"># event's redshift, right here, rather than a fresh `cosmology.luminosity_distance`</span>
+                    <span class="c1"># call per event later; see `ExtragalacticTransient.luminosity_distance_grid`.</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s2">"luminosity_distance"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                            <span class="n">table</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">],</span>
+                            <span class="n">transient</span><span class="o">.</span><span class="n">redshift_grid</span><span class="p">,</span>
+                            <span class="n">transient</span><span class="o">.</span><span class="n">luminosity_distance_grid</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="p">),</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Mpc</span>
+                    <span class="p">)</span>
+
+                    <span class="n">table</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s2">"time_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+                    <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">vstack</span><span class="p">(</span><span class="n">tables</span><span class="p">,</span> <span class="n">metadata_conflicts</span><span class="o">=</span><span class="s2">"silent"</span><span class="p">)</span>
+        <span class="n">combined</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">"t_explosion"</span><span class="p">)</span>
+        <span class="n">combined</span><span class="p">[</span><span class="s2">"event_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="c1"># One vectorized Milky Way dust-map query over every sampled position at once, rather</span>
+        <span class="c1"># than per-event later (see `EventCatalog.ebv`).</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Querying the dust map for </span><span class="si">%d</span><span class="s2"> sampled positions."</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">))</span>
+        <span class="n">combined</span><span class="p">[</span><span class="s2">"ebv"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dust_map</span><span class="p">()</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">combined</span><span class="p">[</span><span class="s2">"coord"</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="n">generated_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">combined</span><span class="p">[</span><span class="s2">"transient_type"</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Sampled </span><span class="si">%d</span><span class="s2"> events: </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">),</span>
+            <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">name</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">EventCatalog</span><span class="p">(</span>
+            <span class="n">table</span><span class="o">=</span><span class="n">combined</span><span class="p">,</span>
+            <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+            <span class="n">time_bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_simulation_seed</span><span class="p">,</span>
             <span class="n">pre_cut_counts</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">generated_types</span> <span class="o">==</span> <span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sorted_names</span><span class="p">},</span>
         <span class="p">)</span></div>
 
@@ -1356,6 +1604,7 @@
                         <span class="n">t_end</span> <span class="o">+</span> <span class="n">transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="p">,</span>
                         <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
                         <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+                        <span class="n">dilate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="p">)</span>
 
                     <span class="n">transient_type</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -3995,7 +4244,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
   </p>
 </div>
       

@@ -563,7 +563,7 @@ falls back to the package’s own default schedule if omitted entirely.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">mission:</span></code></p></td>
 <td><p>all commands</p></td>
-<td><p>Which <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (bandpasses, detector, background) to evaluate
+<td><p>Which <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (bandpasses, detector, background) to evaluate
 against. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">&quot;uvex&quot;</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">transients:</span></code></p></td>
@@ -663,8 +663,8 @@ with <code class="docutils literal notranslate"><span class="pre">url</span></co
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">mission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvex</span>
 </pre></div>
 </div>
-<p>A bare name, resolved against every <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> instance in
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/guide/missions.html#module-m4opt.missions" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code></a> (<code class="docutils literal notranslate"><span class="pre">rubin</span></code>, <code class="docutils literal notranslate"><span class="pre">ultrasat</span></code>, <code class="docutils literal notranslate"><span class="pre">uvex</span></code>, <code class="docutils literal notranslate"><span class="pre">ztf</span></code> as of this writing); an
+<p>A bare name, resolved against every <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> instance in
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/guide/missions.html#module-m4opt.missions" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code></a> (<code class="docutils literal notranslate"><span class="pre">rubin</span></code>, <code class="docutils literal notranslate"><span class="pre">ultrasat</span></code>, <code class="docutils literal notranslate"><span class="pre">uvex</span></code>, <code class="docutils literal notranslate"><span class="pre">ztf</span></code> as of this writing); an
 unrecognized name raises, listing the real ones.</p>
 <div class="pst-scrollable-table-container"><table class="table" id="id3">
 <caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">mission:</span></code> parameter</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
@@ -682,7 +682,7 @@ unrecognized name raises, listing the real ones.</p>
 <tbody>
 <tr class="row-even"><td><p>(bare value)</p></td>
 <td><p>str</p></td>
-<td><p>A name from <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/guide/missions.html#module-m4opt.missions" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code></a>. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">&quot;uvex&quot;</span></code>.</p></td>
+<td><p>A name from <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/guide/missions.html#module-m4opt.missions" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">m4opt.missions</span></code></a>. Optional; defaults to <code class="docutils literal notranslate"><span class="pre">&quot;uvex&quot;</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -707,7 +707,7 @@ overrides you want on top of its defaults:</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">class:</span></code> must name a registered <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.TransientBase.html#uvex_transients.transients.base.TransientBase" title="uvex_transients.transients.base.TransientBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientBase</span></code></a>
 subclass: every built-in type (<code class="docutils literal notranslate"><span class="pre">TidalDisruptionEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">Kilonova</span></code>,
-<code class="docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">LuminousFastBlueOpticalTransient</span></code>, <code class="docutils literal notranslate"><span class="pre">LowLuminosityGRB</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIbSNe</span></code>, <code class="docutils literal notranslate"><span class="pre">TypeIcSNe</span></code>) is available by class name; an unrecognized one
 raises, listing what <em>is</em> registered.</p>
 <p>Everything under <code class="docutils literal notranslate"><span class="pre">parameters:</span></code> is applied the same way
@@ -1051,7 +1051,7 @@ evaluation. <code class="docutils literal notranslate"><span class="pre">time_to
 own qualifying-epoch definition (see
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_baseline.html#uvex_transients.simulation.core.SurveySimulator.filter_by_baseline" title="uvex_transients.simulation.core.SurveySimulator.filter_by_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_baseline()</span></code></a> for the two-sided
 “at least one close pair <em>and</em> a long overall span” semantics). <code class="docutils literal notranslate"><span class="pre">region</span></code> takes a
-<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a>/<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> object or a <code class="docutils literal notranslate"><span class="pre">.reg</span></code> file path (the same
+<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a>/<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> object or a <code class="docutils literal notranslate"><span class="pre">.reg</span></code> file path (the same
 convention the instrument FOV uses); <code class="docutils literal notranslate"><span class="pre">sky_position</span></code> is a simpler longitude/latitude box in any
 coordinate frame, with <code class="docutils literal notranslate"><span class="pre">mode:</span> <span class="pre">include</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">mode:</span> <span class="pre">exclude</span></code> (e.g. Galactic-plane
 avoidance: <code class="docutils literal notranslate"><span class="pre">frame:</span> <span class="pre">galactic,</span> <span class="pre">theta_min:</span> <span class="pre">-10,</span> <span class="pre">theta_max:</span> <span class="pre">10,</span> <span class="pre">mode:</span> <span class="pre">exclude</span></code>). <code class="docutils literal notranslate"><span class="pre">query</span></code> evaluates
@@ -1397,7 +1397,7 @@ documentation of every function/class mentioned above.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
   </p>
 </div>
       

@@ -522,7 +522,7 @@ population: given a comoving rate density and a patch of sky and time, how many 
 there, at what redshifts, and when.</p>
 <p>This page covers that shared machinery – <code class="docutils literal notranslate"><span class="pre">TransientBase</span></code>/<code class="docutils literal notranslate"><span class="pre">ExtragalacticTransient</span></code> themselves,
 not any one population. For the astrophysics, adopted rate, SED choice, and default parameter priors
-of each implemented population (kilonovae, TDEs, LFBOTs, supernovae), see the <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a>
+of each implemented population (kilonovae, TDEs, LFBOTs, low-luminosity GRBs, supernovae), see the <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a>
 gallery instead; for how <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.html#uvex_transients.simulation.core.SurveySimulator" title="uvex_transients.simulation.core.SurveySimulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SurveySimulator</span></code></a> drives this
 sampling against a real survey schedule, see <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a>.</p>
 <section id="quick-look">
@@ -606,7 +606,7 @@ tight one silently drops real detections.</p></td>
 </tbody>
 </table>
 </div>
-<p>Twelve populations ship with the package today, each pairing one of these SEDs with a rate and
+<p>Thirteen populations ship with the package today, each pairing one of these SEDs with a rate and
 duration – see the linked <a class="reference internal" href="../../transients/index.html#transients"><span class="std std-ref">Transients</span></a> page for each one’s astrophysics and priors:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
@@ -638,47 +638,52 @@ duration – see the linked <a class="reference internal" href="../../transients
 <td><p>100 d</p></td>
 <td><p>4.3</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe" title="uvex_transients.transients.supernovae.TypeIIPSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.llgrb.LowLuminosityGRB.html#uvex_transients.transients.llgrb.LowLuminosityGRB" title="uvex_transients.transients.llgrb.LowLuminosityGRB"><code class="xref py py-class docutils literal notranslate"><span class="pre">LowLuminosityGRB</span></code></a></p></td>
+<td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.llgrb.LLGRBSED.html#uvex_transients.models.supernovae.llgrb.LLGRBSED" title="uvex_transients.models.supernovae.llgrb.LLGRBSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LLGRBSED</span></code></a></p></td>
+<td><p>30 d</p></td>
+<td><p>2.41</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe" title="uvex_transients.transients.supernovae.TypeIIPSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a></p></td>
 <td><p>100 d</p></td>
 <td><p>0.95</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe" title="uvex_transients.transients.supernovae.TypeIIPExcessSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe" title="uvex_transients.transients.supernovae.TypeIIPExcessSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPExcessSED.html#uvex_transients.models.supernovae.IIp.TypeIIPExcessSED" title="uvex_transients.models.supernovae.IIp.TypeIIPExcessSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSED</span></code></a></p></td>
 <td><p>100 d</p></td>
 <td><p>1.1</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIbSNe.html#uvex_transients.transients.supernovae.TypeIIbSNe" title="uvex_transients.transients.supernovae.TypeIIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIIbSNe.html#uvex_transients.transients.supernovae.TypeIIbSNe" title="uvex_transients.transients.supernovae.TypeIIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIbSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IIb.TypeIIbSED.html#uvex_transients.models.supernovae.IIb.TypeIIbSED" title="uvex_transients.models.supernovae.IIb.TypeIIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIbSED</span></code></a></p></td>
 <td><p>200 d</p></td>
 <td><p>0.29</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.html#uvex_transients.transients.supernovae.ShockCoolingIIb" title="uvex_transients.transients.supernovae.ShockCoolingIIb"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.ShockCoolingIIb.html#uvex_transients.transients.supernovae.ShockCoolingIIb" title="uvex_transients.transients.supernovae.ShockCoolingIIb"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShockCoolingIIb</span></code></a></p></td>
 <td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MoragShockCoolingSED</span></code></p></td>
 <td><p>5 d</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.html#uvex_transients.transients.supernovae.TypeIbSNe" title="uvex_transients.transients.supernovae.TypeIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSNe</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIbSNe.html#uvex_transients.transients.supernovae.TypeIbSNe" title="uvex_transients.transients.supernovae.TypeIbSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIbSED.html#uvex_transients.models.supernovae.Ibc.TypeIbSED" title="uvex_transients.models.supernovae.Ibc.TypeIbSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIbSED</span></code></a></p></td>
 <td><p>100 d</p></td>
 <td><p>0.47</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.html#uvex_transients.transients.supernovae.TypeIcSNe" title="uvex_transients.transients.supernovae.TypeIcSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSNe</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIcSNe.html#uvex_transients.transients.supernovae.TypeIcSNe" title="uvex_transients.transients.supernovae.TypeIcSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.Ibc.TypeIcSED.html#uvex_transients.models.supernovae.Ibc.TypeIcSED" title="uvex_transients.models.supernovae.Ibc.TypeIcSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcSED</span></code></a></p></td>
 <td><p>100 d</p></td>
 <td><p>0.54</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIcBLSNe.html#uvex_transients.transients.supernovae.TypeIcBLSNe" title="uvex_transients.transients.supernovae.TypeIcBLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSNe</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIcBLSNe.html#uvex_transients.transients.supernovae.TypeIcBLSNe" title="uvex_transients.transients.supernovae.TypeIcBLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.IcBL.TypeIcBLSED.html#uvex_transients.models.supernovae.IcBL.TypeIcBLSED" title="uvex_transients.models.supernovae.IcBL.TypeIcBLSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIcBLSED</span></code></a></p></td>
 <td><p>100 d</p></td>
 <td><p>0.61</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">MagnetarSLSNe</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.MagnetarSLSNe.html#uvex_transients.transients.supernovae.MagnetarSLSNe" title="uvex_transients.transients.supernovae.MagnetarSLSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">MagnetarSLSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.arnett.ArnettMagnetarSpindownSED.html#uvex_transients.models.arnett.ArnettMagnetarSpindownSED" title="uvex_transients.models.arnett.ArnettMagnetarSpindownSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArnettMagnetarSpindownSED</span></code></a></p></td>
 <td><p>600 d</p></td>
 <td><p>2.6</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIaSNe.html#uvex_transients.transients.supernovae.TypeIaSNe" title="uvex_transients.transients.supernovae.TypeIaSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSNe</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../../_as_gen/uvex_transients.transients.supernovae.TypeIaSNe.html#uvex_transients.transients.supernovae.TypeIaSNe" title="uvex_transients.transients.supernovae.TypeIaSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSNe</span></code></a></p></td>
 <td><p><a class="reference internal" href="../../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED" title="uvex_transients.models.supernovae.Ia.TypeIaSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSED</span></code></a></p></td>
 <td><p>365 d</p></td>
 <td><p>0.77</p></td>
@@ -1102,7 +1107,7 @@ detail.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
   </p>
 </div>
       

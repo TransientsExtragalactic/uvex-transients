@@ -640,7 +640,10 @@ schedule into <code class="docutils literal notranslate"><span class="pre">time_
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids.html#uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids" title="uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observed_healpix_ids()</span></code></a> which HEALPix pixels
 the schedule touches at all between the start of the window and its end <em>plus</em> that transient’s own
 <code class="docutils literal notranslate"><span class="pre">duration_limit</span></code> – i.e. late enough that a transient exploding right at the end of the window
-could still be caught while it’s active. Events are then sampled only within those pixels, via
+could still be caught while it’s active. That set is dilated by one ring of neighbouring pixels,
+since a pixel counts as covered only if its center is inside a footprint and a position near the edge
+can lie in a pixel that is not; the dilated set contains every position the schedule can later match
+to an observation. Events are then sampled only within those pixels, via
 <a class="reference internal" href="../../_as_gen/uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid.html#uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid" title="uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample_events_on_healpix_grid()</span></code></a>, with
 explosion times drawn uniformly within the window itself (never the padded tail), so no event is
 ever double-counted across adjacent bins. See <a class="reference internal" href="../transients/overview.html#user-guide-transients"><span class="std std-ref">Transients</span></a> for how that per-pixel
@@ -777,7 +780,7 @@ agnostic to which SED any given row actually uses.</p>
 transient’s redshift-limited volume is, by construction, near the limit where it’s essentially
 undetectable. A <strong>cut</strong> is a screening step that takes an
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> and a
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses, even for
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses, even for
 the cuts that don’t use it, so every cut shares one call signature) and returns a new
 <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the surviving rows – <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code>/<code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">sampling_factor</span></code>
 unchanged, <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code> unchanged, and original <code class="docutils literal notranslate"><span class="pre">event_id</span></code> values preserved rather than
@@ -834,7 +837,7 @@ actually made of an event’s position while it was active, is it ever detected 
 <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>? Every surviving event’s observations are gathered with one batched
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a> call per
 chunk (see <a class="reference internal" href="../surveys/overview.html#user-guide-surveys"><span class="std std-ref">Surveys</span></a>), then evaluated together with
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>. Each observation is judged on a <em>measured</em> SNR (a
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>. Each observation is judged on a <em>measured</em> SNR (a
 simulated noisy measurement, the same one
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> makes), and epochs before
 the explosion never count.</p>
@@ -924,7 +927,7 @@ accepted and ignored). Use them freely, in any order, at any point.</p>
 <td><p><strong>types</strong></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">region</span></code></p></td>
-<td><p>inside a sky region: a <a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a>/<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> object or a
+<td><p>inside a sky region: a <a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a>/<a class="reference external" href="https://astropy-regions.readthedocs.io/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> object or a
 region-file path (the same convention the instrument FOV uses).</p></td>
 <td><p><strong>region</strong></p></td>
 </tr>
@@ -1332,7 +1335,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> is the expensive step every
 earlier screening pass was designed to defer: real, per-observation, per-band synthetic photometry
 against every observation in <code class="docutils literal notranslate"><span class="pre">observations</span></code>, batched into one
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev2+gf794a8a51)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev5+g6ef1baa7f)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
 are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">event_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 
@@ -1513,7 +1516,7 @@ method-by-method detail.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
   </p>
 </div>
       

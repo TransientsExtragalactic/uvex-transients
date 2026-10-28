@@ -544,7 +544,7 @@ event was bright. Testing against the Rubin footprint needs the optional <code c
 </span><span class="k">else</span><span class="p">:</span><span class="w">
 </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a><span class="o">.</span><span class="n">selected</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">report</span><span class="o">.</span><span class="n">summary</span></a><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detected events are characterized.</span><span class="s2">&quot;</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>243 of 4,620 detected events are characterized.
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>475 of 10,269 detected events are characterized.
 </pre></div>
 </div>
 <section id="overlap-by-type">
@@ -566,19 +566,19 @@ footprints of several surveys. A type with no characterized events reads â€œn/aâ
 </span>        <a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">overlap</span></a><span class="p">[</span><a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="str"><span class="n">column</span></a><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="s2">.1f</span><span class="s2">&quot;</span><span class="w">
 </span>    <a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-method reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.Table.html#astropy.table.Table.pprint_all" title="astropy.table.Table.pprint_all"><span class="n">overlap</span><span class="o">.</span><span class="n">pprint_all</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>    population    expected_events LMLZ wide LMLZ deep Magellanic Clouds ZTF  Rubin
------------------ --------------- --------- --------- ----------------- ---- -----
-          Type Ia             478      75.0       0.0               0.0 91.7  66.7
-          Type Ib               0       nan       nan               nan  nan   nan
-          Type Ic               0       nan       nan               nan  nan   nan
-       Type Ic-BL               0       nan       nan               nan  nan   nan
-         Type IIP           1,439      70.8       2.8               0.0 88.9  62.5
-Type IIP + excess             420      90.5       0.0               0.0 95.2  76.2
-         Type IIb             300      80.0       6.7               0.0 86.7  53.3
-           SLSN-I           1,863      68.4       2.1               1.1 88.4  69.5
-              TDE             316      62.5       6.2               0.0 75.0  87.5
-            LFBOT               0       nan       nan               nan  nan   nan
-         Kilonova               0       nan       nan               nan  nan   nan
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>    population    expected_events LMLZ wide LMLZ deep Magellanic Clouds  ZTF  Rubin
+----------------- --------------- --------- --------- ----------------- ----- -----
+          Type Ia             588      72.4       3.4               0.0  82.8  69.0
+          Type Ib               0       nan       nan               nan   nan   nan
+          Type Ic               0       nan       nan               nan   nan   nan
+       Type Ic-BL               0       nan       nan               nan   nan   nan
+         Type IIP             758      84.2       2.6               0.0  81.6  65.8
+Type IIP + excess             341      76.5       0.0               0.0  70.6  82.4
+         Type IIb             200     100.0      40.0               0.0 100.0  60.0
+           SLSN-I           1,567      68.4       3.8               0.0  82.3  78.5
+              TDE             295      70.9       3.7               1.4  80.1  73.3
+            LFBOT              11      81.8       0.0               0.0  81.8  81.8
+         Kilonova               0       nan       nan               nan   nan   nan
 </pre></div>
 </div>
 </section>
@@ -589,7 +589,7 @@ are so numerous that they mostly trace the survey itself, so they are drawn apar
 are the ones whose sky distribution is worth reading. The positions are Monte Carlo events, so the number
 of points is not the expected number of events.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
-</span>    <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="list"><span class="n">rare</span></a> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="s2">slsne</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">tde</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">lfbot</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">kilonova</span><span class="s2">&quot;</span><span class="p">]</span><span class="w">
+</span>    <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="list"><span class="n">rare</span></a> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="s2">slsne</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">tde</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">llgrb</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">lfbot</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="s2">kilonova</span><span class="s2">&quot;</span><span class="p">]</span><span class="w">
 </span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">supernovae</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">SummaryReport</span></a><span class="p">(</span><span class="w">
 </span>        <a class="sphx-glr-backref-module-astropy-table sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="astropy.table.QTable"><span class="n">report</span><span class="o">.</span><span class="n">summary</span></a><span class="p">,</span><span class="w">
 </span>        <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a><span class="o">.</span><span class="n">populations</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <a class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="list"><span class="n">rare</span></a><span class="p">}</span><span class="p">,</span><span class="w">
@@ -600,7 +600,7 @@ of points is not the expected number of events.</p>
 </span><span class="w">
 </span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<img src="../../../_images/sphx_glr_plot_characterized_footprints_002.png" srcset="../../../_images/sphx_glr_plot_characterized_footprints_002.png" alt="Sky distribution (Monte Carlo events)" class = "sphx-glr-single-img"/><p>The rare types, SLSNe, TDEs, LFBOTs and kilonovae:</p>
+<img src="../../../_images/sphx_glr_plot_characterized_footprints_002.png" srcset="../../../_images/sphx_glr_plot_characterized_footprints_002.png" alt="Sky distribution (Monte Carlo events)" class = "sphx-glr-single-img"/><p>The rare types, SLSNe, TDEs, llGRBs, LFBOTs and kilonovae:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="c1"># sphinx_gallery_thumbnail_number = 3</span><span class="w">
 </span><span class="k">if</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">report</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span><span class="w">
 </span>    <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class sphx-glr-backref-instance reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">exotic</span></a> <span class="o">=</span> <a class="sphx-glr-backref-module-uvex_transients-utils-summary_report sphx-glr-backref-type-py-class reference internal" href="../../../_as_gen/uvex_transients.utils.summary_report.SummaryReport.html#uvex_transients.utils.summary_report.SummaryReport" title="uvex_transients.utils.summary_report.SummaryReport"><span class="n">SummaryReport</span></a><span class="p">(</span><span class="w">
@@ -613,7 +613,7 @@ of points is not the expected number of events.</p>
 </span><span class="w">
 </span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<img src="../../../_images/sphx_glr_plot_characterized_footprints_003.png" srcset="../../../_images/sphx_glr_plot_characterized_footprints_003.png" alt="Sky distribution (Monte Carlo events)" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.560 seconds)</p>
+<img src="../../../_images/sphx_glr_plot_characterized_footprints_003.png" srcset="../../../_images/sphx_glr_plot_characterized_footprints_003.png" alt="Sky distribution (Monte Carlo events)" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 1.739 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-report-full-run-transient-characterization-plot-characterized-footprints-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../../_downloads/1a4bc10dfb3f5cef16a9cfb41ddaccd8/plot_characterized_footprints.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_characterized_footprints.ipynb</span></code></a></p>
@@ -724,7 +724,7 @@ of points is not the expected number of events.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
   </p>
 </div>
       

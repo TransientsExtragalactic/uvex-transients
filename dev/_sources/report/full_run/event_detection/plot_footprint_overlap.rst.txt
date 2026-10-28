@@ -63,8 +63,8 @@ pass the standard cuts.
 
  .. code-block:: none
 
-    Downloading event_summary.ecsv:   0%|          | 0.00/3.17M [00:00<?, ?B/s]    Downloading event_summary.ecsv: 100%|██████████| 3.17M/3.17M [00:00<00:00, 163MB/s]
-    4,620 detected events in the release's summary table.
+    Downloading event_summary.ecsv:   0%|          | 0.00/7.10M [00:00<?, ?B/s]    Downloading event_summary.ecsv: 100%|██████████| 7.10M/7.10M [00:00<00:00, 81.7MB/s]
+    10,269 detected events in the release's summary table.
 
 
 
@@ -126,17 +126,17 @@ The same numbers as a table:
 
         population    expected_events LMLZ wide LMLZ deep Magellanic Clouds ZTF  Rubin
     ----------------- --------------- --------- --------- ----------------- ---- -----
-              Type Ia          10,072      56.9       4.0               0.4 81.4  69.6
-              Type Ib             669      59.5       2.7               5.4 81.1  64.9
-              Type Ic             566      63.3       0.0               3.3 73.3  90.0
-           Type Ic-BL             176      81.8       0.0               9.1 63.6  90.9
-             Type IIP          26,486      62.3       3.2               0.5 82.6  68.9
-    Type IIP + excess          27,200      62.8       2.6               1.0 82.3  69.0
-             Type IIb           4,479      62.5       2.7               2.2 85.7  66.5
-               SLSN-I          15,214      50.0       3.7               0.5 81.2  66.9
-                  TDE           6,259      52.4       4.1               0.3 80.4  71.0
-                LFBOT             459      57.6       6.1               6.1 84.8  69.7
-             Kilonova               0       nan       nan               nan  nan   nan
+              Type Ia           9,363      60.2       2.8               1.3 80.1  65.8
+              Type Ib             655      68.8       3.1               3.1 87.5  81.2
+              Type Ic             466      58.3       0.0               0.0 75.0  75.0
+           Type Ic-BL              80      50.0       0.0              25.0 75.0  75.0
+             Type IIP          27,813      63.7       3.0               0.6 78.6  71.5
+    Type IIP + excess          27,182      63.9       3.2               0.5 79.7  69.5
+             Type IIb          10,078      66.7       6.3               0.8 81.3  65.1
+               SLSN-I          14,781      47.4       3.0               0.4 80.9  66.3
+                  TDE           5,690      52.1       3.3               0.4 79.6  69.5
+                LFBOT             291      61.6       1.7               0.3 78.5  72.1
+             Kilonova               1     100.0       0.0               0.0  0.0 100.0
 
 
 
@@ -157,7 +157,7 @@ of points is not the expected number of detections.
 
 
     if report is not None:
-        rare = ["slsne", "tde", "lfbot", "kilonova"]
+        rare = ["slsne", "tde", "llgrb", "lfbot", "kilonova"]
         supernovae = SummaryReport(report.summary, {k: v for k, v in report.populations.items() if k not in rare})
         supernovae.plot_sky(mask=supernovae.detected)
 
@@ -177,7 +177,7 @@ of points is not the expected number of detections.
 
 .. GENERATED FROM PYTHON SOURCE LINES 75-76
 
-The rare types, SLSNe, TDEs, LFBOTs and kilonovae:
+The rare types, SLSNe, TDEs, llGRBs, LFBOTs and kilonovae:
 
 .. GENERATED FROM PYTHON SOURCE LINES 76-82
 
@@ -204,7 +204,7 @@ The rare types, SLSNe, TDEs, LFBOTs and kilonovae:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.061 seconds)
+   **Total running time of the script:** (0 minutes 2.264 seconds)
 
 
 .. _sphx_glr_download_report_full_run_event_detection_plot_footprint_overlap.py:

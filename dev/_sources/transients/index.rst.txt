@@ -66,6 +66,17 @@ underlying physics in any detail.
       +++
       :math:`z \le 4.3` · 100 day window
 
+   .. grid-item-card:: Low-Luminosity GRBs
+      :link: llgrb
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1
+
+      Sub-energetic gamma-ray bursts with a broad-lined supernova, typified by GRB 060218 / SN 2006aj:
+      an early, hot, fast-fading thermal excess, plus an Arnett-powered Ic-BL supernova.
+
+      +++
+      :math:`z \le 2.41` · 30 day window
+
    .. grid-item-card:: Type II Supernovae
       :link: type_ii
       :link-type: doc
@@ -138,6 +149,7 @@ empirical shape fit directly to observed light curves.
    kilonovae
    tdes
    lfbots
+   llgrb
    type_ii
    type_i
    shock_cooling_iib

@@ -181,7 +181,7 @@ overrides you want on top of its defaults:
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`
 subclass: every built-in type (``TidalDisruptionEvent``, ``Kilonova``,
-``LuminousFastBlueOpticalTransient``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``, ``TypeIIbSNe``,
+``LuminousFastBlueOpticalTransient``, ``LowLuminosityGRB``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``, ``TypeIIbSNe``,
 ``ShockCoolingIIb``, ``TypeIbSNe``, ``TypeIcSNe``) is available by class name; an unrecognized one
 raises, listing what *is* registered.
 
