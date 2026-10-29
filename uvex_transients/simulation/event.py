@@ -25,6 +25,7 @@ from m4opt.missions import Mission
 from uvex_transients.dust import log_attenuation
 from uvex_transients.utils import get_rng
 from uvex_transients.utils.keyed_noise import time_key
+from uvex_transients.utils.phot_utils import bandpass_table
 
 from ..surveys.base import SurveySchedule
 from ..surveys.footprints import SurveyFootprint, default_registry
@@ -423,9 +424,8 @@ class Event:
             `bandpass`'s observed frequency grid, its dimensionless throughput on that grid, and the natural
             log of this event's dust attenuation on that grid (see :func:`~uvex_transients.dust.log_attenuation`).
         """
-        wave = bandpass.waveset
-        nu = wave.to(u.Hz, equivalencies=u.spectral())
-        throughput = np.asarray(bandpass(wave).to_value(u.dimensionless_unscaled))
+        nu_hz, throughput = bandpass_table(bandpass)
+        nu = nu_hz * u.Hz
         return nu, throughput, log_attenuation(nu, self._ebv)
 
     def mag(self, t: Quantity, mission: Mission, band: Hashable | None = None) -> Quantity:

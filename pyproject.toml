@@ -82,12 +82,18 @@ docs = [
   "rubin-scheduler",  # for the LSST footprint gallery example
   "pandas",
 ]
+phase_space = [
+  # Only needed for uvex_transients.phase_space.sampler (the Gaussian process) and `uvex-transients phase-space`.
+  "scikit-learn",
+  "matplotlib>=3.9.2",
+]
 rubin = [
   # Only needed to generate the LSST footprints (uvex_transients.surveys.footprints.lsst).
   "rubin-scheduler",
   "pandas",  # imported by rubin_scheduler but not declared as one of its dependencies
 ]
 test = [
+  "scikit-learn",  # tests/phase_space/test_sampler.py skips itself without it
   "pytest",
   "pytest-xdist",
   "pytest-cov",

@@ -1,4 +1,4 @@
-"""Tests for the Wilks tolerance-limit helpers and `SpectralModel.get_observability_curve`."""
+"""Tests for the detection-horizon grid and curve: `reduce_bands`, `first_crossing`, and the SED methods."""
 
 import numpy as np
 import pytest
@@ -9,15 +9,7 @@ from synphot.models import Box1D
 
 from uvex_transients.missions import downsample_bandpass
 from uvex_transients.models._utils import to_cgs_value
-from uvex_transients.models.core._tolerance import (
-    first_crossing,
-    min_samples,
-    reduce_bands,
-    resolve_bandpasses,
-    resolve_time_grid,
-    tolerance_limit,
-    wilks_rank,
-)
+from uvex_transients.models.core.detection_horizon import first_crossing, reduce_bands
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
@@ -47,52 +39,6 @@ class TestReduceBands:
     def test_unknown_criterion(self):
         with pytest.raises(ValueError, match="criterion"):
             reduce_bands(self.PEAKS, "most")
-
-
-class TestWilks:
-    """Rank selection and coverage of the distribution-free limit."""
-
-    def test_min_samples_matches_textbook_value(self):
-        assert min_samples(0.95, 0.01) == 299
-
-    def test_maximum_is_valid_exactly_at_the_minimum(self):
-        assert wilks_rank(299, 0.95, 0.01) == 1
-        with pytest.raises(ValueError, match="at least 299"):
-            wilks_rank(298, 0.95, 0.01)
-
-    @pytest.mark.parametrize("confidence, tolerance", [(0.0, 0.1), (1.0, 0.1), (0.9, 0.0), (0.9, 1.0)])
-    def test_probabilities_are_validated(self, confidence, tolerance):
-        with pytest.raises(ValueError):
-            wilks_rank(1000, confidence, tolerance)
-
-    def test_rank_grows_with_samples(self):
-        assert wilks_rank(1000, 0.95, 0.01) > wilks_rank(500, 0.95, 0.01) >= 1
-
-    @pytest.mark.parametrize(
-        "n_samples, confidence, tolerance", [(299, 0.95, 0.01), (1000, 0.95, 0.01), (200, 0.9, 0.05)]
-    )
-    def test_empirical_coverage_meets_confidence(self, n_samples, confidence, tolerance):
-        """The r-th largest of M uniform draws leaves at most `tolerance` beyond it, `confidence` of the time."""
-        rng = np.random.default_rng(1)
-        rank = wilks_rank(n_samples, confidence, tolerance)
-        draws = np.sort(rng.random((4000, n_samples)), axis=1)[:, n_samples - rank]
-        coverage = np.mean(1.0 - draws <= tolerance)
-        # Binomial standard error of 4000 trials is under 0.01.
-        assert coverage >= confidence - 0.015
-
-    def test_tolerance_limit_picks_the_rth_largest(self):
-        z_det = np.random.default_rng(2).random(1000)
-        z_limit, rank, n_censored = tolerance_limit(z_det, 0.95, 0.01)
-        assert z_limit == np.sort(z_det)[-rank]
-        assert n_censored == 0
-
-    def test_censored_draws_are_counted_and_propagate_when_they_set_the_limit(self):
-        z_det = np.random.default_rng(2).random(400)
-        z_det[:5] = np.inf
-        z_limit, rank, n_censored = tolerance_limit(z_det, 0.95, 0.01)
-        assert rank == 1
-        assert np.isinf(z_limit)
-        assert n_censored == 5
 
 
 class TestFirstCrossing:
@@ -126,37 +72,6 @@ class TestFirstCrossing:
         z = first_crossing(m, self.Z, 23.0, interpolate=True)[0]
         assert 0.2 < z < 0.4
         np.testing.assert_allclose(z, np.expm1(0.5 * (np.log1p(0.2) + np.log1p(0.4))))
-
-
-class TestInputResolution:
-    """`resolve_time_grid` and `resolve_bandpasses` normalise user-facing arguments."""
-
-    def test_log_time_grid_in_seconds(self):
-        t = resolve_time_grid(None, 1 * u.day, 100 * u.day, 3)
-        np.testing.assert_allclose(t, np.array([1.0, 10.0, 100.0]) * 86400.0)
-
-    def test_explicit_grid_ignores_the_other_arguments(self):
-        t = resolve_time_grid(2 * u.day, 5 * u.day, 1 * u.day, 7)
-        np.testing.assert_allclose(t, [2 * 86400.0])
-
-    @pytest.mark.parametrize(
-        "t_min, t_max", [(None, 1 * u.day), (1 * u.day, None), (2 * u.day, 1 * u.day), (0 * u.day, 1 * u.day)]
-    )
-    def test_bad_time_grid_is_rejected(self, t_min, t_max):
-        with pytest.raises(ValueError):
-            resolve_time_grid(None, t_min, t_max, 10)
-
-    def test_sequence_bands_are_named_by_position(self):
-        band = SpectralElement(Box1D, amplitude=1.0, x_0=2300 * u.AA, width=500 * u.AA)
-        names, grids = resolve_bandpasses([band, band])
-        assert names == ("band0", "band1")
-        assert len(grids) == 2
-        nu, throughput = grids[0]
-        assert nu.shape == throughput.shape
-
-    def test_empty_bands_are_rejected(self):
-        with pytest.raises(ValueError, match="at least one"):
-            resolve_bandpasses({})
 
 
 # =========================================================================== #

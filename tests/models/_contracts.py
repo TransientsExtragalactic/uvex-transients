@@ -336,16 +336,26 @@ class ModelContract:
                 getattr(from_generator[name], "value", from_generator[name]),
             )
 
-    def test_sample_parameters_integer_seed_draws_are_independent(self):
+    def test_an_integer_seed_gives_independent_reproducible_parameters(self):
         instance = self.model_class()
-        samples = instance.sample_parameters(size=500, rng=self.seed)
-        values = [np.asarray(getattr(v, "value", v), dtype=np.float64) for v in samples.values()]
-        values = [v for v in values if np.ptp(v) > 0]
-        if len(values) < 2:
-            pytest.skip("fewer than two sampled parameters")
-        correlation = np.corrcoef(np.vstack(values))
-        np.fill_diagonal(correlation, 0.0)
-        assert np.max(np.abs(correlation)) < 0.5
+
+        def draw(seed):
+            samples = instance.sample_parameters(size=300, rng=seed)
+            return {
+                name: np.asarray(v.value if isinstance(v, Quantity) else v, dtype=np.float64)
+                for name, v in samples.items()
+            }
+
+        first, again, other = draw(5), draw(5), draw(6)
+        varying = [name for name, values in first.items() if np.ptp(values) > 0]
+        for name in first:
+            np.testing.assert_array_equal(first[name], again[name])
+        for name in varying:
+            assert not np.array_equal(first[name], other[name])
+        # One seed shared by every parameter's stream would make all of them the same draw, in rank.
+        for i, a in enumerate(varying):
+            for b in varying[i + 1 :]:
+                assert abs(np.corrcoef(first[a], first[b])[0, 1]) < 0.6, f"{a} and {b} are correlated"
 
 
 # =========================================================================== #
@@ -520,6 +530,29 @@ class SpectralModelContract(ModelContract):
     # ----------------------------------- #
     # L_nu(nu, t)                          #
     # ----------------------------------- #
+    def test_band_luminosity_methods_agree_with_the_reductions_of_the_curve(self):
+        import synphot
+
+        from uvex_transients.models.core import lightcurve_metrics
+
+        bandpass = synphot.SpectralElement(synphot.Gaussian1D, mean=2000 * u.AA, stddev=150 * u.AA)
+        instance = self.model_class()
+        params = instance.sample_parameters(size=3, rng=self.seed)
+        curve = instance.eval_band_luminosity(bandpass, self.t_grid, **params)
+
+        assert curve.shape == (3, self.t_grid.size)
+        assert curve.unit == u.erg / u.s
+        assert not np.any(np.isinf(curve.value)) and np.all(curve.value[np.isfinite(curve.value)] >= 0)
+
+        peak, t_peak = instance.peak_luminosity(bandpass, self.t_grid, **params)
+        expected_peak, expected_t = lightcurve_metrics.peak_luminosity(self.t_grid, curve)
+        np.testing.assert_array_equal(peak.value, expected_peak.value)
+        np.testing.assert_array_equal(t_peak.value, expected_t.value)
+        np.testing.assert_array_equal(
+            instance.decline_time(bandpass, self.t_grid, 0.5, **params).value,
+            lightcurve_metrics.decline_time(self.t_grid, curve, 0.5).value,
+        )
+
     def test_eval_returns_spectral_luminosity_unit(self):
         params = self._sampled_params()
         result = self.model_class.eval(self.nu_grid[0], self.t_grid[0], **params)

@@ -1,0 +1,61 @@
+# ============================================================================ #
+# uvex_transients CLI: phase-space recovery maps                               #
+# ============================================================================ #
+# A secondary run-config for the `uvex-transients` CLI, published alongside the
+# primary `configs/full_run.yaml` run. It does not simulate a population. Instead it
+# maps how well UVEX recovers a canonical transient (a fast-rise, exponential-decay
+# light curve with a power-law spectrum) over its two free quantities, the peak
+# luminosity in a band and the rest-frame half-decline time, so that any
+# transient, whatever its physics, can be read off the map. Run it directly with:
+#
+#     uvex-transients phase-space configs/phase_space.yaml --out-dir results/phase_space/
+#
+# or `make phase-space PS_OUT_DIR=results/phase_space/`. Add `--map fuv_detection` to make one map.
+#
+# A map is a detection map: an event is recovered when at least `n_visits` of the
+# survey's observations of it reach `snr_threshold`, which is what `snr_screen` of
+# `full_run.yaml` asks of the Standard Run (`exclude_first_visit_detections` is on
+# there too, so the two agree). Events are drawn out to the redshift where the source
+# falls below `mag_limit`, set to the 25 AB magnitude screen of `full_run.yaml`.
+#
+# Each map is one band, which both recovers the events and defines the luminosity. The
+# sampler, transient and map settings that are not given here come from the
+# `phase_space:` section of the package config.
+#
+# Each map is written to `<out-dir>/<id>/` as `points.ecsv`, `map.ecsv`, `overlay.ecsv`
+# and `map.png`. The release attaches them all as one `phase_space.zip`, where
+# `uvex_transients.utils.get_phase_space_map` fetches them.
+
+# Pinned to the latest uvex-scheduler release so the data products are reproducible. The
+# `.github/workflows/sync_scheduler.yml` workflow bumps this line when a new release appears.
+schedule:
+  name: uvex_v0.6.0
+
+mission: uvex_fast
+
+seed: 0
+
+# Measure the shipped transient classes in the band of each map and shade the region each holds on it.
+overlay: true
+
+recovery:
+  snr_threshold: 5.0
+  n_visits: 2
+  exclude_first_visit_detections: true
+  mag_limit: 25.0
+
+# The axes of every map: log10 of the peak luminosity in the band (erg/s) and of the rest-frame half-decline time (day).
+# They are wide enough to hold essentially every draw of every shipped transient class, from the faintest Type Ib/c and
+# kilonova draws (about 1e37 erg/s in the FUV) to the LFBOTs and SLSNe (about 1e44.5 erg/s).
+map:
+  log_luminosity: [36.5, 45.0]
+  log_half_time: [-1.5, 2.5]
+
+maps:
+  - id: fuv_detection
+    recovery:
+      band: FUV
+
+  - id: nuv_detection
+    recovery:
+      band: NUV

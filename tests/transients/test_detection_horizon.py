@@ -63,6 +63,17 @@ def test_extending_the_grid_keeps_the_same_population():
         np.testing.assert_array_equal(short.parameters[name], extended.parameters[name])
 
 
+def test_the_horizon_does_not_depend_on_the_redshift_limit_it_is_used_to_set():
+    """A class's `redshift_limit` is derived from its horizon, so the horizon cannot depend on it."""
+    low, high = _Kilonovalike(), _Kilonovalike()
+    low.redshift_limit, high.redshift_limit = 0.05, 3.0
+    kwargs = {"mag_limits": [22.0, 25.0], "bandpasses": BANDS, "rng": 1, **SMALL}
+    curve_low, grid_low = low.get_detection_horizon(**kwargs)
+    curve_high, grid_high = high.get_detection_horizon(**kwargs)
+    np.testing.assert_array_equal(curve_low["z_limit"], curve_high["z_limit"])
+    np.testing.assert_array_equal(grid_low.z_grid, grid_high.z_grid)
+
+
 def test_too_few_samples_for_the_confidence_is_rejected():
     """The sample maximum needs enough draws for the requested confidence."""
     with pytest.raises(ValueError, match="at least"):

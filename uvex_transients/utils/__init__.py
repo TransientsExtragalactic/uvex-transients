@@ -7,13 +7,14 @@ from numpy.typing import ArrayLike, NDArray
 
 from .config import cache_dir, config, get_cache_dir
 from .log import configure_logging, logger
-from .results import get_results, list_simulations
+from .results import get_phase_space_map, get_results, list_simulations
 from .updates import OutdatedVersionWarning, check_for_updates
 
 __all__ = [
     "config",
     "cache_dir",
     "get_cache_dir",
+    "get_phase_space_map",
     "get_results",
     "list_simulations",
     "OutdatedVersionWarning",
