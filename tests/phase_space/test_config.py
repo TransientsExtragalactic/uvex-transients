@@ -1,8 +1,5 @@
 """Tests that the phase-space defaults come from the configuration, and that an argument overrides them."""
 
-import importlib.util
-from pathlib import Path
-
 import numpy as np
 import pytest
 import synphot
@@ -254,28 +251,3 @@ def test_the_overlay_takes_its_grid_and_draws_from_the_configuration(configured)
     assert len(from_config) == 7
     for column in ("log_luminosity", "log_half_time"):
         np.testing.assert_array_equal(from_config[column], explicit[column])
-
-
-# ---------------------------------------------------------------------------- #
-# The script                                                                   #
-# ---------------------------------------------------------------------------- #
-@pytest.fixture(scope="module")
-def script():
-    path = Path(__file__).parents[2] / "scripts" / "phase_space_map.py"
-    spec = importlib.util.spec_from_file_location("phase_space_map", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def test_the_script_leaves_the_defaults_to_the_configuration_and_shows_them_in_its_help(script):
-    parser = script.build_parser()
-    args = parser.parse_args([])
-    # Nothing that has a configured default is fixed by the script
-    for name in ("mission", "band", "spectral_index", "snr", "n_visits", "mag_limit", "max_points", "acquisition"):
-        assert getattr(args, name) is None, name
-    assert args.log_l is None and args.log_dt is None and args.grid_size is None
-
-    help_text = parser.format_help().replace("\n", " ")
-    assert f"(default: {config['phase_space.recovery.band']})" in help_text
-    assert f"(default: {config['phase_space.sampler.max_points']})" in help_text

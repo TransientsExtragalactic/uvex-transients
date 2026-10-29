@@ -7,8 +7,9 @@ import click
 from ..simulation.event_catalog import EventCatalog
 from ..simulation.exposure_catalog import ExposureCatalog
 from ..utils import configure_logging
-from . import pipeline, steps
+from . import phase_space, pipeline, steps
 from .config import RunConfig
+from .phase_space import PhaseSpaceConfig
 
 _LOGO_PATH = Path(__file__).resolve().parents[1] / "_logo.txt"
 
@@ -322,3 +323,94 @@ def run_command(
         size = f"{len(artifact)} rows" if hasattr(artifact, "__len__") else "1 artifact"
         where = f" -> {path.name}" if path is not None else ""
         click.echo(f"{step.type} {step.id}: {size}{where}")
+
+
+@cli.command("phase-space")
+@CONFIG_ARGUMENT
+@click.option("--out-dir", "out_dir", required=True, type=click.Path(file_okay=False, path_type=Path))
+@click.option(
+    "--map",
+    "map_ids",
+    multiple=True,
+    metavar="ID",
+    help="Make only this map of CONFIG's 'maps:' list (repeatable). The default is every map.",
+)
+@OVERWRITE_OPTION
+@click.option(
+    "--resume",
+    is_flag=True,
+    default=False,
+    help="Continue each map from the points.ecsv already in its directory, instead of refusing to touch it.",
+)
+@click.option("--progress", is_flag=True, default=False, help="Show the progress bars of the simulation.")
+@DRY_RUN_OPTION
+def phase_space_command(
+    config_path: Path,
+    out_dir: Path,
+    map_ids: tuple[str, ...],
+    overwrite: bool,
+    resume: bool,
+    progress: bool,
+    dry_run: bool,
+) -> None:
+    """
+    Map the survey's recovery of a canonical transient, one map per entry of CONFIG's ``maps:`` list.
+
+    Each map is written to ``OUT_DIR/<id>/`` as ``points.ecsv``, ``map.ecsv``, ``overlay.ecsv`` and ``map.png``. Needs
+    the ``phase_space`` extra.
+
+    Parameters
+    ----------
+    config_path : Path
+        Path to the phase-space run-config YAML file (``CONFIG``).
+    out_dir : Path
+        Directory to write each map's subdirectory into.
+    map_ids : tuple of str
+        The ids of the maps to make; empty for all of them.
+    overwrite : bool
+        Whether to replace the files of a map that already exists.
+    resume : bool
+        Whether to continue a map from its saved points.
+    progress : bool
+        Whether to show the progress bars of the simulation.
+    dry_run : bool
+        If True, validate and report without loading the schedule, sampling or writing anything.
+
+    Returns
+    -------
+    None
+        Exits the process via ``click`` on failure; otherwise returns nothing.
+    """
+    logo = _logo_text()
+    if logo:
+        click.echo(logo)
+
+    try:
+        phase_space_config = PhaseSpaceConfig.from_yaml(config_path)
+        specs = phase_space_config.select(map_ids)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+
+    if dry_run:
+        try:
+            lines, ok = phase_space.dry_run_report(phase_space_config, out_dir, specs, overwrite, resume)
+        except (ValueError, KeyError, OSError) as error:
+            raise click.ClickException(f"dry run failed: {error}") from error
+        for line in lines:
+            click.echo(line)
+        if not ok:
+            raise click.exceptions.Exit(1)
+        return
+
+    try:
+        results = phase_space.run_maps(
+            phase_space_config, out_dir, specs, overwrite=overwrite, resume=resume, progress=progress
+        )
+    except ImportError as error:
+        raise click.ClickException(
+            f"{error}. Install the 'phase_space' extra: pip install 'uvex_transients[phase_space]'."
+        ) from error
+    except FileExistsError as error:
+        raise click.ClickException(str(error)) from error
+    for map_id, files in results.items():
+        click.echo(f"phase-space {map_id}: {len(files)} files -> {out_dir / map_id}")

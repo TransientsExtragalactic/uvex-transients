@@ -12,16 +12,17 @@ place on the map should be checked against a full simulation of it.
 """
 
 import importlib
+from collections.abc import Sequence
 
 import numpy as np
 from astropy import units as u
-from astropy.table import QTable
+from astropy.table import QTable, Table
 
 from uvex_transients.models.core.lightcurve_metrics import decline_time, peak_luminosity
 from uvex_transients.transients.base import ExtragalacticTransient, TransientBase
 from uvex_transients.utils import config
 
-__all__ = ["measure_class", "shipped_classes"]
+__all__ = ["measure_class", "shipped_classes", "split_measurements", "stack_measurements"]
 
 # ============================================ #
 # Classes                                      #
@@ -124,3 +125,50 @@ def measure_class(
     table["measured"] = measured
     table.meta["class"] = transient_class.__name__
     return table
+
+
+def stack_measurements(measurements: Sequence[Table]) -> Table:
+    """
+    Stack the measurements of several classes into one table, for a single file.
+
+    Parameters
+    ----------
+    measurements : sequence of astropy.table.Table
+        Tables from `measure_class`.
+
+    Returns
+    -------
+    ~astropy.table.Table
+        Their rows one after another, with the class name of each in a ``class`` column.
+    """
+    names = ("log_luminosity", "log_half_time", "measured")
+    return Table(
+        {
+            "class": np.concatenate([[table.meta["class"]] * len(table) for table in measurements]),
+            **{name: np.concatenate([np.asarray(table[name]) for table in measurements]) for name in names},
+        }
+    )
+
+
+def split_measurements(stacked: Table) -> list[Table]:
+    """
+    Split a table from `stack_measurements` back into one table per class.
+
+    Parameters
+    ----------
+    stacked : astropy.table.Table
+        A stacked table, for example a map's ``overlay.ecsv``.
+
+    Returns
+    -------
+    list of astropy.table.Table
+        One table per class, in order of first appearance, each with the class name in ``meta["class"]`` as
+        `measure_class` leaves it (so each can be passed to ``plot_map(overlays=...)``).
+    """
+    classes = np.asarray(stacked["class"]).astype(str)
+    tables = []
+    for name in dict.fromkeys(classes):
+        table = Table(stacked[classes == name]["log_luminosity", "log_half_time", "measured"])
+        table.meta["class"] = str(name)
+        tables.append(table)
+    return tables

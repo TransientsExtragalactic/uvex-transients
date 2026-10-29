@@ -5,7 +5,7 @@ import pytest
 import synphot
 from astropy import units as u
 
-from uvex_transients.phase_space.overlay import measure_class, shipped_classes
+from uvex_transients.phase_space.overlay import measure_class, shipped_classes, split_measurements, stack_measurements
 from uvex_transients.transients.kilonovae import Kilonova
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
@@ -55,3 +55,27 @@ def test_the_same_seed_repeats_and_a_wider_grid_leaves_the_peak_unchanged(bandpa
     longer = measure_class(TidalDisruptionEvent, bandpass, n_draws=20, rng=3, t_max=2000 * u.day)
     np.testing.assert_array_equal(first["log_luminosity"], again["log_luminosity"])
     np.testing.assert_allclose(first["log_luminosity"], longer["log_luminosity"], atol=0.02)
+
+
+def test_stacking_and_splitting_measurements_round_trips(bandpass, tmp_path):
+    tables = [
+        measure_class(TidalDisruptionEvent, bandpass, n_draws=30, rng=0),
+        measure_class(Kilonova, bandpass, n_draws=20, rng=0),
+    ]
+    stacked = stack_measurements(tables)
+    assert len(stacked) == 50 and stacked.colnames == ["class", "log_luminosity", "log_half_time", "measured"]
+
+    # Through a file, as a map's overlay.ecsv travels
+    path = tmp_path / "overlay.ecsv"
+    stacked.write(path, format="ascii.ecsv")
+    from astropy.table import Table
+
+    restored = split_measurements(Table.read(path, format="ascii.ecsv"))
+    assert [table.meta["class"] for table in restored] == ["TidalDisruptionEvent", "Kilonova"]
+    for before, after in zip(tables, restored):
+        assert after.colnames == ["log_luminosity", "log_half_time", "measured"]
+        np.testing.assert_array_equal(np.asarray(before["measured"]), np.asarray(after["measured"]))
+        good = np.asarray(before["measured"])
+        np.testing.assert_allclose(
+            np.asarray(before["log_luminosity"])[good], np.asarray(after["log_luminosity"])[good]
+        )
