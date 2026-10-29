@@ -15,6 +15,8 @@ import numpy as np
 from astropy import constants as const
 from astropy import units as u
 
+from uvex_transients.utils.phot_utils import AB_MAG_ZERO_POINT
+
 __all__ = [
     "H_CGS",
     "LOG_H_CGS",
@@ -56,9 +58,6 @@ LOG_SIGMA_SB_CGS: float = np.log(SIGMA_SB_CGS)
 # ------------------------------------------ #
 # Unit-Conversion Factors                    #
 # ------------------------------------------ #
-AB_MAG_ZERO_POINT: float = 3631e-23
-"""float: The CGS zero-point flux density in the AB mag system, in erg/s/cm^2/Hz."""
-
 MSUN_G: float = (1.0 * u.Msun).to_value(u.g)
 """float: One solar mass, in grams."""
 

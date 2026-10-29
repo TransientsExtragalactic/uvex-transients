@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from astropy.table import QTable
 
-from uvex_transients.simulation._stats import clopper_pearson_interval
+from uvex_transients.utils.stat_utils import clopper_pearson_interval
 from uvex_transients.simulation.rates import estimate_yield
 from uvex_transients.utils import config
 

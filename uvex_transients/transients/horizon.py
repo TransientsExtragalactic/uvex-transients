@@ -1,9 +1,17 @@
 r"""
-Detection-horizon curves: the redshift limit of a transient population as a function of depth.
+Stored detection-horizon curves of the transient classes.
 
-A :class:`HorizonCurve` tabulates, for a grid of AB magnitude limits :math:`m`, the redshift
-:math:`z_L(m)` beyond which, with 95% confidence, at most 1% of a population drawn from the SED's
-priors is brighter than :math:`m` in either UVEX band.
+A `HorizonCurve` is the redshift limit :math:`z_L(m)` of a transient population as a function of the AB magnitude limit
+:math:`m`: beyond :math:`z_L`, with 95% confidence, at most 1% of events drawn from the SED's priors are brighter than
+:math:`m` in either UVEX band. The calculation is in `uvex_transients.models.core.detection_horizon`; this module
+stores and checks its result.
+
+A curve takes seconds to a minute to compute, so each shipped class stores its own as
+``horizon_curves/<ClassName>.ecsv``, which `~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`
+reads. A custom class, or a shipped one
+whose priors or duration changed, generates its curve on first use. Which is which is decided by a *fingerprint*, a
+fixed-seed draw from the class's priors and its duration, stored with the curve and compared on use. ``make horizons``
+rebuilds the stored files, and the test suite fails, naming the class, when one is stale.
 """
 
 from pathlib import Path
@@ -42,16 +50,13 @@ SETTINGS = {
     "n_z": 40,
     "n_time": 60,
 }
-"""dict: The settings a curve is generated with, recorded in its metadata.
+"""dict: The settings a stored curve is generated with, recorded in its metadata.
 
-``confidence`` and ``tolerance`` are the guarantee: with probability ``confidence``, at most a fraction ``tolerance``
-of the population is detectable beyond the limit. ``n_samples`` is the number of draws from the SED's priors (cost is
-linear in it; 299 is the minimum the guarantee allows). ``n_z`` is the number of log-spaced redshifts each draw is
-followed across; the crossing of the magnitude limit is interpolated between grid points, which keeps the limit
-accurate to about 2% with this few. ``n_time`` is the number of log-spaced rest-frame times from `T_MIN` to the
-duration; it must be dense enough to resolve each light curve's peak, because a missed peak makes an event look
-fainter than it is. These are chosen for a limit good to a few percent in redshift (well inside half a magnitude of
-depth), not for the tightest possible guarantee.
+``confidence`` and ``tolerance`` are the guarantee. ``n_samples`` is the number of draws, whose cost is linear and
+which cannot be below 299. ``n_z`` is the number of logarithmic redshifts each draw is followed across; the crossing is
+interpolated between them, which keeps the limit within about 2%. ``n_time`` is the number of logarithmic rest-frame
+times from `T_MIN` to the duration, and it must resolve each light curve's peak, since a missed peak makes an event look
+fainter. They are chosen for a limit good to a few percent in redshift, not for the tightest possible guarantee.
 """
 
 T_MIN = 1e-3 * u.day
@@ -307,11 +312,11 @@ class HorizonCurve:
         **settings,
     ) -> "HorizonCurve":
         """
-        Compute the curve of a transient, in the ``uvex_fast`` bands. This takes seconds to a minute.
+        Compute the curve of a transient in the ``uvex_fast`` bands, which takes seconds to a minute.
 
-        One grid of effective peak magnitudes serves every magnitude limit, so tabulating many costs the same
-        as one. Each draw's crossing of a limit is interpolated between redshift grid points, so the limit is
-        good to about 2% but is not guaranteed to be an overestimate.
+        Runs `~uvex_transients.models.core.detection_horizon.detection_horizon` on the transient's priors, duration
+        and cosmology, with this module's settings and seed. One grid serves every magnitude limit, and the crossings
+        are interpolated, so the limit is good to about 2% but is not guaranteed to be an overestimate.
 
         Parameters
         ----------

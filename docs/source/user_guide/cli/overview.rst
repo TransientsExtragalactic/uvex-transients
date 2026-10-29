@@ -12,7 +12,8 @@ to process the baseline catalog once it's sampled -- screening cuts, set operati
 catalogs, and post-processing actions like synthetic photometry, chained in one declared order,
 GitHub-Actions style. The CLI's four subcommands (``generate``, ``cut``, ``photometry``,
 and ``run``) drive that same pipeline, reading and writing plain catalog/table
-files between stages.
+files between stages. A fifth, ``phase-space``, is separate from that pipeline: it maps the survey's recovery of a
+canonical transient instead of simulating a population (see :ref:`phase_space_maps_cli`).
 
 This page is a hands-on tour of the run-config format and the commands themselves. See
 :ref:`user_guide_simulation` for what each stage actually does under the hood; this page is about
@@ -670,6 +671,52 @@ a real run would refuse to overwrite one that already exists, the dry run flags 
 FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded (and
 downloaded on first use), but the command never reads the ``--in`` input of ``cut``/``photometry``,
 only checks that it exists.
+
+----
+
+.. _phase_space_maps_cli:
+
+Phase-Space Maps
+---------------------
+
+.. code-block:: bash
+
+    uvex-transients phase-space configs/phase_space.yaml --out-dir results/phase_space/
+
+The ``phase-space`` command reads a different kind of run-config, with no ``transients:`` or ``steps:``. It names a
+survey and lists **maps**, each the survey's recovery of a canonical transient over the peak luminosity in one band and
+the rest-frame half-decline time (see :mod:`uvex_transients.phase_space`). The shipped
+`phase_space.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/phase_space.yaml>`__
+makes the two detection maps (at least two observations at :math:`5\sigma`, to 25 AB) in the FUV and the NUV:
+
+.. code-block:: yaml
+
+    schedule:
+      name: uvex_v0.6.0
+    mission: uvex_fast
+    overlay: true             # shade the shipped transient classes on every map
+
+    recovery:                 # shared by every map; a map overrides it key by key
+      snr_threshold: 5.0
+      n_visits: 2
+      mag_limit: 25.0
+
+    maps:
+      - id: fuv_detection     # names the output directory
+        recovery: {band: FUV}
+      - id: nuv_detection
+        recovery: {band: NUV}
+
+The sections ``recovery:``, ``transient:`` (the shape of the canonical transient), ``sampler:`` and ``map:`` (the axes
+and the resolution of the fitted map) may each be given at the top level and in a map, and any key left out is taken from
+the ``phase_space:`` section of the package configuration. A misspelt key is an error, and every problem in the file is
+reported at once.
+
+Each map is written to ``OUT_DIR/<id>/`` as ``points.ecsv`` (every simulated point, saved after every batch),
+``map.ecsv`` (the fitted map on a grid), ``overlay.ecsv`` (the measured classes) and ``map.png``. ``--map ID`` makes only
+one map, and an existing map is refused unless ``--overwrite`` replaces it or ``--resume`` continues it from its saved
+points. ``--dry-run`` validates the file and the bands without loading the schedule. The command needs the
+``phase_space`` extra (``pip install 'uvex_transients[phase_space]'``).
 
 ----
 
