@@ -92,7 +92,7 @@ class TidalDisruptionEvent(ExtragalacticTransient):
     DEFAULT_DURATION = 200 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 1.7
+    DEFAULT_Z_LIM = 1.9
     RATE_CI = _TDE_RATE_CI
 
     @property
