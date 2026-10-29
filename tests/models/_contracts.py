@@ -326,6 +326,27 @@ class ModelContract:
             assert np.shape(arr) == (size,)
             assert np.all(np.isfinite(np.asarray(arr, dtype=np.float64)))
 
+    def test_an_integer_seed_gives_independent_reproducible_parameters(self):
+        instance = self.model_class()
+
+        def draw(seed):
+            samples = instance.sample_parameters(size=300, rng=seed)
+            return {
+                name: np.asarray(v.value if isinstance(v, Quantity) else v, dtype=np.float64)
+                for name, v in samples.items()
+            }
+
+        first, again, other = draw(5), draw(5), draw(6)
+        varying = [name for name, values in first.items() if np.ptp(values) > 0]
+        for name in first:
+            np.testing.assert_array_equal(first[name], again[name])
+        for name in varying:
+            assert not np.array_equal(first[name], other[name])
+        # One seed shared by every parameter's stream would make all of them the same draw, in rank.
+        for i, a in enumerate(varying):
+            for b in varying[i + 1 :]:
+                assert abs(np.corrcoef(first[a], first[b])[0, 1]) < 0.6, f"{a} and {b} are correlated"
+
 
 # =========================================================================== #
 # Lightcurve Contract                                                        #

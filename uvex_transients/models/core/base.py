@@ -505,10 +505,10 @@ class _ModelBase(Mapping[str, Parameter], ABC):
         size : int
             Number of samples to draw per parameter.
         rng : numpy.random.Generator, int, or None
-            Random-number source, forwarded to each
-            :meth:`~uvex_transients.models.core.parameters.Parameter.sample`. Passing
-            a shared :class:`~numpy.random.Generator` is recommended so that
-            every parameter's draws come from the same reproducible stream.
+            Random-number source. An integer or `None` is turned into one
+            :class:`~numpy.random.Generator` that every parameter then draws from in turn, so the
+            parameters are independent of each other and an integer seed still reproduces the same
+            draws.
         parameters : list of str, optional
             Names of the parameters to sample. If ``None`` (the default),
             every parameter is sampled.
@@ -522,6 +522,7 @@ class _ModelBase(Mapping[str, Parameter], ABC):
         if parameters is None:
             parameters = list(self._parameters.keys())
 
+        rng = get_rng(rng)
         return {
             parameter_name: parameter.sample(size=size, rng=rng)
             for parameter_name, parameter in self._parameters.items()
