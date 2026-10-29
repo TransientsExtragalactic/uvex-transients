@@ -6,7 +6,7 @@ from scipy.special import expit
 
 pytest.importorskip("sklearn")
 
-from uvex_transients.phase_space.sampler import PhaseSpaceSampler, _logit_data  # noqa: E402
+from uvex_transients.phase_space.sampler import PhaseSpaceSampler  # noqa: E402
 
 BOUNDS = [(0.0, 1.0), (0.0, 1.0)]
 NAMES = ("a", "b")
@@ -46,16 +46,6 @@ def make_sampler(**kwargs):
     }
     defaults.update(kwargs)
     return PhaseSpaceSampler(make_evaluator(), BOUNDS, **defaults)
-
-
-def test_logit_data_is_finite_at_the_extremes_and_matches_the_delta_method():
-    y, variance = _logit_data(np.array([0, 50, 1000]), np.array([1000, 100, 1000]))
-    assert np.all(np.isfinite(y)) and np.all(np.isfinite(variance))
-    p_hat = 50.5 / 101.0
-    assert y[1] == pytest.approx(np.log(p_hat / (1 - p_hat)))
-    assert variance[1] == pytest.approx(1.0 / (101.0 * p_hat * (1 - p_hat)))
-    # At small p the logit noise is the Poisson relative error of the count, about 1/k.
-    assert variance[0] == pytest.approx(1.0 / (1001.0 * (0.5 / 1001.0) * (1 - 0.5 / 1001.0)))
 
 
 @pytest.mark.parametrize(

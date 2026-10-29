@@ -39,6 +39,7 @@ from uvex_transients.models.supernovae import (
     VillarCoolingBlackbodySED,
 )
 from uvex_transients.models.tdes import AlushStoneTDESED, VanVelzenTDESED
+from uvex_transients.phase_space.transient import _FREDPowerLawSED
 
 from ._contracts import SpectralModelContract, assert_full_coverage
 
@@ -157,4 +158,8 @@ def test_all_seds_covered():
         for name, cls in globals().items()
         if name.startswith("Test") and issubclass(cls, SpectralModelContract)
     }
-    assert_full_coverage(SpectralModel, tested, exclude={ComposedSpectralModel, _UncutMoragShockCoolingSED})
+    assert_full_coverage(
+        SpectralModel,
+        tested,
+        exclude={ComposedSpectralModel, _UncutMoragShockCoolingSED, _FREDPowerLawSED},
+    )

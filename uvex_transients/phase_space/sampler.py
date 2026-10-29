@@ -1,37 +1,14 @@
-r"""
+"""
 Active learning of a binomial recovery map with a Gaussian process.
 
-`PhaseSpaceSampler` maps a recovery fraction :math:`p(\mathbf x)` over a rectangle of a two dimensional parameter
-space (here, luminosity and duration), when each evaluation of :math:`p` is expensive and only returns a binomial
-count: ``k`` recoveries out of ``n`` simulated events. Instead of filling a grid, it picks each new batch of
-points where one more simulation teaches the most about the map.
+`PhaseSpaceSampler` maps a recovery fraction over a rectangle of a two dimensional space (here, luminosity and
+half-decline time) when each evaluation is expensive and returns only a binomial count: ``k`` recoveries out of ``n``
+simulated events. Instead of filling a grid, it fits a Gaussian process to the points so far and puts each new batch
+where one more simulation teaches the most about the map.
 
-The model is a Gaussian process on the logit of the recovery fraction,
-
-.. math::
-
-    g(\mathbf x) = \mathrm{logit}\,p(\mathbf x), \qquad
-    y_i = \mathrm{logit}\,\hat p_i, \quad \hat p_i = \frac{k_i + 1/2}{n_i + 1},
-
-with a per-point noise variance :math:`1/[(n_i+1)\hat p_i(1-\hat p_i)]` from the delta method (the binomial
-variance in logit space), passed to the regression as a heteroscedastic ``alpha``. At small :math:`p` the logit
-is the log of the recovery, and the noise variance is the Poisson relative error of the count, :math:`\approx 1/k`.
-
-The next points maximize an acquisition that is a function of the posterior only, never of an unseen outcome:
-
-``"variance"``
-    :math:`w(\mathbf x)\,\sigma_g^2(\mathbf x)`, the posterior variance of :math:`\ln(p+\epsilon)` by the delta
-    method, with :math:`w = [p(1-p)/(p+\epsilon)]^2`. The floor :math:`\epsilon` is the smallest recovery a single
-    point can resolve, so effort is not spent separating a recovery of :math:`10^{-6}` from zero, and a saturated
-    region (:math:`p\to1`) is not sampled either.
-``"imse"``
-    The reduction, from observing at the candidate, of that same weighted variance integrated over the whole
-    space (integrated mean squared error). It costs one covariance matrix per round and values a point by what it
-    teaches about the whole map, not only about itself.
-
-A batch is built greedily. After each pick the posterior covariance is updated as though the point had been
-measured (the variance does not depend on the outcome), so the points of a batch spread out, and can be
-evaluated in parallel.
+The sampler knows nothing about transients. It needs a callable that takes a point and returns ``k`` and ``n``
+(`~uvex_transients.phase_space.evaluator.RecoveryEvaluator` is one), and, for the maps that need more than the fitted
+recovery fraction, an evaluator that also supplies the noise-free scales of the survey.
 """
 
 import importlib
@@ -43,22 +20,45 @@ from astropy import units as u
 from astropy.table import Table
 from astropy.units import Quantity
 from numpy.typing import NDArray
-from scipy.special import expit, logit
+from scipy.special import expit
 from scipy.stats import qmc
 
-from uvex_transients.utils import logger
+from uvex_transients.utils import config, logger
+from uvex_transients.utils.stat_utils import binomial_logit
 
 __all__ = ["PhaseSpaceSampler"]
 
+# ============================================ #
+# Constants                                    #
+# ============================================ #
+#: The acquisition rules (see `PhaseSpaceSampler`).
 _ACQUISITIONS = ("variance", "imse")
+
+#: Recoveries are clipped this far from 0 and 1 where the logit and its weights would diverge.
 _P_CLIP = 1e-6
 
-
-# What an evaluator has to provide for the maps that need more than the fitted recovery fraction.
+#: What an evaluator has to provide for the maps that need more than the fitted recovery fraction.
 _SCALE_METHODS = ("coverage", "volume_time", "all_sky_volume_time", "redshift_limit")
 
-# The only place a file may name an evaluator class from.
+#: The only place a file may name an evaluator class from.
 _EVALUATOR_PACKAGE = "uvex_transients."
+
+#: Default kernel: an amplitude times an anisotropic Matern 5/2 on the unit square, as (initial value, bounds).
+_AMPLITUDE = (1.0, (1e-2, 1e2))
+_LENGTH_SCALE = (0.3, (0.03, 10.0))
+_MATERN_NU = 2.5
+
+
+def _configured(value, key: str):
+    """Return `value`, or ``config["phase_space.<key>"]`` if it is `None`."""
+    return config[f"phase_space.{key}"] if value is None else value
+
+
+def _expected(value, evaluate, attribute: str, key: str):
+    """Return `value`, or the `attribute` of the evaluator, or ``config["phase_space.<key>"]``, in that order."""
+    if value is not None:
+        return value
+    return getattr(evaluate, attribute, config[f"phase_space.{key}"])
 
 
 class _MissingEvaluator:
@@ -79,71 +79,55 @@ def _require_sklearn():
     return gaussian_process
 
 
-def _logit_data(k: NDArray, n: NDArray) -> tuple[NDArray, NDArray]:
-    r"""
-    Turn binomial counts into a logit target and its noise variance.
-
-    Parameters
-    ----------
-    k, n : numpy.ndarray
-        Recoveries and simulated events at each point.
-
-    Returns
-    -------
-    y, variance : numpy.ndarray
-        :math:`\mathrm{logit}[(k+1/2)/(n+1)]` and :math:`1/[(n+1)\hat p(1-\hat p)]`.
-    """
-    k = np.asarray(k, dtype=np.float64)
-    n = np.asarray(n, dtype=np.float64)
-    p_hat = (k + 0.5) / (n + 1.0)
-    return logit(p_hat), 1.0 / ((n + 1.0) * p_hat * (1.0 - p_hat))
-
-
+# ============================================ #
+# Sampler                                      #
+# ============================================ #
 class PhaseSpaceSampler:
     r"""
     Adaptively map a recovery fraction over a rectangle of a two dimensional space.
+
+    Every argument that is `None` (the default) takes ``config["phase_space.sampler.<name>"]``.
 
     Parameters
     ----------
     evaluate : callable
         ``evaluate(x)`` takes a length two array (a point of the space, in the units of `bounds`) and returns a
-        mapping with at least the integer entries ``"k"`` (recoveries) and ``"n"`` (events simulated). Every
-        other entry is stored as an extra column of `table`, so an evaluator can report what it likes.
+        mapping with at least the integer entries ``"k"`` (recoveries) and ``"n"`` (events simulated). Every other
+        entry is stored as an extra column of `table`.
     bounds : sequence of (float, float)
-        ``[(lo, hi), (lo, hi)]``, the rectangle to map. Points are drawn in it and the Gaussian process works on
-        it rescaled to the unit square.
+        ``[(lo, hi), (lo, hi)]``, the rectangle to map. The Gaussian process works on it rescaled to the unit square.
     names : sequence of str, optional
         The names of the two coordinates, used as column names. Defaults to ``("x0", "x1")``.
     n_initial : int, optional
-        Size of the scrambled Sobol design evaluated before the first fit. The default is 24.
+        Size of the scrambled Sobol design evaluated before the first fit.
     batch_size : int, optional
-        Points chosen per round. The default is 4.
+        Points chosen per round.
     max_points : int, optional
-        Stop once this many points have been evaluated. The default is 200.
+        Stop once this many points have been evaluated.
     tolerance : float, optional
-        Stop once the largest posterior standard deviation of :math:`\ln(p+\epsilon)` over the candidates falls
-        below this. The default is 0.1, a 10% relative uncertainty on the recovery.
+        Stop once the largest posterior standard deviation of :math:`\ln(p+\epsilon)` over the candidates falls below
+        this, a relative uncertainty on the recovery.
     acquisition : {"variance", "imse"}, optional
-        The acquisition rule; see the module docstring. The default is ``"variance"``.
+        The acquisition rule; see Notes.
     n_candidates : int, optional
-        Size of the Sobol candidate set the acquisition is evaluated on each round. The default is 1024.
+        Size of the Sobol candidate set the acquisition is evaluated on each round.
     floor : float, optional
-        The recovery :math:`\epsilon` below which the log uncertainty is not chased. The default is 1e-3, one
-        recovery in a thousand-event point.
+        The recovery :math:`\epsilon` below which the log uncertainty is not chased.
     k_target, n_min, n_max : float, optional
-        What the evaluator is expected to do (see `RecoveryEvaluator`): simulate at least `n_min` events and
-        top up to `k_target` recoveries or `n_max` events. Used only to predict the noise of a point before it is
-        measured, so that a batch can be built; the real ``k`` and ``n`` always enter the fit.
+        What the evaluator is expected to do: simulate at least `n_min` events, and top up to `k_target` recoveries or
+        `n_max` events. They only predict the noise of a point before it is measured, so that a batch can be built;
+        the real ``k`` and ``n`` always enter the fit. By default they are taken from the evaluator (its ``k_target``,
+        ``chunk_size`` and ``n_max``), or from ``config["phase_space.recovery"]`` if it has none.
     seed : int or numpy.random.SeedSequence, optional
         Seed for the designs, candidate sets and the kernel optimizer.
     kernel : sklearn.gaussian_process.kernels.Kernel, optional
         Kernel on the unit square, for the standardized logit. The default is an amplitude times an anisotropic
         Matern 5/2.
     n_restarts : int, optional
-        Restarts of the kernel hyperparameter optimizer. The default is 3.
+        Restarts of the kernel hyperparameter optimizer.
     map_fn : callable, optional
-        ``map_fn(evaluate, points)`` returning the results in order; replace it to evaluate a batch in parallel.
-        The default is the builtin `map`.
+        ``map_fn(evaluate, points)`` returning the results in order; replace it to evaluate a batch in parallel. The
+        default is the builtin `map`.
     table : astropy.table.Table, optional
         Previously evaluated points (see `table`) to resume from.
 
@@ -151,6 +135,26 @@ class PhaseSpaceSampler:
     ----------
     table : astropy.table.Table
         One row per evaluated point, in evaluation order.
+
+    Notes
+    -----
+    The model is a Gaussian process on the logit of the recovery fraction, :math:`y_i=\mathrm{logit}\,\hat p_i` with
+    :math:`\hat p_i=(k_i+1/2)/(n_i+1)`, and a per-point noise variance :math:`1/[(n_i+1)\hat p_i(1-\hat p_i)]` from the
+    delta method (see `~uvex_transients.utils.stat_utils.binomial_logit`).
+
+    The next points maximize an acquisition that is a function of the posterior only, never of an unseen outcome:
+
+    ``"variance"``
+        :math:`w(\mathbf x)\,\sigma_g^2(\mathbf x)`, the posterior variance of :math:`\ln(p+\epsilon)` by the delta
+        method, with :math:`w=[p(1-p)/(p+\epsilon)]^2`. The floor :math:`\epsilon` is the smallest recovery a single
+        point can resolve, so effort is not spent separating a recovery of :math:`10^{-6}` from zero.
+    ``"imse"``
+        The reduction, from observing at the candidate, of that same weighted variance integrated over the whole
+        space. It costs one covariance matrix per round and values a point by what it teaches about the whole map.
+
+    A batch is built greedily. After each pick the posterior covariance is updated as though the point had been
+    measured (the variance does not depend on the outcome), so the points of a batch spread out and can be evaluated
+    in parallel.
     """
 
     def __init__(
@@ -159,22 +163,37 @@ class PhaseSpaceSampler:
         bounds: Sequence[tuple[float, float]],
         *,
         names: Sequence[str] = ("x0", "x1"),
-        n_initial: int = 24,
-        batch_size: int = 4,
-        max_points: int = 200,
-        tolerance: float = 0.1,
-        acquisition: str = "variance",
-        n_candidates: int = 1024,
-        floor: float = 1e-3,
-        k_target: float = 30.0,
-        n_min: float = 1000.0,
-        n_max: float = 20000.0,
+        n_initial: int | None = None,
+        batch_size: int | None = None,
+        max_points: int | None = None,
+        tolerance: float | None = None,
+        acquisition: str | None = None,
+        n_candidates: int | None = None,
+        floor: float | None = None,
+        k_target: float | None = None,
+        n_min: float | None = None,
+        n_max: float | None = None,
         seed: int | np.random.SeedSequence | None = None,
         kernel=None,
-        n_restarts: int = 3,
+        n_restarts: int | None = None,
         map_fn: Callable = map,
         table: Table | None = None,
     ):
+        # Anything not given comes from the configuration, and what the evaluator is expected to do from the
+        # evaluator itself, so that the two cannot disagree
+        n_initial = _configured(n_initial, "sampler.n_initial")
+        batch_size = _configured(batch_size, "sampler.batch_size")
+        max_points = _configured(max_points, "sampler.max_points")
+        tolerance = _configured(tolerance, "sampler.tolerance")
+        acquisition = _configured(acquisition, "sampler.acquisition")
+        n_candidates = _configured(n_candidates, "sampler.n_candidates")
+        floor = _configured(floor, "sampler.floor")
+        n_restarts = _configured(n_restarts, "sampler.n_restarts")
+        k_target = _expected(k_target, evaluate, "k_target", "recovery.k_target")
+        n_min = _expected(n_min, evaluate, "chunk_size", "recovery.chunk_size")
+        n_max = _expected(n_max, evaluate, "n_max", "recovery.n_max")
+
+        # Validate everything before anything is stored
         bounds = np.asarray(bounds, dtype=np.float64)
         if bounds.shape != (2, 2) or not np.all(bounds[:, 1] > bounds[:, 0]):
             raise ValueError(f"`bounds` must be [(lo, hi), (lo, hi)] with lo < hi, got {bounds.tolist()}.")
@@ -205,10 +224,13 @@ class PhaseSpaceSampler:
         self._n_restarts = int(n_restarts)
         self._map_fn = map_fn
         self._seed = np.random.SeedSequence(seed) if not isinstance(seed, np.random.SeedSequence) else seed
+
+        # The Gaussian process is fitted on first use
         self._gp = None
         self._y_mean = 0.0
         self._y_scale = 1.0
 
+        # Resume from the points of an earlier run
         self._rows: list[dict] = []
         if table is not None:
             self._rows = [{name: row[name] for name in table.colnames} for row in table]
@@ -216,9 +238,9 @@ class PhaseSpaceSampler:
                 if name not in table.colnames:
                     raise ValueError(f"Cannot resume from a table with no {name!r} column.")
 
-    # ------------------------------------------------------------------ #
-    # Data                                                                #
-    # ------------------------------------------------------------------ #
+    # -------------------------------------- #
+    # Data                                   #
+    # -------------------------------------- #
     @property
     def bounds(self) -> NDArray[np.float64]:
         """numpy.ndarray: The mapped rectangle, ``[[lo, hi], [lo, hi]]``."""
@@ -329,11 +351,14 @@ class PhaseSpaceSampler:
         """
         table = Table.read(Path(path), format="ascii.ecsv")
         meta = table.meta
+
+        # What the file records stands unless the caller overrides it
         kwargs.setdefault("bounds", meta["bounds"])
         kwargs.setdefault("names", tuple(meta["names"]))
         for key, value in meta.get("sampler", {}).items():
             kwargs.setdefault(key, value)
 
+        # Rebuild the evaluator the file names, but only from inside this package
         if evaluate is None:
             spec = meta.get("evaluator")
             if spec is None:
@@ -361,12 +386,12 @@ class PhaseSpaceSampler:
         x = np.array([[row[name] for name in self._names] for row in self._rows], dtype=np.float64)
         k = np.array([row["k"] for row in self._rows])
         n = np.array([row["n"] for row in self._rows])
-        y, variance = _logit_data(k, n)
+        y, variance = binomial_logit(k, n)
         return self._unit(x), y, variance
 
-    # ------------------------------------------------------------------ #
-    # Model                                                               #
-    # ------------------------------------------------------------------ #
+    # -------------------------------------- #
+    # Model                                  #
+    # -------------------------------------- #
     def fit(self) -> None:
         """
         Fit the Gaussian process to every point evaluated so far.
@@ -379,16 +404,18 @@ class PhaseSpaceSampler:
         gaussian_process = _require_sklearn()
         kernels = gaussian_process.kernels
 
+        # Standardize the target by hand, and scale the noise variances with it so that they stay in its units
         x, y, variance = self._training_data()
         self._y_mean = float(np.mean(y))
         self._y_scale = float(np.std(y)) or 1.0
 
         kernel = self._kernel
         if kernel is None:
-            kernel = kernels.ConstantKernel(1.0, (1e-2, 1e2)) * kernels.Matern(
-                length_scale=[0.3, 0.3], length_scale_bounds=(0.03, 10.0), nu=2.5
+            kernel = kernels.ConstantKernel(*_AMPLITUDE) * kernels.Matern(
+                length_scale=[_LENGTH_SCALE[0]] * 2, length_scale_bounds=_LENGTH_SCALE[1], nu=_MATERN_NU
             )
 
+        # A child of the seed makes the optimizer's restarts reproducible without sharing a stream with the designs
         child = self._seed.spawn(1)[0]
         self._gp = gaussian_process.GaussianProcessRegressor(
             kernel=kernel,
@@ -472,16 +499,16 @@ class PhaseSpaceSampler:
         mean, std = self.predict(x)
         return np.sqrt(self._weight(expit(mean))) * std
 
-    # ------------------------------------------------------------------ #
-    # Maps                                                                #
-    # ------------------------------------------------------------------ #
+    # -------------------------------------- #
+    # Maps                                   #
+    # -------------------------------------- #
     @staticmethod
-    def _broadcast(log_luminosity, log_duration):
+    def _broadcast(log_luminosity, log_half_time):
         """Broadcast the coordinates, and return them as arrays with the points stacked as rows."""
-        log_luminosity, log_duration = np.broadcast_arrays(
-            np.asarray(log_luminosity, dtype=np.float64), np.asarray(log_duration, dtype=np.float64)
+        log_luminosity, log_half_time = np.broadcast_arrays(
+            np.asarray(log_luminosity, dtype=np.float64), np.asarray(log_half_time, dtype=np.float64)
         )
-        return log_luminosity, log_duration, np.column_stack([log_luminosity.ravel(), log_duration.ravel()])
+        return log_luminosity, log_half_time, np.column_stack([log_luminosity.ravel(), log_half_time.ravel()])
 
     def _scales(self):
         """Return the evaluator, which supplies the noise-free scales of the maps, if it can."""
@@ -493,15 +520,15 @@ class PhaseSpaceSampler:
             )
         return self._evaluate
 
-    def _scaled_recovery(self, log_luminosity, log_duration, scale, interval):
+    def _scaled_recovery(self, log_luminosity, log_half_time, scale, interval):
         """Return the recovery fraction (and its interval) times `scale`, which is `None` or per point."""
-        log_luminosity, log_duration, points = self._broadcast(log_luminosity, log_duration)
+        log_luminosity, log_half_time, points = self._broadcast(log_luminosity, log_half_time)
         recovery = self.recovery(points)
-        factor = 1.0 if scale is None else np.asarray(scale(log_luminosity, log_duration), dtype=np.float64).ravel()
+        factor = 1.0 if scale is None else np.asarray(scale(log_luminosity, log_half_time), dtype=np.float64).ravel()
         values = [(recovery[key] * factor).reshape(log_luminosity.shape) for key in ("p", "p_lo", "p_hi")]
         return tuple(values) if interval else values[0]
 
-    def evaluate_recovery_map(self, log_luminosity, log_duration, *, interval: bool = False):
+    def evaluate_recovery_map(self, log_luminosity, log_half_time, *, interval: bool = False):
         r"""
         Evaluate the recovery fraction :math:`f` in the sampled footprint.
 
@@ -510,7 +537,7 @@ class PhaseSpaceSampler:
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
         interval : bool, optional
             If `True`, return ``(median, lower, upper)``, with the interval one posterior standard deviation of the
@@ -521,9 +548,9 @@ class PhaseSpaceSampler:
         numpy.ndarray or tuple of numpy.ndarray
             The shape of the broadcast coordinates.
         """
-        return self._scaled_recovery(log_luminosity, log_duration, None, interval)
+        return self._scaled_recovery(log_luminosity, log_half_time, None, interval)
 
-    def evaluate_efficiency_map(self, log_luminosity, log_duration, *, interval: bool = False):
+    def evaluate_efficiency_map(self, log_luminosity, log_half_time, *, interval: bool = False):
         r"""
         Evaluate the efficiency :math:`\eta = f\,\mathcal E/(4\pi\,T)` over the whole sky and survey window.
 
@@ -533,7 +560,7 @@ class PhaseSpaceSampler:
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
         interval : bool, optional
             As in `evaluate_recovery_map`.
@@ -543,19 +570,19 @@ class PhaseSpaceSampler:
         numpy.ndarray or tuple of numpy.ndarray
             The shape of the broadcast coordinates.
         """
-        return self._scaled_recovery(log_luminosity, log_duration, self._scales().coverage, interval)
+        return self._scaled_recovery(log_luminosity, log_half_time, self._scales().coverage, interval)
 
-    def evaluate_recovered_volume_time_map(self, log_luminosity, log_duration, *, interval: bool = False):
+    def evaluate_recovered_volume_time_map(self, log_luminosity, log_half_time, *, interval: bool = False):
         r"""
         Evaluate the recovered volume-time :math:`f\,\mathcal V T`, in Mpc^3 yr.
 
         The expected number of recoveries at one event per Mpc^3 per yr, for a rate constant in redshift. It does not
-        depend on the number of time bins or the redshift limit, except that it is a lower bound where the limit is
-        capped. Needs an evaluator, see `_scales`.
+        depend on the number of time bins. It is a lower bound only for luminosities so high that the redshift limit
+        reaches where the band leaves the spectrum (log L_band of about 49). Needs an evaluator, see `_scales`.
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
         interval : bool, optional
             As in `evaluate_recovery_map`.
@@ -565,9 +592,11 @@ class PhaseSpaceSampler:
         numpy.ndarray or tuple of numpy.ndarray
             The shape of the broadcast coordinates.
         """
-        return self._scaled_recovery(log_luminosity, log_duration, self._scales().volume_time, interval)
+        return self._scaled_recovery(log_luminosity, log_half_time, self._scales().volume_time, interval)
 
-    def evaluate_expected_recoveries_map(self, log_luminosity, log_duration, rate: Quantity, *, interval: bool = False):
+    def evaluate_expected_recoveries_map(
+        self, log_luminosity, log_half_time, rate: Quantity, *, interval: bool = False
+    ):
         """
         Evaluate the expected number of recoveries over the survey, for a population of one luminosity and duration.
 
@@ -575,7 +604,7 @@ class PhaseSpaceSampler:
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
         rate : ~astropy.units.Quantity
             The comoving volumetric rate, with units of inverse volume per time, for example ``10 / u.Gpc**3 / u.yr``.
@@ -590,16 +619,16 @@ class PhaseSpaceSampler:
         per_mpc3_yr = u.Quantity(rate).to_value(u.Mpc**-3 * u.yr**-1)
         volume_time = self._scales().volume_time
         return self._scaled_recovery(
-            log_luminosity, log_duration, lambda a, b: per_mpc3_yr * volume_time(a, b), interval
+            log_luminosity, log_half_time, lambda a, b: per_mpc3_yr * volume_time(a, b), interval
         )
 
-    def evaluate_uncertainty_map(self, log_luminosity, log_duration):
+    def evaluate_uncertainty_map(self, log_luminosity, log_half_time):
         r"""
         Evaluate the posterior standard deviation of :math:`\ln(f+\epsilon)`; see `log_uncertainty`.
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
 
         Returns
@@ -607,16 +636,16 @@ class PhaseSpaceSampler:
         numpy.ndarray
             The shape of the broadcast coordinates.
         """
-        log_luminosity, _, points = self._broadcast(log_luminosity, log_duration)
+        log_luminosity, _, points = self._broadcast(log_luminosity, log_half_time)
         return self.log_uncertainty(points).reshape(log_luminosity.shape)
 
-    def evaluate_coverage_map(self, log_luminosity, log_duration):
+    def evaluate_coverage_map(self, log_luminosity, log_half_time):
         """
         Evaluate the fraction of the sky and survey window that the sampled footprint covers (noise-free).
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
 
         Returns
@@ -624,15 +653,15 @@ class PhaseSpaceSampler:
         numpy.ndarray
             Between 0 and 1, the shape of the broadcast coordinates.
         """
-        return self._scales().coverage(log_luminosity, log_duration)
+        return self._scales().coverage(log_luminosity, log_half_time)
 
-    def evaluate_volume_time_map(self, log_luminosity, log_duration):
+    def evaluate_volume_time_map(self, log_luminosity, log_half_time):
         """
         Evaluate the volume-time of the sampled footprint over the survey, in Mpc^3 yr (noise-free).
 
         Parameters
         ----------
-        log_luminosity, log_duration : array-like
+        log_luminosity, log_half_time : array-like
             The coordinates, in the units of `bounds`, broadcast against each other.
 
         Returns
@@ -640,7 +669,7 @@ class PhaseSpaceSampler:
         numpy.ndarray
             The shape of the broadcast coordinates.
         """
-        return self._scales().volume_time(log_luminosity, log_duration)
+        return self._scales().volume_time(log_luminosity, log_half_time)
 
     def evaluate_all_sky_volume_time_map(self, log_luminosity):
         """
@@ -675,7 +704,10 @@ class PhaseSpaceSampler:
         return self._scales().redshift_limit(log_luminosity)
 
     def map_table(
-        self, grid_size: int = 60, rate: Quantity | None = None, bounds: Sequence[tuple[float, float]] | None = None
+        self,
+        grid_size: int | None = None,
+        rate: Quantity | None = None,
+        bounds: Sequence[tuple[float, float]] | None = None,
     ) -> Table:
         """
         Evaluate every map on a regular grid, with intervals, as one table.
@@ -683,7 +715,7 @@ class PhaseSpaceSampler:
         Parameters
         ----------
         grid_size : int, optional
-            Points per axis. The default is 60.
+            Points per axis. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
         rate : ~astropy.units.Quantity, optional
             A volumetric rate; adds the ``expected_recoveries`` columns. See `evaluate_expected_recoveries_map`.
         bounds : sequence of (float, float), optional
@@ -693,11 +725,12 @@ class PhaseSpaceSampler:
         -------
         astropy.table.Table
             One row per grid point, in ``ij`` order (the first coordinate varies slowest), with the coordinates,
-            ``z_limit``, ``z_limit_capped``, ``coverage``, ``volume_time``, ``all_sky_volume_time``, ``sigma_log`` and
+            ``z_limit``, ``coverage``, ``volume_time``, ``all_sky_volume_time``, ``sigma_log`` and
             ``f``, ``efficiency`` and ``recovered_volume_time`` (each with ``_lo`` and ``_hi``). Its ``meta`` holds what
             the evaluator records about the axes, such as the band, which the figure uses to label them.
         """
         scales = self._scales()
+        grid_size = _configured(grid_size, "map.grid_size")
         (l_lo, l_hi), (d_lo, d_hi) = self._bounds if bounds is None else np.asarray(bounds, dtype=np.float64)
         log_l, log_dt = np.meshgrid(
             np.linspace(l_lo, l_hi, grid_size), np.linspace(d_lo, d_hi, grid_size), indexing="ij"
@@ -707,12 +740,15 @@ class PhaseSpaceSampler:
         table = Table()
         table.meta.update(getattr(scales, "table_meta", {}))
         table[self._names[0]], table[self._names[1]] = luminosity, duration
+
+        # The noise-free scales, from the evaluator
         table["z_limit"] = self.evaluate_z_limit_map(luminosity)
-        table["z_limit_capped"] = luminosity > scales.redshift_limit.log_luminosity_max
         table["coverage"] = self.evaluate_coverage_map(luminosity, duration)
         table["volume_time"] = self.evaluate_volume_time_map(luminosity, duration)
         table["all_sky_volume_time"] = self.evaluate_all_sky_volume_time_map(luminosity)
         table["sigma_log"] = self.evaluate_uncertainty_map(luminosity, duration)
+
+        # The fitted quantities, each with its interval
         for name, evaluate in (
             ("f", self.evaluate_recovery_map),
             ("efficiency", self.evaluate_efficiency_map),
@@ -727,9 +763,9 @@ class PhaseSpaceSampler:
                 table["expected_recoveries" + suffix] = values
         return table
 
-    # ------------------------------------------------------------------ #
-    # Acquisition                                                         #
-    # ------------------------------------------------------------------ #
+    # -------------------------------------- #
+    # Acquisition                            #
+    # -------------------------------------- #
     def _weight(self, p: NDArray) -> NDArray:
         r"""Return :math:`w=[p(1-p)/(p+\epsilon)]^2`, the squared slope of :math:`\ln(p+\epsilon)` in the logit."""
         p = np.clip(p, _P_CLIP, 1.0 - _P_CLIP)
@@ -741,11 +777,11 @@ class PhaseSpaceSampler:
         n_expected = np.clip(self.k_target / p, self.n_min, self.n_max)
         return 1.0 / (n_expected * p * (1.0 - p))
 
-    def _candidates(self) -> NDArray:
-        """Draw a fresh scrambled Sobol candidate set over the unit square."""
+    def _sobol(self, n: int) -> NDArray:
+        """Draw `n` points of a fresh scrambled Sobol design over the unit square."""
         child = self._seed.spawn(1)[0]
         sobol = qmc.Sobol(d=2, scramble=True, seed=np.random.default_rng(child))
-        return sobol.random_base2(int(np.ceil(np.log2(self.n_candidates))))[: self.n_candidates]
+        return sobol.random_base2(int(np.ceil(np.log2(n))))[:n]
 
     def propose(self, batch_size: int | None = None) -> tuple[NDArray, float]:
         r"""
@@ -767,11 +803,14 @@ class PhaseSpaceSampler:
         batch_size = self.batch_size if batch_size is None else int(batch_size)
         self.fit()
 
-        candidates = self._candidates()
+        # The posterior over a fresh candidate set, and what a point there would be worth
+        candidates = self._sobol(self.n_candidates)
         mean, covariance = self.predict(self._physical(candidates), cov=True)
         p = expit(mean)
         weight = self._weight(p)
         noise = self._expected_noise(p)
+
+        # The largest uncertainty before the batch, which is what `tolerance` is compared to
         uncertainty = float(np.sqrt(np.max(weight * np.diag(covariance))))
 
         chosen: list[int] = []
@@ -781,6 +820,8 @@ class PhaseSpaceSampler:
                 score = weight * diagonal
             else:
                 score = (weight[:, None] * covariance**2).sum(axis=0) / (diagonal + noise)
+
+            # Never the same candidate twice
             score[chosen] = -np.inf
             best = int(np.argmax(score))
             chosen.append(best)
@@ -792,9 +833,9 @@ class PhaseSpaceSampler:
 
         return self._physical(candidates[chosen]), uncertainty
 
-    # ------------------------------------------------------------------ #
-    # Running                                                             #
-    # ------------------------------------------------------------------ #
+    # -------------------------------------- #
+    # Running                                #
+    # -------------------------------------- #
     def _evaluate_points(self, points: NDArray) -> None:
         """Evaluate points and append their results to the stored rows."""
         results = list(self._map_fn(self._evaluate, [np.asarray(point, dtype=np.float64) for point in points]))
@@ -802,6 +843,8 @@ class PhaseSpaceSampler:
             for key in ("k", "n"):
                 if key not in result:
                     raise KeyError(f"`evaluate` must return {key!r}; got keys {sorted(result)}.")
+
+            # The coordinates, then whatever else the evaluator reported as extra columns
             row = {self._names[0]: float(point[0]), self._names[1]: float(point[1])}
             row.update({key: value for key, value in result.items() if key not in row})
             row["k"], row["n"] = int(row["k"]), int(row["n"])
@@ -810,9 +853,7 @@ class PhaseSpaceSampler:
     def _evaluate_initial_design(self) -> None:
         """Evaluate a scrambled Sobol design to bring the number of points up to `n_initial`."""
         n_new = self.n_initial - len(self._rows)
-        child = self._seed.spawn(1)[0]
-        sobol = qmc.Sobol(d=2, scramble=True, seed=np.random.default_rng(child))
-        design = sobol.random_base2(int(np.ceil(np.log2(n_new))))[:n_new]
+        design = self._sobol(n_new)
         logger.info("PhaseSpaceSampler: evaluating an initial design of %d points.", n_new)
         self._evaluate_points(self._physical(design))
 
@@ -839,6 +880,7 @@ class PhaseSpaceSampler:
             if callback is not None:
                 callback(self)
 
+        # Rounds of propose, evaluate and refit, until the budget is spent or the map is good enough
         while len(self._rows) < self.max_points:
             n_new = min(self.batch_size, self.max_points - len(self._rows))
             points, uncertainty = self.propose(n_new)

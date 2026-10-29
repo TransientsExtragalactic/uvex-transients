@@ -11,7 +11,7 @@ from uvex_transients.phase_space.evaluator import RecoveryEvaluator  # noqa: E40
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler  # noqa: E402
 
 BOUNDS = [(41.5, 44.0), (0.0, 2.0)]
-NAMES = ("log_luminosity", "log_duration")
+NAMES = ("log_luminosity", "log_half_time")
 RATE = 10.0 / u.Gpc**3 / u.yr
 
 
@@ -149,7 +149,6 @@ def test_the_grid_table_agrees_with_the_point_maps(loaded):
         "volume_time",
         "all_sky_volume_time",
         "z_limit",
-        "z_limit_capped",
         "sigma_log",
     ):
         assert column in table.colnames
@@ -183,5 +182,52 @@ def test_the_plot_has_a_panel_for_each_quantity(loaded):
         assert len(figure.axes) >= 4
         labels = " ".join(ax.get_ylabel() + ax.get_xlabel() for ax in figure.axes)
         assert "absolute AB magnitude" in labels
+        # The third panel is the rate for one recovery, in units of the local core-collapse supernova rate.
+        assert "rate for one recovery / local CCSN rate" in labels
     finally:
         matplotlib.pyplot.close(figure)
+
+
+def test_overlays_are_shaded_and_keyed_by_a_legend_and_do_not_stretch_the_axes(loaded):
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    from uvex_transients.phase_space.plotting import plot_map
+
+    rng = np.random.default_rng(0)
+    overlay = Table({"log_luminosity": rng.normal(43.0, 0.3, 80), "log_half_time": rng.normal(1.0, 0.2, 80)})
+    overlay["measured"] = True
+    overlay.meta["class"] = "Test"
+    # Too small for a density estimate, so it is drawn as a box instead, and far outside the map.
+    far = Table({"log_luminosity": [30.0, 31.0], "log_half_time": [5.0, 6.0], "measured": [True, True]})
+    far.meta["class"] = "Far"
+
+    grid = loaded.map_table(6)
+    plain = plot_map(grid, loaded.table)
+    figure = plot_map(grid, loaded.table, overlays=[overlay, far])
+    try:
+        top, bottom = figure.axes[0], figure.axes[2]
+        # The classes are named by one legend, in the colours of their shading, and not by text on the panels.
+        assert [text.get_text() for text in figure.legends[0].get_texts()] == ["Test", "Far"]
+        names = {text.get_text() for panel in (top, bottom) for text in panel.texts}
+        assert names.isdisjoint({"Test", "Far"})
+        # The shading and its outline are added to every panel, and the box of the small population is a patch.
+        assert len(bottom.collections) > len(plain.axes[2].collections)
+        assert len(bottom.patches) == len(plain.axes[2].patches) + 1
+        assert top.get_xlim() == plain.axes[0].get_xlim() and top.get_ylim() == plain.axes[0].get_ylim()
+    finally:
+        matplotlib.pyplot.close(figure)
+        matplotlib.pyplot.close(plain)
+
+
+def test_the_simulated_points_are_only_marked_on_request(loaded):
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    from uvex_transients.phase_space.plotting import plot_map
+
+    grid = loaded.map_table(6)
+    hidden, shown = plot_map(grid, loaded.table), plot_map(grid, loaded.table, show_points=True)
+    try:
+        assert len(shown.axes[0].collections) == len(hidden.axes[0].collections) + 1
+    finally:
+        matplotlib.pyplot.close(hidden)
+        matplotlib.pyplot.close(shown)

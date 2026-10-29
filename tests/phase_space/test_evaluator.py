@@ -5,8 +5,8 @@ import pytest
 from astropy import units as u
 from scipy.integrate import quad
 
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator, RedshiftLimit, equivalent_bandwidth
-from uvex_transients.phase_space.transient import _TopHatTransient
+from uvex_transients.phase_space.evaluator import RecoveryEvaluator, RedshiftLimit
+from uvex_transients.phase_space.transient import FREQUENCY_MAX
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.utils.cosmology import get_cosmology
 
@@ -18,22 +18,35 @@ MISSION = "uvex_fast"
 BW = 14.55
 
 
-def _magnitude(log_luminosity, redshift):
-    """The AB magnitude of a source flat in L_nu."""
+def _magnitude(log_luminosity, redshift, spectral_index=0.0):
+    """The AB magnitude of a source with L_nu proportional to nu^alpha, at the frequency its luminosity is quoted at."""
     d_l = get_cosmology(None).luminosity_distance(redshift).to_value(u.cm)
-    return -2.5 * np.log10((1 + redshift) * 10.0**log_luminosity / (4 * np.pi * d_l**2)) - 48.6
+    return -2.5 * np.log10((1 + redshift) ** (1 + spectral_index) * 10.0**log_luminosity / (4 * np.pi * d_l**2)) - 48.6
 
 
 # ---------------------------------------------------------------------------- #
 # RedshiftLimit                                                                #
 # ---------------------------------------------------------------------------- #
+@pytest.mark.parametrize("spectral_index", [0.0, -1.0, -2.5, 0.5])
 @pytest.mark.parametrize("mag_limit", [24.5, 26.0])
-def test_the_source_reaches_the_depth_at_the_redshift_limit(mag_limit):
-    limit = RedshiftLimit(mag_limit)
-    log_luminosity = np.linspace(26.5, 29.0, 6)
+def test_the_source_reaches_the_depth_at_the_redshift_limit(mag_limit, spectral_index):
+    limit = RedshiftLimit(mag_limit, spectral_index=spectral_index)
+    log_luminosity = np.linspace(26.0, 28.0, 6)
     redshift = limit(log_luminosity)
     assert np.all(limit.z_min < redshift) and np.all(redshift < limit.z_max)
-    np.testing.assert_allclose(_magnitude(log_luminosity, redshift), mag_limit, atol=0.01)
+    np.testing.assert_allclose(_magnitude(log_luminosity, redshift, spectral_index), mag_limit, atol=0.01)
+
+
+def test_a_redder_source_is_seen_less_far_at_the_same_luminosity():
+    # The K-correction (1+z)^(1+alpha) brightens a source of alpha > -1 and dims one of alpha < -1.
+    log_luminosity = 28.0
+    steep, neutral, flat = (RedshiftLimit(26.0, spectral_index=alpha)(log_luminosity) for alpha in (-2.0, -1.0, 0.0))
+    assert steep < neutral < flat
+
+
+def test_a_spectrum_too_blue_to_have_a_redshift_limit_raises():
+    with pytest.raises(ValueError, match="too blue"):
+        RedshiftLimit(24.5, spectral_index=4.0)
 
 
 def test_a_brighter_source_is_visible_farther():
@@ -65,14 +78,6 @@ def test_a_bandwidth_moves_the_axis_from_l_nu_to_l_band():
     log_nu = np.linspace(27.0, 28.5, 5)
     np.testing.assert_allclose(banded(log_nu + np.log10(3.5e14)), spectral(log_nu))
     assert banded.log_luminosity_max == pytest.approx(spectral.log_luminosity_max + np.log10(3.5e14))
-
-
-def test_the_equivalent_bandwidth_of_a_top_hat_is_its_width_in_frequency():
-    import synphot
-
-    bandpass = synphot.SpectralElement(synphot.Box1D, x_0=1500 * u.AA, width=300 * u.AA)
-    expected = (1350 * u.AA).to(u.Hz, equivalencies=u.spectral()) - (1650 * u.AA).to(u.Hz, equivalencies=u.spectral())
-    assert equivalent_bandwidth(bandpass).to_value(u.Hz) == pytest.approx(expected.to_value(u.Hz), rel=0.03)
 
 
 # ---------------------------------------------------------------------------- #
@@ -163,22 +168,22 @@ def test_the_table_meta_labels_the_axis(schedule):
 
 def test_the_volume_time_matches_an_independent_calculation(schedule):
     evaluator = make_evaluator(schedule)
-    log_luminosity, log_duration = 28.5 + BW, 1.0
+    log_luminosity, log_half_time = 28.5 + BW, 1.0
     z_limit = float(evaluator.redshift_limit(log_luminosity))
 
     # The exposure straight from the simulator at the window length of this point, and the volume from quadrature.
-    transient = _TopHatTransient()
-    transient.set_point(10.0**log_luminosity * u.erg / u.s / evaluator.bandwidth, 10.0**log_duration * u.day, z_limit)
-    simulator = SurveySimulator(schedule, {"top_hat": transient})
+    transient = evaluator.make_transient()
+    transient.set_point(10.0**log_luminosity * u.erg / u.s / evaluator.bandwidth, 10.0**log_half_time * u.day, z_limit)
+    simulator = SurveySimulator(schedule, {"canonical": transient})
     exposure = simulator.compute_effective_exposure(TIME_BINS, nside=NSIDE, order="nested").total_effective_exposure
     cosmology = evaluator.cosmology
     volume, _ = quad(
         lambda z: cosmology.differential_comoving_volume(z).to_value(u.Mpc**3 / u.sr) / (1 + z), 0.0, z_limit
     )
-    expected = exposure["top_hat"].to_value(u.sr * u.yr) * volume
+    expected = exposure["canonical"].to_value(u.sr * u.yr) * volume
 
     # The evaluator interpolates the exposure between windows 0.1 dex apart.
-    assert float(evaluator.volume_time(log_luminosity, log_duration)) == pytest.approx(expected, rel=0.05)
+    assert float(evaluator.volume_time(log_luminosity, log_half_time)) == pytest.approx(expected, rel=0.05)
 
 
 def test_the_volume_time_grows_with_luminosity_and_broadcasts(schedule):
@@ -198,16 +203,16 @@ def test_invalid_settings_raise(schedule, kwargs):
 
 def test_coverage_is_the_exposure_over_the_whole_sky_and_survey(schedule):
     evaluator = make_evaluator(schedule)
-    log_luminosity, log_duration = 28.5 + BW, 1.0
+    log_luminosity, log_half_time = 28.5 + BW, 1.0
     z_limit = float(evaluator.redshift_limit(log_luminosity))
 
-    transient = _TopHatTransient()
-    transient.set_point(10.0**log_luminosity * u.erg / u.s / evaluator.bandwidth, 10.0**log_duration * u.day, z_limit)
-    simulator = SurveySimulator(schedule, {"top_hat": transient})
+    transient = evaluator.make_transient()
+    transient.set_point(10.0**log_luminosity * u.erg / u.s / evaluator.bandwidth, 10.0**log_half_time * u.day, z_limit)
+    simulator = SurveySimulator(schedule, {"canonical": transient})
     exposure = simulator.compute_effective_exposure(TIME_BINS, nside=NSIDE, order="nested").total_effective_exposure
-    expected = exposure["top_hat"].to_value(u.sr * u.day) / (4 * np.pi * schedule.duration.to_value(u.day))
+    expected = exposure["canonical"].to_value(u.sr * u.day) / (4 * np.pi * schedule.duration.to_value(u.day))
 
-    coverage = float(evaluator.coverage(log_luminosity, log_duration))
+    coverage = float(evaluator.coverage(log_luminosity, log_half_time))
     assert 0.0 < coverage <= 1.0
     assert coverage == pytest.approx(expected, rel=0.05)
 
@@ -215,12 +220,30 @@ def test_coverage_is_the_exposure_over_the_whole_sky_and_survey(schedule):
 def test_the_all_sky_volume_time_is_the_volume_time_over_the_coverage(schedule):
     evaluator = make_evaluator(schedule)
     log_luminosity = np.linspace(27.0, 29.5, 4) + BW
-    log_duration = np.full(4, 1.0)
+    log_half_time = np.full(4, 1.0)
     np.testing.assert_allclose(
         evaluator.all_sky_volume_time(log_luminosity),
-        evaluator.volume_time(log_luminosity, log_duration) / evaluator.coverage(log_luminosity, log_duration),
+        evaluator.volume_time(log_luminosity, log_half_time) / evaluator.coverage(log_luminosity, log_half_time),
         rtol=1e-12,
     )
+
+
+def test_a_bright_event_cut_reaches_a_few_megaparsecs_without_being_clipped(schedule):
+    # At 20 AB a source of L_band = 1e38 erg/s is seen only to about 2.5 Mpc, below where a coarser table would stop.
+    evaluator = make_evaluator(schedule, mag_limit=20.0)
+    log_band = 38.0
+    assert not evaluator.redshift_limit.is_clipped(log_band)
+    z_limit = float(evaluator.redshift_limit(log_band))
+    assert z_limit < 1e-3
+    log_nu = log_band - np.log10(evaluator.bandwidth.to_value(u.Hz))
+    assert _magnitude(log_nu, z_limit, evaluator.spectral_index) == pytest.approx(20.0, abs=0.02)
+    # The volume out to there is the cube law, not an interpolation across a coarse grid.
+    cosmology = evaluator.cosmology
+    volume, _ = quad(
+        lambda z: cosmology.differential_comoving_volume(z).to_value(u.Mpc**3 / u.sr) / (1 + z), 0.0, z_limit
+    )
+    expected = 4 * np.pi * volume * schedule.duration.to_value(u.yr)
+    assert float(evaluator.all_sky_volume_time(log_band)) == pytest.approx(expected, rel=2e-3)
 
 
 def test_the_all_sky_volume_time_matches_the_comoving_volume(schedule):
@@ -237,8 +260,56 @@ def test_the_all_sky_volume_time_matches_the_comoving_volume(schedule):
 
 def test_the_efficiency_is_the_recovery_times_the_coverage_and_never_exceeds_it(schedule):
     evaluator = make_evaluator(schedule)
-    log_luminosity, log_duration = np.array([27.5, 28.5]) + BW, np.array([0.5, 1.5])
+    log_luminosity, log_half_time = np.array([27.5, 28.5]) + BW, np.array([0.5, 1.5])
     recovery = np.array([0.2, 1.0])
-    efficiency = evaluator.efficiency(recovery, log_luminosity, log_duration)
-    np.testing.assert_allclose(efficiency, recovery * evaluator.coverage(log_luminosity, log_duration))
-    assert efficiency[1] <= evaluator.coverage(log_luminosity[1], log_duration[1])
+    efficiency = evaluator.efficiency(recovery, log_luminosity, log_half_time)
+    np.testing.assert_allclose(efficiency, recovery * evaluator.coverage(log_luminosity, log_half_time))
+    assert efficiency[1] <= evaluator.coverage(log_luminosity[1], log_half_time[1])
+
+
+def test_the_spectral_index_is_recorded_and_reaches_every_piece(schedule):
+    evaluator = make_evaluator(schedule, spectral_index=-2.0)
+    assert evaluator.settings["spectral_index"] == -2.0
+    assert evaluator.table_meta["spectral_index"] == -2.0
+    assert evaluator.redshift_limit.spectral_index == -2.0
+    transient = evaluator.make_transient()
+    assert transient.spectral_index == -2.0
+    assert transient.reference_frequency == evaluator.reference_frequency
+    # The default is not flat, and a different index changes the bandwidth that converts L_band to L_nu.
+    assert make_evaluator(schedule).spectral_index == -2.0
+    assert evaluator.bandwidth != make_evaluator(schedule, spectral_index=0.0).bandwidth
+
+
+def test_the_redshift_table_ends_where_the_band_leaves_the_spectrum(schedule):
+    for band in ("FUV", "NUV"):
+        evaluator = make_evaluator(schedule, band=band)
+        edge = FREQUENCY_MAX.to_value(u.Hz) / evaluator.reference_frequency.to_value(u.Hz) - 1.0
+        assert evaluator.redshift_edge == pytest.approx(edge)
+        assert evaluator.redshift_limit.z_max == evaluator.redshift_edge > 20.0
+        assert "z_max" not in evaluator.settings
+    # Fainter than anything the map reaches, the limit comes from the depth alone and is nowhere near the edge.
+    evaluator = make_evaluator(schedule)
+    assert not evaluator.redshift_limit.is_clipped(45.0)
+    assert evaluator.redshift_limit(44.0) < 0.2 * evaluator.redshift_edge
+
+
+def test_the_light_curve_shape_is_recorded_and_reaches_the_transient(schedule):
+    evaluator = make_evaluator(schedule, rise_ratio=0.2, fade_mag=7.0)
+    assert evaluator.settings["rise_ratio"] == 0.2 and evaluator.settings["fade_mag"] == 7.0
+    transient = evaluator.make_transient()
+    assert transient.rise_ratio == 0.2 and transient.fade_mag == 7.0
+    assert evaluator._transient.window_factor == transient.window_factor
+    # A longer fade means a longer window, so a larger footprint.
+    assert make_evaluator(schedule, fade_mag=8.0)._transient.window_factor > evaluator._transient.window_factor
+
+
+def test_settings_of_a_top_hat_map_are_refused(schedule):
+    settings = make_evaluator(schedule).settings
+    del settings["rise_ratio"]
+    with pytest.raises(ValueError, match="top-hat"):
+        RecoveryEvaluator.from_settings(settings, schedule=schedule, mission=MISSION)
+
+
+def test_an_index_with_no_redshift_limit_is_refused_by_the_evaluator(schedule):
+    with pytest.raises(ValueError, match="too blue"):
+        make_evaluator(schedule, spectral_index=4.0)
