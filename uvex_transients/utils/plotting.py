@@ -68,6 +68,7 @@ __all__ = [
     "add_funnel_legend",
     "plot_rate_bars",
     "plot_detection_horizon",
+    "plot_luminosity_function",
     "plot_swift_uv_calibration",
 ]
 
@@ -973,6 +974,76 @@ def plot_detection_horizon(
 
     fig.tight_layout()
     return fig
+
+
+def plot_luminosity_function(
+    table,
+    *,
+    band: str | None = None,
+    label: str | None = None,
+    color: str | None = None,
+    fig: Figure | None = None,
+    ax: Axes | None = None,
+    fig_size: tuple = (5.5, 4),
+) -> tuple[Figure, Axes]:
+    r"""
+    Plot the luminosity function of a transient class: its stepped density, with the interval of each bin shaded.
+
+    Takes the table that :meth:`~uvex_transients.transients.base.TransientBase.luminosity_function` returns, in
+    either of its two forms. A magnitude function is drawn on a linear axis with the brighter events to the right, as
+    magnitudes are usually shown, and a luminosity function on log axes. Only bins that hold events are drawn, since
+    the interval of an empty bin is an upper limit that spans the whole axis.
+
+    Parameters
+    ----------
+    table : ~astropy.table.QTable
+        The luminosity function, with ``meta["quantity"]`` of ``"luminosity"`` or ``"magnitude"``.
+    band : str, optional
+        The name of the band, for the axis label, for example ``"V"``.
+    label : str, optional
+        Legend label of the curve.
+    color : str, optional
+        Color of the curve and its intervals. Defaults to the first color of the style's cycle.
+    fig, ax : matplotlib.figure.Figure, matplotlib.axes.Axes, optional
+        Existing figure/axes to draw onto, via `resolve_fig_axes`.
+    fig_size : tuple, optional
+        Passed to `resolve_fig_axes` when creating a new figure.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The resolved figure.
+    ax : matplotlib.axes.Axes
+        The axes the function was drawn onto.
+    """
+    set_plot_style()
+    fig, ax = resolve_fig_axes(fig, ax, fig_size)
+
+    magnitude = table.meta["quantity"] == "magnitude"
+    occupied = np.asarray(table["count"]) > 0
+    # One step per bin, drawn on the edges
+    edges = np.append(table["lo"].value, table["hi"].value[-1])
+    pdf, pdf_lo, pdf_hi = (np.asarray(table[name].value) for name in ("pdf", "pdf_lo", "pdf_hi"))
+
+    pdf, pdf_lo, pdf_hi = (np.where(occupied, values, np.nan) for values in (pdf, pdf_lo, pdf_hi))
+
+    patch = ax.stairs(pdf, edges, color=color, label=label)
+    color = to_rgba(np.ravel(patch.get_edgecolor())[:4])
+    ax.stairs(pdf_hi, edges, baseline=pdf_lo, fill=True, color=color, alpha=0.25, lw=0)
+
+    if magnitude:
+        ax.invert_xaxis()
+        subscript = f"_{{{band}}}" if band else ""
+        ax.set_xlabel(rf"Peak absolute magnitude $M{subscript}$ (AB)")
+        ax.set_ylabel(rf"d$N$/d$M{subscript}$ per event [mag$^{{-1}}$]")
+    else:
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel(f"Peak {band + '-band ' if band else ''}luminosity [erg s$^{{-1}}$]")
+        ax.set_ylabel(r"d$N$/d$L$ per event [(erg s$^{-1}$)$^{-1}$]")
+    if label is not None:
+        ax.legend(frameon=False)
+    return fig, ax
 
 
 def plot_swift_uv_calibration(
