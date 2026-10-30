@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.core.detection_horizon &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/core/detection_horizon';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.core.detection_horizon</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.core.detection_horizon</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Detection horizons: the redshift beyond which a population is too faint to detect.</span>
+
+<span class="sd">A transient class is a population: its SED's parameter priors describe the spread of luminosities, timescales and</span>
+<span class="sd">colours. For a magnitude limit :math:`m`, the *horizon* :math:`z_L(m)` is the redshift beyond which, with probability</span>
+<span class="sd">``confidence``, at most a fraction ``tolerance`` of that population is brighter than :math:`m` in the detecting bands</span>
+<span class="sd">(95% and 1% by default). Sampling events beyond it wastes effort on events that are, to that confidence, undetectable.</span>
+
+<span class="sd">The calculation has three steps, one function each:</span>
+
+<span class="sd">1. `effective_peak_grid` draws parameters from the priors and finds, for every draw at every redshift of a grid, its</span>
+<span class="sd">   *effective peak magnitude*: the brightest magnitude it reaches, combined over bands (`reduce_bands`). This is the</span>
+<span class="sd">   expensive step. It does not depend on the magnitude limit, and its result is an `EffectivePeakGrid`.</span>
+<span class="sd">2. `first_crossing` finds each draw's *detection redshift* for a limit: the first grid redshift at which it is</span>
+<span class="sd">   fainter than the limit.</span>
+<span class="sd">3. `observability_curve` takes the upper tolerance limit of those redshifts</span>
+<span class="sd">   (`~uvex_transients.utils.stat_utils.tolerance_limit`), one for each magnitude limit.</span>
+
+<span class="sd">`detection_horizon` runs all three and widens the redshift grid until every limit is bracketed. The SED and transient</span>
+<span class="sd">classes expose these steps as `~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,</span>
+<span class="sd">`~uvex_transients.models.core.base.SpectralModel.get_observability_curve` and</span>
+<span class="sd">`~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon`. The horizons of the shipped classes</span>
+<span class="sd">are stored as `~uvex_transients.transients.horizon.HorizonCurve` files.</span>
+
+<span class="sd">The guarantee covers the SED's parameter priors only. Milky Way extinction and sky position are not included.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLRW</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralElement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.contrib.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_redirect_tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.phot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">D_LN_NU</span><span class="p">,</span>
+    <span class="n">band_weight_matrix</span><span class="p">,</span>
+    <span class="n">default_chunk_size</span><span class="p">,</span>
+    <span class="n">flux_to_ab_mag</span><span class="p">,</span>
+    <span class="n">integrate_chunk</span><span class="p">,</span>
+    <span class="n">resolve_bandpasses</span><span class="p">,</span>
+    <span class="n">restframe_frequency_grid</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.stat_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">tolerance_limit</span><span class="p">,</span> <span class="n">tolerance_rank</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericalInput</span><span class="p">,</span> <span class="n">RNGInput</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.lightcurve_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">crossing_coordinate</span><span class="p">,</span> <span class="n">first_true_index</span><span class="p">,</span> <span class="n">resolve_time_grid</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"EffectivePeakGrid"</span><span class="p">,</span>
+    <span class="s2">"check_sample_count"</span><span class="p">,</span>
+    <span class="s2">"detection_horizon"</span><span class="p">,</span>
+    <span class="s2">"effective_peak_grid"</span><span class="p">,</span>
+    <span class="s2">"first_crossing"</span><span class="p">,</span>
+    <span class="s2">"observability_curve"</span><span class="p">,</span>
+    <span class="s2">"reduce_bands"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">Criterion</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"any"</span><span class="p">,</span> <span class="s2">"all"</span><span class="p">,</span> <span class="s2">"k_of_n"</span><span class="p">]</span>
+<span class="sd">"""How bands combine into one effective peak magnitude; see `reduce_bands`."""</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># The grid                                                                    #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EffectivePeakGrid">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.EffectivePeakGrid.html#uvex_transients.models.core.detection_horizon.EffectivePeakGrid">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EffectivePeakGrid</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Effective peak magnitudes of a sampled population on a redshift grid.</span>
+
+<span class="sd">    Returned by `effective_peak_grid` and read by `observability_curve`. It does not depend on any magnitude limit, so</span>
+<span class="sd">    one grid serves any number of limits, confidences and tolerances.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m_eff : numpy.ndarray</span>
+<span class="sd">        Effective peak AB magnitudes, shape ``(M, Z)``: one row per draw, one column per redshift. ``inf`` means the</span>
+<span class="sd">        draw emits no flux at that redshift. ``nan`` means the model has no valid epoch for it on the time grid, and</span>
+<span class="sd">        counts as undetectable.</span>
+<span class="sd">    z_grid : numpy.ndarray</span>
+<span class="sd">        The redshifts, shape ``(Z,)``, strictly increasing.</span>
+<span class="sd">    criterion : {"any", "all", "k_of_n"}</span>
+<span class="sd">        How bands were combined; see `reduce_bands`.</span>
+<span class="sd">    k : int or None</span>
+<span class="sd">        The ``k`` of ``"k_of_n"``, otherwise `None`.</span>
+<span class="sd">    bands : tuple of str</span>
+<span class="sd">        Names of the bands combined.</span>
+<span class="sd">    t_rest : numpy.ndarray</span>
+<span class="sd">        The rest-frame time grid in seconds.</span>
+<span class="sd">    parameters : dict</span>
+<span class="sd">        The ``M`` sampled parameter values, ``{name: array of shape (M,)}`` in physical units. Row ``i`` of `m_eff`</span>
+<span class="sd">        belongs to element ``i`` of each, so one can ask which parameters set the horizon.</span>
+<span class="sd">    """</span>
+
+    <span class="n">m_eff</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">z_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">criterion</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">t_rest</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""int: Number of draws, ``M``."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_eff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="reduce_bands">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.reduce_bands.html#uvex_transients.models.core.detection_horizon.reduce_bands">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reduce_bands</span><span class="p">(</span><span class="n">peak_mags</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">criterion</span><span class="p">:</span> <span class="n">Criterion</span> <span class="o">=</span> <span class="s2">"any"</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Combine per-band peak magnitudes into one effective peak magnitude.</span>
+
+<span class="sd">    Magnitudes run backwards, so an event is detected at a limit when the result is at most the limit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    peak_mags : numpy.ndarray</span>
+<span class="sd">        Per-band peak magnitudes, shape ``(..., B)``.</span>
+<span class="sd">    criterion : {"any", "all", "k_of_n"}</span>
+<span class="sd">        ``"any"``: detected in at least one band (the minimum over bands). ``"all"``: in every band (the maximum).</span>
+<span class="sd">        ``"k_of_n"``: in at least `k` bands (the `k`-th smallest).</span>
+<span class="sd">    k : int, optional</span>
+<span class="sd">        Required for ``"k_of_n"``, with ``1 &lt;= k &lt;= B``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(...)``.</span>
+<span class="sd">    """</span>
+    <span class="n">n_bands</span> <span class="o">=</span> <span class="n">peak_mags</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">criterion</span> <span class="o">==</span> <span class="s2">"any"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">peak_mags</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">criterion</span> <span class="o">==</span> <span class="s2">"all"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">peak_mags</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">criterion</span> <span class="o">==</span> <span class="s2">"k_of_n"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">n_bands</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'k' must be an integer in [1, </span><span class="si">{</span><span class="n">n_bands</span><span class="si">}</span><span class="s2">] for criterion 'k_of_n', got </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">peak_mags</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown criterion </span><span class="si">{</span><span class="n">criterion</span><span class="si">!r}</span><span class="s2">; expected 'any', 'all' or 'k_of_n'."</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="peak_band_magnitudes">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html#uvex_transients.models.core.detection_horizon.peak_band_magnitudes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">peak_band_magnitudes</span><span class="p">(</span>
+    <span class="n">eval_log_luminosity</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">z_grid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">luminosity_distance</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">band_grids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]],</span>
+    <span class="n">t_rest</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">d_ln_nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">D_LN_NU</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Brightest AB magnitude over time of each draw, in each band, at each redshift.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eval_log_luminosity : callable</span>
+<span class="sd">        ``eval_log_luminosity(nu, t, **parameters)``: the natural log of the rest-frame :math:`L_\nu` in cgs, for</span>
+<span class="sd">        frequencies ``nu`` (Hz) and times ``t`` (s) that broadcast against the parameters. For a</span>
+<span class="sd">        `~uvex_transients.models.core.base.SpectralModel` this is its ``_eval``.</span>
+<span class="sd">    parameters : Mapping[str, numpy.ndarray]</span>
+<span class="sd">        The model parameters in cgs units, each of shape ``(N,)``, one entry per draw.</span>
+<span class="sd">    z_grid : numpy.ndarray</span>
+<span class="sd">        Redshifts, shape ``(Z,)``, increasing and positive.</span>
+<span class="sd">    luminosity_distance : numpy.ndarray</span>
+<span class="sd">        Luminosity distance at each redshift in cm, shape ``(Z,)``.</span>
+<span class="sd">    band_grids : sequence of tuple of numpy.ndarray</span>
+<span class="sd">        Each band's observed frequency samples (Hz) and throughput.</span>
+<span class="sd">    t_rest : numpy.ndarray</span>
+<span class="sd">        Rest-frame times since explosion in seconds, shape ``(T,)``.</span>
+<span class="sd">    chunk_size : int, optional</span>
+<span class="sd">        Draws evaluated per step. By default it is chosen so that the largest intermediate array is about 32 MB.</span>
+<span class="sd">    d_ln_nu : float, optional</span>
+<span class="sd">        Spacing of the rest-frame frequency grid in :math:`\ln\nu`; see</span>
+<span class="sd">        `~uvex_transients.utils.phot_utils.restframe_frequency_grid`.</span>
+<span class="sd">    progress : bool, optional</span>
+<span class="sd">        Whether to show a progress bar.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(N, B, Z)``. ``NaN`` where the model has no valid epoch for the draw, redshift and band, which is</span>
+<span class="sd">        any epoch where the model returns ``NaN`` at a frequency the band receives light from.</span>
+<span class="sd">    """</span>
+    <span class="n">n_draws</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+    <span class="n">nu_rest</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">restframe_frequency_grid</span><span class="p">(</span><span class="n">band_grids</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">,</span> <span class="n">d_ln_nu</span><span class="p">)</span>
+    <span class="n">n_bands</span><span class="p">,</span> <span class="n">n_z</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_grids</span><span class="p">),</span> <span class="n">z_grid</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">band_weight_matrix</span><span class="p">(</span><span class="n">nu_rest</span><span class="p">,</span> <span class="n">band_grids</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nu_rest</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_bands</span> <span class="o">*</span> <span class="n">n_z</span><span class="p">)</span>
+    <span class="n">support</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1"># which frequencies each (band, redshift) integrates over</span>
+    <span class="c1"># (1 + z) / (4 pi D_L^2), and the AB zero point, are applied after the sum over frequency.</span>
+    <span class="n">prefactor</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z_grid</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">luminosity_distance</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">chunk_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">default_chunk_size</span><span class="p">(</span><span class="n">n_draws</span><span class="p">,</span> <span class="n">t_rest</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">nu_rest</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">n_chunks</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">n_draws</span> <span class="o">//</span> <span class="n">chunk_size</span><span class="p">)</span>
+
+    <span class="n">nu_axis</span><span class="p">,</span> <span class="n">t_axis</span> <span class="o">=</span> <span class="n">nu_rest</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">t_rest</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">peak_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_draws</span><span class="p">,</span> <span class="n">n_bands</span><span class="p">,</span> <span class="n">n_z</span><span class="p">))</span>
+    <span class="k">with</span> <span class="p">(</span>
+        <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">n_chunks</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Evaluating peak magnitudes"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"chunk"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">progress</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">,</span>
+        <span class="n">logging_redirect_tqdm</span><span class="p">(</span><span class="n">loggers</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]),</span>
+    <span class="p">):</span>
+        <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">)</span>
+            <span class="n">flux</span> <span class="o">=</span> <span class="n">integrate_chunk</span><span class="p">(</span><span class="n">eval_log_luminosity</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">nu_axis</span><span class="p">,</span> <span class="n">t_axis</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">support</span><span class="p">)</span>
+
+            <span class="c1"># The brightest valid epoch; a draw with no valid epoch at all stays NaN.</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>  <span class="c1"># "All-NaN slice"</span>
+                <span class="n">peak_flux</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">n_bands</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span>
+            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">flux_to_ab_mag</span><span class="p">(</span><span class="n">peak_flux</span> <span class="o">*</span> <span class="n">prefactor</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="effective_peak_grid">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.effective_peak_grid.html#uvex_transients.models.core.detection_horizon.effective_peak_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">effective_peak_grid</span><span class="p">(</span>
+    <span class="n">sed</span><span class="p">:</span> <span class="s2">"SpectralModel"</span><span class="p">,</span>
+    <span class="n">z_grid</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span>
+    <span class="n">bandpasses</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpectralElement</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SpectralElement</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">t_rest</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">t_min</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">t_max</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="p">:</span> <span class="n">Criterion</span> <span class="o">=</span> <span class="s2">"any"</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">cosmology</span><span class="p">:</span> <span class="n">FLRW</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectivePeakGrid</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Evaluate a sampled population's effective peak magnitude at every redshift of a grid.</span>
+
+<span class="sd">    Draws `n_samples` parameter sets from the SED's priors and evaluates each at every redshift: its light curve is</span>
+<span class="sd">    computed on a rest-frame time grid in each band, reduced to its brightest point, and the bands are combined by</span>
+<span class="sd">    `criterion`. The SED is evaluated once per draw, and every redshift and band is then a weighted sum over</span>
+<span class="sd">    frequency (see `uvex_transients.utils.phot_utils`), so the cost is set by ``n_samples * n_time``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sed : ~uvex_transients.models.core.base.SpectralModel</span>
+<span class="sd">        The model whose priors are sampled.</span>
+<span class="sd">    z_grid : array-like</span>
+<span class="sd">        Redshifts, shape ``(Z,)``, strictly increasing and positive. The grid has to reach past the horizon, or the</span>
+<span class="sd">        horizon cannot be bracketed.</span>
+<span class="sd">    bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement</span>
+<span class="sd">        The bands, for example ``detector.bandpasses``. A sequence is named ``band0``, ``band1``, and so on.</span>
+<span class="sd">    t_rest : ~astropy.units.Quantity, optional</span>
+<span class="sd">        Rest-frame times since explosion. Rest-frame times are the right choice because time dilation moves the peak</span>
+<span class="sd">        in observed time but does not change its magnitude, so any observing cadence is irrelevant.</span>
+<span class="sd">    t_min, t_max : ~astropy.units.Quantity, optional</span>
+<span class="sd">        If `t_rest` is omitted, the ends of a logarithmic grid of `n_time` points. A model has no notion of its own</span>
+<span class="sd">        duration, so one of the two ways of giving the times is required.</span>
+<span class="sd">    n_time : int, optional</span>
+<span class="sd">        Number of points of the logarithmic grid. It must resolve the peak: a grid that misses it makes events look</span>
+<span class="sd">        fainter than they are, and so puts the horizon too close.</span>
+<span class="sd">    criterion : {"any", "all", "k_of_n"}, optional</span>
+<span class="sd">        How bands combine; see `reduce_bands`. The default is ``"any"``.</span>
+<span class="sd">    k : int, optional</span>
+<span class="sd">        The number of bands required for ``"k_of_n"``.</span>
+<span class="sd">    n_samples : int, optional</span>
+<span class="sd">        Number of draws, ``M``. `observability_curve` needs at least 299 for 95% confidence at 1% tolerance.</span>
+<span class="sd">    cosmology : ~astropy.cosmology.FLRW, optional</span>
+<span class="sd">        For the luminosity distances. Defaults to the configured cosmology.</span>
+<span class="sd">    chunk_size : int, optional</span>
+<span class="sd">        Draws evaluated per step. By default the largest intermediate array is about 32 MB. It does not change the</span>
+<span class="sd">        result.</span>
+<span class="sd">    progress : bool, optional</span>
+<span class="sd">        Whether to show a progress bar. The default is `True`.</span>
+<span class="sd">    rng : numpy.random.Generator, int or None, optional</span>
+<span class="sd">        Random-number source for the draws.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EffectivePeakGrid</span>
+<span class="sd">        The ``(n_samples, Z)`` effective peak magnitudes with the grids and the parameters that produced them.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `z_grid` is not a 1-d, strictly increasing array of positive redshifts, if no time grid is given, or if</span>
+<span class="sd">        `criterion` and `k` are inconsistent.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The redshift is a grid every draw is evaluated on, not a random draw: a draw has a horizon only if it is followed</span>
+<span class="sd">    across redshift. The time of the peak is found separately at each redshift, because the K-correction changes which</span>
+<span class="sd">    epoch is brightest in a band. Zero is not allowed in `z_grid`, where the luminosity distance vanishes.</span>
+<span class="sd">    """</span>
+    <span class="n">z_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">z_grid</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">z_grid</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">z_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z_grid</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'z_grid' must be a 1-d, strictly increasing array of positive redshifts."</span><span class="p">)</span>
+    <span class="n">t_rest_s</span> <span class="o">=</span> <span class="n">resolve_time_grid</span><span class="p">(</span><span class="n">t_rest</span><span class="p">,</span> <span class="n">t_min</span><span class="p">,</span> <span class="n">t_max</span><span class="p">,</span> <span class="n">n_time</span><span class="p">)</span>
+    <span class="n">band_names</span><span class="p">,</span> <span class="n">band_grids</span> <span class="o">=</span> <span class="n">resolve_bandpasses</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">)</span>
+    <span class="n">reduce_bands</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">band_grids</span><span class="p">)),</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>  <span class="c1"># fail now on a bad criterion or k</span>
+
+    <span class="c1"># Everything the loop below needs, converted once: distances for every grid redshift,</span>
+    <span class="c1"># and the sampled parameters as plain cgs numbers.</span>
+    <span class="n">luminosity_distance</span> <span class="o">=</span> <span class="n">resolve_cosmological_distances</span><span class="p">(</span><span class="n">redshift</span><span class="o">=</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">)[</span>
+        <span class="s2">"luminosity_distance"</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+    <span class="n">cgs_samples</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">samples</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="c1"># The SED is evaluated once per draw on a rest-frame time and frequency grid, and every redshift is then a</span>
+    <span class="c1"># change of band weights; see `uvex_transients.utils.phot_utils`.</span>
+    <span class="n">peak_mags</span> <span class="o">=</span> <span class="n">peak_band_magnitudes</span><span class="p">(</span>
+        <span class="n">sed</span><span class="o">.</span><span class="n">_eval</span><span class="p">,</span>
+        <span class="n">cgs_samples</span><span class="p">,</span>
+        <span class="n">z_grid</span><span class="p">,</span>
+        <span class="n">luminosity_distance</span><span class="p">,</span>
+        <span class="n">band_grids</span><span class="p">,</span>
+        <span class="n">t_rest_s</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span>
+        <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># (n_samples, B, Z)</span>
+    <span class="n">m_eff</span> <span class="o">=</span> <span class="n">reduce_bands</span><span class="p">(</span><span class="n">peak_mags</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">m_eff</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"</span><span class="si">%d</span><span class="s2"> of </span><span class="si">%d</span><span class="s2"> effective peak magnitudes are NaN because the model has no valid epoch on the time "</span>
+            <span class="s2">"grid for that draw, redshift and band. They are treated as undetectable."</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">m_eff</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+            <span class="n">m_eff</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">EffectivePeakGrid</span><span class="p">(</span>
+        <span class="n">m_eff</span><span class="o">=</span><span class="n">m_eff</span><span class="p">,</span>
+        <span class="n">z_grid</span><span class="o">=</span><span class="n">z_grid</span><span class="p">,</span>
+        <span class="n">criterion</span><span class="o">=</span><span class="n">criterion</span><span class="p">,</span>
+        <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+        <span class="n">bands</span><span class="o">=</span><span class="n">band_names</span><span class="p">,</span>
+        <span class="n">t_rest</span><span class="o">=</span><span class="n">t_rest_s</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># From the grid to a horizon                                                  #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="first_crossing">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.first_crossing.html#uvex_transients.models.core.detection_horizon.first_crossing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">first_crossing</span><span class="p">(</span><span class="n">m_eff</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mag_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Find each draw's detection redshift: the first grid redshift at which it is fainter than the limit.</span>
+
+<span class="sd">    Only the first crossing counts. A K-correction can make an event dip back below the limit at a higher redshift,</span>
+<span class="sd">    and that is deliberately ignored.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m_eff : numpy.ndarray</span>
+<span class="sd">        Effective peak magnitudes, shape ``(M, Z)``.</span>
+<span class="sd">    z_grid : numpy.ndarray</span>
+<span class="sd">        Redshifts, shape ``(Z,)``, strictly increasing.</span>
+<span class="sd">    mag_limit : float</span>
+<span class="sd">        AB magnitude limit.</span>
+<span class="sd">    interpolate : bool, optional</span>
+<span class="sd">        If `False` (the default), return the grid redshift of the first non-detection, which is an upper bound on the</span>
+<span class="sd">        true crossing. If `True`, interpolate linearly in magnitude against :math:`\log(1+z)` between that grid point</span>
+<span class="sd">        and the one before. This is tighter but no longer an upper bound.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(M,)``. ``inf`` for a draw that never gets fainter than the limit inside the grid (censored);</span>
+<span class="sd">        ``z_grid[0]`` for a draw already fainter at ``z_grid[0]``.</span>
+<span class="sd">    """</span>
+    <span class="n">faint</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">m_eff</span> <span class="o">&lt;=</span> <span class="n">mag_limit</span><span class="p">)</span>  <span class="c1"># NaN (no valid epoch) counts as not detected</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">crosses</span> <span class="o">=</span> <span class="n">first_true_index</span><span class="p">(</span><span class="n">faint</span><span class="p">)</span>
+    <span class="n">z_det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">crosses</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">interpolate</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">z_det</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">crosses</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span>
+    <span class="n">log_z</span> <span class="o">=</span> <span class="n">crossing_coordinate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">z_grid</span><span class="p">[</span><span class="n">lo</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">z_grid</span><span class="p">[</span><span class="n">hi</span><span class="p">]),</span> <span class="n">m_eff</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">lo</span><span class="p">],</span> <span class="n">m_eff</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">hi</span><span class="p">],</span> <span class="n">mag_limit</span><span class="p">)</span>
+    <span class="n">z_det</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">log_z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z_det</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_curve_table</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">EffectivePeakGrid</span><span class="p">,</span> <span class="n">limits</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Tabulate the tolerance limit of the detection redshifts at each magnitude limit, without warning."""</span>
+    <span class="n">z_limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">n_censored</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mag_limit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">limits</span><span class="p">):</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">first_crossing</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">m_eff</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">mag_limit</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="n">interpolate</span><span class="p">)</span>
+        <span class="n">z_limit</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">rank</span><span class="p">,</span> <span class="n">n_censored</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tolerance_limit</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QTable</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"mag_limit"</span><span class="p">:</span> <span class="n">limits</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ABmag</span><span class="p">,</span> <span class="s2">"z_limit"</span><span class="p">:</span> <span class="n">z_limit</span><span class="p">,</span> <span class="s2">"n_censored"</span><span class="p">:</span> <span class="n">n_censored</span><span class="p">},</span>
+        <span class="n">meta</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"confidence"</span><span class="p">:</span> <span class="n">confidence</span><span class="p">,</span>
+            <span class="s2">"tolerance"</span><span class="p">:</span> <span class="n">tolerance</span><span class="p">,</span>
+            <span class="s2">"n_samples"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">n_samples</span><span class="p">,</span>
+            <span class="s2">"rank"</span><span class="p">:</span> <span class="n">rank</span><span class="p">,</span>
+            <span class="s2">"criterion"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span>
+            <span class="s2">"bands"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">bands</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_unbracketed</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">QTable</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">EffectivePeakGrid</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Warn that the redshift grid is too short for the magnitude limits whose redshift limit is infinite."""</span>
+    <span class="n">unbracketed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">unbracketed</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">"The redshift grid (z &lt;= </span><span class="si">%.3g</span><span class="s2">) is too short to bracket the limit for mag_limit = </span><span class="si">%s</span><span class="s2">; extend 'z_grid'."</span><span class="p">,</span>
+            <span class="n">grid</span><span class="o">.</span><span class="n">z_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"mag_limit"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)[</span><span class="n">unbracketed</span><span class="p">],</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="observability_curve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.observability_curve.html#uvex_transients.models.core.detection_horizon.observability_curve">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">observability_curve</span><span class="p">(</span>
+    <span class="n">grid</span><span class="p">:</span> <span class="n">EffectivePeakGrid</span><span class="p">,</span>
+    <span class="n">mag_limits</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Bound the redshift beyond which a population is undetectable, for each magnitude limit.</span>
+
+<span class="sd">    For each limit, finds every draw's detection redshift (`first_crossing`) and takes the upper tolerance limit of</span>
+<span class="sd">    them (`~uvex_transients.utils.stat_utils.tolerance_limit`): with probability `confidence`, at most a fraction</span>
+<span class="sd">    `tolerance` of the population has a detection redshift above it.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : EffectivePeakGrid</span>
+<span class="sd">        From `effective_peak_grid`. It needs at least ``ln(1 - confidence) / ln(1 - tolerance)`` draws, 299 for the</span>
+<span class="sd">        defaults.</span>
+<span class="sd">    mag_limits : float or array-like</span>
+<span class="sd">        AB magnitude limit(s). Tabulating many costs almost nothing once the grid exists.</span>
+<span class="sd">    confidence : float, optional</span>
+<span class="sd">        Probability that the guarantee holds, in ``(0, 1)``. The default is 0.95.</span>
+<span class="sd">    tolerance : float, optional</span>
+<span class="sd">        Fraction of the population allowed beyond the limit, in ``(0, 1)``. The default is 0.01.</span>
+<span class="sd">    interpolate : bool, optional</span>
+<span class="sd">        If `False` (the default), each detection redshift is rounded up to a grid point, so the limit is never an</span>
+<span class="sd">        underestimate but is coarse by up to one grid step. If `True`, the crossing is interpolated, which is tighter</span>
+<span class="sd">        but not guaranteed to be an overestimate. See `first_crossing`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.table.QTable</span>
+<span class="sd">        One row per magnitude limit, with columns ``mag_limit``, ``z_limit`` (``inf``, with a warning, where the</span>
+<span class="sd">        grid does not reach the limit) and ``n_censored`` (draws that never got fainter than the limit inside the</span>
+<span class="sd">        grid). Its ``meta`` records ``confidence``, ``tolerance``, ``n_samples``, ``rank``, ``criterion`` and</span>
+<span class="sd">        ``bands``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the grid has too few draws for `confidence` and `tolerance`.</span>
+<span class="sd">    """</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mag_limits</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="n">mag_limits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">_curve_table</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">)</span>
+    <span class="n">_warn_if_unbracketed</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">table</span></div>
+
+
+
+<div class="viewcode-block" id="detection_horizon">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.detection_horizon.html#uvex_transients.models.core.detection_horizon.detection_horizon">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detection_horizon</span><span class="p">(</span>
+    <span class="n">sed</span><span class="p">:</span> <span class="s2">"SpectralModel"</span><span class="p">,</span>
+    <span class="n">mag_limits</span><span class="p">:</span> <span class="n">NumericalInput</span><span class="p">,</span>
+    <span class="n">bandpasses</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpectralElement</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SpectralElement</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">t_max</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span>
+    <span class="n">t_min</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="n">z_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.003</span><span class="p">,</span>
+    <span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">n_z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">RNGInput</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_extensions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">QTable</span><span class="p">,</span> <span class="n">EffectivePeakGrid</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Find the detection horizon of a population for each magnitude limit.</span>
+
+<span class="sd">    Evaluates the population on a logarithmic redshift grid from `z_min` to `z_max` and doubles `z_max` until every</span>
+<span class="sd">    limit is bracketed, with one seed for every attempt so that widening the grid does not redraw the population.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sed : ~uvex_transients.models.core.base.SpectralModel</span>
+<span class="sd">        The model whose priors define the population.</span>
+<span class="sd">    mag_limits : float or array-like</span>
+<span class="sd">        AB magnitude limit(s).</span>
+<span class="sd">    bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement</span>
+<span class="sd">        The bands in which an event may be detected.</span>
+<span class="sd">    t_max : ~astropy.units.Quantity</span>
+<span class="sd">        Latest rest-frame time, usually the population's duration.</span>
+<span class="sd">    t_min : ~astropy.units.Quantity, optional</span>
+<span class="sd">        Earliest rest-frame time. The default is 0.001 day.</span>
+<span class="sd">    z_min : float, optional</span>
+<span class="sd">        Smallest redshift of the grid. A limit cannot be reported below it. The default is 0.003.</span>
+<span class="sd">    z_max : float, optional</span>
+<span class="sd">        Largest redshift of the first attempt. The default is 1.</span>
+<span class="sd">    confidence, tolerance : float, optional</span>
+<span class="sd">        The guarantee; see `observability_curve`. The defaults are 0.95 and 0.01.</span>
+<span class="sd">    n_samples : int, optional</span>
+<span class="sd">        Number of draws. The default is 1000.</span>
+<span class="sd">    n_z : int, optional</span>
+<span class="sd">        Number of logarithmically spaced redshifts. The default is 30.</span>
+<span class="sd">    n_time : int, optional</span>
+<span class="sd">        Number of logarithmically spaced times from `t_min` to `t_max`. It must resolve the peak. The default is 60.</span>
+<span class="sd">    rng : numpy.random.Generator, int or None, optional</span>
+<span class="sd">        Random-number source; give an integer for reproducible output.</span>
+<span class="sd">    progress : bool, optional</span>
+<span class="sd">        Whether to show a progress bar. The default is `True`.</span>
+<span class="sd">    interpolate : bool, optional</span>
+<span class="sd">        Interpolate the crossings; see `observability_curve`.</span>
+<span class="sd">    max_extensions : int, optional</span>
+<span class="sd">        How many times `z_max` may be doubled. The default is 5.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Further arguments of `effective_peak_grid`, such as ``criterion``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    curve : ~astropy.table.QTable</span>
+<span class="sd">        As returned by `observability_curve`.</span>
+<span class="sd">    grid : EffectivePeakGrid</span>
+<span class="sd">        The grid the curve was read from, which can be reused for further limits.</span>
+<span class="sd">    """</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mag_limits</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="n">mag_limits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+    <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_extensions</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">effective_peak_grid</span><span class="p">(</span>
+            <span class="n">sed</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">z_min</span><span class="p">,</span> <span class="n">z_max</span><span class="p">,</span> <span class="n">n_z</span><span class="p">),</span>
+            <span class="n">bandpasses</span><span class="p">,</span>
+            <span class="n">t_min</span><span class="o">=</span><span class="n">t_min</span><span class="p">,</span>
+            <span class="n">t_max</span><span class="o">=</span><span class="n">t_max</span><span class="p">,</span>
+            <span class="n">n_time</span><span class="o">=</span><span class="n">n_time</span><span class="p">,</span>
+            <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
+            <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">_curve_table</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">])):</span>
+            <span class="k">break</span>
+        <span class="n">z_max</span> <span class="o">*=</span> <span class="mf">2.0</span>
+
+    <span class="n">_warn_if_unbracketed</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">table</span><span class="p">,</span> <span class="n">grid</span></div>
+
+
+
+<div class="viewcode-block" id="check_sample_count">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.check_sample_count.html#uvex_transients.models.core.detection_horizon.check_sample_count">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_sample_count</span><span class="p">(</span><span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check that a number of draws can support a confidence and tolerance, before an expensive grid is built.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_samples : int</span>
+<span class="sd">        Number of draws.</span>
+<span class="sd">    confidence, tolerance : float</span>
+<span class="sd">        The guarantee; see `observability_curve`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `n_samples` is below ``ln(1 - confidence) / ln(1 - tolerance)``; the message names the minimum.</span>
+<span class="sd">    """</span>
+    <span class="n">tolerance_rank</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

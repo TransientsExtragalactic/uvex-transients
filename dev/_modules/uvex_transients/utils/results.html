@@ -466,9 +466,11 @@
 
 <span class="sd">Every tagged release runs ``configs/full_run.yaml`` and attaches the outputs to the release as</span>
 <span class="sd">assets. Secondary simulations (for example ``configs/infant_sne.yaml``) are attached too, each as one</span>
-<span class="sd">``&lt;simulation&gt;.zip`` holding the same four files. They are not part of the pip-installed package, so</span>
-<span class="sd">`get_results` fetches them on demand, keeps them in the package cache, and returns local paths for</span>
-<span class="sd">the usual ``from_disk`` loaders. Only the requested files are downloaded from a simulation's archive.</span>
+<span class="sd">``&lt;simulation&gt;.zip`` holding the same four files. The phase-space recovery maps (``configs/phase_space.yaml``) are</span>
+<span class="sd">attached the same way as ``phase_space.zip``, with one subdirectory per map (see `get_phase_space_map`). They are not</span>
+<span class="sd">part of the pip-installed package, so `get_results` fetches them on demand, keeps them in the package cache, and</span>
+<span class="sd">returns local paths for the usual ``from_disk`` loaders. Only the requested files are downloaded from a</span>
+<span class="sd">simulation's archive.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
@@ -505,6 +507,17 @@
 <span class="sd">``exposure`` the `~uvex_transients.simulation.exposure_catalog.ExposureCatalog`, ``photometry`` the</span>
 <span class="sd">synthetic photometry of those events (the largest file, over 100 MB), and ``summary`` the per-event</span>
 <span class="sd">summary table from `~uvex_transients.simulation.core.SurveySimulator.run_event_summary_action`.</span>
+<span class="sd">"""</span>
+
+<span class="n">PHASE_SPACE_SIMULATION</span> <span class="o">=</span> <span class="s2">"phase_space"</span>
+<span class="sd">"""str: The simulation name of the phase-space recovery maps, ``phase_space.zip`` on a release."""</span>
+
+<span class="n">PHASE_SPACE_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"points"</span><span class="p">:</span> <span class="s2">"points.ecsv"</span><span class="p">,</span> <span class="s2">"map"</span><span class="p">:</span> <span class="s2">"map.ecsv"</span><span class="p">,</span> <span class="s2">"overlay"</span><span class="p">:</span> <span class="s2">"overlay.ecsv"</span><span class="p">,</span> <span class="s2">"figure"</span><span class="p">:</span> <span class="s2">"map.png"</span><span class="p">}</span>
+<span class="sd">"""dict of str to str: The files of one phase-space map, by short name.</span>
+
+<span class="sd">``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`),</span>
+<span class="sd">``points`` the simulated points it was fitted to, ``overlay`` the measured shipped transient classes, and ``figure`` the</span>
+<span class="sd">four-panel image.</span>
 <span class="sd">"""</span>
 
 <span class="n">_API_URL</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://api.github.com/repos/</span><span class="si">{</span><span class="n">GITHUB_REPO</span><span class="si">}</span><span class="s2">/releases"</span>
@@ -918,6 +931,13 @@
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">info</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span>
                 <span class="n">dest</span> <span class="o">=</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="n">filename</span>
+
+                <span class="c1"># A member may sit in a subdirectory (a phase-space map's), but never outside the cache</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">out_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">archive_name</span><span class="si">}</span><span class="s2"> has a member, </span><span class="si">{</span><span class="n">filename</span><span class="si">!r}</span><span class="s2">, that would be written outside </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="p">)</span>
+                <span class="n">dest</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">dest</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="n">info</span><span class="o">.</span><span class="n">file_size</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Results file </span><span class="si">%s</span><span class="s2"> already present at </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
@@ -1052,6 +1072,90 @@
         <span class="n">paths</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dest</span>
 
     <span class="k">return</span> <span class="n">paths</span></div>
+
+
+
+<div class="viewcode-block" id="get_phase_space_map">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.results.get_phase_space_map.html#uvex_transients.utils.results.get_phase_space_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_phase_space_map</span><span class="p">(</span>
+    <span class="n">map_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"map"</span><span class="p">,</span> <span class="s2">"points"</span><span class="p">,</span> <span class="s2">"overlay"</span><span class="p">),</span>
+    <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Download the files of one phase-space recovery map of a published release.</span>
+
+<span class="sd">    The maps are the ones ``configs/phase_space.yaml`` defines, attached to each release as one ``phase_space.zip``;</span>
+<span class="sd">    only the requested files of the requested map are downloaded from it. They are read with</span>
+<span class="sd">    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into a sampler that can evaluate the map</span>
+<span class="sd">    anywhere with `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.load`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    map_id : str</span>
+<span class="sd">        The ``id`` of the map in the run-config, for example ``"fuv_detection"``.</span>
+<span class="sd">    files : sequence of str, optional</span>
+<span class="sd">        What to fetch, from `PHASE_SPACE_FILES`: ``"map"``, ``"points"``, ``"overlay"`` and ``"figure"``. The default</span>
+<span class="sd">        is the first three, the data products.</span>
+<span class="sd">    tag : str, optional</span>
+<span class="sd">        The release tag. The default is the newest published release.</span>
+<span class="sd">    directory : str or os.PathLike, optional</span>
+<span class="sd">        Place the files directly in this directory instead of the per-release cache directory.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Replace an existing file whose size differs from the archive member, instead of raising.</span>
+<span class="sd">    timeout : float, optional</span>
+<span class="sd">        Network timeout in seconds, per request. The default is 60.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to pathlib.Path</span>
+<span class="sd">        Each requested file, as named in `files`, mapped to its local path.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ConnectionError</span>
+<span class="sd">        If the GitHub releases API cannot be reached.</span>
+<span class="sd">    LookupError</span>
+<span class="sd">        If there are no published releases, `tag` does not exist, the release has no phase-space maps, or the map or a</span>
+<span class="sd">        file is not in the archive.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a name in `files` is not one of `PHASE_SPACE_FILES`.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from astropy.table import (</span>
+<span class="sd">            Table,</span>
+<span class="sd">        )</span>
+<span class="sd">        from uvex_transients.utils import (</span>
+<span class="sd">            get_phase_space_map,</span>
+<span class="sd">        )</span>
+
+<span class="sd">        paths = get_phase_space_map(</span>
+<span class="sd">            "fuv_detection", ["map"]</span>
+<span class="sd">        )</span>
+<span class="sd">        grid = Table.read(</span>
+<span class="sd">            paths["map"], format="ascii.ecsv"</span>
+<span class="sd">        )</span>
+<span class="sd">    """</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">PHASE_SPACE_FILES</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown phase-space file(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; choose from </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">PHASE_SPACE_FILES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+    <span class="n">members</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">map_id</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">PHASE_SPACE_FILES</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">files</span><span class="p">}</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">get_results</span><span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+        <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span>
+        <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="n">simulation</span><span class="o">=</span><span class="n">PHASE_SPACE_SIMULATION</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="n">member</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
 
 </pre></div>
 

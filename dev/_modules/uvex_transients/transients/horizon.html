@@ -459,11 +459,19 @@
                   
   <h1>Source code for uvex_transients.transients.horizon</h1><div class="highlight"><pre>
 <span></span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">Detection-horizon curves: the redshift limit of a transient population as a function of depth.</span>
+<span class="sd">Stored detection-horizon curves of the transient classes.</span>
 
-<span class="sd">A :class:`HorizonCurve` tabulates, for a grid of AB magnitude limits :math:`m`, the redshift</span>
-<span class="sd">:math:`z_L(m)` beyond which, with 95% confidence, at most 1% of a population drawn from the SED's</span>
-<span class="sd">priors is brighter than :math:`m` in either UVEX band.</span>
+<span class="sd">A `HorizonCurve` is the redshift limit :math:`z_L(m)` of a transient population as a function of the AB magnitude limit</span>
+<span class="sd">:math:`m`: beyond :math:`z_L`, with 95% confidence, at most 1% of events drawn from the SED's priors are brighter than</span>
+<span class="sd">:math:`m` in either UVEX band. The calculation is in `uvex_transients.models.core.detection_horizon`; this module</span>
+<span class="sd">stores and checks its result.</span>
+
+<span class="sd">A curve takes seconds to a minute to compute, so each shipped class stores its own as</span>
+<span class="sd">``horizon_curves/&lt;ClassName&gt;.ecsv``, which `~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`</span>
+<span class="sd">reads. A custom class, or a shipped one</span>
+<span class="sd">whose priors or duration changed, generates its curve on first use. Which is which is decided by a *fingerprint*, a</span>
+<span class="sd">fixed-seed draw from the class's priors and its duration, stored with the curve and compared on use. ``make horizons``</span>
+<span class="sd">rebuilds the stored files, and the test suite fails, naming the class, when one is stale.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -502,16 +510,13 @@
     <span class="s2">"n_z"</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span>
     <span class="s2">"n_time"</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="sd">"""dict: The settings a curve is generated with, recorded in its metadata.</span>
+<span class="sd">"""dict: The settings a stored curve is generated with, recorded in its metadata.</span>
 
-<span class="sd">``confidence`` and ``tolerance`` are the guarantee: with probability ``confidence``, at most a fraction ``tolerance``</span>
-<span class="sd">of the population is detectable beyond the limit. ``n_samples`` is the number of draws from the SED's priors (cost is</span>
-<span class="sd">linear in it; 299 is the minimum the guarantee allows). ``n_z`` is the number of log-spaced redshifts each draw is</span>
-<span class="sd">followed across; the crossing of the magnitude limit is interpolated between grid points, which keeps the limit</span>
-<span class="sd">accurate to about 2% with this few. ``n_time`` is the number of log-spaced rest-frame times from `T_MIN` to the</span>
-<span class="sd">duration; it must be dense enough to resolve each light curve's peak, because a missed peak makes an event look</span>
-<span class="sd">fainter than it is. These are chosen for a limit good to a few percent in redshift (well inside half a magnitude of</span>
-<span class="sd">depth), not for the tightest possible guarantee.</span>
+<span class="sd">``confidence`` and ``tolerance`` are the guarantee. ``n_samples`` is the number of draws, whose cost is linear and</span>
+<span class="sd">which cannot be below 299. ``n_z`` is the number of logarithmic redshifts each draw is followed across; the crossing is</span>
+<span class="sd">interpolated between them, which keeps the limit within about 2%. ``n_time`` is the number of logarithmic rest-frame</span>
+<span class="sd">times from `T_MIN` to the duration, and it must resolve each light curve's peak, since a missed peak makes an event look</span>
+<span class="sd">fainter. They are chosen for a limit good to a few percent in redshift, not for the tightest possible guarantee.</span>
 <span class="sd">"""</span>
 
 <span class="n">T_MIN</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
@@ -789,11 +794,11 @@
         <span class="o">**</span><span class="n">settings</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"HorizonCurve"</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Compute the curve of a transient, in the ``uvex_fast`` bands. This takes seconds to a minute.</span>
+<span class="sd">        Compute the curve of a transient in the ``uvex_fast`` bands, which takes seconds to a minute.</span>
 
-<span class="sd">        One grid of effective peak magnitudes serves every magnitude limit, so tabulating many costs the same</span>
-<span class="sd">        as one. Each draw's crossing of a limit is interpolated between redshift grid points, so the limit is</span>
-<span class="sd">        good to about 2% but is not guaranteed to be an overestimate.</span>
+<span class="sd">        Runs `~uvex_transients.models.core.detection_horizon.detection_horizon` on the transient's priors, duration</span>
+<span class="sd">        and cosmology, with this module's settings and seed. One grid serves every magnitude limit, and the crossings</span>
+<span class="sd">        are interpolated, so the limit is good to about 2% but is not guaranteed to be an overestimate.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

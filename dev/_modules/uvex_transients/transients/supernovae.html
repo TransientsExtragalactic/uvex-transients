@@ -468,7 +468,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_CI_to_fractional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.shock_cooling</span><span class="w"> </span><span class="kn">import</span> <span class="n">MoragShockCoolingSED</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ArnettMagnetarSpindownSED</span><span class="p">,</span>
@@ -484,6 +483,11 @@
     <span class="n">core_collapse_rate_coefficient</span><span class="p">,</span>
     <span class="n">core_collapse_rate_shape</span><span class="p">,</span>
     <span class="n">supernovae_Ia_rate</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.stat_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">combine_fractional_errors</span><span class="p">,</span>
+    <span class="n">convert_CI_to_fractional</span><span class="p">,</span>
+    <span class="n">fractional_error_to_bounds</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
@@ -508,48 +512,11 @@
 <span class="c1"># published uncertainty), and `RATE_FRACTION`/`RATE_CI` are built by multiplying the relevant links</span>
 <span class="c1"># and propagating their fractional uncertainties, rather than hand-computing and hardcoding the</span>
 <span class="c1"># already-multiplied-out numbers. `convert_CI_to_fractional` turns each literature-quoted "value</span>
-<span class="c1"># +upper/-lower" into a `(lower, upper)` fractional-error pair; `_combine_fractional_errors`</span>
+<span class="c1"># +upper/-lower" into a `(lower, upper)` fractional-error pair; `combine_fractional_errors`</span>
 <span class="c1"># propagates any number of *independent* such pairs through a product, in quadrature (standard</span>
-<span class="c1"># linear/small-error propagation in log space); `_fractional_error_to_rate_ci` turns a combined</span>
+<span class="c1"># linear/small-error propagation in log space); `fractional_error_to_bounds` turns a combined</span>
 <span class="c1"># fractional error into the multiplicative `RATE_CI` form every `ExtragalacticTransient` uses.</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_combine_fractional_errors</span><span class="p">(</span><span class="o">*</span><span class="n">errors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Combine independent fractional ``(lower, upper)`` errors in quadrature.</span>
-
-<span class="sd">    For independent quantities :math:`x_i`, each with its own fractional error</span>
-<span class="sd">    :math:`(\delta_i^-, \delta_i^+)` (e.g. as returned by `convert_CI_to_fractional`), the</span>
-<span class="sd">    fractional error of their product :math:`\prod_i x_i` is</span>
-<span class="sd">    :math:`\bigl(\sqrt{\sum_i(\delta_i^-)^2},\ \sqrt{\sum_i(\delta_i^+)^2}\bigr)` -- ordinary</span>
-<span class="sd">    linear error propagation applied to :math:`\ln\prod_i x_i = \sum_i \ln x_i`.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    *errors : tuple of float</span>
-<span class="sd">        Any number of ``(lower, upper)`` fractional-error pairs for independent factors in a</span>
-<span class="sd">        product.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    tuple of float</span>
-<span class="sd">        The combined ``(lower, upper)`` fractional error of the product.</span>
-<span class="sd">    """</span>
-    <span class="n">lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">lo</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">lo</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">)))</span>
-    <span class="n">upper</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">hi</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">hi</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_fractional_error_to_rate_ci</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Convert a ``(lower, upper)`` fractional error into `RATE_CI`-style multiplicative bounds.</span>
-
-<span class="sd">    The lower bound is floored at zero: a rate cannot be negative, but a fractional lower error of</span>
-<span class="sd">    100% or more (e.g. a measured fraction whose published lower bound is itself zero, once combined</span>
-<span class="sd">    in quadrature with any other term) would otherwise give a negative multiplicative bound.</span>
-<span class="sd">    """</span>
-    <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">error</span>
-    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">lower</span><span class="p">),</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">upper</span>
+<span class="c1"># All three are in `uvex_transients.utils.stat_utils`.</span>
 
 
 <span class="c1"># ------------------------------------------------------------------------------------------- #</span>
@@ -604,7 +571,7 @@
 <span class="sd">    (`_CC_NORMALIZATION_ERR`), common to every `_CoreCollapseSNe` subtype. Returns `RATE_CI`-style</span>
 <span class="sd">    multiplicative bounds.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_fractional_error_to_rate_ci</span><span class="p">(</span><span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">fraction_err</span><span class="p">,</span> <span class="n">_CC_NORMALIZATION_ERR</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">fractional_error_to_bounds</span><span class="p">(</span><span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">fraction_err</span><span class="p">,</span> <span class="n">_CC_NORMALIZATION_ERR</span><span class="p">))</span>
 
 
 <span class="c1"># ------------------------------------------------------------------------------------------- #</span>
@@ -613,7 +580,7 @@
 <span class="c1"># Type IIP fraction of the total CC rate: Li et al. 2011's II-P share of the Type II rate, times</span>
 <span class="c1"># Shivvers et al. 2017's Type II share of the total CC rate.</span>
 <span class="n">_TYPE_IIP_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_II_OF_CC</span> <span class="o">*</span> <span class="n">_IIP_OF_TYPEII</span>
-<span class="n">_TYPE_IIP_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">_TYPE_II_OF_CC_ERR</span><span class="p">,</span> <span class="n">_IIP_OF_TYPEII_ERR</span><span class="p">)</span>
+<span class="n">_TYPE_IIP_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_TYPE_II_OF_CC_ERR</span><span class="p">,</span> <span class="n">_IIP_OF_TYPEII_ERR</span><span class="p">)</span>
 
 <span class="c1"># Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,</span>
 <span class="c1"># following the high incidence of early CSM-interaction signatures found among Type II SNe by</span>
@@ -623,16 +590,16 @@
 <span class="n">_TYPE_IIP_EXCESS_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_TYPE_IIP_FRACTION_ERR</span>
 
 <span class="n">_TYPE_IIB_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="n">_IIB_OF_SESNE</span>
-<span class="n">_TYPE_IIB_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IIB_OF_SESNE_ERR</span><span class="p">)</span>
+<span class="n">_TYPE_IIB_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IIB_OF_SESNE_ERR</span><span class="p">)</span>
 
 <span class="n">_TYPE_IB_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="n">_IB_OF_SESNE</span>
-<span class="n">_TYPE_IB_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IB_OF_SESNE_ERR</span><span class="p">)</span>
+<span class="n">_TYPE_IB_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IB_OF_SESNE_ERR</span><span class="p">)</span>
 
 <span class="n">_TYPE_IC_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="n">_IC_OF_SESNE</span>
-<span class="n">_TYPE_IC_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IC_OF_SESNE_ERR</span><span class="p">)</span>
+<span class="n">_TYPE_IC_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IC_OF_SESNE_ERR</span><span class="p">)</span>
 
 <span class="n">_TYPE_ICBL_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="n">_ICBL_OF_SESNE</span>
-<span class="n">_TYPE_ICBL_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_ICBL_OF_SESNE_ERR</span><span class="p">)</span>
+<span class="n">_TYPE_ICBL_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_ICBL_OF_SESNE_ERR</span><span class="p">)</span>
 
 <span class="c1"># Type I superluminous SNe (SLSNe-I) as a fraction of the total CC SNe rate: a local ratio of</span>
 <span class="c1"># 1/3500 (+2800/-720 on the *denominator*), from the PTF rates of Frohmaier et al. 2021</span>
@@ -761,7 +728,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.99</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="c1"># The shock cooling component is evaluated at every epoch and its luminosity grows without bound toward t -&gt; 0,</span>
     <span class="c1"># so the horizon is taken from 0.1 d after explosion, where its formulas are not wildly outside their regime.</span>
     <span class="n">HORIZON_T_MIN</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
@@ -866,7 +833,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">3.17</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">3.2</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_SLSN_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_SLSN_FRACTION_ERR</span><span class="p">)</span></div>

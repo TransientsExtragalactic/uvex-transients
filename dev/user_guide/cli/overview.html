@@ -53,6 +53,7 @@
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/cli/overview';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
@@ -516,7 +517,8 @@ to process the baseline catalog once it’s sampled – screening cuts, set oper
 catalogs, and post-processing actions like synthetic photometry, chained in one declared order,
 GitHub-Actions style. The CLI’s four subcommands (<code class="docutils literal notranslate"><span class="pre">generate</span></code>, <code class="docutils literal notranslate"><span class="pre">cut</span></code>, <code class="docutils literal notranslate"><span class="pre">photometry</span></code>,
 and <code class="docutils literal notranslate"><span class="pre">run</span></code>) drive that same pipeline, reading and writing plain catalog/table
-files between stages.</p>
+files between stages. A fifth, <code class="docutils literal notranslate"><span class="pre">phase-space</span></code>, is separate from that pipeline: it maps the survey’s recovery of a
+canonical transient instead of simulating a population (see <a class="reference internal" href="#phase-space-maps-cli"><span class="std std-ref">Phase-Space Maps</span></a>).</p>
 <p>This page is a hands-on tour of the run-config format and the commands themselves. See
 <a class="reference internal" href="../simulation/overview.html#user-guide-simulation"><span class="std std-ref">Simulation</span></a> for what each stage actually does under the hood; this page is about
 driving that same pipeline from a config file and a terminal instead of a Python script.</p>
@@ -1249,6 +1251,44 @@ a real run would refuse to overwrite one that already exists, the dry run flags 
 <span class="pre">FAIL</span></code> and exits non-zero unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> is also given. The schedule is loaded (and
 downloaded on first use), but the command never reads the <code class="docutils literal notranslate"><span class="pre">--in</span></code> input of <code class="docutils literal notranslate"><span class="pre">cut</span></code>/<code class="docutils literal notranslate"><span class="pre">photometry</span></code>,
 only checks that it exists.</p>
+<hr class="docutils" />
+</section>
+<section id="phase-space-maps">
+<span id="phase-space-maps-cli"></span><h2>Phase-Space Maps<a class="headerlink" href="#phase-space-maps" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvex-transients<span class="w"> </span>phase-space<span class="w"> </span>configs/phase_space.yaml<span class="w"> </span>--out-dir<span class="w"> </span>results/phase_space/
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">phase-space</span></code> command reads a different kind of run-config, with no <code class="docutils literal notranslate"><span class="pre">transients:</span></code> or <code class="docutils literal notranslate"><span class="pre">steps:</span></code>. It names a
+survey and lists <strong>maps</strong>, each the survey’s recovery of a canonical transient over the peak luminosity in one band and
+the rest-frame half-decline time (see <code class="xref py py-mod docutils literal notranslate"><span class="pre">uvex_transients.phase_space</span></code>). The shipped
+<a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/phase_space.yaml">phase_space.yaml</a>
+makes the two detection maps (at least two observations at <span class="math notranslate nohighlight">\(5\sigma\)</span>, to 25 AB) in the FUV and the NUV:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvex_v0.6.0</span>
+<span class="nt">mission</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uvex_fast</span>
+<span class="nt">overlay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">             </span><span class="c1"># shade the shipped transient classes on every map</span>
+
+<span class="nt">recovery</span><span class="p">:</span><span class="w">                 </span><span class="c1"># shared by every map; a map overrides it key by key</span>
+<span class="w">  </span><span class="nt">snr_threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
+<span class="w">  </span><span class="nt">n_visits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">mag_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25.0</span>
+
+<span class="nt">maps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fuv_detection</span><span class="w">     </span><span class="c1"># names the output directory</span>
+<span class="w">    </span><span class="nt">recovery</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">band</span><span class="p">:</span><span class="w"> </span><span class="nv">FUV</span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nuv_detection</span>
+<span class="w">    </span><span class="nt">recovery</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">band</span><span class="p">:</span><span class="w"> </span><span class="nv">NUV</span><span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+<p>The sections <code class="docutils literal notranslate"><span class="pre">recovery:</span></code>, <code class="docutils literal notranslate"><span class="pre">transient:</span></code> (the shape of the canonical transient), <code class="docutils literal notranslate"><span class="pre">sampler:</span></code> and <code class="docutils literal notranslate"><span class="pre">map:</span></code> (the axes
+and the resolution of the fitted map) may each be given at the top level and in a map, and any key left out is taken from
+the <code class="docutils literal notranslate"><span class="pre">phase_space:</span></code> section of the package configuration. A misspelt key is an error, and every problem in the file is
+reported at once.</p>
+<p>Each map is written to <code class="docutils literal notranslate"><span class="pre">OUT_DIR/&lt;id&gt;/</span></code> as <code class="docutils literal notranslate"><span class="pre">points.ecsv</span></code> (every simulated point, saved after every batch),
+<code class="docutils literal notranslate"><span class="pre">map.ecsv</span></code> (the fitted map on a grid), <code class="docutils literal notranslate"><span class="pre">overlay.ecsv</span></code> (the measured classes) and <code class="docutils literal notranslate"><span class="pre">map.png</span></code>. <code class="docutils literal notranslate"><span class="pre">--map</span> <span class="pre">ID</span></code> makes only
+one map, and an existing map is refused unless <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> replaces it or <code class="docutils literal notranslate"><span class="pre">--resume</span></code> continues it from its saved
+points. <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> validates the file and the bands without loading the schedule. The command needs the
+<code class="docutils literal notranslate"><span class="pre">phase_space</span></code> extra (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'uvex_transients[phase_space]'</span></code>).</p>
 </section>
 <hr class="docutils" />
 <section id="using-it-from-python">
@@ -1350,6 +1390,7 @@ documentation of every function/class mentioned above.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-steps-from-the-cli">Running Steps From the CLI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-space-maps">Phase-Space Maps</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-it-from-python">Using It From Python</a></li>
 </ul>
   </nav></div>

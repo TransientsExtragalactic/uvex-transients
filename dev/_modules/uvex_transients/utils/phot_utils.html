@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.utils.phot_utils &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/utils/phot_utils';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.23.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../utils.html" class="nav-link">uvex_transients.utils</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.utils.phot_utils</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.utils.phot_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Photometry utilities: bandpasses as arrays, AB magnitudes, and integrating a spectrum over bands."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">synphot</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralElement</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"AB_MAG_ZERO_POINT"</span><span class="p">,</span>
+    <span class="s2">"D_LN_NU"</span><span class="p">,</span>
+    <span class="s2">"band_integration_weights"</span><span class="p">,</span>
+    <span class="s2">"band_luminosity_curve"</span><span class="p">,</span>
+    <span class="s2">"band_weight_matrix"</span><span class="p">,</span>
+    <span class="s2">"bandpass_table"</span><span class="p">,</span>
+    <span class="s2">"default_chunk_size"</span><span class="p">,</span>
+    <span class="s2">"effective_frequency"</span><span class="p">,</span>
+    <span class="s2">"equivalent_bandwidth"</span><span class="p">,</span>
+    <span class="s2">"flux_to_ab_mag"</span><span class="p">,</span>
+    <span class="s2">"hz_per_unit"</span><span class="p">,</span>
+    <span class="s2">"integrate_chunk"</span><span class="p">,</span>
+    <span class="s2">"photon_weighted_band_average"</span><span class="p">,</span>
+    <span class="s2">"relative_bandpass_table"</span><span class="p">,</span>
+    <span class="s2">"resolve_bandpasses"</span><span class="p">,</span>
+    <span class="s2">"restframe_frequency_grid"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">AB_MAG_ZERO_POINT</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3631e-23</span>
+<span class="sd">"""float: The zero-point flux density of the AB magnitude system, in erg/s/cm^2/Hz."""</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># Magnitudes and units                                                        #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="flux_to_ab_mag">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.flux_to_ab_mag.html#uvex_transients.utils.phot_utils.flux_to_ab_mag">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">flux_to_ab_mag</span><span class="p">(</span><span class="n">flux_density</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Convert a flux density to an AB magnitude.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flux_density : array-like</span>
+<span class="sd">        Flux density in erg/s/cm^2/Hz. Zero is allowed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        :math:`-2.5\\log_{10}(F_\nu/F_0)` for the AB zero point :math:`F_0`. Zero flux is an infinitely faint</span>
+<span class="sd">        magnitude, not an error.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">flux_density</span> <span class="o">/</span> <span class="n">AB_MAG_ZERO_POINT</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="hz_per_unit">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.hz_per_unit.html#uvex_transients.utils.phot_utils.hz_per_unit">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hz_per_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">u</span><span class="o">.</span><span class="n">UnitBase</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">is_wavelength</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Return the coefficient converting a bare number in ``unit`` to a frequency in Hz.</span>
+
+<span class="sd">    Resolved once, up front -- not on every element of every model</span>
+<span class="sd">    evaluation -- so that letting a model's spectral axis be expressed in</span>
+<span class="sd">    an arbitrary (self-consistent) unit costs one extra multiply or divide</span>
+<span class="sd">    per evaluation, not a :class:`~astropy.units.Quantity` conversion in</span>
+<span class="sd">    the hot loop.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    unit : str or ~astropy.units.UnitBase</span>
+<span class="sd">        A wavelength unit if ``is_wavelength``, otherwise a frequency unit.</span>
+<span class="sd">    is_wavelength : bool</span>
+<span class="sd">        Whether ``unit`` is a wavelength unit (``True``) or a frequency</span>
+<span class="sd">        unit (``False``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        If ``is_wavelength`` is ``False``, :math:`\nu_\mathrm{Hz} =</span>
+<span class="sd">        \mathrm{coefficient} \times x`; if ``True``, :math:`\nu_\mathrm{Hz}</span>
+<span class="sd">        = \mathrm{coefficient} / x` (frequency is inversely, not linearly,</span>
+<span class="sd">        related to wavelength). Either way, this is that coefficient.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``unit`` is not a wavelength/frequency unit matching</span>
+<span class="sd">        ``is_wavelength``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; hz_per_unit(u.THz, is_wavelength=False)</span>
+<span class="sd">    1000000000000.0</span>
+<span class="sd">    """</span>
+    <span class="n">resolved</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+    <span class="n">expected_type</span> <span class="o">=</span> <span class="s2">"length"</span> <span class="k">if</span> <span class="n">is_wavelength</span> <span class="k">else</span> <span class="s2">"frequency"</span>
+    <span class="k">if</span> <span class="n">resolved</span><span class="o">.</span><span class="n">physical_type</span> <span class="o">!=</span> <span class="n">expected_type</span><span class="p">:</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="s2">"wavelength"</span> <span class="k">if</span> <span class="n">is_wavelength</span> <span class="k">else</span> <span class="s2">"frequency"</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">unit</span><span class="si">!r}</span><span class="s2"> is not a </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> unit."</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resolved</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># Bandpasses as arrays                                                        #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="bandpass_table">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.bandpass_table.html#uvex_transients.utils.phot_utils.bandpass_table">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a bandpass's frequencies and its throughput there, in the order of its wavelength table.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : ~synphot.SpectralElement</span>
+<span class="sd">        The band.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Frequency samples in Hz.</span>
+<span class="sd">    throughput : numpy.ndarray</span>
+<span class="sd">        The dimensionless throughput at each.</span>
+<span class="sd">    """</span>
+    <span class="n">wave</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">waveset</span>
+    <span class="k">return</span> <span class="n">wave</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">()),</span> <span class="n">bandpass</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sorted_by_frequency</span><span class="p">(</span><span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">throughput</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Order a band's samples by increasing frequency."""</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nu</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">throughput</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_throughput_on_grid</span><span class="p">(</span><span class="n">nu_grid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">nu_band</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">throughput</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Sample a band's throughput, as seen from redshift `z`, on a rest-frame frequency grid.</span>
+
+<span class="sd">    Photons that arrive in the band left the source at ``nu * (1 + z)``, so the rest-frame frequency ``nu_grid`` is</span>
+<span class="sd">    sampled at ``nu_grid / (1 + z)`` of the band. Outside the tabulated band the throughput is zero.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">nu_grid</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z</span><span class="p">),</span> <span class="n">nu_band</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="relative_bandpass_table">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.relative_bandpass_table.html#uvex_transients.utils.phot_utils.relative_bandpass_table">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">relative_bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return a bandpass's frequencies, increasing, and its throughput there relative to the peak.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : ~synphot.SpectralElement</span>
+<span class="sd">        The band.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Frequency samples in Hz, in increasing order.</span>
+<span class="sd">    throughput : numpy.ndarray</span>
+<span class="sd">        The throughput at each, divided by its maximum.</span>
+<span class="sd">    """</span>
+    <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+    <span class="n">nu_sorted</span><span class="p">,</span> <span class="n">throughput_sorted</span> <span class="o">=</span> <span class="n">_sorted_by_frequency</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nu_sorted</span><span class="p">,</span> <span class="n">throughput_sorted</span> <span class="o">/</span> <span class="n">throughput</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_bandpasses">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.resolve_bandpasses.html#uvex_transients.utils.phot_utils.resolve_bandpasses">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_bandpasses</span><span class="p">(</span>
+    <span class="n">bandpasses</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpectralElement</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SpectralElement</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Reduce bandpasses to the ``(frequency, throughput)`` arrays that band integration needs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement</span>
+<span class="sd">        The bands. A sequence is named ``band0``, ``band1``, and so on.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    names : tuple of str</span>
+<span class="sd">        Band names, in the order of `grids`.</span>
+<span class="sd">    grids : list of tuple of numpy.ndarray</span>
+<span class="sd">        For each band, its frequency samples in Hz and the dimensionless throughput at each.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `bandpasses` is empty.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bandpasses</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="sa">f</span><span class="s2">"band</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">elements</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">elements</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'bandpasses' must contain at least one bandpass."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">names</span><span class="p">,</span> <span class="p">[</span><span class="n">bandpass_table</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="effective_frequency">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.effective_frequency.html#uvex_transients.utils.phot_utils.effective_frequency">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">effective_frequency</span><span class="p">(</span><span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Return the throughput-weighted mean frequency of a bandpass: :math:`\int\nu\,T\,d\nu/\int T\,d\nu`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : synphot.SpectralElement</span>
+<span class="sd">        One of a detector's bandpasses.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The frequency, in Hz.</span>
+<span class="sd">    """</span>
+    <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">relative_bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">nu</span> <span class="o">*</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span></div>
+
+
+
+<div class="viewcode-block" id="equivalent_bandwidth">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.equivalent_bandwidth.html#uvex_transients.utils.phot_utils.equivalent_bandwidth">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">equivalent_bandwidth</span><span class="p">(</span>
+    <span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">,</span> <span class="n">spectral_index</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">reference_frequency</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Return the equivalent width, in frequency, of a bandpass.</span>
+
+<span class="sd">    The width is :math:`\int(\nu/\nu_0)^\alpha\,T(\nu)/T_\mathrm{max}\,d\nu`.</span>
+
+<span class="sd">    For a spectrum :math:`L_\nu=L_{\nu_0}(\nu/\nu_0)^\alpha` the luminosity in the band is :math:`L_{\nu_0}\,\Delta\nu`</span>
+<span class="sd">    erg/s, with :math:`\Delta\nu` this width. Without an index it is the width of a top hat of the bandpass's peak</span>
+<span class="sd">    throughput that passes as much, which is the same at every :math:`\nu_0`. It is independent of how efficient the</span>
+<span class="sd">    detector is.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : synphot.SpectralElement</span>
+<span class="sd">        One of a detector's bandpasses.</span>
+<span class="sd">    spectral_index : float, optional</span>
+<span class="sd">        The index :math:`\alpha`. The default of 0 is a flat spectrum.</span>
+<span class="sd">    reference_frequency : ~astropy.units.Quantity, optional</span>
+<span class="sd">        The frequency :math:`\nu_0` at which the spectral luminosity is quoted. The default is the `effective_frequency`</span>
+<span class="sd">        of the bandpass. It does not matter for a flat spectrum.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The width, in Hz.</span>
+<span class="sd">    """</span>
+    <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">relative_bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+    <span class="n">nu_0</span> <span class="o">=</span> <span class="n">effective_frequency</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span> <span class="k">if</span> <span class="n">reference_frequency</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">reference_frequency</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">((</span><span class="n">nu</span> <span class="o">/</span> <span class="n">nu_0</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">))</span> <span class="o">**</span> <span class="n">spectral_index</span> <span class="o">*</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># Integrating over a band                                                     #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="n">D_LN_NU</span> <span class="o">=</span> <span class="mf">0.002</span>
+<span class="sd">"""float: Default spacing of the rest-frame frequency grid in :math:`\\ln\\nu`.</span>
+
+<span class="sd">0.2% is about 50 samples across a UVEX band, and changes the peak magnitudes by less than the bandpass tables'</span>
+<span class="sd">own downsampling error (about 1e-3 mag)."""</span>
+
+<span class="c1"># Target size of the largest intermediate array. Larger chunks cost cache, smaller ones Python overhead.</span>
+<span class="n">_CHUNK_BYTES</span> <span class="o">=</span> <span class="mi">32_000_000</span>
+
+
+<div class="viewcode-block" id="photon_weighted_band_average">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.photon_weighted_band_average.html#uvex_transients.utils.phot_utils.photon_weighted_band_average">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">photon_weighted_band_average</span><span class="p">(</span><span class="n">flux_density</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">throughput</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Average a flux density over a band, weighting by photon counts: :math:`\int F_\nu T\,d\nu/\nu\,/\int T\,d\nu/\nu`.</span>
+
+<span class="sd">    This is the same average `band_weight_matrix` evaluates on a rest-frame grid for many redshifts at once. Here it</span>
+<span class="sd">    is a trapezoid rule on the band's own samples, for one set of observed flux densities.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flux_density : numpy.ndarray</span>
+<span class="sd">        The flux density at each band sample, shape ``(..., F)``.</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        The band's frequencies, shape ``(F,)``, increasing.</span>
+<span class="sd">    throughput : numpy.ndarray</span>
+<span class="sd">        The throughput at each frequency, shape ``(F,)``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The band-averaged flux density, shape ``(...)``.</span>
+<span class="sd">    """</span>
+    <span class="n">photon_throughput</span> <span class="o">=</span> <span class="n">throughput</span> <span class="o">/</span> <span class="n">nu</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">flux_density</span> <span class="o">*</span> <span class="n">photon_throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">photon_throughput</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span></div>
+
+
+
+<div class="viewcode-block" id="restframe_frequency_grid">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.restframe_frequency_grid.html#uvex_transients.utils.phot_utils.restframe_frequency_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">restframe_frequency_grid</span><span class="p">(</span>
+    <span class="n">band_grids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]],</span> <span class="n">z_grid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">d_ln_nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">D_LN_NU</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Build the uniform-in-:math:`\ln\nu` rest-frame grid that covers every band at every redshift.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    band_grids : sequence of tuple of numpy.ndarray</span>
+<span class="sd">        Each band's observed frequency samples (Hz) and throughput, as from</span>
+<span class="sd">        :func:`resolve_bandpasses`.</span>
+<span class="sd">    z_grid : numpy.ndarray</span>
+<span class="sd">        Redshifts, increasing.</span>
+<span class="sd">    d_ln_nu : float, optional</span>
+<span class="sd">        Requested spacing in :math:`\ln\nu`. The actual spacing is slightly smaller, so the grid ends exactly on its</span>
+<span class="sd">        limits.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nu_rest : numpy.ndarray</span>
+<span class="sd">        Rest-frame frequencies in Hz.</span>
+<span class="sd">    step : float</span>
+<span class="sd">        The actual spacing in :math:`\ln\nu`.</span>
+<span class="sd">    """</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="ow">in</span> <span class="n">band_grids</span><span class="p">:</span>
+        <span class="n">support</span> <span class="o">=</span> <span class="n">nu</span><span class="p">[</span><span class="n">throughput</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">support</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"A bandpass has no positive throughput."</span><span class="p">)</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">support</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">support</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="c1"># One extra sample either side, so that the throughput's edges are resolved.</span>
+    <span class="n">u_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lo</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> <span class="n">d_ln_nu</span>
+    <span class="n">u_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hi</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">+</span> <span class="n">d_ln_nu</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">u_hi</span> <span class="o">-</span> <span class="n">u_lo</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_ln_nu</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">u_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">u_lo</span><span class="p">,</span> <span class="n">u_hi</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">u_grid</span><span class="p">),</span> <span class="p">(</span><span class="n">u_hi</span> <span class="o">-</span> <span class="n">u_lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="band_weight_matrix">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.band_weight_matrix.html#uvex_transients.utils.phot_utils.band_weight_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">band_weight_matrix</span><span class="p">(</span><span class="n">nu_rest</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">band_grids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]],</span> <span class="n">z_grid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Build the weights that turn rest-frame luminosity densities into band-averaged ones, for every band and redshift.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu_rest : numpy.ndarray</span>
+<span class="sd">        Uniform-in-:math:`\ln\nu` rest-frame grid, from :func:`restframe_frequency_grid`.</span>
+<span class="sd">    band_grids : sequence of tuple of numpy.ndarray</span>
+<span class="sd">        Each band's observed frequency samples (Hz) and throughput.</span>
+<span class="sd">    z_grid : numpy.ndarray</span>
+<span class="sd">        Redshifts.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(len(nu_rest), len(band_grids), len(z_grid))``. Each ``[:, b, j]`` column sums to one.</span>
+<span class="sd">    """</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nu_rest</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_grids</span><span class="p">),</span> <span class="n">z_grid</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">band_grids</span><span class="p">):</span>
+        <span class="n">nu_sorted</span><span class="p">,</span> <span class="n">throughput_sorted</span> <span class="o">=</span> <span class="n">_sorted_by_frequency</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">z_grid</span><span class="p">):</span>
+            <span class="n">column</span> <span class="o">=</span> <span class="n">_throughput_on_grid</span><span class="p">(</span><span class="n">nu_rest</span><span class="p">,</span> <span class="n">nu_sorted</span><span class="p">,</span> <span class="n">throughput_sorted</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+            <span class="n">weights</span><span class="p">[:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span> <span class="o">/</span> <span class="n">column</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+
+
+<div class="viewcode-block" id="band_integration_weights">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.band_integration_weights.html#uvex_transients.utils.phot_utils.band_integration_weights">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">band_integration_weights</span><span class="p">(</span>
+    <span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">,</span> <span class="n">d_ln_nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">D_LN_NU</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Build the frequency grid and weights that integrate a luminosity density over a band.</span>
+
+<span class="sd">    The grid is uniform in :math:`\ln\nu` and covers the band, and the weights are</span>
+<span class="sd">    :math:`\tilde T(\nu_k)\,\nu_k\,\Delta\ln\nu`, so that :math:`\sum_k w_k L_\nu(\nu_k)` is</span>
+<span class="sd">    :math:`\int L_\nu\,\tilde T\,d\nu`. The weights of a flat spectrum add up to the `equivalent_bandwidth`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpass : synphot.SpectralElement</span>
+<span class="sd">        One of a detector's bandpasses.</span>
+<span class="sd">    d_ln_nu : float, optional</span>
+<span class="sd">        Spacing of the grid in :math:`\ln\nu`. The default is the one the detection-horizon calculation uses.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Frequencies in Hz, increasing.</span>
+<span class="sd">    weights : numpy.ndarray</span>
+<span class="sd">        The weight of each frequency, in Hz.</span>
+<span class="sd">    """</span>
+    <span class="n">nu_table</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">relative_bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+    <span class="n">nu</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">restframe_frequency_grid</span><span class="p">([(</span><span class="n">nu_table</span><span class="p">,</span> <span class="n">throughput</span><span class="p">)],</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">d_ln_nu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">_throughput_on_grid</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">nu_table</span><span class="p">,</span> <span class="n">throughput</span><span class="p">)</span> <span class="o">*</span> <span class="n">nu</span> <span class="o">*</span> <span class="n">step</span></div>
+
+
+
+<div class="viewcode-block" id="default_chunk_size">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.default_chunk_size.html#uvex_transients.utils.phot_utils.default_chunk_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_chunk_size</span><span class="p">(</span><span class="n">n_draws</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_frequency</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Choose how many draws to evaluate per step, so that the largest intermediate array is about 32 MB.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_draws : int</span>
+<span class="sd">        Number of draws.</span>
+<span class="sd">    n_time, n_frequency : int</span>
+<span class="sd">        Sizes of the time and frequency grids.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Draws per chunk, between 1 and `n_draws`.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">_CHUNK_BYTES</span> <span class="o">//</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">n_time</span> <span class="o">*</span> <span class="n">n_frequency</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="integrate_chunk">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.integrate_chunk.html#uvex_transients.utils.phot_utils.integrate_chunk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">integrate_chunk</span><span class="p">(</span>
+    <span class="n">eval_log_luminosity</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">nu_axis</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">t_axis</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">support</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Evaluate the SED for some draws and apply frequency weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eval_log_luminosity : callable</span>
+<span class="sd">        ``eval_log_luminosity(nu, t, **parameters)``: the natural log of the rest-frame :math:`L_\nu` in cgs; for a</span>
+<span class="sd">        `~uvex_transients.models.core.base.SpectralModel` its ``_eval``.</span>
+<span class="sd">    parameters : Mapping[str, numpy.ndarray]</span>
+<span class="sd">        The model parameters in cgs units, each of shape ``(N,)``.</span>
+<span class="sd">    start, stop : int</span>
+<span class="sd">        The draws to evaluate, ``parameters[...][start:stop]``.</span>
+<span class="sd">    nu_axis, t_axis : numpy.ndarray</span>
+<span class="sd">        Rest-frame frequencies (Hz) and times (s), shaped ``(1, 1, F)`` and ``(1, T, 1)`` to broadcast against the</span>
+<span class="sd">        draws.</span>
+<span class="sd">    weights : numpy.ndarray</span>
+<span class="sd">        Shape ``(F, K)``: one column of weights over frequency per output.</span>
+<span class="sd">    support : numpy.ndarray</span>
+<span class="sd">        Shape ``(F, K)``, ``weights &gt; 0``: which frequencies each output integrates over.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Shape ``(stop - start, T, K)``. ``NaN`` where the model is ``NaN`` at a frequency that output integrates over.</span>
+<span class="sd">    """</span>
+    <span class="n">n_rows</span><span class="p">,</span> <span class="n">n_time</span><span class="p">,</span> <span class="n">n_frequency</span> <span class="o">=</span> <span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">t_axis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nu_axis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="n">log_luminosity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">eval_log_luminosity</span><span class="p">(</span><span class="n">nu_axis</span><span class="p">,</span> <span class="n">t_axis</span><span class="p">,</span> <span class="o">**</span><span class="n">chunk</span><span class="p">),</span> <span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_time</span><span class="p">,</span> <span class="n">n_frequency</span><span class="p">))</span>
+    <span class="n">luminosity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_luminosity</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_rows</span> <span class="o">*</span> <span class="n">n_time</span><span class="p">,</span> <span class="n">n_frequency</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">luminosity</span><span class="p">)</span>
+    <span class="n">has_missing</span> <span class="o">=</span> <span class="n">missing</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">has_missing</span><span class="p">:</span>
+        <span class="n">luminosity</span><span class="p">[</span><span class="n">missing</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="p">(</span><span class="n">luminosity</span> <span class="o">@</span> <span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_time</span><span class="p">,</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">has_missing</span><span class="p">:</span>
+        <span class="c1"># An epoch is invalid in an output if any frequency that output integrates over is missing.</span>
+        <span class="n">invalid</span> <span class="o">=</span> <span class="p">(</span><span class="n">missing</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">@</span> <span class="n">support</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">flux</span><span class="p">[</span><span class="n">invalid</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">flux</span><span class="o">.</span><span class="n">shape</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">flux</span></div>
+
+
+
+<div class="viewcode-block" id="band_luminosity_curve">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.band_luminosity_curve.html#uvex_transients.utils.phot_utils.band_luminosity_curve">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">band_luminosity_curve</span><span class="p">(</span>
+    <span class="n">eval_log_luminosity</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">],</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">d_ln_nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">D_LN_NU</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Evaluate the rest-frame luminosity in a band for each of many draws, on a grid of times.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eval_log_luminosity : callable</span>
+<span class="sd">        ``eval_log_luminosity(nu, t, **parameters)``: the natural log of the rest-frame :math:`L_\nu` in cgs, for</span>
+<span class="sd">        frequencies ``nu`` (Hz) and times ``t`` (s) that broadcast against the parameters.</span>
+<span class="sd">    parameters : Mapping[str, numpy.ndarray]</span>
+<span class="sd">        The parameters in cgs units, each of shape ``(N,)``, one entry per draw.</span>
+<span class="sd">    t : numpy.ndarray</span>
+<span class="sd">        Rest-frame times in seconds, shape ``(T,)``.</span>
+<span class="sd">    bandpass : synphot.SpectralElement</span>
+<span class="sd">        The band that is integrated over; see `band_integration_weights`.</span>
+<span class="sd">    d_ln_nu : float, optional</span>
+<span class="sd">        Spacing of the frequency grid in :math:`\ln\nu`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        :math:`L_\mathrm{band}` in erg/s, shape ``(N, T)``. ``NaN`` where the model is ``NaN`` at a frequency the</span>
+<span class="sd">        band covers.</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">n_draws</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+    <span class="n">nu</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">band_integration_weights</span><span class="p">(</span><span class="n">bandpass</span><span class="p">,</span> <span class="n">d_ln_nu</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">support</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">default_chunk_size</span><span class="p">(</span><span class="n">n_draws</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">nu</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">nu_axis</span><span class="p">,</span> <span class="n">t_axis</span> <span class="o">=</span> <span class="n">nu</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">t</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_draws</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">,</span> <span class="n">chunk</span><span class="p">):</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">=</span> <span class="n">integrate_chunk</span><span class="p">(</span>
+            <span class="n">eval_log_luminosity</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">nu_axis</span><span class="p">,</span> <span class="n">t_axis</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">support</span>
+        <span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

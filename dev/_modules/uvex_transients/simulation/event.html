@@ -485,6 +485,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_attenuation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_rng</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.keyed_noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">time_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.phot_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">bandpass_table</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..surveys.footprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveyFootprint</span><span class="p">,</span> <span class="n">default_registry</span>
@@ -891,9 +892,8 @@
 <span class="sd">            `bandpass`'s observed frequency grid, its dimensionless throughput on that grid, and the natural</span>
 <span class="sd">            log of this event's dust attenuation on that grid (see :func:`~uvex_transients.dust.log_attenuation`).</span>
 <span class="sd">        """</span>
-        <span class="n">wave</span> <span class="o">=</span> <span class="n">bandpass</span><span class="o">.</span><span class="n">waveset</span>
-        <span class="n">nu</span> <span class="o">=</span> <span class="n">wave</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">spectral</span><span class="p">())</span>
-        <span class="n">throughput</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bandpass</span><span class="p">(</span><span class="n">wave</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">))</span>
+        <span class="n">nu_hz</span><span class="p">,</span> <span class="n">throughput</span> <span class="o">=</span> <span class="n">bandpass_table</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+        <span class="n">nu</span> <span class="o">=</span> <span class="n">nu_hz</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span>
         <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span><span class="p">,</span> <span class="n">log_attenuation</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ebv</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Event.mag">
