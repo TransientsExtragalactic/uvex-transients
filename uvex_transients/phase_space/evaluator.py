@@ -375,13 +375,19 @@ class RecoveryEvaluator:
 
         ``band``, the unit of the luminosity, and ``absolute_magnitude_zero_point``, the :math:`Z` for which the
         absolute AB magnitude of a source of luminosity :math:`L_\mathrm{band}` is
-        :math:`M = Z - 2.5\log_{10}L_\mathrm{band}`.
+        :math:`M = Z - 2.5\log_{10}L_\mathrm{band}`. Also the shape of the canonical transient the axes are measured
+        on (``spectral_index``, ``rise_ratio``, ``fade_mag``), which
+        `~uvex_transients.phase_space.compare.difference_map` checks before it compares two maps. And ``n_max``, the
+        most events a point simulates, which sets the smallest recovery fraction a map resolves.
         """
         bandwidth_hz = float(self.bandwidth.to_value(u.Hz))
         return {
             "band": self.band,
             "luminosity_unit": "erg/s",
             "spectral_index": self.spectral_index,
+            "rise_ratio": self._settings["rise_ratio"],
+            "fade_mag": self._settings["fade_mag"],
+            "n_max": self.n_max,
             "bandwidth_hz": bandwidth_hz,
             "absolute_magnitude_zero_point": float(_M_ZERO + 2.5 * np.log10(bandwidth_hz)),
         }

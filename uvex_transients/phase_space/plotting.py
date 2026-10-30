@@ -10,7 +10,7 @@ from astropy.units import Quantity
 
 from uvex_transients.utils.plotting import set_plot_style
 
-__all__ = ["plot_map"]
+__all__ = ["plot_difference", "plot_map"]
 
 # ============================================ #
 # Constants                                    #
@@ -38,6 +38,15 @@ _REGION_GRID = 240
 _REGION_PADDING = 0.4
 _REGION_MIN_DRAWS = 5
 _REGION_ALPHA = 0.35
+
+#: The figure of a difference of two maps: its size, the largest difference (in dex) the colour scale reaches, the
+#: contour levels, the significance (in sigma) below which a cell is hatched, and the hatches of an insignificant
+#: difference and of a lower and an upper bound.
+_DIFFERENCE_FIGSIZE = (9, 7)
+_DIFFERENCE_RANGE = 2.0
+_DIFFERENCE_LEVELS = (-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0)
+_SIGNIFICANCE = 2.0
+_HATCH_INSIGNIFICANT, _HATCH_LOWER, _HATCH_UPPER = "..", "\\\\", "//"
 
 #: Distinct colours for the shaded classes, which a legend tells apart, not names on the map.
 _OVERLAY_COLORS = (
@@ -350,6 +359,107 @@ def plot_map(
 
     if title:
         fig.suptitle(title)
+    if path is not None:
+        fig.savefig(path, dpi=_SAVE_DPI)
+    return fig
+
+
+def plot_difference(
+    difference: Table,
+    path: str | Path | None = None,
+    title: str | None = None,
+    overlays: Sequence[Table] | None = None,
+):
+    r"""
+    Draw the difference of two recovery maps, in dex of the recovered volume-time.
+
+    The colour is :math:`\Delta = \log_{10}(R_\mathrm{c}/R_\mathrm{b})`, positive where the comparison recovers more,
+    with contours at fixed numbers of dex. Cells where :math:`|\Delta|` is less than two standard deviations are dotted,
+    and cells where it is only a bound, because one map recovers essentially nothing there, are hatched by the direction
+    of the bound. Cells where neither map recovers anything are left blank.
+
+    Parameters
+    ----------
+    difference : astropy.table.Table
+        The output of `~uvex_transients.phase_space.compare.difference_map`.
+    path : str or pathlib.Path, optional
+        Where to write the figure. If omitted, the figure is not saved.
+    title : str, optional
+        A title.
+    overlays : sequence of astropy.table.Table, optional
+        Measurements of populations to shade, as in `plot_map`.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The figure, left open so that it can be adjusted or shown.
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import Normalize
+    from matplotlib.patches import Patch
+
+    set_plot_style()
+
+    names = difference.colnames[:2]
+    n = int(np.sqrt(len(difference)))
+    duration = 10.0 ** np.asarray(difference[names[1]]).reshape(n, n)
+    luminosity = 10.0 ** np.asarray(difference[names[0]]).reshape(n, n)
+    delta = np.ma.masked_invalid(np.asarray(difference["delta_dex"]).reshape(n, n))
+    significance = np.nan_to_num(np.asarray(difference["significance"]).reshape(n, n))
+    limit = np.asarray(difference["limit"]).reshape(n, n)
+
+    # Symmetric about no difference, and not stretched by one extreme corner
+    reach = min(float(np.abs(delta).max()) if delta.count() else 1.0, _DIFFERENCE_RANGE)
+    reach = max(reach, 0.1)
+
+    fig, ax = plt.subplots(figsize=_DIFFERENCE_FIGSIZE, constrained_layout=True)
+    ax.set_facecolor("0.88")
+    mesh = ax.pcolormesh(duration, luminosity, delta, norm=Normalize(-reach, reach), cmap="RdBu", shading="auto")
+    fig.colorbar(mesh, ax=ax, label=r"$\log_{10}$(comparison / baseline) recovered volume-time [dex]")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+
+    # Contours of the difference, where it reaches them
+    levels = [level for level in _DIFFERENCE_LEVELS if delta.min() < level < delta.max()] if delta.count() else []
+    if levels:
+        contours = ax.contour(duration, luminosity, delta, levels=levels, colors="k", linewidths=0.8)
+        _label_once(ax, contours, lambda level: f"{level:+g}" if level else "0")
+
+    # What not to read as a measurement
+    handles = []
+    insignificant = (np.abs(significance) < _SIGNIFICANCE) & (limit == 0) & ~np.ma.getmaskarray(delta)
+    for mask, hatch, label in (
+        (insignificant, _HATCH_INSIGNIFICANT, rf"$|\Delta| < {_SIGNIFICANCE:g}\sigma$"),
+        (limit > 0, _HATCH_LOWER, r"lower bound on $\Delta$"),
+        (limit < 0, _HATCH_UPPER, r"upper bound on $\Delta$"),
+    ):
+        if mask.any():
+            ax.contourf(duration, luminosity, mask.astype(float), levels=[0.5, 1.5], colors="none", hatches=[hatch])
+            handles.append(Patch(facecolor="none", edgecolor="k", hatch=hatch, label=label))
+
+    for k, overlay in enumerate(overlays or []):
+        if (handle := _draw_overlay(np.array([ax]), overlay, _OVERLAY_COLORS[k % len(_OVERLAY_COLORS)])) is not None:
+            handles.append(handle)
+    if handles:
+        fig.legend(handles=handles, loc="outside lower center", ncol=min(4, len(handles)), fontsize=9, frameon=False)
+
+    # An overlay that reaches past the map is cut off by it, not allowed to stretch the axes
+    ax.set_xlim(duration.min(), duration.max())
+    ax.set_ylim(luminosity.min(), luminosity.max())
+
+    ax.set_xlabel(r"rest-frame half-decline time $t_{1/2}$ [day]")
+    band = difference.meta.get("band")
+    ax.set_ylabel(f"{rf'$L_\mathrm{{{band}}}$' if band else r'$L$'} [erg s$^{{-1}}$]")
+
+    # Magnitude is linear in log L, so a twin axis with the limits of the luminosity axis converted lines up exactly
+    zero_point = difference.meta.get("absolute_magnitude_zero_point")
+    if zero_point is not None:
+        magnitude = ax.twinx()
+        magnitude.set_ylim(zero_point - 2.5 * difference[names[0]].min(), zero_point - 2.5 * difference[names[0]].max())
+        magnitude.set_ylabel(r"absolute AB magnitude $M$")
+
+    if title:
+        ax.set_title(title)
     if path is not None:
         fig.savefig(path, dpi=_SAVE_DPI)
     return fig

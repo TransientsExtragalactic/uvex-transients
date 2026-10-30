@@ -157,6 +157,10 @@ def test_the_table_meta_labels_the_axis(schedule):
     meta = evaluator.table_meta
     assert meta["band"] == "FUV" and meta["luminosity_unit"] == "erg/s"
     assert meta["bandwidth_hz"] == pytest.approx(evaluator.bandwidth.to_value(u.Hz))
+    # The shape of the canonical transient, which `difference_map` requires two maps to share
+    assert meta["rise_ratio"] == evaluator.settings["rise_ratio"] and meta["fade_mag"] == evaluator.settings["fade_mag"]
+    # And the resolution of the recovery fraction, which `difference_map` takes its floor from
+    assert meta["n_max"] == evaluator.n_max
     # M = Z - 2.5 log10 L_band, with Z set by the distance of 10 pc and the bandwidth.
     luminosity = 1e43 * u.erg / u.s
     spectral = luminosity / evaluator.bandwidth
