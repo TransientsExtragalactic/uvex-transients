@@ -442,6 +442,13 @@ def _masked_floats(values: list[float | None]) -> np.ma.MaskedArray:
     return np.ma.MaskedArray(np.where(np.isnan(array), 0.0, array), mask=np.isnan(array))
 
 
+def _validate_event_count(count) -> int:
+    """Check a per-type event count for `SurveySimulator.sample_N_events` and return it as an `int`."""
+    if isinstance(count, (bool, np.bool_)) or not isinstance(count, (int, np.integer)) or count < 1:
+        raise ValueError(f"Event counts must be positive integers, got {count!r}.")
+    return int(count)
+
+
 # ===================================== #
 # Survey Simulation Base Class          #
 # ===================================== #
@@ -590,7 +597,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         between ``t_k`` and ``t_{k+1} + transient.duration_limit``, i.e. only where an event
         exploding in this bin could plausibly still be caught by an observation before it fades
         below relevance. Explosion times themselves are drawn only within ``[t_k, t_{k+1})``, so
-        no event is double-counted across adjacent bins.
+        no event is double-counted across adjacent bins. The observed pixels are dilated by their
+        neighbours (see `SurveySchedule.get_observed_healpix_ids`), so the sampled region contains
+        every position the schedule can later match to an observation, including those whose own pixel
+        center lies just outside a footprint. The extra events at the edge are simply never detected.
 
         Two columns are computed once here, at generation time, so nothing downstream needs to
         re-derive them: ``luminosity_distance`` (interpolated per transient type off its own
@@ -706,6 +716,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                         t_end + transient.duration_limit,
                         nside=nside,
                         order=order,
+                        dilate=True,
                     )
 
                     # Determine the tiled area for this timestep and provide the debug info to console.
@@ -781,6 +792,240 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             time_bins=edges,
             seed=self._simulation_seed,
             sampling_factor=dict(sampling_factor) if isinstance(sampling_factor, Mapping) else sampling_factor,
+            pre_cut_counts={name: int(np.sum(generated_types == name)) for name in sorted_names},
+        )
+
+    def sample_N_events(
+        self,
+        count: int | Mapping[str, int],
+        time_bins: Time | int,
+        nside: int | None = None,
+        order: str | None = None,
+    ) -> EventCatalog:
+        r"""
+        Sample a fixed number of events of every registered transient type over a time grid.
+
+        The fixed-count counterpart of :meth:`generate_events`, with the same (dilated) footprint.
+        The count is divided among the time bins in proportion to each bin's effective exposure
+        :math:`\mathcal E_k = F(t_k, t_{k+1}+\tau)\,(t_{k+1}-t_k)` (see `compute_effective_exposure`),
+        by a single multinomial draw per type:
+
+        .. math::
+
+            (N_1, \dots, N_K) \sim \mathrm{Multinomial}\left(N, \mathcal E_k / \sum_j \mathcal E_j\right).
+
+        Because the rate is constant in time, :math:`\mathcal E_k` is proportional to the expected
+        number of events in bin :math:`k`, so the events are independent draws from the
+        footprint-weighted population and every event of a type stands for the same
+        ``expected_events[type] / count[type]`` real events.
+
+        Parameters
+        ----------
+        count : int or Mapping of str to int
+            The number of events to sample. Either a single count applied to every registered
+            transient type, or a ``{type key: count}`` mapping naming every registered type. Each
+            count must be a positive integer.
+        time_bins : ~astropy.time.Time or int
+            Same semantics as `generate_events`.
+        nside : int, optional
+            Same semantics as `generate_events`.
+        order : str, optional
+            Same semantics as `generate_events`.
+
+        Returns
+        -------
+        EventCatalog
+            One row per sampled event, across every registered transient type and time bin, with
+            the same columns as `generate_events`. Its ``pre_cut_counts`` are `count` and its
+            ``sampling_factor`` is `None`, since the count was fixed instead of scaled.
+
+        Raises
+        ------
+        ValueError
+            If `count` is a mapping that names an unknown transient type or leaves a registered one
+            out, any count is not a positive integer, or a transient type has no survey exposure
+            over `time_bins` to place its events in.
+        """
+        # Validate the inputs and ensure that there are actually registered transients to model.
+        if not self._transients:
+            raise ValueError("No transient types registered in `transient_collection`; nothing to sample.")
+
+        sorted_names = sorted(self._transients)
+        if isinstance(count, Mapping):
+            unknown = sorted(set(count) - set(self._transients))
+            if unknown:
+                raise ValueError(
+                    f"`count` names unknown transient key(s) {unknown}; available: {sorted(self._transients)}."
+                )
+            missing = sorted(set(self._transients) - set(count))
+            if missing:
+                raise ValueError(f"`count` must name every registered transient type; missing {missing}.")
+            counts = {name: _validate_event_count(count[name]) for name in sorted_names}
+        else:
+            counts = {name: _validate_event_count(count) for name in sorted_names}
+
+        nside, order = resolve_healpix_resolution(nside, order)
+
+        # Set up the time bins so that we can perform the windowing analysis properly.
+        edges = self._resolve_time_bins(time_bins)
+        n_bins = len(edges) - 1
+        bin_widths = (edges[1:] - edges[:-1]).to_value(u.day)
+
+        # Set up the RNG. The per-type and per-bin streams are spawned exactly as in `generate_events`.
+        # The allocation of each type's count among its bins needs streams of its own, spawned after
+        # them so that they cannot collide with any of the sampling streams.
+        root_seed = get_seed_sequence(self._simulation_seed)
+        type_seeds = root_seed.spawn(len(sorted_names))
+        allocation_seeds = root_seed.spawn(len(sorted_names))
+
+        # --- Begin Allocation Section --- #
+        # The count of each type is split among its bins in proportion to the effective exposure of each,
+        # so this needs the visited solid angle of every bin before any event is drawn. Only the pixel
+        # counts are kept here; the pixels themselves are queried again below, which is a lookup in the
+        # schedule's cached coverage index rather than a second rasterization.
+        logger.info(
+            "Allocating %s events among %d time bin(s) (nside=%d, order=%r).",
+            counts,
+            n_bins,
+            nside,
+            order,
+        )
+        allocations = {}
+        for name, allocation_seed in zip(sorted_names, allocation_seeds):
+            transient = self._transients[name]
+
+            n_pixels = np.array(
+                [
+                    len(
+                        self._survey_schedule.get_observed_healpix_ids(
+                            edges[k],
+                            edges[k + 1] + transient.duration_limit,
+                            nside=nside,
+                            order=order,
+                            dilate=True,
+                        )
+                    )
+                    for k in range(n_bins)
+                ],
+                dtype=np.float64,
+            )
+
+            # Only the ratios of the exposures matter, so the pixel area and the rate cancel.
+            exposure = n_pixels * bin_widths
+            if not exposure.sum() > 0:
+                raise ValueError(
+                    f"Transient type {name!r} has no survey exposure over `time_bins`, "
+                    "so there is nowhere to place its events."
+                )
+            allocations[name] = np.random.default_rng(allocation_seed).multinomial(
+                counts[name], exposure / exposure.sum()
+            )
+
+        # --- Begin Iteration Section --- #
+        # In this code-section, we iterate through each window (t_i, t_i+1 + duration) and through each
+        # of the transient types to construct the sample of events, drawing the number allocated to
+        # each window above instead of a Poisson count.
+        tables = []
+        logger.info(
+            "Sampling events for %d type(s) %s over %d time bin(s) (nside=%d, order=%r).",
+            len(sorted_names),
+            sorted_names,
+            n_bins,
+            nside,
+            order,
+        )
+
+        with (
+            tqdm(total=len(sorted_names) * n_bins, desc="Sampling events", unit="bin") as pbar,
+            logging_redirect_tqdm(loggers=[logger]),
+        ):
+            for name, type_seed in zip(sorted_names, type_seeds):
+                transient = self._transients[name]
+                bin_seeds = type_seed.spawn(n_bins)
+
+                for k in range(n_bins):
+                    pbar.set_postfix(type=name, bin=f"{k + 1}/{n_bins}")
+
+                    # A bin with nothing allocated to it (including any with no exposure) has no events to draw.
+                    n_bin_events = int(allocations[name][k])
+                    if n_bin_events == 0:
+                        pbar.update(1)
+                        continue
+
+                    t_start, t_end = edges[k], edges[k + 1]
+
+                    # Determine which set of the healpix IDs intersect at all with the
+                    # FOV of the survey.
+                    pixel_ids = self._survey_schedule.get_observed_healpix_ids(
+                        t_start,
+                        t_end + transient.duration_limit,
+                        nside=nside,
+                        order=order,
+                        dilate=True,
+                    )
+
+                    logger.debug(
+                        "Transient Type: %s, Bin: %d/%d, Time Window: %s to %s, "
+                        "N Pixels Visited: %d, N Events Allocated: %d",
+                        name,
+                        k + 1,
+                        n_bins,
+                        t_start.iso,
+                        t_end.iso,
+                        len(pixel_ids),
+                        n_bin_events,
+                    )
+
+                    # Extract a random sample of transients which occur within the
+                    # relevant footprint.
+                    table = transient.sample_events_on_healpix_grid(
+                        nside,
+                        t_start=t_start,
+                        t_end=t_end,
+                        pixel_ids=pixel_ids,
+                        order=order,
+                        seed=bin_seeds[k],
+                        n_events=n_bin_events,
+                    )
+
+                    # Interpolate this transient type's own cached D_L(z) grid at each sampled
+                    # event's redshift, right here, rather than a fresh `cosmology.luminosity_distance`
+                    # call per event later; see `ExtragalacticTransient.luminosity_distance_grid`.
+                    table["luminosity_distance"] = (
+                        np.interp(
+                            table["redshift"],
+                            transient.redshift_grid,
+                            transient.luminosity_distance_grid.to_value(u.Mpc),
+                        )
+                        * u.Mpc
+                    )
+
+                    table["transient_type"] = name
+                    table["time_bin"] = k
+                    tables.append(table)
+                    pbar.update(1)
+
+        combined = vstack(tables, metadata_conflicts="silent")
+        combined.sort("t_explosion")
+        combined["event_id"] = np.arange(len(combined), dtype=np.int64)
+
+        # One vectorized Milky Way dust-map query over every sampled position at once, rather
+        # than per-event later (see `EventCatalog.ebv`).
+        logger.info("Querying the dust map for %d sampled positions.", len(combined))
+        combined["ebv"] = np.asarray(dust_map().query(combined["coord"]), dtype=np.float64)
+
+        generated_types = np.asarray(combined["transient_type"]).astype(str)
+        logger.info(
+            "Sampled %d events: %s.",
+            len(combined),
+            ", ".join(f"{name}={int(np.sum(generated_types == name))}" for name in sorted_names),
+        )
+        return EventCatalog(
+            table=combined,
+            nside=nside,
+            order=order,
+            time_bins=edges,
+            seed=self._simulation_seed,
             pre_cut_counts={name: int(np.sum(generated_types == name)) for name in sorted_names},
         )
 
@@ -886,6 +1131,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                         t_end + transient.duration_limit,
                         nside=nside,
                         order=order,
+                        dilate=True,
                     )
 
                     transient_type.append(name)

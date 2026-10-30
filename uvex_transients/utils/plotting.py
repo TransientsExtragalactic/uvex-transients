@@ -45,9 +45,9 @@ from matplotlib.patches import Patch
 from mocpy import MOC
 from numpy.typing import NDArray
 
-from ..simulation._stats import clopper_pearson_interval
 from . import resolve_healpix_resolution
 from .config import config
+from .stat_utils import clopper_pearson_interval
 
 if TYPE_CHECKING:
     from ..surveys.footprints.base import SurveyFootprint

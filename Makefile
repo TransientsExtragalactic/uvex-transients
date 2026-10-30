@@ -1,8 +1,10 @@
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test coverage docs docs-clean clean run horizons sync-scheduler release
+.PHONY: help install lint format test coverage docs docs-clean clean run phase-space horizons sync-scheduler release
 
 RUN_CONFIG ?= configs/full_run.yaml
 RUN_OUT_DIR ?= results/dev/
+PS_CONFIG ?= configs/phase_space.yaml
+PS_OUT_DIR ?= results/phase_space/
 
 help: ## Show this help.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -33,6 +35,9 @@ clean: ## Remove build artifacts (see clean.sh).
 
 run: ## Run the full-population pipeline (RUN_CONFIG -> RUN_OUT_DIR; both overridable).
 	uvex-transients run $(RUN_CONFIG) --out-dir $(RUN_OUT_DIR) --overwrite
+
+phase-space: ## Make the phase-space recovery maps (PS_CONFIG -> PS_OUT_DIR; both overridable).
+	uvex-transients phase-space $(PS_CONFIG) --out-dir $(PS_OUT_DIR) --overwrite
 
 horizons: ## Rebuild the stored detection-horizon curves (CLASSES="TypeIaSNe TDE" for chosen classes; takes seconds to a minute each).
 	python scripts/build_horizon_curves.py $(CLASSES)

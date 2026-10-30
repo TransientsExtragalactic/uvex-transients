@@ -4,8 +4,8 @@
 # ------------------------------------------ #
 # Once a day, checks for a new m4opt/uvex-scheduler release. If there is one, scripts/sync_scheduler.py
 # registers it in the package config (older schedules stay registered as references), and pins the
-# package default, the survey footprints, and the release run-configs (configs/full_run.yaml and
-# configs/infant_sne.yaml) to it. The change is validated
+# package default, the survey footprints, and the release run-configs (configs/full_run.yaml,
+# configs/infant_sne.yaml and configs/phase_space.yaml) to it. The change is validated
 # with a dry run of each release config and then opened as a pull request. Merging that PR
 # and tagging a release (`make release VERSION=...`) regenerates the data products with the new
 # scheduler.
@@ -54,6 +54,7 @@ jobs:
         run: |
           uvex-transients run configs/full_run.yaml --out-dir results/dry_run --dry-run
           uvex-transients run configs/infant_sne.yaml --out-dir results/dry_run --dry-run
+          uvex-transients phase-space configs/phase_space.yaml --out-dir results/dry_run --dry-run
 
       - name: Open pull request
         if: steps.sync.outputs.changed == 'true'
@@ -68,7 +69,7 @@ jobs:
           body: |
             A new [uvex-scheduler release](https://github.com/m4opt/uvex-scheduler/releases/tag/${{ steps.sync.outputs.tag }}) is available.
 
-            This PR registers `uvex_${{ steps.sync.outputs.tag }}` in the package config (the previous schedules stay registered), and pins the default schedule, the survey footprints and the release configs (`configs/full_run.yaml`, `configs/infant_sne.yaml`) to it. Each release config was dry-run against the new schedule before this PR was opened.
+            This PR registers `uvex_${{ steps.sync.outputs.tag }}` in the package config (the previous schedules stay registered), and pins the default schedule, the survey footprints and the release configs (`configs/full_run.yaml`, `configs/infant_sne.yaml`, `configs/phase_space.yaml`) to it. Each release config was dry-run against the new schedule before this PR was opened.
 
             After merging, tag a release to regenerate the data products with the new scheduler:
 

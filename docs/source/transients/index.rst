@@ -42,7 +42,7 @@ underlying physics in any detail.
       anchored to the AT2017gfo/GW170817 light curve.
 
       +++
-      :math:`z \le 0.19` · 30 day window
+      :math:`z \le 0.16` · 30 day window
 
    .. grid-item-card:: Tidal Disruption Events
       :link: tdes
@@ -53,7 +53,7 @@ underlying physics in any detail.
       photosphere, optionally with a late-time magnetized-disk plateau.
 
       +++
-      :math:`z \le 1.7` · 200 day window
+      :math:`z \le 1.88` · 200 day window
 
    .. grid-item-card:: Luminous Fast Blue Optical Transients
       :link: lfbots
@@ -64,7 +64,18 @@ underlying physics in any detail.
       rising and declining cooling blackbody.
 
       +++
-      :math:`z \le 4.3` · 100 day window
+      :math:`z \le 3.73` · 100 day window
+
+   .. grid-item-card:: Low-Luminosity GRBs
+      :link: llgrb
+      :link-type: doc
+      :class-card: sd-shadow-sm sd-border-1
+
+      Sub-energetic gamma-ray bursts with a broad-lined supernova, typified by GRB 060218 / SN 2006aj:
+      an early, hot, fast-fading thermal excess, plus an Arnett-powered Ic-BL supernova.
+
+      +++
+      :math:`z \le 2.45` · 30 day window
 
    .. grid-item-card:: Type II Supernovae
       :link: type_ii
@@ -76,7 +87,7 @@ underlying physics in any detail.
       double-pulse phenomenological model spanning single- and double-peaked light curves.
 
       +++
-      :math:`z \le 0.50`-:math:`1.8` · 100-200 day window
+      :math:`z \le 0.51`-:math:`0.99` · 100-200 day window
 
    .. grid-item-card:: Type I Supernovae
       :link: type_i
@@ -89,7 +100,7 @@ underlying physics in any detail.
       physics as the SLSNe-I model below.
 
       +++
-      :math:`z \le 0.17`-:math:`0.30` · 100-365 day window
+      :math:`z \le 0.23`-:math:`0.33` · 100-365 day window
 
 Detailed Physical Models
 --------------------------
@@ -122,7 +133,7 @@ empirical shape fit directly to observed light curves.
       homologously expanding ejecta, with gamma-ray leakage and a cooling blackbody photosphere.
 
       +++
-      :math:`z \le 2.6` · 600 day window
+      :math:`z \le 3.17` · 600 day window
 
 .. note::
 
@@ -138,6 +149,7 @@ empirical shape fit directly to observed light curves.
    kilonovae
    tdes
    lfbots
+   llgrb
    type_ii
    type_i
    shock_cooling_iib
