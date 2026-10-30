@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test coverage docs docs-clean clean run phase-space horizons sync-scheduler release
+.PHONY: help install lint format test test-slow coverage docs docs-clean clean run phase-space horizons sync-scheduler release
 
 RUN_CONFIG ?= configs/full_run.yaml
 RUN_OUT_DIR ?= results/dev/
@@ -18,8 +18,11 @@ lint: ## Check code style with ruff (no fixes applied).
 format: ## Auto-format the codebase with ruff.
 	ruff format .
 
-test: ## Run the test suite.
+test: ## Run the test suite (slow tests deselected).
 	pytest
+
+test-slow: ## Run only the slow tests.
+	pytest -m slow
 
 coverage: ## Run the test suite with branch coverage.
 	pytest --cov

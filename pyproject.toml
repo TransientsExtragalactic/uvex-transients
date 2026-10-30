@@ -124,10 +124,11 @@ tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+(?:[-a-zA-Z0-9\\.]+)?)$"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers"
+addopts = "-ra -q --strict-markers -m 'not slow'"
 testpaths = ["tests"]
 markers = [
   "network: test makes a real network request (e.g. to validate a remote URL).",
+  "slow: time-consuming or multi-component test, deselected by default (run with `pytest -m slow`).",
 ]
 
 
