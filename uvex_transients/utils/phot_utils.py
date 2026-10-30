@@ -21,6 +21,7 @@ __all__ = [
     "flux_to_ab_mag",
     "hz_per_unit",
     "integrate_chunk",
+    "luminosity_to_absolute_magnitude",
     "photon_weighted_band_average",
     "relative_bandpass_table",
     "resolve_bandpasses",
@@ -51,6 +52,34 @@ def flux_to_ab_mag(flux_density: ArrayLike) -> NDArray[np.float64]:
     """
     with np.errstate(divide="ignore"):
         return -2.5 * np.log10(flux_density / AB_MAG_ZERO_POINT)
+
+
+def luminosity_to_absolute_magnitude(luminosity: Quantity, bandpass: SpectralElement) -> Quantity:
+    r"""
+    Convert a band luminosity to an absolute AB magnitude, by the distance modulus of a flat spectrum.
+
+    The spectrum is taken to be flat in :math:`L_\nu`, so that :math:`L_\nu=L_\mathrm{band}/\Delta\nu` with
+    :math:`\Delta\nu` the `equivalent_bandwidth` of the band, and the magnitude is that of this :math:`L_\nu` seen
+    from 10 pc. It is the AB magnitude a flat-spectrum source with this band luminosity would have, which is not
+    exactly the photon-weighted band magnitude of an SED with colour; it is a fixed, monotonic conversion of the
+    luminosity.
+
+    Parameters
+    ----------
+    luminosity : ~astropy.units.Quantity
+        The luminosity in the band, in units of erg/s. Any shape.
+    bandpass : synphot.SpectralElement
+        The band that `luminosity` is in, for example one of a detector's bandpasses.
+
+    Returns
+    -------
+    ~astropy.units.Quantity
+        The absolute AB magnitude, in `~astropy.units.ABmag`, with the shape of `luminosity`. ``NaN`` stays ``NaN`` and
+        zero luminosity is an infinitely faint magnitude.
+    """
+    l_nu = luminosity.to(u.erg / u.s) / equivalent_bandwidth(bandpass)
+    flux_density = l_nu / (4 * np.pi * (10 * u.pc) ** 2)
+    return flux_to_ab_mag(flux_density.to_value(u.erg / u.s / u.cm**2 / u.Hz)) * u.ABmag
 
 
 def hz_per_unit(unit: str | u.UnitBase, *, is_wavelength: bool) -> float:

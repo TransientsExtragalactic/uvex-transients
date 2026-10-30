@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from uvex_transients.utils.stat_utils import (
+    binned_density,
     binomial_logit,
     clopper_pearson_interval,
     combine_fractional_errors,
@@ -93,6 +94,42 @@ class TestClopperPearson:
     def test_a_higher_confidence_is_wider(self):
         narrow, wide = clopper_pearson_interval(10, 40, 0.68), clopper_pearson_interval(10, 40, 0.99)
         assert wide[0] < narrow[0] and narrow[1] < wide[1]
+
+
+class TestBinnedDensity:
+    """Counts, density and intervals of samples binned into a histogram."""
+
+    EDGES = np.array([0.0, 1.0, 3.0, 4.0])
+
+    def test_counts_and_density_follow_the_samples_and_widths(self):
+        out = binned_density([0.5, 0.5, 1.5, 2.5, 3.5], self.EDGES)
+        np.testing.assert_array_equal(out["count"], [2, 2, 1])
+        np.testing.assert_allclose(out["density"], np.array([2, 2, 1]) / (5 * np.diff(self.EDGES)))
+        assert np.sum(out["density"] * np.diff(self.EDGES)) == pytest.approx(1.0)
+
+    def test_the_last_bin_includes_its_upper_edge(self):
+        assert binned_density([4.0], self.EDGES)["count"][-1] == 1
+
+    def test_intervals_bracket_the_estimate_and_match_clopper_pearson(self):
+        out = binned_density(np.random.default_rng(0).uniform(0, 4, 200), self.EDGES, confidence=0.9)
+        assert np.all(out["count_lo"] <= out["count"]) and np.all(out["count"] <= out["count_hi"])
+        assert np.all(out["density_lo"] <= out["density"]) and np.all(out["density"] <= out["density_hi"])
+        lo, hi = clopper_pearson_interval(int(out["count"][1]), 200, 0.9)
+        assert out["count_lo"][1] == pytest.approx(200 * lo) and out["count_hi"][1] == pytest.approx(200 * hi)
+
+    def test_an_empty_bin_has_a_zero_lower_limit_and_a_positive_upper_limit(self):
+        out = binned_density([0.5, 0.6], self.EDGES)
+        assert out["count"][2] == 0 and out["count_lo"][2] == 0.0 and out["count_hi"][2] > 0.0
+
+    def test_samples_outside_the_edges_count_towards_the_total_only(self):
+        out = binned_density([0.5, 10.0], self.EDGES)
+        assert out["count"].sum() == 1
+        assert np.sum(out["density"] * np.diff(self.EDGES)) == pytest.approx(0.5)
+
+    @pytest.mark.parametrize("edges", [[1.0], [0.0, 0.0, 1.0], [2.0, 1.0], [[0.0, 1.0]]])
+    def test_bad_edges_are_rejected(self, edges):
+        with pytest.raises(ValueError, match="edges"):
+            binned_density([0.5], edges)
 
 
 class TestFractionalErrors:

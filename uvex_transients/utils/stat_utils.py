@@ -11,6 +11,7 @@ from scipy.special import logit
 from scipy.stats import beta, binom
 
 __all__ = [
+    "binned_density",
     "binomial_logit",
     "clopper_pearson_interval",
     "combine_fractional_errors",
@@ -54,6 +55,54 @@ def clopper_pearson_interval(k: int, n: int, confidence: float) -> tuple[float, 
     lower = 0.0 if k == 0 else beta.ppf(alpha / 2, k, n - k + 1)
     upper = 1.0 if k == n else beta.ppf(1 - alpha / 2, k + 1, n - k)
     return (float(lower), float(upper))
+
+
+def binned_density(values: ArrayLike, edges: ArrayLike, confidence: float = 0.6827) -> dict[str, NDArray[np.float64]]:
+    r"""
+    Histogram samples into counts and a probability density, with a confidence interval on each bin.
+
+    A bin that holds :math:`k` of the :math:`n` samples is a binomial proportion :math:`k/n`, so its interval is the
+    exact one of `clopper_pearson_interval`. This stays well-behaved in bins with few or no samples, where a Poisson
+    :math:`\sqrt{k}` does not. The density is the proportion divided by the width of the bin.
+
+    Parameters
+    ----------
+    values : array-like
+        The samples, shape ``(n,)`` and finite. Samples outside `edges` count towards :math:`n` but fall in no bin, so
+        the density integrates to less than 1 over a range that does not cover them.
+    edges : array-like
+        Increasing bin edges, shape ``(B + 1,)``. The last bin includes its upper edge.
+    confidence : float, optional
+        Confidence level of the intervals. The default is the central 68.27% of a normal distribution.
+
+    Returns
+    -------
+    dict of numpy.ndarray
+        Arrays of shape ``(B,)``: ``count`` (integer) with ``count_lo`` and ``count_hi``, the interval on the count that
+        the same number of samples would give, and ``density`` with ``density_lo`` and ``density_hi``, in the inverse
+        of the units of `values`.
+
+    Raises
+    ------
+    ValueError
+        If `edges` has fewer than two entries or does not increase.
+    """
+    values, edges = np.asarray(values, dtype=float), np.asarray(edges, dtype=float)
+    if edges.ndim != 1 or edges.size < 2 or np.any(np.diff(edges) <= 0):
+        raise ValueError("'edges' must be a 1-D array of at least two strictly increasing values.")
+
+    n = values.size
+    count, _ = np.histogram(values, edges)
+    proportion = np.array([clopper_pearson_interval(int(k), n, confidence) for k in count]).reshape(-1, 2)
+    width = np.diff(edges)
+    return {
+        "count": count,
+        "count_lo": proportion[:, 0] * n,
+        "count_hi": proportion[:, 1] * n,
+        "density": count / (n * width) if n else np.zeros(count.shape),
+        "density_lo": proportion[:, 0] / width,
+        "density_hi": proportion[:, 1] / width,
+    }
 
 
 def binomial_logit(k: ArrayLike, n: ArrayLike) -> tuple[NDArray[np.float64], NDArray[np.float64]]:

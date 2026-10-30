@@ -28,7 +28,7 @@ __all__ = [
 
 
 def resolve_time_grid(
-    t_rest: Quantity | None, t_min: Quantity | None, t_max: Quantity | None, n_time: int
+    t_rest: Quantity | None, t_min: Quantity | None, t_max: Quantity | None, n_time: int, spacing: str = "log"
 ) -> NDArray[np.float64]:
     """
     Turn the user's time-grid arguments into rest-frame times in seconds.
@@ -38,10 +38,12 @@ def resolve_time_grid(
     t_rest : ~astropy.units.Quantity or None
         An explicit grid. If given, `t_min`, `t_max` and `n_time` are ignored.
     t_min, t_max : ~astropy.units.Quantity or None
-        Ends of a logarithmically spaced grid, used when `t_rest` is `None`. Logarithmic spacing
-        puts the resolution where light curves change fastest, near rise and peak.
+        Ends of the grid, used when `t_rest` is `None`. Logarithmic spacing (the default) puts the resolution where
+        light curves change fastest, near rise and peak.
     n_time : int
-        Number of points of the logarithmic grid.
+        Number of points of the grid.
+    spacing : {"log", "linear"}, optional
+        How the points are spaced between `t_min` and `t_max`.
 
     Returns
     -------
@@ -51,7 +53,8 @@ def resolve_time_grid(
     Raises
     ------
     ValueError
-        If neither an explicit grid nor both ends are given, or if ``0 < t_min < t_max`` fails.
+        If neither an explicit grid nor both ends are given, if ``0 < t_min < t_max`` fails, or if `spacing` is not
+        ``"log"`` or ``"linear"``.
         A model has no notion of its own duration, so there is deliberately no default.
     """
     if t_rest is not None:
@@ -61,7 +64,11 @@ def resolve_time_grid(
     t_lo, t_hi = t_min.to_value(u.s), t_max.to_value(u.s)
     if not 0 < t_lo < t_hi:
         raise ValueError("Need 0 < 't_min' < 't_max'.")
-    return np.geomspace(t_lo, t_hi, n_time)
+    if spacing == "log":
+        return np.geomspace(t_lo, t_hi, n_time)
+    if spacing == "linear":
+        return np.linspace(t_lo, t_hi, n_time)
+    raise ValueError(f"'spacing' must be 'log' or 'linear', not {spacing!r}.")
 
 
 # --------------------------------------------------------------------------- #

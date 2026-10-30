@@ -105,6 +105,16 @@ def test_log_time_grid_in_seconds():
     np.testing.assert_allclose(t, np.array([1.0, 10.0, 100.0]) * 86400.0)
 
 
+def test_linear_time_grid_in_seconds():
+    t = resolve_time_grid(None, 1 * u.day, 3 * u.day, 3, spacing="linear")
+    np.testing.assert_allclose(t, np.array([1.0, 2.0, 3.0]) * 86400.0)
+
+
+def test_unknown_spacing_is_rejected():
+    with pytest.raises(ValueError, match="spacing"):
+        resolve_time_grid(None, 1 * u.day, 3 * u.day, 3, spacing="sqrt")
+
+
 def test_explicit_grid_ignores_the_other_arguments():
     t = resolve_time_grid(2 * u.day, 5 * u.day, 1 * u.day, 7)
     np.testing.assert_allclose(t, [2 * 86400.0])

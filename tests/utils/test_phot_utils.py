@@ -18,6 +18,7 @@ from uvex_transients.utils.phot_utils import (
     equivalent_bandwidth,
     flux_to_ab_mag,
     hz_per_unit,
+    luminosity_to_absolute_magnitude,
     photon_weighted_band_average,
     resolve_bandpasses,
     restframe_frequency_grid,
@@ -245,3 +246,27 @@ def test_a_missing_value_in_the_band_makes_the_epoch_nan_and_others_are_kept(smo
 def test_scalar_parameters_and_times_are_one_draw_at_one_time(smooth):
     curve = band_luminosity_curve(_power_law_decay(0.0, 2e15), {"amplitude": 1e29, "tau": 86400.0}, 86400.0, smooth)
     assert curve.shape == (1, 1)
+
+
+# ---------------------------------------------------------------------------- #
+# Absolute magnitude from a band luminosity                                    #
+# ---------------------------------------------------------------------------- #
+def test_a_flat_spectrum_at_the_ab_zero_point_flux_at_10_pc_is_magnitude_zero(box):
+    l_nu = AB_MAG_ZERO_POINT * 4 * np.pi * (10 * u.pc.to(u.cm)) ** 2 * u.erg / u.s / u.Hz
+    luminosity = l_nu * equivalent_bandwidth(box)
+    magnitude = luminosity_to_absolute_magnitude(luminosity, box)
+    assert magnitude.unit == u.ABmag
+    assert magnitude.value == pytest.approx(0.0, abs=1e-9)
+
+
+def test_a_hundred_times_the_luminosity_is_five_magnitudes_brighter(box):
+    luminosity = np.array([1e40, 1e42, np.nan, 0.0]) * u.erg / u.s
+    magnitude = luminosity_to_absolute_magnitude(luminosity, box).value
+    assert magnitude[0] - magnitude[1] == pytest.approx(5.0)
+    assert np.isnan(magnitude[2]) and np.isposinf(magnitude[3])
+
+
+def test_the_absolute_magnitude_accepts_other_luminosity_units(box):
+    in_erg = luminosity_to_absolute_magnitude(1e41 * u.erg / u.s, box).value
+    in_watt = luminosity_to_absolute_magnitude(1e34 * u.W, box).value
+    assert in_watt == pytest.approx(in_erg)

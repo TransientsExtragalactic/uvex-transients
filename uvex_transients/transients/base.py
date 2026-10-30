@@ -37,14 +37,16 @@ from astropy.cosmology import Cosmology
 from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import cumulative_trapezoid
+from synphot import SpectralElement
 
 from uvex_transients.models import SpectralModel
 from uvex_transients.models.core import EffectivePeakGrid
 from uvex_transients.models.core.detection_horizon import detection_horizon
 from uvex_transients.transients.horizon import HorizonCurve, curve_path
 from uvex_transients.utils import (
+    config,
     get_rng,
     get_seed_sequence,
     logger,
@@ -53,6 +55,8 @@ from uvex_transients.utils import (
     validate_sampling_factor,
 )
 from uvex_transients.utils.cosmology import get_cosmology
+from uvex_transients.utils.phot_utils import luminosity_to_absolute_magnitude
+from uvex_transients.utils.stat_utils import binned_density
 
 _SeedType = Union[np.random.SeedSequence, int]
 
@@ -382,6 +386,132 @@ class TransientBase(ABC):
             raise ValueError(f"`{name}` must be finite and {bound}, got {window!r}.")
 
         return window
+
+    # ------------------------------ #
+    # Luminosity Function            #
+    # ------------------------------ #
+    def luminosity_function(
+        self,
+        bandpass: SpectralElement,
+        n: int,
+        *,
+        quantity: str = "luminosity",
+        bins: int | ArrayLike | Quantity = 30,
+        t: Quantity | None = None,
+        t_min: Quantity | None = None,
+        t_max: Quantity | None = None,
+        n_time: int | None = None,
+        spacing: str = "log",
+        confidence: float = 0.6827,
+        rng: np.random.Generator | int | None = None,
+    ) -> QTable:
+        r"""
+        Estimate the luminosity function of this transient class in a band, by drawing events from its SED priors.
+
+        ``n`` events are drawn, the peak of each one's rest-frame band light curve is measured (see
+        `~uvex_transients.models.core.base.SpectralModel.sample_peak_luminosities`), and the peaks are binned. The
+        result is the normalized distribution of peak luminosity, not a volumetric rate density: multiply the ``pdf``
+        by `ExtragalacticTransient.rate` (or ``rate * rate_shape(z)``) for events per volume, time and luminosity.
+        Whether ``n`` is enough is for the caller to judge from the intervals of the bins.
+
+        Parameters
+        ----------
+        bandpass : ~synphot.SpectralElement
+            The band, for example ``mission.detector.bandpasses["FUV"]``.
+        n : int
+            Number of events to draw.
+        quantity : {"luminosity", "magnitude"}, optional
+            What the function is of. ``"luminosity"`` is the peak band luminosity :math:`L` in erg/s, and ``pdf`` is
+            :math:`\mathrm{d}N/\mathrm{d}L` per event, in 1/(erg/s). ``"magnitude"`` is the absolute AB magnitude
+            :math:`M` of that peak, brightest first, and ``pdf`` is :math:`\mathrm{d}N/\mathrm{d}M` per event, in
+            1/mag. :math:`M` is the magnitude at 10 pc of a spectrum flat in :math:`L_\nu` with that band luminosity
+            (see `~uvex_transients.utils.phot_utils.luminosity_to_absolute_magnitude`), so it is a monotonic
+            conversion of :math:`L`, not the photon-weighted band magnitude of the SED.
+        bins : int or array-like or ~astropy.units.Quantity, optional
+            Either the number of bins, which span the sample (equally spaced in :math:`\log L` for luminosities, so
+            that the bins are not all empty but one, and equally spaced in :math:`M` for magnitudes), or the bin edges,
+            increasing, in erg/s or magnitudes. The density is per unit :math:`L` or :math:`M` either way.
+        t : ~astropy.units.Quantity, optional
+            Rest-frame times since explosion at which the light curves are evaluated, shape ``(T,)``. If given, the
+            four arguments below are ignored. See
+            `~uvex_transients.models.core.base.SpectralModel.sample_peak_luminosities`.
+        t_min : ~astropy.units.Quantity, optional
+            Start of the grid of times. If `None` (the default), uses ``config["phase_space.overlay.t_min"]`` days.
+        t_max : ~astropy.units.Quantity, optional
+            End of the grid of times. If `None` (the default), uses ``config["phase_space.overlay.t_max_factor"]``
+            times `DEFAULT_DURATION`.
+        n_time : int, optional
+            Number of points of the grid. If `None` (the default), uses ``config["phase_space.overlay.n_time"]``.
+        spacing : {"log", "linear"}, optional
+            How the grid is spaced between `t_min` and `t_max`.
+        confidence : float, optional
+            Confidence level of the intervals, 68.27% (one sigma) by default.
+        rng : numpy.random.Generator, int, or None, optional
+            Random-number source for the draws.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per bin: its edges ``lo`` and ``hi``; ``count``, the number of the ``n`` events in it, with the
+            interval ``count_lo`` and ``count_hi`` on the count that ``n`` events give; and ``pdf``, the normalized
+            density with ``pdf_lo`` and ``pdf_hi``. Events with no peak, or a peak of no light, are dropped before
+            binning. ``meta`` holds the class name, ``quantity``, ``n`` (as asked), ``n_valid`` and ``confidence``;
+            the density is normalized to ``n_valid``.
+
+        Raises
+        ------
+        ValueError
+            If `quantity` is not recognised, `bins` is invalid, or no event has a measurable peak.
+        """
+        if quantity not in ("luminosity", "magnitude"):
+            raise ValueError(f"'quantity' must be 'luminosity' or 'magnitude', not {quantity!r}.")
+        if t is None:
+            n_time = config["phase_space.overlay.n_time"] if n_time is None else n_time
+            t_min = config["phase_space.overlay.t_min"] * u.day if t_min is None else t_min
+            t_max = config["phase_space.overlay.t_max_factor"] * self.DEFAULT_DURATION if t_max is None else t_max
+
+        peak = self.sed.sample_peak_luminosities(
+            bandpass, n, t=t, t_min=t_min, t_max=t_max, n_time=n_time, spacing=spacing, rng=rng
+        )
+        measured = np.isfinite(peak) & (peak > 0)
+        if not measured.any():
+            raise ValueError("None of the drawn events has a measurable peak in this band.")
+        peak = peak[measured]
+
+        # The quantity binned: L in erg/s, or M in AB magnitudes (which rises as the light falls)
+        if quantity == "luminosity":
+            unit, values = u.erg / u.s, peak.to_value(u.erg / u.s)
+        else:
+            unit, values = u.ABmag, luminosity_to_absolute_magnitude(peak, bandpass).to_value(u.ABmag)
+
+        if isinstance(bins, (int, np.integer)):
+            if bins < 1:
+                raise ValueError(f"'bins' must be at least 1, not {bins}.")
+            lo, hi = values.min(), values.max()
+            if lo == hi:
+                lo, hi = (lo * 0.99, hi * 1.01) if quantity == "luminosity" else (lo - 0.5, hi + 0.5)
+            edges = np.geomspace(lo, hi, bins + 1) if quantity == "luminosity" else np.linspace(lo, hi, bins + 1)
+        else:
+            edges = np.asarray(bins.to_value(unit) if isinstance(bins, Quantity) else bins, dtype=float)
+
+        density = binned_density(values, edges, confidence)
+        table = QTable()
+        table["lo"], table["hi"] = edges[:-1] * unit, edges[1:] * unit
+        table["count"] = density["count"]
+        table["count_lo"], table["count_hi"] = density["count_lo"], density["count_hi"]
+        pdf_unit = 1 / (u.erg / u.s) if quantity == "luminosity" else 1 / u.mag
+        for name in ("pdf", "pdf_lo", "pdf_hi"):
+            table[name] = density[name.replace("pdf", "density")] * pdf_unit
+        table.meta.update(
+            {
+                "class": type(self).__name__,
+                "quantity": quantity,
+                "n": n,
+                "n_valid": int(measured.sum()),
+                "confidence": confidence,
+            }
+        )
+        return table
 
 
 # =========================================================================== #

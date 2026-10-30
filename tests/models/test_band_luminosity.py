@@ -98,3 +98,31 @@ def test_scalar_parameters_are_one_draw(smooth, t_grid):
     curve = sed.eval_band_luminosity(smooth, t_grid, **one)
     assert curve.shape == (1, t_grid.size)
     np.testing.assert_allclose(curve.value[0], sed.eval_band_luminosity(smooth, t_grid, **draws).value[0])
+
+
+def test_sampled_peaks_are_the_peaks_of_the_drawn_parameters(smooth):
+    sed = KilonovaCoolingBlackbodySED()
+    t = np.geomspace(0.01, 400, 120) * u.day
+    peaks = sed.sample_peak_luminosities(smooth, 15, t_min=0.01 * u.day, t_max=400 * u.day, n_time=120, rng=7)
+    draws = sed.sample_parameters(size=15, rng=7)
+    expected, _ = sed.peak_luminosity(smooth, t, **draws)
+    assert peaks.shape == (15,) and peaks.unit == u.erg / u.s
+    np.testing.assert_allclose(peaks.value, expected.value)
+
+    # An explicit grid is used as it is, whatever else is given
+    again = sed.sample_peak_luminosities(smooth, 15, t=t, t_min=1 * u.day, t_max=2 * u.day, n_time=3, rng=7)
+    np.testing.assert_allclose(again.value, peaks.value, rtol=1e-10)
+
+
+def test_a_linear_grid_that_resolves_the_peak_gives_the_same_peaks_as_a_log_grid(smooth):
+    sed = KilonovaCoolingBlackbodySED()
+    kwargs = dict(t_min=0.05 * u.day, t_max=60 * u.day, rng=8)
+    log = sed.sample_peak_luminosities(smooth, 12, n_time=300, spacing="log", **kwargs)
+    linear = sed.sample_peak_luminosities(smooth, 12, n_time=3000, spacing="linear", **kwargs)
+    np.testing.assert_allclose(linear.value, log.value, rtol=0.02)
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"t_min": 1 * u.day, "t_max": 10 * u.day}, {"n_time": 10}])
+def test_sampled_peaks_need_a_time_grid(smooth, kwargs):
+    with pytest.raises(ValueError):
+        KilonovaCoolingBlackbodySED().sample_peak_luminosities(smooth, 3, **kwargs)

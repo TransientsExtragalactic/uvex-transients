@@ -3550,6 +3550,64 @@ class SpectralModel(_ModelBase):
         """
         return lightcurve_metrics.peak_luminosity(t, cls.eval_band_luminosity(bandpass, t, **parameters))
 
+    def sample_peak_luminosities(
+        self,
+        bandpass: SpectralElement,
+        n: int,
+        *,
+        t: Quantity | None = None,
+        t_min: Quantity | None = None,
+        t_max: Quantity | None = None,
+        n_time: int | None = None,
+        spacing: str = "log",
+        rng: RNGInput = None,
+    ) -> Quantity:
+        r"""
+        Draw the parameters of ``n`` events from their priors and measure the peak band luminosity of each.
+
+        This is a sample of the distribution of peak luminosity that the priors imply, the input to a luminosity
+        function. A model has no notion of its own duration, so the time grid has to be given.
+
+        Parameters
+        ----------
+        bandpass : ~synphot.SpectralElement
+            The band; see :meth:`eval_band_luminosity`.
+        n : int
+            Number of events to draw.
+        t : ~astropy.units.Quantity, optional
+            Rest-frame times since explosion, shape ``(T,)``, increasing, positive and fine enough to resolve the
+            peak. If given, `t_min`, `t_max`, `n_time` and `spacing` are ignored.
+        t_min, t_max : ~astropy.units.Quantity, optional
+            Ends of the grid of rest-frame times, used when `t` is not given.
+        n_time : int, optional
+            Number of points of that grid. Required when `t` is not given.
+        spacing : {"log", "linear"}, optional
+            How the grid is spaced between `t_min` and `t_max`.
+        rng : numpy.random.Generator, int, or None, optional
+            Random-number source; see :meth:`sample_parameters`.
+
+        Returns
+        -------
+        ~astropy.units.Quantity
+            The peak :math:`L_\mathrm{band}` of each event in erg/s, shape ``(n,)``. ``NaN`` for an event with no
+            valid epoch.
+
+        Raises
+        ------
+        ValueError
+            If the time grid is not specified, or is invalid; see
+            `~uvex_transients.models.core.lightcurve_metrics.resolve_time_grid`.
+
+        See Also
+        --------
+        peak_luminosity : The peak of given parameters.
+        """
+        if t is None and n_time is None:
+            raise ValueError("Provide either 't', or 't_min', 't_max' and 'n_time'.")
+        grid = lightcurve_metrics.resolve_time_grid(t, t_min, t_max, n_time, spacing) * u.s
+        peak, _ = self.peak_luminosity(bandpass, grid, **self.sample_parameters(size=n, rng=rng))
+        return peak
+
     @classmethod
     def decline_time(
         cls, bandpass: SpectralElement, t: Quantity, fraction: float = 0.5, **parameters: ParameterValue
