@@ -332,6 +332,24 @@ phase_space:
     # observations that can see it. 6 drops the observations of a nearby event only when it is 250 times fainter.
     fade_mag: 6.0
 
+  # The shock breakout sampler (see uvex_transients.phase_space.breakout): a map over the peak luminosity L_0 and the time
+  # scale t_0 of a breakout, whose emission is a blackbody on an expanding photosphere.
+  breakout:
+    # The default ranges of the axes: log10 L_0 / (erg/s), and log10 t_0 / s. The redshift limit is tabulated over them.
+    log_L0: [42.0, 46.5]
+    log_t0: [0.0, 4.5]
+    # An exposure of a breakout is only a detection if it starts within the window out to the bolometric half-decline of
+    # the light curve, so a single exposure that reaches the threshold is a detection, and there is no second visit.
+    n_visits: 1
+    # A breakout is far shorter than a bin of explosion times, so the fraction of events in the sampled footprint that
+    # land in an exposure falls as 1 / (the width of a bin). More bins make each point need fewer events, at about 0.1 s
+    # per bin per chunk; the recovered volume-time does not depend on it.
+    time_bins: 400
+    # The redshift the limit is tabulated to, and the points per axis of the table of the limit. A limit that reaches
+    # z_max is clipped to it.
+    z_max: 10.0
+    table_points: 33
+
   # What counts as a recovery, and how each point of a map is simulated (see
   # uvex_transients.phase_space.evaluator.RecoveryEvaluator).
   recovery:

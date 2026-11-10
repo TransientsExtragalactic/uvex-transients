@@ -6,6 +6,7 @@ from uvex_transients.phase_space.samplers.stopping import StoppingRule
 from uvex_transients.phase_space.samplers.toy import LogisticSampler
 
 __all__ = [
+    "BreakoutSampler",
     "CanonicalSampler",
     "Estimate",
     "LogisticSampler",
@@ -25,6 +26,7 @@ __all__ = [
 
 #: The survey-backed samplers, which are imported when they are first asked for, since they need the survey simulation.
 _LAZY = {
+    "BreakoutSampler": "uvex_transients.phase_space.breakout",
     "CanonicalSampler": "uvex_transients.phase_space.samplers.canonical",
     "RedshiftLimit": "uvex_transients.phase_space.samplers.canonical",
     "ParameterAxis": "uvex_transients.phase_space.samplers.survey",

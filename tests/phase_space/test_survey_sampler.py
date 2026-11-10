@@ -69,13 +69,7 @@ def sampler(schedule):
 # The classes                                                                  #
 # ---------------------------------------------------------------------------- #
 def test_the_survey_sampler_is_abstract_and_leaves_the_four_pieces_to_a_subclass():
-    assert SurveySampler.__abstractmethods__ == {
-        "_log_window",
-        "_place",
-        "from_settings",
-        "make_transient",
-        "redshift_limit",
-    }
+    assert SurveySampler.__abstractmethods__ == {"_log_window", "_place", "make_transient", "redshift_limit"}
     with pytest.raises(TypeError, match="abstract"):
         SurveySampler(None)
 

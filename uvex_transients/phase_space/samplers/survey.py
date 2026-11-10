@@ -359,6 +359,46 @@ class SurveySampler(Sampler):
     # -------------------------------------- #
     # Description                            #
     # -------------------------------------- #
+    @classmethod
+    def from_settings(
+        cls,
+        settings: Mapping,
+        *,
+        schedule: SurveySchedule | None = None,
+        mission=None,
+        cosmology: Cosmology | None = None,
+        **overrides,
+    ) -> "SurveySampler":
+        """
+        Rebuild a sampler from the `settings` of another one.
+
+        Parameters
+        ----------
+        settings : Mapping
+            The `settings` of the sampler to rebuild.
+        schedule : ~uvex_transients.surveys.base.SurveySchedule, optional
+            The schedule. Needed unless `settings` names one in the registry.
+        mission : str or m4opt.missions.Mission, optional
+            The mission. Needed unless `settings` names one.
+        cosmology : ~astropy.cosmology.Cosmology, optional
+            By default the configured one, with a warning if its name is not the recorded one.
+        **overrides
+            Any other constructor argument, replacing the recorded value.
+
+        Returns
+        -------
+        SurveySampler
+            A sampler that makes the same measurement, and so reproduces the scales of the recorded one.
+
+        Raises
+        ------
+        ValueError
+            If no schedule or no mission can be found.
+        """
+        settings, schedule, mission, schedule_name = cls._rebuild_arguments(settings, schedule, mission, cosmology)
+        settings.update(overrides)
+        return cls(schedule, mission, cosmology=cosmology, schedule_name=schedule_name, **settings)
+
     @property
     def space(self):
         """~uvex_transients.phase_space.space.Space: The axes of the sampler, with their default ranges."""

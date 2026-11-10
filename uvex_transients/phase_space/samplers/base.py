@@ -82,7 +82,10 @@ _REGISTRY: dict[str, type["Sampler"]] = {}
 
 #: The kinds the package provides, and the module that registers each, which is imported only when it is asked for so
 #: that the core of the phase-space code does not import the survey simulation.
-_BUILTIN_KINDS = {"canonical": "uvex_transients.phase_space.samplers.canonical"}
+_BUILTIN_KINDS = {
+    "breakout": "uvex_transients.phase_space.breakout",
+    "canonical": "uvex_transients.phase_space.samplers.canonical",
+}
 
 
 def available_samplers() -> tuple[str, ...]:
