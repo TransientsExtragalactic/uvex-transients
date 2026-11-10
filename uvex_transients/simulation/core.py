@@ -1196,6 +1196,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                 coord_type = table["coord"][idx]
                 t_explosion_type = table["t_explosion"][idx]
 
+                # A transient that is measured over the whole exposure also sees an exposure that started before the
+                # explosion, so the search reaches back by the longest exposure to find those
+                average_exposure = bool(transient.AVERAGE_OVER_EXPOSURE)
+                reach_back = schedule.observe_rows["duration"].max() if average_exposure else 0 * u.s
+
                 if include_snr:
                     # Each event's own `parameter_seed`, exactly as `Event` uses it, so these SNRs
                     # agree with `Event.simulate_photometry`: it seeds the SED parameters and the
@@ -1219,7 +1224,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                     if lookback is None:
                         window_start = schedule.start_time + np.zeros(len(coord_chunk)) * u.day
                     else:
-                        window_start = t_explosion_chunk - lookback
+                        window_start = t_explosion_chunk - lookback - reach_back
                     event_index, row_index = schedule.get_observation_indices_of(
                         coord_chunk,
                         nside=catalog.nside,
@@ -1233,13 +1238,36 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
 
                     # One entry per (event, observation) pair, for every column below.
                     observed = schedule.observe_rows[row_index]
+
+                    # The search reached back by `reach_back` to find exposures that started before the window and run
+                    # into it, so drop the ones that ended before it
+                    if average_exposure and lookback is not None:
+                        runs_into_window = (observed["start_time"] + observed["duration"]) > (
+                            t_explosion_chunk[event_index] - lookback
+                        )
+                        event_index, row_index, observed = (
+                            event_index[runs_into_window],
+                            row_index[runs_into_window],
+                            observed[runs_into_window],
+                        )
+                        if len(row_index) == 0:
+                            pbar.update(1)
+                            continue
+
                     t_since_explosion = (observed["start_time"] - t_explosion_chunk[event_index]).to(u.day)
+
+                    # There is no source in an exposure that ends before the explosion. One that is averaged over has a
+                    # source whenever it ends after it, even if it started before
+                    if average_exposure:
+                        pre_explosion = (t_since_explosion + observed["duration"]).to_value(u.day) <= 0
+                    else:
+                        pre_explosion = t_since_explosion.to_value(u.day) < 0
                     columns = {
                         "event_id": event_id_type[chunk_slice][event_index],
                         "observation_index": np.asarray(row_index),
                         "t_obs": observed["start_time"],
                         "t_since_explosion": t_since_explosion,
-                        "pre_explosion": np.asarray(t_since_explosion.to_value(u.day) < 0),
+                        "pre_explosion": np.asarray(pre_explosion),
                     }
 
                     # Without an SNR there is no floor to apply, so every epoch is kept.
@@ -1258,6 +1286,7 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
                             bands=band_names,
                             observer_location=observed["observer_location"],
                             obstime=observed["start_time"],
+                            average_exposure=average_exposure,
                             noise_seed=seed_type[chunk_slice][event_index],
                             noise_observation_keys=time_key(observed["start_time"]),
                             **{key: values[chunk_slice][event_index] for key, values in sed_inputs_type.items()},
@@ -1631,7 +1660,10 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         - ``t_since_explosion``: `~astropy.units.Quantity` (day), ``t_obs - t_explosion``;
           negative before the explosion.
         - ``pre_explosion``: bool, ``t_since_explosion < 0``. Such a row has no source, so
-          it is measured as pure background and can never be a detection.
+          it is measured as pure background and can never be a detection. For a transient that is
+          measured over the whole exposure (`~uvex_transients.transients.base.TransientBase.AVERAGE_OVER_EXPOSURE`)
+          it is instead whether the exposure *ends* at or before the explosion, so an exposure that starts
+          before the explosion and ends after it is a measurement of the source, diluted by the part before.
         - ``snr``, ``band``, ``flux``, ``flux_err`` (if `include_snr`): the measured SNR of the
           observation in its best band (bands are collapsed to the best one, so an observation
           is never counted once per band), that band, its measured flux density
@@ -1693,8 +1725,11 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             How far before each event's explosion to include observations. The default,
             0 days, keeps only observations that overlap the post-explosion window (this
             can include an exposure that starts just before the explosion, flagged
-            ``pre_explosion``). A positive duration also yields the earlier observations of
-            the event's position, e.g. to find the last pre-explosion non-detection. `None`
+            ``pre_explosion``). For a transient measured over the whole exposure
+            (`~uvex_transients.transients.base.TransientBase.AVERAGE_OVER_EXPOSURE`) it includes
+            every exposure that ends after the explosion, one that started before it too.
+            A positive duration also yields the earlier observations of the event's position,
+            e.g. to find the last pre-explosion non-detection. `None`
             looks back to the start of the schedule.
         collapse_bands : bool, optional
             Whether to keep only each epoch's best band (the default). If `False`, every band is

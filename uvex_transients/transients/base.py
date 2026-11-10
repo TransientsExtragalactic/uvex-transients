@@ -91,6 +91,17 @@ class TransientBase(ABC):
     This parameter is used when doing windowing to determine the relevant observations which could detect a given
     transient and should be a strong upper bound on the total duration of the relevant transient.
     """
+    AVERAGE_OVER_EXPOSURE: ClassVar[bool] = False
+    """bool: Whether an observation measures the flux averaged over its exposure, instead of at its start.
+
+    The default, `False`, takes the SED at the start of each exposure, which is accurate for a source that changes
+    little during one (every shipped class, whose timescales are far longer than a UVEX dwell). A subclass whose light
+    curve can be short compared to an exposure sets this to `True`: `SurveySimulator.iter_epochs` and
+    `~uvex_transients.simulation.event.Event` then measure it from the photons that arrive over the whole exposure (see
+    `~uvex_transients.models.core.base.SpectralModel.measure_photometry`), and also measure an exposure that starts
+    before the explosion and ends after it, diluted by the part before. This costs 28 evaluations of the SED per
+    observation.
+    """
 
     _REGISTRY: ClassVar[dict[str, type["TransientBase"]]] = {}
     """dict[str, type[TransientBase]]: Every concrete subclass, keyed by class name; see `registry`.
