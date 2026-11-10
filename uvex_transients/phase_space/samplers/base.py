@@ -23,6 +23,7 @@ the class statement,
 and an abstract intermediate class leaves it out.
 """
 
+import importlib
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -79,6 +80,10 @@ class Outcome:
 # ============================================ #
 _REGISTRY: dict[str, type["Sampler"]] = {}
 
+#: The kinds the package provides, and the module that registers each, which is imported only when it is asked for so
+#: that the core of the phase-space code does not import the survey simulation.
+_BUILTIN_KINDS = {"canonical": "uvex_transients.phase_space.samplers.canonical"}
+
 
 def available_samplers() -> tuple[str, ...]:
     """
@@ -87,9 +92,9 @@ def available_samplers() -> tuple[str, ...]:
     Returns
     -------
     tuple of str
-        The kinds, sorted.
+        The kinds, sorted, including the ones the package provides that have not been imported yet.
     """
-    return tuple(sorted(_REGISTRY))
+    return tuple(sorted(set(_REGISTRY) | set(_BUILTIN_KINDS)))
 
 
 def get_sampler(kind: str) -> type["Sampler"]:
@@ -111,6 +116,8 @@ def get_sampler(kind: str) -> type["Sampler"]:
     KeyError
         If no sampler is registered under `kind`.
     """
+    if kind not in _REGISTRY and kind in _BUILTIN_KINDS:
+        importlib.import_module(_BUILTIN_KINDS[kind])
     try:
         return _REGISTRY[kind]
     except KeyError:

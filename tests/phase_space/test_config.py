@@ -7,13 +7,15 @@ from astropy import units as u
 
 pytest.importorskip("sklearn")
 
-from uvex_transients.phase_space import evaluator as evaluator_module  # noqa: E402
 from uvex_transients.phase_space import overlay as overlay_module  # noqa: E402
 from uvex_transients.phase_space import sampler as sampler_module  # noqa: E402
 from uvex_transients.phase_space import transient as transient_module  # noqa: E402
 from uvex_transients.phase_space.evaluator import RecoveryEvaluator  # noqa: E402
 from uvex_transients.phase_space.overlay import measure_class  # noqa: E402
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler  # noqa: E402
+from uvex_transients.phase_space.samplers import canonical as canonical_module  # noqa: E402
+from uvex_transients.phase_space.samplers import stopping as stopping_module  # noqa: E402
+from uvex_transients.phase_space.samplers import survey as survey_module  # noqa: E402
 from uvex_transients.phase_space.transient import _CanonicalTransient  # noqa: E402
 from uvex_transients.transients.TDEs import TidalDisruptionEvent  # noqa: E402
 from uvex_transients.utils import config  # noqa: E402
@@ -80,7 +82,14 @@ def configured(monkeypatch):
 
     def apply(**overrides):
         fake = _Config({key.replace("__", "."): value for key, value in overrides.items()})
-        for module in (evaluator_module, overlay_module, sampler_module, transient_module):
+        for module in (
+            overlay_module,
+            sampler_module,
+            transient_module,
+            canonical_module,
+            stopping_module,
+            survey_module,
+        ):
             monkeypatch.setattr(module, "config", fake)
 
     return apply

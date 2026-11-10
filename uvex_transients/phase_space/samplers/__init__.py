@@ -6,14 +6,35 @@ from uvex_transients.phase_space.samplers.stopping import StoppingRule
 from uvex_transients.phase_space.samplers.toy import LogisticSampler
 
 __all__ = [
+    "CanonicalSampler",
     "Estimate",
     "LogisticSampler",
     "Outcome",
+    "ParameterAxis",
     "Product",
+    "RedshiftLimit",
     "Sampler",
     "Scale",
     "StoppingRule",
+    "SurveySampler",
     "Weighted",
     "available_samplers",
     "get_sampler",
 ]
+
+
+#: The survey-backed samplers, which are imported when they are first asked for, since they need the survey simulation.
+_LAZY = {
+    "CanonicalSampler": "uvex_transients.phase_space.samplers.canonical",
+    "RedshiftLimit": "uvex_transients.phase_space.samplers.canonical",
+    "ParameterAxis": "uvex_transients.phase_space.samplers.survey",
+    "SurveySampler": "uvex_transients.phase_space.samplers.survey",
+}
+
+
+def __getattr__(name: str):
+    if name in _LAZY:
+        import importlib
+
+        return getattr(importlib.import_module(_LAZY[name]), name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
