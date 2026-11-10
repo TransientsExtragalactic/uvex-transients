@@ -1,11 +1,11 @@
-"""Tests for `RedshiftLimit` and `RecoveryEvaluator`."""
+"""Tests for `RedshiftLimit`, `BaseRecoveryEvaluator` and `RecoveryEvaluator`."""
 
 import numpy as np
 import pytest
 from astropy import units as u
 from scipy.integrate import quad
 
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator, RedshiftLimit
+from uvex_transients.phase_space.evaluator import BaseRecoveryEvaluator, RecoveryEvaluator, RedshiftLimit
 from uvex_transients.phase_space.transient import FREQUENCY_MAX
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.utils.cosmology import get_cosmology
@@ -317,3 +317,77 @@ def test_settings_of_a_top_hat_map_are_refused(schedule):
 def test_an_index_with_no_redshift_limit_is_refused_by_the_evaluator(schedule):
     with pytest.raises(ValueError, match="too blue"):
         make_evaluator(schedule, spectral_index=4.0)
+
+
+# ---------------------------------------------------------------------------- #
+# The base class                                                               #
+# ---------------------------------------------------------------------------- #
+def test_the_base_class_cannot_be_instantiated():
+    with pytest.raises(TypeError, match="abstract"):
+        BaseRecoveryEvaluator(None)
+
+
+def test_what_a_subclass_has_to_supply():
+    assert BaseRecoveryEvaluator.__abstractmethods__ == {
+        "make_transient",
+        "_set_point",
+        "_log_window",
+        "table_meta",
+        "from_settings",
+    }
+
+
+def test_the_canonical_evaluator_is_a_complete_subclass(schedule):
+    assert issubclass(RecoveryEvaluator, BaseRecoveryEvaluator)
+    assert not RecoveryEvaluator.__abstractmethods__
+    assert isinstance(make_evaluator(schedule), BaseRecoveryEvaluator)
+
+
+def test_a_redshift_limit_takes_a_second_coordinate_and_ignores_it():
+    limit = RedshiftLimit(24.5)
+    luminosity = np.array([20.0, 29.0, 35.0])
+    np.testing.assert_array_equal(limit(luminosity, 1.0), limit(luminosity))
+    np.testing.assert_array_equal(limit.is_clipped(luminosity, 1.0), limit.is_clipped(luminosity))
+
+
+class _TwoDimensionalLimit:
+    """A redshift limit that also depends on the second coordinate, as the limit of an evaluator may."""
+
+    def __init__(self, canonical):
+        self._canonical = canonical
+
+    def __call__(self, x0, x1=None):
+        z = self._canonical(x0)
+        return z if x1 is None else z * (1.0 + 0.1 * np.asarray(x1, dtype=np.float64))
+
+    def is_clipped(self, x0, x1=None):
+        return self._canonical.is_clipped(x0)
+
+
+@pytest.fixture
+def two_dimensional(schedule):
+    """An evaluator whose redshift limit depends on both coordinates."""
+    evaluator = make_evaluator(schedule)
+    evaluator.redshift_limit = _TwoDimensionalLimit(evaluator.redshift_limit)
+    return evaluator
+
+
+def test_the_scales_follow_a_redshift_limit_that_depends_on_both_coordinates(two_dimensional):
+    luminosity = np.full(3, 29.5 + BW)
+    duration = np.array([0.0, 1.0, 2.0])
+    z = two_dimensional.redshift_limit(luminosity, duration)
+    assert np.all(np.diff(z) > 0)
+    np.testing.assert_allclose(
+        two_dimensional.all_sky_volume_time(luminosity, duration),
+        two_dimensional.volume_time(luminosity, duration) / two_dimensional.coverage(luminosity, duration),
+        rtol=1e-10,
+    )
+    # With one coordinate the limit is the one-dimensional one, as before
+    assert np.all(two_dimensional.all_sky_volume_time(luminosity) == two_dimensional.all_sky_volume_time(luminosity)[0])
+
+
+def test_a_point_is_placed_at_the_limit_of_both_coordinates(two_dimensional):
+    x = [29.5 + BW, 1.5]
+    result = two_dimensional(x)
+    assert result["z_limit"] == pytest.approx(float(two_dimensional.redshift_limit(*x)))
+    assert two_dimensional._transient.redshift_limit == pytest.approx(result["z_limit"])

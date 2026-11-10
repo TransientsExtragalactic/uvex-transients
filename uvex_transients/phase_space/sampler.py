@@ -7,8 +7,9 @@ simulated events. Instead of filling a grid, it fits a Gaussian process to the p
 where one more simulation teaches the most about the map.
 
 The sampler knows nothing about transients. It needs a callable that takes a point and returns ``k`` and ``n``
-(`~uvex_transients.phase_space.evaluator.RecoveryEvaluator` is one), and, for the maps that need more than the fitted
-recovery fraction, an evaluator that also supplies the noise-free scales of the survey.
+(`~uvex_transients.phase_space.evaluator.BaseRecoveryEvaluator` is the base of the ones the package provides), and, for
+the maps that need more than the fitted recovery fraction, an evaluator that also supplies the noise-free scales of
+the survey.
 """
 
 import importlib
@@ -515,7 +516,7 @@ class PhaseSpaceSampler:
         missing = [name for name in _SCALE_METHODS if not hasattr(self._evaluate, name)]
         if missing:
             raise RuntimeError(
-                f"This map needs an evaluator with {missing}, such as RecoveryEvaluator. "
+                f"This map needs an evaluator with {missing}, such as a BaseRecoveryEvaluator. "
                 "Load a file written by a run of one, or pass `evaluate`."
             )
         return self._evaluate
@@ -671,37 +672,49 @@ class PhaseSpaceSampler:
         """
         return self._scales().volume_time(log_luminosity, log_half_time)
 
-    def evaluate_all_sky_volume_time_map(self, log_luminosity):
+    def evaluate_all_sky_volume_time_map(self, log_luminosity, log_half_time=None):
         """
         Evaluate the volume-time of the whole sky over the survey, in Mpc^3 yr (noise-free).
 
         Parameters
         ----------
         log_luminosity : array-like
-            The luminosity coordinate, in the units of `bounds`.
+            The first coordinate, in the units of `bounds`.
+        log_half_time : array-like, optional
+            The second coordinate, of the shape of `log_luminosity`. It is only needed when the redshift limit depends
+            on it; if it is left out the evaluator is called with the first coordinate alone.
 
         Returns
         -------
         numpy.ndarray
             The shape of `log_luminosity`.
         """
-        return self._scales().all_sky_volume_time(log_luminosity)
+        scales = self._scales()
+        if log_half_time is None:
+            return scales.all_sky_volume_time(log_luminosity)
+        return scales.all_sky_volume_time(log_luminosity, log_half_time)
 
-    def evaluate_z_limit_map(self, log_luminosity):
+    def evaluate_z_limit_map(self, log_luminosity, log_half_time=None):
         """
-        Evaluate the redshift limit of a luminosity (noise-free).
+        Evaluate the redshift limit of a point (noise-free).
 
         Parameters
         ----------
         log_luminosity : array-like
-            The luminosity coordinate, in the units of `bounds`.
+            The first coordinate, in the units of `bounds`.
+        log_half_time : array-like, optional
+            The second coordinate, of the shape of `log_luminosity`. It is only needed when the redshift limit depends
+            on it; if it is left out the evaluator is called with the first coordinate alone.
 
         Returns
         -------
         numpy.ndarray
             The shape of `log_luminosity`.
         """
-        return self._scales().redshift_limit(log_luminosity)
+        scales = self._scales()
+        if log_half_time is None:
+            return scales.redshift_limit(log_luminosity)
+        return scales.redshift_limit(log_luminosity, log_half_time)
 
     def map_table(
         self,
@@ -742,10 +755,10 @@ class PhaseSpaceSampler:
         table[self._names[0]], table[self._names[1]] = luminosity, duration
 
         # The noise-free scales, from the evaluator
-        table["z_limit"] = self.evaluate_z_limit_map(luminosity)
+        table["z_limit"] = self.evaluate_z_limit_map(luminosity, duration)
         table["coverage"] = self.evaluate_coverage_map(luminosity, duration)
         table["volume_time"] = self.evaluate_volume_time_map(luminosity, duration)
-        table["all_sky_volume_time"] = self.evaluate_all_sky_volume_time_map(luminosity)
+        table["all_sky_volume_time"] = self.evaluate_all_sky_volume_time_map(luminosity, duration)
         table["sigma_log"] = self.evaluate_uncertainty_map(luminosity, duration)
 
         # The fitted quantities, each with its interval

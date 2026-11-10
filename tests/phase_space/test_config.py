@@ -209,7 +209,7 @@ def test_a_sampler_expects_of_its_evaluator_what_the_evaluator_does():
 class _Scales(_Evaluator):
     """The noise-free scales a map table asks of an evaluator."""
 
-    def redshift_limit(self, log_luminosity):
+    def redshift_limit(self, log_luminosity, log_half_time=None):
         return 0.1 + 0 * np.asarray(log_luminosity)
 
     def coverage(self, log_luminosity, log_half_time):
@@ -217,8 +217,41 @@ class _Scales(_Evaluator):
 
     volume_time = coverage
 
-    def all_sky_volume_time(self, log_luminosity):
+    def all_sky_volume_time(self, log_luminosity, log_half_time=None):
         return 1.0 + 0 * np.asarray(log_luminosity)
+
+
+class _TwoDimensionalScales(_Scales):
+    """Noise-free scales whose redshift limit and all-sky volume-time depend on both coordinates."""
+
+    def redshift_limit(self, log_luminosity, log_half_time=None):
+        z = 0.1 + 0 * np.asarray(log_luminosity)
+        return z if log_half_time is None else z + 0.1 * np.asarray(log_half_time)
+
+    def all_sky_volume_time(self, log_luminosity, log_half_time=None):
+        return 1.0 + self.redshift_limit(log_luminosity, log_half_time)
+
+
+def test_the_map_asks_for_the_scales_at_both_coordinates():
+    sampler = PhaseSpaceSampler(
+        _TwoDimensionalScales(),
+        BOUNDS,
+        names=("log_luminosity", "log_half_time"),
+        n_initial=4,
+        max_points=4,
+        n_restarts=0,
+        seed=1,
+    )
+    sampler.run()
+    table = sampler.map_table(4)
+    np.testing.assert_allclose(table["z_limit"], 0.1 + 0.1 * np.asarray(table["log_half_time"]))
+    np.testing.assert_allclose(table["all_sky_volume_time"], 1.1 + 0.1 * np.asarray(table["log_half_time"]))
+
+    # Left out, the second coordinate is not asked for, so an evaluator that only has one is called as it always was
+    luminosity = np.array([41.0, 42.0])
+    np.testing.assert_allclose(sampler.evaluate_z_limit_map(luminosity), 0.1)
+    np.testing.assert_allclose(sampler.evaluate_z_limit_map(luminosity, np.array([1.0, 2.0])), [0.2, 0.3])
+    np.testing.assert_allclose(sampler.evaluate_all_sky_volume_time_map(luminosity, np.array([1.0, 2.0])), [1.2, 1.3])
 
 
 def test_the_map_grid_takes_its_size_from_the_configuration(configured):
