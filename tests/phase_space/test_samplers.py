@@ -1,12 +1,12 @@
-"""Tests for `Sampler`, `Outcome`, `Product`, `StoppingRule` and the sampler registry."""
+"""Tests for `Sampler`, `Outcome`, `StoppingRule` and the sampler registry."""
 
 import numpy as np
 import pytest
 
 from uvex_transients.phase_space.samplers import (
+    Estimate,
     LogisticSampler,
     Outcome,
-    Product,
     Sampler,
     StoppingRule,
     available_samplers,
@@ -57,7 +57,7 @@ class _Scripted(Sampler):
 
 
 # ---------------------------------------------------------------------------- #
-# Outcome and Product                                                          #
+# Outcome                                                                      #
 # ---------------------------------------------------------------------------- #
 def test_an_outcome_holds_its_counts_and_extras():
     outcome = Outcome(3, 10, {"n_chunks": 2})
@@ -80,12 +80,9 @@ def test_an_outcome_needs_k_between_zero_and_n(k, n):
         Outcome(k, n)
 
 
-def test_an_outcome_and_a_product_are_immutable():
+def test_an_outcome_is_immutable():
     with pytest.raises(AttributeError):
         Outcome(1, 2).k = 2
-    with pytest.raises(AttributeError):
-        Product("x", "scale").name = "y"
-    assert Product("rvt", "volume_time", label="label", unit="Mpc3 yr").unit == "Mpc3 yr"
 
 
 # ---------------------------------------------------------------------------- #
@@ -177,10 +174,9 @@ def test_the_base_class_cannot_be_instantiated_and_has_four_abstract_pieces():
         Sampler()
 
 
-def test_a_sampler_has_no_scales_or_products_unless_it_says_so(space):
-    sampler = _Scripted([], space)
-    assert sampler.scales(np.zeros((4, 2))) == {}
-    assert Sampler.products == ()
+def test_a_sampler_has_no_products_unless_it_says_so(space):
+    assert _Scripted([], space).products == ()
+    assert not hasattr(Sampler, "scales")
 
 
 def test_a_class_that_names_a_kind_is_registered(registry, space):
@@ -249,6 +245,15 @@ def test_the_probability_is_half_on_the_boundary_and_rises_along_the_slope(logis
     assert logistic.probability([0.0, 0.0]) < 0.5 < logistic.probability([1.0, 0.0])
     p = logistic.probability(np.random.default_rng(0).random((5, 3, 2)))
     assert p.shape == (5, 3) and np.all((p > 0) & (p < 1))
+
+
+def test_the_logistic_sampler_offers_its_true_probability_as_a_product(logistic):
+    (product,) = logistic.products
+    x = np.random.default_rng(2).random((7, 2))
+    zeros = np.zeros(7)
+    columns = product(x, Estimate(zeros, zeros, zeros))
+    assert product.name == "true_probability"
+    np.testing.assert_array_equal(columns["true_probability"], logistic.probability(x))
 
 
 def test_the_probability_checks_the_dimension(logistic):

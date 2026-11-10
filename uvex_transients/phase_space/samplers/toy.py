@@ -13,6 +13,7 @@ from numpy.typing import ArrayLike, NDArray
 from scipy.special import expit
 
 from uvex_transients.phase_space.samplers.base import Sampler
+from uvex_transients.phase_space.samplers.products import Product, Scale
 from uvex_transients.phase_space.space import Space
 
 __all__ = ["LogisticSampler"]
@@ -95,6 +96,11 @@ class LogisticSampler(Sampler, kind="logistic"):
             The number of successes.
         """
         return int(np.random.default_rng(seed).binomial(int(n), float(self.probability(x))))
+
+    @property
+    def products(self) -> tuple[Product, ...]:
+        """Tuple of Product: The true probability, which a fitted map can be compared to."""
+        return (Scale("true_probability", self.probability, label=r"true $p$"),)
 
     @property
     def settings(self) -> dict:

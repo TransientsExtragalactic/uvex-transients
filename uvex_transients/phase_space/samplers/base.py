@@ -9,8 +9,8 @@ models the answers (that is the map). What it does know is the physics of one ki
 * `Sampler.space` is the `~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and their
   default ranges;
 * `Sampler.draw` makes `n` tries at a point and returns the number of successes;
-* `Sampler.scales` gives the noise-free quantities of a point (a redshift limit, an exposure, a volume-time) that turn
-  the fitted success fraction into a physical yield, and `Sampler.products` says how.
+* `Sampler.products` are the quantities of its map beyond the success fraction (a redshift limit, a recovered
+  volume-time), each a `~uvex_transients.phase_space.samplers.products.Product` that owns how it is made.
 
 Every sampler has a `kind`, a name under which it is registered, so that a file can record which sampler made it and
 `get_sampler` can find the class again without importing it by path. A subclass registers itself by naming its kind in
@@ -29,11 +29,12 @@ from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import ArrayLike
 
+from uvex_transients.phase_space.samplers.products import Product
 from uvex_transients.phase_space.space import Space
 
-__all__ = ["Outcome", "Product", "Sampler", "available_samplers", "get_sampler"]
+__all__ = ["Outcome", "Sampler", "available_samplers", "get_sampler"]
 
 
 # ============================================ #
@@ -71,32 +72,6 @@ class Outcome:
     def fraction(self) -> float:
         """float: The observed success fraction, ``k / n``."""
         return self.k / self.n
-
-
-# ============================================ #
-# Product                                      #
-# ============================================ #
-@dataclass(frozen=True)
-class Product:
-    """
-    A physical quantity of the map: the success fraction times one of the sampler's noise-free scales.
-
-    The fitted map is of the success fraction :math:`f`. A yield, such as the expected number of recoveries per unit
-    rate, is :math:`f` times a scale of the sampler at the same point (a volume-time, say), and a `Product` records
-    which one, and what to call the result.
-    """
-
-    name: str
-    """str: The name of the product, which is its column name in the table of the map."""
-
-    scale: str
-    """str: The name of the entry of `Sampler.scales` that multiplies the success fraction."""
-
-    label: str = ""
-    """str: What a figure calls the product, in mathtext if it has symbols."""
-
-    unit: str = ""
-    """str: The unit of the product, which is the unit of the scale."""
 
 
 # ============================================ #
@@ -149,8 +124,8 @@ class Sampler(ABC):
     r"""
     Answer "how many detections in n tries at a point?" for one kind of experiment.
 
-    A subclass supplies `space`, `draw`, `settings` and `from_settings`, and `scales` and `products` if its points
-    have a physical scale. Name a `kind` in the class statement to register it; see the module documentation.
+    A subclass supplies `space`, `draw`, `settings` and `from_settings`, and `products` if its map has quantities beyond
+    the success fraction. Name a `kind` in the class statement to register it; see the module documentation.
 
     Raises
     ------
@@ -160,9 +135,6 @@ class Sampler(ABC):
 
     kind: ClassVar[str | None] = None
     """str or None: The name the class is registered under, which a file records. `None` for an unregistered class."""
-
-    products: ClassVar[tuple[Product, ...]] = ()
-    """tuple of Product: The physical quantities of a map of this sampler, each a success fraction times a scale."""
 
     def __init_subclass__(cls, kind: str | None = None, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -235,22 +207,12 @@ class Sampler(ABC):
     # -------------------------------------- #
     # What a subclass may supply             #
     # -------------------------------------- #
-    def scales(self, x: ArrayLike) -> dict[str, NDArray[np.float64]]:
+    @property
+    def products(self) -> tuple[Product, ...]:
         """
-        Return the noise-free scales of points of the space.
+        Tuple of Product: The quantities of a map of this sampler beyond the success fraction.
 
-        These are quantities that depend on the point but involve no Monte Carlo, such as the redshift limit or the
-        volume-time of the survey for an event there. The fitted success fraction times one of them is a physical
-        yield (see `products`).
-
-        Parameters
-        ----------
-        x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
-
-        Returns
-        -------
-        dict of str to numpy.ndarray
-            Each scale by name, of shape ``(...)``. Empty by default.
+        Each product owns how it is made from the points and the map's estimate, so it can be built around whatever
+        machinery of the sampler it needs: a redshift limit, a recovered volume-time. Empty by default.
         """
-        return {}
+        return ()
