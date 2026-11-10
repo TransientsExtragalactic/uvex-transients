@@ -192,3 +192,46 @@ def test_a_campaign_spends_nothing_on_the_saturated_corner_and_most_where_the_fr
 
     # And a good share of what it adds is on the transition rather than in the low tail
     assert ((p > 0.02) & (p < 0.98)).mean() > 0.3
+
+
+# ---------------------------------------------------------------------------- #
+# Worker processes                                                             #
+# ---------------------------------------------------------------------------- #
+class _Unpicklable(LogisticSampler):
+    """A sampler that cannot be pickled, as a survey-backed one cannot (its schedule holds a satellite orbit)."""
+
+    def __init__(self, space, center, slope):
+        super().__init__(space, center, slope)
+        import threading
+
+        self._lock = threading.Lock()
+
+
+def test_a_sampler_that_cannot_be_pickled_cannot_go_to_an_ordinary_process_pool(space):
+    import pickle
+
+    with pytest.raises(TypeError):
+        pickle.dumps(_Unpicklable(space, [0.5, 0.0], [8.0, 4.0]))
+
+
+def test_forked_workers_measure_what_the_loop_does_with_a_sampler_that_cannot_be_pickled(space):
+    from uvex_transients.phase_space.campaign import fork_map
+
+    sampler = _Unpicklable(space, [0.5, 0.0], [8.0, 4.0])
+    serial = campaign(space, sampler)
+    with fork_map(sampler, RULE, processes=2) as map_fn:
+        forked = campaign(space, sampler, map_fn=map_fn)
+    np.testing.assert_array_equal(serial.points, forked.points)
+    assert list(serial.table["k"]) == list(forked.table["k"])
+    assert list(serial.table["n"]) == list(forked.table["n"])
+
+
+def test_the_workers_share_what_the_sampler_had_computed_when_they_were_forked(space):
+    """A table built before the pool is made is inherited, not rebuilt in every worker."""
+    from uvex_transients.phase_space.campaign import _FORKED, fork_map
+
+    sampler = _Unpicklable(space, [0.5, 0.0], [8.0, 4.0])
+    with fork_map(sampler, RULE, processes=1) as map_fn:
+        assert _FORKED["sampler"] is sampler and _FORKED["rule"] is RULE
+        assert map_fn(None, []) == []
+    assert _FORKED == {}

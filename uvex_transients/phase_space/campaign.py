@@ -13,8 +13,10 @@ A point is measured the same way whatever the order a batch is evaluated in, and
 on a thread pool or on a cluster, and resuming a campaign from its saved points continues the same sequence of seeds.
 """
 
+import contextlib
 import functools
-from collections.abc import Callable, Sequence
+import multiprocessing
+from collections.abc import Callable, Iterator, Sequence
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -24,7 +26,7 @@ from uvex_transients.phase_space.samplers.base import Outcome, Sampler
 from uvex_transients.phase_space.samplers.stopping import StoppingRule
 from uvex_transients.utils import logger
 
-__all__ = ["point_seed", "run_campaign"]
+__all__ = ["fork_map", "point_seed", "run_campaign"]
 
 
 def point_seed(root: np.random.SeedSequence, index: int) -> np.random.SeedSequence:
@@ -53,6 +55,64 @@ def _measure(sampler: Sampler, rule: StoppingRule, task: tuple[NDArray, np.rando
     """Measure one point: apply the rule to the sampler there, with the seed of the point."""
     x, seed = task
     return rule.run(sampler, x, seed)
+
+
+#: What the forked workers of `fork_map` measure with, set before they are forked and so inherited by them.
+_FORKED: dict = {}
+
+
+def _forked_measure(task: tuple[NDArray, np.random.SeedSequence]) -> Outcome:
+    """Measure one point in a forked worker, with the sampler and rule it inherited."""
+    return _measure(_FORKED["sampler"], _FORKED["rule"], task)
+
+
+@contextlib.contextmanager
+def fork_map(sampler: Sampler, rule: StoppingRule, processes: int | None = None) -> Iterator[Callable]:
+    """
+    Provide a ``map_fn`` that measures the points of a batch in forked worker processes.
+
+    A survey-backed sampler cannot be pickled (its schedule holds a satellite orbit), so an ordinary process pool cannot
+    be sent one. The workers of this pool are forked instead, and inherit the sampler as it is when the pool is made,
+    so anything it has computed by then (a table of redshift limits, say) is shared and not repeated. Each point
+    carries its own seed, so a result does not depend on which worker measured it, or on how many there are.
+
+    .. code-block:: python
+
+        with fork_map(
+            experiment.sampler,
+            experiment.rule,
+            processes=8,
+        ) as map_fn:
+            experiment.run(map_fn=map_fn)
+
+    Parameters
+    ----------
+    sampler : ~uvex_transients.phase_space.samplers.base.Sampler
+        What measures a point. It is not changed by the workers.
+    rule : ~uvex_transients.phase_space.samplers.stopping.StoppingRule
+        How many tries a point gets.
+    processes : int, optional
+        The number of worker processes. By default the number of CPUs.
+
+    Yields
+    ------
+    callable
+        ``map_fn(function, tasks)``, for the ``map_fn`` of `run_campaign`, `Experiment.run` or `run_experiment`. It
+        measures the tasks and ignores `function`, which it could not send to the workers.
+
+    Raises
+    ------
+    ValueError
+        If the platform cannot fork.
+    """
+    if "fork" not in multiprocessing.get_all_start_methods():
+        raise ValueError("fork_map needs a platform that can fork processes.")
+    _FORKED.update(sampler=sampler, rule=rule)
+    try:
+        with multiprocessing.get_context("fork").Pool(processes) as pool:
+            yield lambda function, tasks: pool.map(_forked_measure, list(tasks), chunksize=1)
+    finally:
+        _FORKED.clear()
 
 
 def _measure_points(
