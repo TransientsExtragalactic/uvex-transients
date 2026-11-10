@@ -336,9 +336,11 @@ phase_space:
   # scale t_0 of a breakout, whose emission is a blackbody on an expanding photosphere.
   breakout:
     # The default ranges of the axes: log10 L_0 / (erg/s), and log10 t_0 / s. The redshift limit is tabulated over them.
+    # Only an event that lasts longer than a dwell is mapped, so the window (3.6 t_0) has to hold a 900 s exposure, which
+    # makes 2.4 the lowest t_0 the sampler accepts for the UVEX schedule.
     log_L0: [42.0, 46.5]
-    log_t0: [0.0, 4.5]
-    # An exposure of a breakout is only a detection if it starts within the window out to the bolometric half-decline of
+    log_t0: [2.4, 4.5]
+    # An exposure of a breakout is only a detection if it lies within the window out to the bolometric half-decline of
     # the light curve, so a single exposure that reaches the threshold is a detection, and there is no second visit.
     n_visits: 1
     # A breakout is far shorter than a bin of explosion times, so the fraction of events in the sampled footprint that

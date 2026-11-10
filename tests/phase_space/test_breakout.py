@@ -90,12 +90,24 @@ def test_the_defaults_come_from_the_configuration_with_one_visit_and_many_bins(s
     built = BreakoutSampler(schedule, mission=MISSION, nside=NSIDE, order="nested")
     settings = built.settings
     assert settings["n_visits"] == 1 and settings["time_bins"] == 400
-    assert settings["log_L0"] == [42.0, 46.5] and settings["log_t0"] == [0.0, 4.5]
+    assert settings["log_L0"] == [42.0, 46.5] and settings["log_t0"] == [2.4, 4.5]
     assert built.exclude_first_visit_detections is True
 
 
-def test_a_transient_of_the_sampler_is_measured_over_the_whole_exposure(sampler):
-    assert sampler.make_transient().AVERAGE_OVER_EXPOSURE is True
+def test_only_an_event_longer_than_a_dwell_is_mapped(schedule, sampler):
+    dwell = float(schedule.observe_rows["duration"].to_value(u.s).max())
+    shortest = np.log10(dwell / sampler.x_half)
+    assert sampler.dwell.to_value(u.s) == pytest.approx(dwell)
+    # The bound is the time scale whose window is one dwell: it is accepted, and anything shorter is not
+    make_sampler(schedule, log_t0=[shortest, 4.0], table_points=5)
+    with pytest.raises(ValueError, match="shorter than the dwell"):
+        make_sampler(schedule, log_t0=[shortest - 0.05, 4.0], table_points=5)
+    with pytest.raises(ValueError, match="log_t0 >="):
+        make_sampler(schedule, log_t0=[0.0, 4.0], table_points=5)
+
+
+def test_a_transient_of_the_sampler_is_measured_at_the_start_of_each_exposure(sampler):
+    assert sampler.make_transient().AVERAGE_OVER_EXPOSURE is False
     assert sampler._transient.rate.to_value(u.Mpc**-3 / u.yr) == 1.0
 
 
@@ -160,7 +172,7 @@ def test_the_limit_has_the_shape_of_the_points_and_is_held_at_the_edge_of_the_ta
     np.testing.assert_allclose(sampler.redshift_limit([50.0, 9.0]), inside)
 
 
-@pytest.mark.parametrize("point", [(44.0, 2.0), (45.0, 3.0), (43.0, 1.0)])
+@pytest.mark.parametrize("point", [(44.0, 2.5), (45.0, 3.0), (43.0, 3.5)])
 def test_at_the_limit_the_brightest_band_magnitude_of_the_window_is_the_depth(sampler, point):
     """The independent check: the SED's own band magnitude, at the limit, peaks at the depth within the window."""
     log_l, log_t = point

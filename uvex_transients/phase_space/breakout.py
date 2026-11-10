@@ -9,20 +9,18 @@ both axes are parameters of the SED, so they are bound to it by name
 (`~uvex_transients.phase_space.samplers.survey.ParameterAxis`) and no placing code is written.
 
 **What counts as a detection.** A breakout is detected if at least one exposure reaches the signal-to-noise threshold,
-and only an exposure that starts early enough counts: an event is followed for the window out to the *bolometric*
+and only an exposure that lies within the event counts: an event is followed for the window out to the *bolometric*
 half-decline of its light curve, :math:`x_{1/2}\,t_0` after breakout with :math:`x_{1/2}` a constant of the fixed shape
-(about 3.6), stretched by time dilation. An exposure that starts later would be seeing the cooling emission that
-follows, not the breakout, so it does not count. The UVEX dwell of 900 s is long compared to a breakout of seconds, so
-an exposure measures the photons that arrive over the whole of it, and an exposure that starts before the explosion and
-runs into it is a measurement of the source (see
-`~uvex_transients.transients.base.TransientBase.AVERAGE_OVER_EXPOSURE`). A short pulse is therefore averaged over its
-dwell, which is what a detector does.
+(about 3.6), stretched by time dilation, and an exposure that starts after the explosion and ends by the end of the
+window is a measurement of it. An exposure that runs past the window would be seeing the cooling emission that
+follows, not the breakout, so it does not count.
 
-**A caveat, accepted.** The window limits which exposures count by when they *start*, but a 900 s exposure integrates
-whatever arrives over the whole of it, including emission after the window. For a time scale below about 100 s most of
-the photons of an exposure that starts at breakout arrive after the window (the ultraviolet keeps rising for hours as
-the photosphere expands and cools), so a detection there can be driven by the cooling emission. The map is the
-sensitivity to the transient as defined, not to its first seconds alone.
+**The shortest event.** Only an event that lasts longer than a dwell is mapped: the window has to hold at least one
+exposure (900 s), so the time scale has to be at least :math:`\text{dwell}/x_{1/2}`, about 250 s, and a lower bound
+below it is refused. A shorter event is a different question (the exposure then averages over a pulse and over the
+emission that follows it), and the survey sees it only by chance, so it is not mapped here. The source is measured at
+the start of each exposure, which is accurate when it changes little over a dwell, that is for a time scale that is
+not much shorter than one.
 
 **The redshift limit.** Events are drawn out to the redshift at which the *instantaneous* band magnitude at the
 brightest point of the window reaches the depth, a bound that no exposure beats. The temperature depends on the
@@ -127,16 +125,15 @@ class _BreakoutTransient(ExtragalacticTransient):
     A shock breakout with a blackbody photosphere, at a constant comoving rate of one event per Mpc^3 per year.
 
     `BreakoutSampler` places it at a point by fixing the amplitude and the time scale of its SED. It is measured over
-    the whole of each exposure, since a breakout can be short compared to one. The class name starts with an underscore
-    and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and the checks that iterate over
-    shipped classes.
+    the start of each exposure, and an exposure only counts if it lies within the event. The class name starts with an
+    underscore and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and the checks that
+    iterate over shipped classes.
     """
 
     DEFAULT_MODEL = InverseGammaBlackbodySED
     DEFAULT_DURATION = 1 * u.day
     DEFAULT_Z_LIM = 1.0
     HAS_STORED_HORIZON_CURVE = False
-    AVERAGE_OVER_EXPOSURE = True
 
     @property
     def rate(self) -> u.Quantity:
@@ -212,7 +209,8 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     Raises
     ------
     ValueError
-        If the shape parameters of the SED are not fixed, which the window of the detection assumes.
+        If the shape parameters of the SED are not fixed, which the window of the detection assumes, or if the lower
+        bound of ``log_t0`` is a time scale whose window is shorter than a dwell.
     """
 
     TRANSIENT_KEY = "breakout"
@@ -286,6 +284,16 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
 
         # The window is a constant of the shape of the light curve, so the shape has to be fixed
         self.x_peak, self.x_half = half_decline_time(*self._fixed_shape())
+
+        # Only an event that lasts longer than a dwell is mapped: a window that cannot hold an exposure has no recovery
+        self.dwell = float(schedule.observe_rows["duration"].to_value(u.s).max()) * u.s
+        shortest = np.log10(self.dwell.to_value(u.s) / self.x_half)
+        if log_t0[0] < shortest - 1e-9:
+            raise ValueError(
+                f"The lower bound of log_t0 is {log_t0[0]:g}, whose window (the half-decline, {self.x_half:.2f} t_0) "
+                f"is shorter than the dwell of {self.dwell:g}. Only events longer than a dwell are mapped: use "
+                f"log_t0 >= {np.ceil(shortest * 100) / 100:g}."
+            )
         self._log_redshift_table = None
         self._clipped_warning = False
         self._build_scales(self.z_max)
