@@ -587,6 +587,32 @@ class SurveySampler(Sampler):
         z = self.redshift_limit(self._points(x))
         return 4.0 * np.pi * self._survey_years * np.interp(z, self._z_grid, self._volume)
 
+    def rate_products(self, rate: Quantity) -> tuple[Product, ...]:
+        r"""
+        Return the products that need a volumetric rate: the expected number of recoveries over the survey.
+
+        This is the recovered volume-time times a rate that is constant in redshift, for a population of the luminosity
+        and duration of the point.
+
+        Parameters
+        ----------
+        rate : ~astropy.units.Quantity
+            The comoving volumetric rate, with units of inverse volume per time, for example ``10 / u.Gpc**3 / u.yr``.
+
+        Returns
+        -------
+        tuple of Product
+            ``expected_recoveries``, with its interval.
+        """
+        per_mpc3_yr = u.Quantity(rate).to_value(u.Mpc**-3 * u.yr**-1)
+        return (
+            Weighted(
+                "expected_recoveries",
+                lambda x: per_mpc3_yr * self.volume_time(x),
+                label="expected recoveries",
+            ),
+        )
+
     @property
     def products(self) -> tuple[Product, ...]:
         """

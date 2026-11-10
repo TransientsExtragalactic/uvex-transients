@@ -263,6 +263,17 @@ def test_the_products_are_the_scales_and_the_quantities_made_from_them(sampler):
     assert products["volume_time"].unit == "Mpc3 yr"
 
 
+def test_a_rate_gives_the_expected_recoveries(sampler):
+    (product,) = sampler.rate_products(10.0 / u.Gpc**3 / u.yr)
+    assert product.name == "expected_recoveries"
+    x = np.array([[43.0, 0.0], [44.0, 1.0]])
+    p = np.array([0.2, 0.6])
+    columns = product(x, Estimate(p, p - 0.1, p + 0.1))
+    per_mpc3_yr = 10.0 * 1e-9
+    np.testing.assert_allclose(columns["expected_recoveries"], p * per_mpc3_yr * sampler.volume_time(x), rtol=1e-12)
+    assert set(columns) == {"expected_recoveries", "expected_recoveries_lo", "expected_recoveries_hi"}
+
+
 def test_the_redshift_limit_table_is_the_one_that_moved_with_it():
     assert RedshiftLimit(24.5)(43.0) > 0
     from uvex_transients.phase_space.samplers.canonical import RedshiftLimit as moved

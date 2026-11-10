@@ -28,13 +28,15 @@ from astropy.units import Quantity
 from tqdm import tqdm
 
 from uvex_transients.phase_space.evaluator import RecoveryEvaluator
+from uvex_transients.phase_space.experiment import Experiment
+from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.overlay import measure_class, shipped_classes, stack_measurements
-from uvex_transients.phase_space.plotting import plot_map
+from uvex_transients.phase_space.plotting import plot_grid, plot_map
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler
 from uvex_transients.utils import config, logger
 from uvex_transients.utils.results import PHASE_SPACE_FILES
 
-__all__ = ["MAP_FILES", "NAMES", "run_map"]
+__all__ = ["MAP_FILES", "NAMES", "run_experiment", "run_map"]
 
 #: Names of the two coordinates of a map, as they appear in its files.
 NAMES = ("log_luminosity", "log_half_time")
@@ -234,4 +236,116 @@ def run_map(
         plt.close(figure)
 
     logger.info("Mapped %s in %.1f min with %d points.", evaluator.band, elapsed / 60, len(points))
+    return written
+
+
+def run_experiment(
+    experiment: Experiment,
+    out_dir: str | Path,
+    *,
+    grid_size: int | None = None,
+    rate: Quantity | None = None,
+    plot: bool = True,
+    show_points: bool = False,
+    resume: bool = False,
+    overwrite: bool = False,
+    progress: bool = False,
+    callback: Callable[[PhaseSpaceMap], None] | None = None,
+    map_fn: Callable = map,
+    title: str | None = None,
+) -> dict[str, Path]:
+    """
+    Run an experiment of any sampler and write its data products and figure.
+
+    The points are saved after every batch, so a run that stops can be resumed, and the fitted map is written on a grid
+    with the quantities of the sampler. Three files are written to the output directory, named as for `run_map`:
+    ``points.ecsv`` (see `~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
+    `~uvex_transients.phase_space.experiment.Experiment.grid_table`) and ``map.png`` (see
+    `~uvex_transients.phase_space.plotting.plot_grid`, which needs a map over two axes).
+
+    Parameters
+    ----------
+    experiment : ~uvex_transients.phase_space.experiment.Experiment
+        What to run: a sampler, the map, the stopping rule and the campaign.
+    out_dir : str or pathlib.Path
+        Directory for the files, created if needed.
+    grid_size : int, optional
+        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
+    rate : ~astropy.units.Quantity, optional
+        A volumetric rate; adds ``expected_recoveries`` to the map for a sampler that can make it.
+    plot : bool, optional
+        Whether to draw the figure. The default is `True`.
+    show_points : bool, optional
+        Whether to mark the measured points on the figure.
+    resume : bool, optional
+        Continue from the ``points.ecsv`` in `out_dir`, if there is one.
+    overwrite : bool, optional
+        Replace the files that are already in `out_dir`. Without it, or `resume`, existing ``points.ecsv`` or
+        ``map.ecsv`` raises.
+    progress : bool, optional
+        Whether to show the progress bars of the simulation. The default is `False`.
+    callback : callable, optional
+        Called with the map after the initial design and after every batch, once the points are saved.
+    map_fn : callable, optional
+        ``map_fn(function, tasks)`` returning the results in order, to measure a batch in parallel.
+    title : str, optional
+        The title of the figure. By default one that says how many points and tries it took.
+
+    Returns
+    -------
+    dict of str to pathlib.Path
+        The files written, by their key in `MAP_FILES`.
+
+    Raises
+    ------
+    FileExistsError
+        If `out_dir` already holds a map and neither `resume` nor `overwrite` is set.
+    """
+    out_dir = Path(out_dir)
+    paths = {key: out_dir / name for key, name in MAP_FILES.items()}
+    existing = [paths[key].name for key in ("points", "map") if paths[key].exists()]
+    if existing and not (resume or overwrite):
+        raise FileExistsError(f"{out_dir} already holds {existing}; pass overwrite (or resume) to continue.")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if resume and paths["points"].exists():
+        experiment.resume_from(paths["points"])
+        logger.info("Resuming from %d points in %s.", len(experiment.phase_map), paths["points"])
+
+    def checkpoint(phase_map: PhaseSpaceMap) -> None:
+        """
+        Save the points, then pass the map on to the caller's callback.
+
+        Parameters
+        ----------
+        phase_map : PhaseSpaceMap
+            The map, after its initial design or a batch.
+        """
+        experiment.save(paths["points"])
+        if callback is not None:
+            callback(phase_map)
+
+    start = time.perf_counter()
+    with _quiet_progress(progress):
+        experiment.run(map_fn=map_fn, callback=checkpoint)
+    elapsed = time.perf_counter() - start
+    experiment.save(paths["points"])
+
+    points = experiment.phase_map.table
+    grid = experiment.grid_table(grid_size, rate=rate)
+    grid.write(paths["map"], format="ascii.ecsv", overwrite=True)
+    written = {"points": paths["points"], "map": paths["map"]}
+
+    if plot:
+        title = title or (
+            f"{experiment.sampler.kind}: {len(points)} points, {int(points['n'].sum()):,} tries, {elapsed / 60:.1f} min"
+        )
+        figure = plot_grid(grid, points, paths["figure"], title, show_points=show_points)
+        written["figure"] = paths["figure"]
+
+        import matplotlib.pyplot as plt
+
+        plt.close(figure)
+
+    logger.info("Ran %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(points))
     return written

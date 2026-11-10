@@ -235,6 +235,39 @@ class Experiment:
         )
         return self
 
+    def resume_from(self, path: str | Path) -> "Experiment":
+        """
+        Take the points of a file as the points of this experiment's map, to continue from them.
+
+        The sampler, rule and campaign of this experiment are kept; only the measured points come from the file, which
+        can be of either format.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            An ECSV file of points over the same axes as this experiment's map.
+
+        Returns
+        -------
+        Experiment
+            This experiment.
+
+        Raises
+        ------
+        ValueError
+            If the file is over other axes.
+        """
+        stored = Experiment.load(path, sampler=self.sampler).phase_map
+        if stored.space.names != self.phase_map.space.names:
+            raise ValueError(
+                f"{path} is over {list(stored.space.names)} but this experiment is over "
+                f"{list(self.phase_map.space.names)}."
+            )
+        self.phase_map = PhaseSpaceMap(
+            self.phase_map.space, table=stored.table, seed=self.campaign.seed, **self.phase_map.settings
+        )
+        return self
+
     def grid_table(
         self,
         size: int | Sequence[int] | None = None,
