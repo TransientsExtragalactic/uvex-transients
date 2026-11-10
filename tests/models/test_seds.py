@@ -21,6 +21,8 @@ from uvex_transients.models.core.priors import PowerLawPrior
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from uvex_transients.models.shock_cooling import (
+    InverseGammaBlackbodySED,
+    KhatamiSED,
     MoragShockCoolingArnettSED,
     MoragShockCoolingBlackbodySED,
     MoragShockCoolingSED,
@@ -150,6 +152,14 @@ class TestLFBOTCoolingBlackbodySED(SpectralModelContract):
 
 class TestKilonovaCoolingBlackbodySED(SpectralModelContract):
     model_class = KilonovaCoolingBlackbodySED
+
+
+class TestInverseGammaBlackbodySED(SpectralModelContract):
+    model_class = InverseGammaBlackbodySED
+
+
+class TestKhatamiSED(SpectralModelContract):
+    model_class = KhatamiSED
 
 
 def test_all_seds_covered():
