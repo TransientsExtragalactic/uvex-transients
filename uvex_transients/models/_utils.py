@@ -391,6 +391,94 @@ def normalize_times(t: PhysicalInput, exptime: Quantity) -> tuple[Quantity, Quan
     return t, exptime
 
 
+# ------------------------------------------ #
+# Exposure averaging                         #
+# ------------------------------------------ #
+# The quadrature `exposure_average_nodes` uses: composite Gauss-Legendre over panels whose breakpoints close in
+# geometrically on the start of the exposure. `_N_PANELS` panels of `_N_GAUSS` nodes each, with the first panel a
+# factor `_PANEL_RATIO ** -(_N_PANELS - 1)` of the exposure long (0.2 s of a 900 s exposure). Chosen against an
+# adaptive integral of a shock-breakout light curve with timescales from 1 s to 5000 s, where it is accurate to 4e-4.
+_N_PANELS = 7
+_N_GAUSS = 4
+_PANEL_RATIO = 4.0
+_GAUSS_NODES, _GAUSS_WEIGHTS = np.polynomial.legendre.leggauss(_N_GAUSS)
+
+#: int: The number of times a spectrum is evaluated to average it over an exposure.
+N_EXPOSURE_NODES = _N_PANELS * _N_GAUSS
+
+
+def exposure_average_nodes(t: NDArray[np.float64], exptime: NDArray[np.float64]) -> tuple[NDArray, NDArray]:
+    r"""
+    Quadrature nodes and weights for the mean of a function of time over an exposure.
+
+    The exposure runs from `t` to ``t + exptime``. Where it starts before the explosion (``t < 0``) only the part after
+    it, from 0, is integrated, because there is no source before then. The weights are those of
+    :math:`\int F\,dt` over that part divided by the *whole* exposure, so that the mean over the exposure is
+    ``sum(weights * F(nodes))``, and an exposure that straddles the explosion is diluted by the fraction of it that
+    has no source.
+
+    The nodes close in geometrically on the start of the integration, so a pulse that is short compared to the exposure
+    is resolved wherever it starts. For a start at the explosion this is the sharp rise of the light curve.
+
+    Parameters
+    ----------
+    t : numpy.ndarray
+        Start of each exposure, in seconds since explosion.
+    exptime : numpy.ndarray
+        Exposure length, in seconds, broadcastable against `t`.
+
+    Returns
+    -------
+    nodes : numpy.ndarray
+        Times since explosion, in seconds, of shape ``(N_EXPOSURE_NODES, *shape)`` where ``shape`` is the broadcast
+        shape of `t` and `exptime`. An exposure entirely before the explosion has every node at 0.
+    weights : numpy.ndarray
+        The weights, in the same shape. They sum to the fraction of the exposure after the explosion, between 0 and 1.
+    """
+    t, exptime = np.broadcast_arrays(np.asarray(t, dtype=np.float64), np.asarray(exptime, dtype=np.float64))
+    start = np.maximum(t, 0.0)
+    length = np.maximum(t + exptime - start, 0.0)
+
+    # Breakpoints of the panels, from the start of the integration out to its end
+    offsets = np.concatenate([[0.0], _PANEL_RATIO ** -np.arange(_N_PANELS - 1, -1, -1, dtype=np.float64)])
+    breaks = start[None] + length[None] * offsets.reshape((-1,) + (1,) * t.ndim)
+    lower, upper = breaks[:-1], breaks[1:]
+
+    # The Gauss-Legendre nodes of every panel
+    half_width = 0.5 * (upper - lower)
+    centre = 0.5 * (upper + lower)
+    nodes = centre[:, None] + half_width[:, None] * _GAUSS_NODES.reshape((1, -1) + (1,) * t.ndim)
+    weights = half_width[:, None] * _GAUSS_WEIGHTS.reshape((1, -1) + (1,) * t.ndim) / exptime[None, None]
+
+    flat = (N_EXPOSURE_NODES,) + t.shape
+    return nodes.reshape(flat), weights.reshape(flat)
+
+
+def _default_in_model(t: Quantity, exptime: Quantity, average_exposure: bool) -> NDArray[np.bool_]:
+    """
+    Return which epochs have a source to measure.
+
+    These are the epochs that start at or after the explosion, or with exposure averaging those that end after it.
+
+    Parameters
+    ----------
+    t : ~astropy.units.Quantity
+        Start of each exposure, relative to the explosion, shape ``(N,)``.
+    exptime : ~astropy.units.Quantity
+        Exposure length, shape ``(N,)``.
+    average_exposure : bool
+        Whether the exposure is averaged over, which lets one that starts before the explosion see it.
+
+    Returns
+    -------
+    numpy.ndarray
+        Boolean, shape ``(N,)``.
+    """
+    if average_exposure:
+        return (t + exptime).to_value(u.day) > 0
+    return t.to_value(u.day) >= 0
+
+
 def measure_bands(
     detector: Detector,
     band_names: list[str],

@@ -95,7 +95,9 @@ from .._utils import (
     _SED_SHAPE_UNIT,
     _SPEC_FLUX_UNIT,
     _SPEC_LUM_UNIT,
+    _default_in_model,
     _flat_flux_source_spectrum,
+    exposure_average_nodes,
     measure_bands,
     model_class_from_kernel,
     normalize_times,
@@ -1868,10 +1870,13 @@ class SpectralModel(_ModelBase):
         cosmology: FLRW | None = None,
         ebv: float | Quantity | FloatArray | None = None,
         dust_law: str | None = None,
+        exposure: Quantity | None = None,
         **parameters: ParameterValue,
     ) -> SourceSpectrum:
         r"""
         Build a :class:`~synphot.SourceSpectrum` giving the observed flux at one fixed time :math:`t`.
+
+        With `exposure` it is instead the flux averaged over an exposure that starts at :math:`t`.
 
         A thin wrapper around :meth:`as_astropy_model`: fixes ``t`` (so the
         result is a function of wavelength alone, the shape :mod:`synphot`
@@ -1937,6 +1942,14 @@ class SpectralModel(_ModelBase):
             Passed through to :func:`~uvex_transients.dust.get_dust_law`;
             the configured default (``config["physics.default_dust_law"]``)
             is almost always the right choice.
+        exposure : ~astropy.units.Quantity, optional
+            Length of an exposure that starts at ``t``, scalar or broadcastable against ``t``. If given, the spectrum is
+            the mean flux density over the exposure, :math:`E^{-1}\int_t^{t+E} F\,dt'`, where the source is taken to be
+            off before the explosion (:math:`t'<0`) so that an exposure that starts before it is diluted by the part
+            with no source. This is what a detector that counts photons over the exposure measures, and differs from
+            the flux at ``t`` when the source changes appreciably during the exposure. The integral is the
+            quadrature of `~uvex_transients.models._utils.exposure_average_nodes`, which evaluates the model that many
+            times. ``None`` (the default) gives the flux at ``t``.
         **parameters
             This model's parameter values, either
             :class:`~astropy.units.Quantity` or already unit-stripped cgs
@@ -1947,7 +1960,7 @@ class SpectralModel(_ModelBase):
         -------
         ~synphot.SourceSpectrum
             Callable as ``spectrum(wave)``, returning the observed flux
-            density at ``t``.
+            density at ``t``, or its mean over the exposure.
 
         Raises
         ------
@@ -1983,14 +1996,26 @@ class SpectralModel(_ModelBase):
         t_cgs = to_cgs_value(t)
         log_attenuation = None if ebv is None else attenuation_callable(ebv, dust_law)
 
-        if log_attenuation is None:
+        if exposure is None:
 
-            def evaluate(wave: FloatArray) -> FloatResult:
+            def flux(wave: FloatArray) -> FloatResult:
                 return model(wave, t_cgs)
+        else:
+            # The mean over the exposure, accumulated node by node so that only one spectrum is held at a time
+            nodes, weights = exposure_average_nodes(t_cgs, to_cgs_value(exposure))
+
+            def flux(wave: FloatArray) -> FloatResult:
+                mean = 0.0
+                for node, weight in zip(nodes, weights):
+                    mean = mean + weight * model(wave, node)
+                return mean
+
+        if log_attenuation is None:
+            evaluate = flux
         else:
 
             def evaluate(wave: FloatArray) -> FloatResult:
-                return model(wave, t_cgs) * np.exp(log_attenuation(wave * u.AA))
+                return flux(wave) * np.exp(log_attenuation(wave * u.AA))
 
         model_class = model_class_from_kernel(
             "_FixedTimeSourceSpectrumModel",
@@ -3156,6 +3181,7 @@ class SpectralModel(_ModelBase):
         ebv: float | Quantity | FloatArray | None = None,
         dust_law: str | None = None,
         in_model: np.ndarray | None = None,
+        average_exposure: bool = False,
         sys_err: float | Mapping[str, float] | None = None,
         rng: RNGInput = None,
         noise_seed: int | FloatArray | None = None,
@@ -3176,11 +3202,16 @@ class SpectralModel(_ModelBase):
         never evaluated against this model: they are measured against a flat, effectively
         zero-flux spectrum instead, i.e. pure background at that observation's own depth.
 
+        By default the source is measured at the start of each exposure, which is accurate when it
+        changes little over the exposure. With `average_exposure` it is instead measured as a
+        detector does, from the photons that arrive over the whole exposure, which matters for a
+        pulse that is short compared to it.
+
         Parameters
         ----------
         t : array-like or Quantity
             Time(s) since explosion, shape ``(N,)`` (or scalar, promoted to shape ``(1,)``),
-            one entry per epoch.
+            one entry per epoch. This is the start of the exposure.
         exptime : ~astropy.units.Quantity
             Exposure duration(s), scalar or shape matching `t`.
         detector : ~m4opt.synphot.Detector
@@ -3216,8 +3247,15 @@ class SpectralModel(_ModelBase):
             See :meth:`as_source_spectrum`.
         in_model : numpy.ndarray, optional
             Boolean, shape ``(N,)``: which epochs are evaluated against this model. By default
-            ``t >= 0``. A caller can mark more epochs as background, e.g. an exposure that runs
-            past the end of the window it cares about.
+            ``t >= 0``, or with `average_exposure` those whose exposure ends after the explosion
+            (``t + exptime > 0``). A caller can mark more epochs as background, e.g. an exposure
+            that runs past the end of the window it cares about.
+        average_exposure : bool, optional
+            If `True`, the source is the flux averaged over each exposure, from `t` to ``t + exptime``
+            (see :meth:`as_source_spectrum`), instead of the flux at `t`. An exposure that starts before
+            the explosion is then measured too, with the flux averaged over the whole exposure and zero
+            before the explosion. Cost grows by the number of quadrature nodes (28) in model evaluations.
+            Defaults to `False`.
         sys_err : float or Mapping[str, float], optional
             See `~uvex_transients.models._utils.measure_bands`.
         rng : numpy.random.Generator, int, or None
@@ -3250,7 +3288,7 @@ class SpectralModel(_ModelBase):
         band_names = resolve_bands(detector, bands, sys_err)
         t, exptime = normalize_times(t, exptime)
         if in_model is None:
-            in_model = t.to_value(u.day) >= 0
+            in_model = _default_in_model(t, exptime, average_exposure)
         in_model = np.asarray(in_model, dtype=bool)
         if in_model.shape != t.shape:
             raise ValueError(f"'in_model' must have shape {t.shape}, got {in_model.shape}.")
@@ -3296,7 +3334,11 @@ class SpectralModel(_ModelBase):
                     for name, value in sed_inputs.items()
                 }
                 spectra = self.as_source_spectrum(
-                    t[rows][:, np.newaxis], cosmology=cosmology, dust_law=dust_law, **inputs
+                    t[rows][:, np.newaxis],
+                    cosmology=cosmology,
+                    dust_law=dust_law,
+                    exposure=exptime[rows][:, np.newaxis] if average_exposure else None,
+                    **inputs,
                 )
             else:
                 spectra = _flat_flux_source_spectrum(np.full(len(rows), _NEGLIGIBLE_FLUX_JY) * u.Jy)
@@ -3336,6 +3378,7 @@ class SpectralModel(_ModelBase):
         ebv: float | Quantity | FloatArray | None = None,
         dust_law: str | None = None,
         in_model: np.ndarray | None = None,
+        average_exposure: bool = False,
         n_sigma: float | None = None,
         sys_err: float | Mapping[str, float] | None = None,
         rng: RNGInput = None,
@@ -3388,7 +3431,9 @@ class SpectralModel(_ModelBase):
         ebv, dust_law : float, ~astropy.units.Quantity, numpy.ndarray, or str, optional
             See :meth:`as_source_spectrum`.
         in_model : numpy.ndarray, optional
-            See :meth:`measure_photometry`. By default ``t >= 0``.
+            See :meth:`measure_photometry`. By default ``t >= 0``, or with `average_exposure` ``t + exptime > 0``.
+        average_exposure : bool, optional
+            See :meth:`measure_photometry`. Defaults to `False`.
         n_sigma : float, optional
             Width, in multiples of ``flux_err``, of the ``flux_upper``/``flux_lower``/
             ``mag_upper``/``mag_lower`` interval. If `None` (the default), uses
@@ -3422,7 +3467,7 @@ class SpectralModel(_ModelBase):
         """
         t, exptime = normalize_times(t, exptime)
         if in_model is None:
-            in_model = t.to_value(u.day) >= 0
+            in_model = _default_in_model(t, exptime, average_exposure)
         in_model = np.asarray(in_model, dtype=bool)
 
         measurements = self.measure_photometry(
@@ -3442,6 +3487,7 @@ class SpectralModel(_ModelBase):
             ebv=ebv,
             dust_law=dust_law,
             in_model=in_model,
+            average_exposure=average_exposure,
             sys_err=sys_err,
             rng=rng,
             noise_seed=noise_seed,
