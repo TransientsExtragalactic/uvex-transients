@@ -172,10 +172,8 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         pass
 
 
-@pytest.fixture
-def serve_zip():
-    """Serve the simulation archive from a local HTTP server; ``support_range`` toggles Range support."""
-    payload = _build_zip()
+def _serve(payload: bytes, name: str):
+    """Serve `payload` from a local HTTP server; ``support_range`` toggles Range support."""
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
     server.payload = payload
     server.support_range = True
@@ -183,11 +181,17 @@ def serve_zip():
     server.bytes_served = 0
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    server.url = f"http://127.0.0.1:{server.server_address[1]}/infant_sne.zip"
+    server.url = f"http://127.0.0.1:{server.server_address[1]}/{name}"
     yield server
     server.shutdown()
     server.server_close()
     thread.join()
+
+
+@pytest.fixture
+def serve_zip():
+    """Serve the simulation archive from a local HTTP server."""
+    yield from _serve(_build_zip(), "infant_sne.zip")
 
 
 @pytest.fixture
@@ -266,3 +270,106 @@ class TestSimulations:
 
     def test_list_simulations(self, fake_simulation_release):
         assert results.list_simulations() == ["infant_sne"]
+
+
+# ----------------------------------------- #
+# Phase-space maps (subdirectories)          #
+# ----------------------------------------- #
+FUV_MAP = b"fuv-map"
+NUV_MAP = b"nuv-map"
+
+
+def _build_phase_space_zip(extra: dict[str, bytes] | None = None) -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("fuv_detection/map.ecsv", FUV_MAP)
+        archive.writestr("fuv_detection/points.ecsv", b"fuv-points")
+        archive.writestr("fuv_detection/overlay.ecsv", b"fuv-overlay")
+        archive.writestr("fuv_detection/map.png", b"fuv-figure")
+        archive.writestr("nuv_detection/map.ecsv", NUV_MAP)
+        for name, data in (extra or {}).items():
+            archive.writestr(name, data)
+    return buffer.getvalue()
+
+
+@pytest.fixture
+def serve_phase_space():
+    """Serve a ``phase_space.zip`` with two maps."""
+    yield from _serve(_build_phase_space_zip(), "phase_space.zip")
+
+
+@pytest.fixture
+def fake_phase_space_release(monkeypatch, tmp_path, serve_phase_space):
+    """Build a release carrying ``phase_space.zip`` served by `serve_phase_space`."""
+    release = {
+        "tag_name": "v1",
+        "draft": False,
+        "assets": [
+            {
+                "name": "phase_space.zip",
+                "size": len(serve_phase_space.payload),
+                "browser_download_url": serve_phase_space.url,
+            },
+        ],
+    }
+    monkeypatch.setattr(results, "find_release", lambda tag=None, timeout=60.0: release)
+    monkeypatch.setattr(results, "cache_dir", tmp_path / "cache")
+    return release
+
+
+class TestPhaseSpaceMaps:
+    """`get_phase_space_map`, whose files sit in one subdirectory per map of the archive."""
+
+    def test_fetches_the_files_of_one_map(self, fake_phase_space_release, tmp_path):
+        paths = results.get_phase_space_map("fuv_detection", ["map", "points"])
+        assert set(paths) == {"map", "points"}
+        assert paths["map"] == tmp_path / "cache" / "results" / "v1" / "phase_space" / "fuv_detection" / "map.ecsv"
+        assert paths["map"].read_bytes() == FUV_MAP
+
+    def test_the_data_products_are_the_default(self, fake_phase_space_release):
+        assert set(results.get_phase_space_map("fuv_detection")) == {"map", "points", "overlay"}
+
+    def test_the_maps_do_not_mix(self, fake_phase_space_release):
+        fuv = results.get_phase_space_map("fuv_detection", ["map"])["map"]
+        nuv = results.get_phase_space_map("nuv_detection", ["map"])["map"]
+        assert fuv.read_bytes() == FUV_MAP and nuv.read_bytes() == NUV_MAP and fuv != nuv
+
+    def test_a_map_that_is_not_in_the_archive(self, fake_phase_space_release):
+        with pytest.raises(LookupError, match="nope/map.ecsv"):
+            results.get_phase_space_map("nope", ["map"])
+
+    def test_a_file_that_is_not_in_the_map(self, fake_phase_space_release):
+        with pytest.raises(LookupError, match="nuv_detection/points.ecsv"):
+            results.get_phase_space_map("nuv_detection", ["points"])
+
+    def test_an_unknown_file_name(self, fake_phase_space_release):
+        with pytest.raises(ValueError, match="bogus"):
+            results.get_phase_space_map("fuv_detection", ["bogus"])
+
+    def test_a_release_without_maps(self, monkeypatch, tmp_path):
+        release = {"tag_name": "v1", "draft": False, "assets": []}
+        monkeypatch.setattr(results, "find_release", lambda tag=None, timeout=60.0: release)
+        monkeypatch.setattr(results, "cache_dir", tmp_path / "cache")
+        with pytest.raises(LookupError, match="phase_space"):
+            results.get_phase_space_map("fuv_detection")
+
+    def test_a_member_cannot_escape_the_cache(self, monkeypatch, tmp_path):
+        payload = _build_phase_space_zip({"../escaped.ecsv": b"x"})
+        server = next(_serve(payload, "phase_space.zip"))
+        release = {
+            "tag_name": "v1",
+            "draft": False,
+            "assets": [{"name": "phase_space.zip", "size": len(payload), "browser_download_url": server.url}],
+        }
+        monkeypatch.setattr(results, "find_release", lambda tag=None, timeout=60.0: release)
+        monkeypatch.setattr(results, "cache_dir", tmp_path / "cache")
+        try:
+            with pytest.raises(ValueError, match="outside"):
+                results.get_results(["../escaped.ecsv"], simulation="phase_space")
+        finally:
+            server.shutdown()
+            server.server_close()
+        assert not (tmp_path / "cache" / "results" / "v1" / "escaped.ecsv").exists()
+
+    def test_it_is_listed_as_a_simulation(self, fake_phase_space_release):
+        assert results.list_simulations() == ["phase_space"]

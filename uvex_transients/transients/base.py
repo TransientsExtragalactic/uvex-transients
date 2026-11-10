@@ -37,14 +37,16 @@ from astropy.cosmology import Cosmology
 from astropy.table import QTable
 from astropy.time import Time
 from astropy.units import Quantity
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import cumulative_trapezoid
+from synphot import SpectralElement
 
 from uvex_transients.models import SpectralModel
 from uvex_transients.models.core import EffectivePeakGrid
-from uvex_transients.models.core._tolerance import first_crossing, tolerance_limit
+from uvex_transients.models.core.detection_horizon import detection_horizon
 from uvex_transients.transients.horizon import HorizonCurve, curve_path
 from uvex_transients.utils import (
+    config,
     get_rng,
     get_seed_sequence,
     logger,
@@ -53,6 +55,8 @@ from uvex_transients.utils import (
     validate_sampling_factor,
 )
 from uvex_transients.utils.cosmology import get_cosmology
+from uvex_transients.utils.phot_utils import luminosity_to_absolute_magnitude
+from uvex_transients.utils.stat_utils import binned_density
 
 _SeedType = Union[np.random.SeedSequence, int]
 
@@ -90,6 +94,17 @@ class TransientBase(ABC):
 
     This parameter is used when doing windowing to determine the relevant observations which could detect a given
     transient and should be a strong upper bound on the total duration of the relevant transient.
+    """
+    AVERAGE_OVER_EXPOSURE: ClassVar[bool] = False
+    """bool: Whether an observation measures the flux averaged over its exposure, instead of at its start.
+
+    The default, `False`, takes the SED at the start of each exposure, which is accurate for a source that changes
+    little during one (every shipped class, whose timescales are far longer than a UVEX dwell). A subclass whose light
+    curve can be short compared to an exposure sets this to `True`: `SurveySimulator.iter_epochs` and
+    `~uvex_transients.simulation.event.Event` then measure it from the photons that arrive over the whole exposure (see
+    `~uvex_transients.models.core.base.SpectralModel.measure_photometry`), and also measure an exposure that starts
+    before the explosion and ends after it, diluted by the part before. This costs 28 evaluations of the SED per
+    observation.
     """
 
     _REGISTRY: ClassVar[dict[str, type["TransientBase"]]] = {}
@@ -382,6 +397,132 @@ class TransientBase(ABC):
             raise ValueError(f"`{name}` must be finite and {bound}, got {window!r}.")
 
         return window
+
+    # ------------------------------ #
+    # Luminosity Function            #
+    # ------------------------------ #
+    def luminosity_function(
+        self,
+        bandpass: SpectralElement,
+        n: int,
+        *,
+        quantity: str = "luminosity",
+        bins: int | ArrayLike | Quantity = 30,
+        t: Quantity | None = None,
+        t_min: Quantity | None = None,
+        t_max: Quantity | None = None,
+        n_time: int | None = None,
+        spacing: str = "log",
+        confidence: float = 0.6827,
+        rng: np.random.Generator | int | None = None,
+    ) -> QTable:
+        r"""
+        Estimate the luminosity function of this transient class in a band, by drawing events from its SED priors.
+
+        ``n`` events are drawn, the peak of each one's rest-frame band light curve is measured (see
+        `~uvex_transients.models.core.base.SpectralModel.sample_peak_luminosities`), and the peaks are binned. The
+        result is the normalized distribution of peak luminosity, not a volumetric rate density: multiply the ``pdf``
+        by `ExtragalacticTransient.rate` (or ``rate * rate_shape(z)``) for events per volume, time and luminosity.
+        Whether ``n`` is enough is for the caller to judge from the intervals of the bins.
+
+        Parameters
+        ----------
+        bandpass : ~synphot.SpectralElement
+            The band, for example ``mission.detector.bandpasses["FUV"]``.
+        n : int
+            Number of events to draw.
+        quantity : {"luminosity", "magnitude"}, optional
+            What the function is of. ``"luminosity"`` is the peak band luminosity :math:`L` in erg/s, and ``pdf`` is
+            :math:`\mathrm{d}N/\mathrm{d}L` per event, in 1/(erg/s). ``"magnitude"`` is the absolute AB magnitude
+            :math:`M` of that peak, brightest first, and ``pdf`` is :math:`\mathrm{d}N/\mathrm{d}M` per event, in
+            1/mag. :math:`M` is the magnitude at 10 pc of a spectrum flat in :math:`L_\nu` with that band luminosity
+            (see `~uvex_transients.utils.phot_utils.luminosity_to_absolute_magnitude`), so it is a monotonic
+            conversion of :math:`L`, not the photon-weighted band magnitude of the SED.
+        bins : int or array-like or ~astropy.units.Quantity, optional
+            Either the number of bins, which span the sample (equally spaced in :math:`\log L` for luminosities, so
+            that the bins are not all empty but one, and equally spaced in :math:`M` for magnitudes), or the bin edges,
+            increasing, in erg/s or magnitudes. The density is per unit :math:`L` or :math:`M` either way.
+        t : ~astropy.units.Quantity, optional
+            Rest-frame times since explosion at which the light curves are evaluated, shape ``(T,)``. If given, the
+            four arguments below are ignored. See
+            `~uvex_transients.models.core.base.SpectralModel.sample_peak_luminosities`.
+        t_min : ~astropy.units.Quantity, optional
+            Start of the grid of times. If `None` (the default), uses ``config["phase_space.overlay.t_min"]`` days.
+        t_max : ~astropy.units.Quantity, optional
+            End of the grid of times. If `None` (the default), uses ``config["phase_space.overlay.t_max_factor"]``
+            times `DEFAULT_DURATION`.
+        n_time : int, optional
+            Number of points of the grid. If `None` (the default), uses ``config["phase_space.overlay.n_time"]``.
+        spacing : {"log", "linear"}, optional
+            How the grid is spaced between `t_min` and `t_max`.
+        confidence : float, optional
+            Confidence level of the intervals, 68.27% (one sigma) by default.
+        rng : numpy.random.Generator, int, or None, optional
+            Random-number source for the draws.
+
+        Returns
+        -------
+        ~astropy.table.QTable
+            One row per bin: its edges ``lo`` and ``hi``; ``count``, the number of the ``n`` events in it, with the
+            interval ``count_lo`` and ``count_hi`` on the count that ``n`` events give; and ``pdf``, the normalized
+            density with ``pdf_lo`` and ``pdf_hi``. Events with no peak, or a peak of no light, are dropped before
+            binning. ``meta`` holds the class name, ``quantity``, ``n`` (as asked), ``n_valid`` and ``confidence``;
+            the density is normalized to ``n_valid``.
+
+        Raises
+        ------
+        ValueError
+            If `quantity` is not recognised, `bins` is invalid, or no event has a measurable peak.
+        """
+        if quantity not in ("luminosity", "magnitude"):
+            raise ValueError(f"'quantity' must be 'luminosity' or 'magnitude', not {quantity!r}.")
+        if t is None:
+            n_time = config["phase_space.overlay.n_time"] if n_time is None else n_time
+            t_min = config["phase_space.overlay.t_min"] * u.day if t_min is None else t_min
+            t_max = config["phase_space.overlay.t_max_factor"] * self.DEFAULT_DURATION if t_max is None else t_max
+
+        peak = self.sed.sample_peak_luminosities(
+            bandpass, n, t=t, t_min=t_min, t_max=t_max, n_time=n_time, spacing=spacing, rng=rng
+        )
+        measured = np.isfinite(peak) & (peak > 0)
+        if not measured.any():
+            raise ValueError("None of the drawn events has a measurable peak in this band.")
+        peak = peak[measured]
+
+        # The quantity binned: L in erg/s, or M in AB magnitudes (which rises as the light falls)
+        if quantity == "luminosity":
+            unit, values = u.erg / u.s, peak.to_value(u.erg / u.s)
+        else:
+            unit, values = u.ABmag, luminosity_to_absolute_magnitude(peak, bandpass).to_value(u.ABmag)
+
+        if isinstance(bins, (int, np.integer)):
+            if bins < 1:
+                raise ValueError(f"'bins' must be at least 1, not {bins}.")
+            lo, hi = values.min(), values.max()
+            if lo == hi:
+                lo, hi = (lo * 0.99, hi * 1.01) if quantity == "luminosity" else (lo - 0.5, hi + 0.5)
+            edges = np.geomspace(lo, hi, bins + 1) if quantity == "luminosity" else np.linspace(lo, hi, bins + 1)
+        else:
+            edges = np.asarray(bins.to_value(unit) if isinstance(bins, Quantity) else bins, dtype=float)
+
+        density = binned_density(values, edges, confidence)
+        table = QTable()
+        table["lo"], table["hi"] = edges[:-1] * unit, edges[1:] * unit
+        table["count"] = density["count"]
+        table["count_lo"], table["count_hi"] = density["count_lo"], density["count_hi"]
+        pdf_unit = 1 / (u.erg / u.s) if quantity == "luminosity" else 1 / u.mag
+        for name in ("pdf", "pdf_lo", "pdf_hi"):
+            table[name] = density[name.replace("pdf", "density")] * pdf_unit
+        table.meta.update(
+            {
+                "class": type(self).__name__,
+                "quantity": quantity,
+                "n": n,
+                "n_valid": int(measured.sum()),
+                "confidence": confidence,
+            }
+        )
+        return table
 
 
 # =========================================================================== #
@@ -698,103 +839,72 @@ class ExtragalacticTransient(TransientBase, ABC):
         n_time: int = 60,
         t_min: Quantity = 1e-3 * u.day,
         z_min: float = 0.003,
-        z_max: float | None = None,
+        z_max: float = 1.0,
         rng=None,
         progress: bool = True,
         interpolate: bool = False,
         **kwargs,
     ) -> tuple[QTable, EffectivePeakGrid]:
-        r"""
+        """
         Derive the redshift beyond which this population is undetectable, for each magnitude limit.
 
-        A convenience over
-        :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve` that
-        supplies what only the transient knows: the time window (from `duration_limit`) and a
-        starting redshift range (from `redshift_limit`). The redshift grid is extended
-        automatically until it brackets every limit. The result is the number to use as
-        :attr:`redshift_limit`.
+        The population is the SED's priors, observed from `t_min` to `duration_limit`. The result is the number to
+        use as :attr:`redshift_limit`. The arguments, and the method, are those of
+        `~uvex_transients.models.core.detection_horizon.detection_horizon`. The horizon does not depend on
+        `redshift_limit`: it is the other way round.
 
         Parameters
         ----------
         mag_limits : float or array-like
             AB magnitude limit(s).
         bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement
-            The bands in which an event may be detected, for example ``mission.detector.bandpasses``.
-        confidence : float, optional
-            Probability that the limit holds. The default is 0.95.
-        tolerance : float, optional
-            Fraction of the population allowed beyond the limit. The default is 0.01.
+            The bands in which an event may be detected.
+        confidence, tolerance : float, optional
+            The guarantee; see `~uvex_transients.models.core.detection_horizon.observability_curve`.
         n_samples : int, optional
-            Number of draws from the SED's priors. The default is 1000.
-        n_z : int, optional
-            Number of logarithmically spaced redshifts. The limit is rounded up to a grid point, so
-            a larger value gives a tighter result.
-        n_time : int, optional
-            Number of logarithmically spaced rest-frame times, from `t_min` to `duration_limit`.
-            It must be dense enough to resolve the peak of the light curve.
+            Number of draws from the priors.
+        n_z, n_time : int, optional
+            Numbers of logarithmically spaced redshifts and times.
         t_min : ~astropy.units.Quantity, optional
-            Earliest rest-frame time. The default is 0.001 day.
-        z_min : float, optional
-            Smallest redshift of the grid. The default is 0.003.
-        z_max : float, optional
-            Largest redshift to start from. By default, the larger of 1 and twice
-            `redshift_limit`. It is doubled, up to five times, while a limit remains unbracketed.
-        rng : numpy.random.Generator, int, or None
-            Random-number source. Pass an int for reproducible output.
+            Earliest rest-frame time.
+        z_min, z_max : float, optional
+            Smallest redshift of the grid, and largest of the first attempt, which is doubled until it brackets the
+            horizon.
+        rng : numpy.random.Generator, int or None, optional
+            Random-number source; give an integer for reproducible output.
         progress : bool, optional
             Whether to show a progress bar. The default is `True`.
         interpolate : bool, optional
-            If `False` (the default), each draw's detection redshift is rounded up to a grid point, which can
-            only overestimate the limit, by up to one grid step. If `True`, the crossing is interpolated between
-            grid points (see
-            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`), which is far more
-            accurate for a given `n_z` but no longer guaranteed to be an overestimate.
+            Whether to interpolate each crossing instead of rounding it up to a grid point.
         **kwargs
-            Further arguments for
-            :meth:`~uvex_transients.models.core.base.SpectralModel.get_effective_peak_magnitudes`,
-            such as ``criterion``.
+            Further arguments of `~uvex_transients.models.core.detection_horizon.detection_horizon`, such as
+            ``criterion``.
 
         Returns
         -------
         curve : ~astropy.table.QTable
-            One row per magnitude limit. See
-            :meth:`~uvex_transients.models.core.base.SpectralModel.get_observability_curve`.
-        grid : ~uvex_transients.models.core.EffectivePeakGrid
+            One row per magnitude limit, with ``mag_limit``, ``z_limit`` and ``n_censored`` columns.
+        grid : ~uvex_transients.models.core.detection_horizon.EffectivePeakGrid
             The evaluated grid, which can be reused for further limits.
-
-        Notes
-        -----
-        The limit covers the SED's parameter priors only, not Milky Way extinction or sky position.
         """
-        z_max = max(1.0, 2.0 * self.redshift_limit) if z_max is None else z_max
-        limits = np.atleast_1d(np.asarray(getattr(mag_limits, "value", mag_limits), dtype=np.float64))
-        # One seed for every attempt, so that extending the redshift grid does not redraw the population.
-        seed = int(get_rng(rng).integers(2**32))
-
-        for _ in range(6):
-            grid = self.sed.get_effective_peak_magnitudes(
-                np.geomspace(z_min, z_max, n_z),
-                bandpasses,
-                t_min=t_min,
-                t_max=self.duration_limit,
-                n_time=n_time,
-                n_samples=n_samples,
-                progress=progress,
-                rng=seed,
-                **kwargs,
-            )
-            z_limits = [
-                tolerance_limit(first_crossing(grid.m_eff, grid.z_grid, limit), confidence, tolerance)[0]
-                for limit in limits
-            ]
-            if np.all(np.isfinite(z_limits)):
-                break
-            z_max *= 2.0
-
-        curve = self.sed.get_observability_curve(
-            limits, grid=grid, confidence=confidence, tolerance=tolerance, interpolate=interpolate
+        return detection_horizon(
+            self.sed,
+            mag_limits,
+            bandpasses,
+            t_max=self.duration_limit,
+            t_min=t_min,
+            z_min=z_min,
+            z_max=z_max,
+            confidence=confidence,
+            tolerance=tolerance,
+            n_samples=n_samples,
+            n_z=n_z,
+            n_time=n_time,
+            rng=rng,
+            progress=progress,
+            interpolate=interpolate,
+            **kwargs,
         )
-        return curve, grid
 
     def compute_all_sky_yield(self, duration: Quantity) -> float:
         r"""
@@ -1434,6 +1544,7 @@ class ExtragalacticTransient(TransientBase, ABC):
         jitter: bool = True,
         seed: _SeedType | None = None,
         sampling_factor: float | None = None,
+        n_events: int | None = None,
     ) -> QTable:
         """
         Draw a Monte Carlo realization of events on a HEALPix grid, over a time window.
@@ -1486,6 +1597,13 @@ class ExtragalacticTransient(TransientBase, ABC):
             events generated is the correct weight, however many events fall in any one window.
             Only the events that are drawn are built. The default is `None`, which is 1 (the physical
             rate).
+        n_events : int, optional
+            Exact number of events to draw, in place of the Poisson count. The events are placed
+            exactly as they would be otherwise, so this only fixes how many there are. It is the
+            caller's job to choose a count that keeps every event of a type at the same weight (see
+            `~uvex_transients.simulation.core.SurveySimulator.sample_N_events`). Mutually exclusive
+            with `sampling_factor`. The default is `None`, which draws the count from the Poisson
+            distribution.
 
         Returns
         -------
@@ -1493,7 +1611,22 @@ class ExtragalacticTransient(TransientBase, ABC):
             Event table with one row per sampled event; see `_create_event_table_buffer`
             for its columns. Empty (but still correctly typed) if zero events were
             sampled.
+
+        Raises
+        ------
+        ValueError
+            If both `n_events` and `sampling_factor` are given, or `n_events` is negative.
+        TypeError
+            If `n_events` is not an integer.
         """
+        if n_events is not None:
+            if sampling_factor is not None:
+                raise ValueError("Provide at most one of `n_events` and `sampling_factor`.")
+            if isinstance(n_events, bool) or not isinstance(n_events, (int, np.integer)):
+                raise TypeError(f"`n_events` must be an integer, got {type(n_events).__name__}.")
+            if n_events < 0:
+                raise ValueError(f"`n_events` must be non-negative, got {n_events}.")
+
         sampling_factor = validate_sampling_factor(sampling_factor)
 
         # Validate the duration and resolve the pixel selection down to a concrete
@@ -1525,13 +1658,16 @@ class ExtragalacticTransient(TransientBase, ABC):
             parameter_spawn_seed,
         ) = root_seed.spawn(6)
 
-        # Compute the expected number of events that we will be generating.
-        number_of_events = self.sample_event_count(
-            solid_angle=total_solid_angle,
-            duration=duration,
-            seed=count_seed,
-            sampling_factor=sampling_factor,
-        )
+        # Compute the number of events that we will be generating: fixed by the caller, or Poisson.
+        if n_events is not None:
+            number_of_events = int(n_events)
+        else:
+            number_of_events = self.sample_event_count(
+                solid_angle=total_solid_angle,
+                duration=duration,
+                seed=count_seed,
+                sampling_factor=sampling_factor,
+            )
 
         logger.debug(
             "%s: sampled %d events over %d pixels (nside=%d), solid angle %s, duration %s.",

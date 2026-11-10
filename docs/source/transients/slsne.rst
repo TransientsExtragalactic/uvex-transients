@@ -41,7 +41,7 @@ Quick Facts
        :attr:`~uvex_transients.transients.supernovae.MagnetarSLSNe.RATE_CI` (see
        :ref:`user_guide_transients_rate_uncertainty`).
    * - Redshift limit
-     - :math:`z = 2.6`
+     - :math:`z = 3.2`
      - --
      - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
        priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band, rounded up.
@@ -277,6 +277,32 @@ least three UVW2 detections.
    plot_swift_uv_calibration(ArnettMagnetarSpindownSED, "SLSN-I", min_points=3, band="UVW2")
    plt.show()
 
+Luminosity Function
+--------------------
+
+The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
+priors above. Each draw's rest-frame band light curve is measured at its brightest point. The curve
+is normalized per event, so it integrates to 1 over :math:`M_V`: multiply it by the rate to get a
+volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
+bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
+:math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
+Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
+magnitude of the SED itself.
+
+.. plot::
+   :include-source: false
+
+   import matplotlib.pyplot as plt
+
+   from uvex_transients.transients.supernovae import MagnetarSLSNe
+   from uvex_transients.utils.filter_utils import get_bandpass
+   from uvex_transients.utils.plotting import plot_luminosity_function
+
+   v_band = get_bandpass("Generic/Johnson.V")
+   lf = MagnetarSLSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
+   plot_luminosity_function(lf, band="V")
+   plt.show()
+
 ----
 
 Observability Summary
@@ -288,7 +314,7 @@ bands, over the whole rest-frame light curve. The left panel shows each draw's p
 magnitude, in whichever band is brighter, against redshift: a draw is detectable out to the redshift
 where its line crosses the UVEX 1 Dwell limit of :math:`m<24.5`. The right panel shows the redshift
 beyond which, with 95% confidence, at most 1% of the population is detectable, as a function of the
-magnitude limit. The redshift limit adopted above, :math:`z=2.6`, is its value at :math:`m=24.5`,
+magnitude limit. The redshift limit adopted above, :math:`z=3.2`, is its value at :math:`m=24.5`,
 rounded up and derived on a finer grid than this plot's.
 
 The limit bounds the fraction of the *population* that is detectable beyond it, not the fraction of
@@ -319,7 +345,7 @@ detected events, and it does not include Milky Way extinction or sky position.
 
 The anticipated rate of SLSNe-I detectable by UVEX at this limit is as follows, assuming that any
 event above the :math:`m<24.5` limit is detectable, and that the population is isotropic and
-homogeneous in comoving volume out to :math:`z=2.6`:
+homogeneous in comoving volume out to :math:`z=3.2`:
 
 .. plot::
    :include-source: false

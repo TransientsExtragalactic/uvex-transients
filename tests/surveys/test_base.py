@@ -398,3 +398,65 @@ def test_first_visit_mask_empty_when_no_observe_rows(make_schedule):
     schedule = SurveySchedule(table, base.fov)
 
     assert schedule.first_visit_mask.shape == (0,)
+
+
+def test_get_observed_healpix_ids_dilate_adds_the_neighbour_ring(make_schedule_from_pointings, hot_spot):
+    """`dilate=True` returns the covered pixels plus their neighbours, and nothing else."""
+    schedule = _single_pixel_schedule(make_schedule_from_pointings, hot_spot, [10, 20])
+    nside, order = 128, "nested"
+    window = (Time("2025-01-01"), Time("2025-03-01"))
+
+    covered = schedule.get_observed_healpix_ids(*window, nside=nside, order=order)
+    dilated = schedule.get_observed_healpix_ids(*window, nside=nside, order=order, dilate=True)
+
+    neighbours = np.asarray(ah.HEALPix(nside=nside, order=order).neighbours(covered)).ravel()
+    expected = np.unique(np.concatenate([covered, neighbours[neighbours >= 0]]))
+
+    np.testing.assert_array_equal(dilated, expected)
+    assert np.isin(covered, dilated).all()
+    assert len(dilated) > len(covered)
+    assert np.array_equal(dilated, np.unique(dilated))
+
+
+def test_get_observed_healpix_ids_dilate_is_off_by_default_and_empty_stays_empty(
+    make_schedule_from_pointings, hot_spot
+):
+    schedule = _single_pixel_schedule(make_schedule_from_pointings, hot_spot, [50])
+    early = (Time("2025-01-01"), Time("2025-01-10"))
+
+    assert len(schedule.get_observed_healpix_ids(*early, nside=128, order="nested", dilate=True)) == 0
+
+    window = (Time("2025-01-01"), Time("2025-03-01"))
+    plain = schedule.get_observed_healpix_ids(*window, nside=128, order="nested")
+    default = schedule.get_observed_healpix_ids(*window, nside=128, order="nested", dilate=False)
+    np.testing.assert_array_equal(plain, default)
+
+
+def test_dilated_domain_contains_every_position_the_lookup_matches(make_schedule_from_pointings, hot_spot):
+    """
+    Any position `get_observation_indices_of` matches to an observation lies in a pixel of the dilated
+    domain, which is what makes sampling from that domain lose no observable event. The undilated
+    domain does not have this property, so the check also asserts it is not vacuous.
+    """
+    schedule = _single_pixel_schedule(make_schedule_from_pointings, hot_spot, [10])
+    nside, order = 128, "nested"
+    window = (Time("2025-01-01"), Time("2025-02-01"))
+
+    # A fine grid of positions around the pointing, spanning the footprint and a margin beyond it.
+    offsets = np.linspace(-4, 4, 161)
+    ra_grid, dec_grid = np.meshgrid(offsets, offsets)
+    grid = SkyCoord(
+        ra=hot_spot.ra + ra_grid.ravel() * u.deg / np.cos(hot_spot.dec.rad),
+        dec=hot_spot.dec + dec_grid.ravel() * u.deg,
+    )
+
+    query_index, _ = schedule.get_observation_indices_of(grid, nside=nside, order=order)
+    matched = np.unique(query_index)
+    assert len(matched) > 0
+
+    pixel = np.asarray(ah.HEALPix(nside=nside, order=order, frame=grid.frame).skycoord_to_healpix(grid[matched]))
+    covered = schedule.get_observed_healpix_ids(*window, nside=nside, order=order)
+    dilated = schedule.get_observed_healpix_ids(*window, nside=nside, order=order, dilate=True)
+
+    assert np.isin(pixel, dilated).all()
+    assert not np.isin(pixel, covered).all()  # the edge positions the undilated domain would miss

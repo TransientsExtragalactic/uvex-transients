@@ -1,4 +1,4 @@
-"""Tests for the rest-frame band-magnitude machinery behind `get_effective_peak_magnitudes`."""
+"""Tests for `peak_band_magnitudes`, the engine of `get_effective_peak_magnitudes`."""
 
 import numpy as np
 import pytest
@@ -6,9 +6,8 @@ from astropy import units as u
 from synphot import SpectralElement
 from synphot.models import Gaussian1D
 
-from uvex_transients.models._constants import AB_MAG_ZERO_POINT
-from uvex_transients.models._restframe import band_weight_matrix, peak_band_magnitudes, restframe_frequency_grid
-from uvex_transients.models.core._tolerance import resolve_bandpasses
+from uvex_transients.models.core.detection_horizon import peak_band_magnitudes
+from uvex_transients.utils.phot_utils import AB_MAG_ZERO_POINT, resolve_bandpasses
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
@@ -26,27 +25,6 @@ def grids():
         "NUV": SpectralElement(Gaussian1D, amplitude=1.0, mean=2300 * u.AA, stddev=250 * u.AA),
     }
     return resolve_bandpasses(bands)[1]
-
-
-def test_frequency_grid_is_uniform_in_log_and_covers_every_band_at_every_redshift(grids):
-    nu_rest, step = restframe_frequency_grid(grids, Z, 0.002)
-    assert step <= 0.002
-    np.testing.assert_allclose(np.diff(np.log(nu_rest)), step)
-    for nu, throughput in grids:
-        support = nu[throughput > 0]
-        assert nu_rest[0] < support.min() * (1 + Z[0])
-        assert nu_rest[-1] > support.max() * (1 + Z[-1])
-
-
-def test_weights_sum_to_one_and_follow_the_band_to_the_rest_frame(grids):
-    nu_rest, _ = restframe_frequency_grid(grids, Z)
-    weights = band_weight_matrix(nu_rest, grids, Z)
-    assert weights.shape == (nu_rest.size, 2, Z.size)
-    np.testing.assert_allclose(weights.sum(axis=0), 1.0)
-    # The band's centre moves redward in the observed frame, so blueward in the rest frame: the weight-averaged
-    # rest-frame frequency is the observed one times (1 + z).
-    centre = (weights[:, 0, :] * nu_rest[:, np.newaxis]).sum(axis=0)
-    np.testing.assert_allclose(centre / centre[0], (1 + Z) / (1 + Z[0]), rtol=2e-3)
 
 
 @pytest.mark.parametrize("d_ln_nu", [0.05, 0.002])

@@ -3,9 +3,11 @@ Downloading the published simulation results attached to UVEX Transients GitHub 
 
 Every tagged release runs ``configs/full_run.yaml`` and attaches the outputs to the release as
 assets. Secondary simulations (for example ``configs/infant_sne.yaml``) are attached too, each as one
-``<simulation>.zip`` holding the same four files. They are not part of the pip-installed package, so
-`get_results` fetches them on demand, keeps them in the package cache, and returns local paths for
-the usual ``from_disk`` loaders. Only the requested files are downloaded from a simulation's archive.
+``<simulation>.zip`` holding the same four files. The phase-space recovery maps (``configs/phase_space.yaml``) are
+attached the same way as ``phase_space.zip``, with one subdirectory per map (see `get_phase_space_map`). They are not
+part of the pip-installed package, so `get_results` fetches them on demand, keeps them in the package cache, and
+returns local paths for the usual ``from_disk`` loaders. Only the requested files are downloaded from a
+simulation's archive.
 """
 
 import io
@@ -42,6 +44,17 @@ RESULT_ASSETS = {
 ``exposure`` the `~uvex_transients.simulation.exposure_catalog.ExposureCatalog`, ``photometry`` the
 synthetic photometry of those events (the largest file, over 100 MB), and ``summary`` the per-event
 summary table from `~uvex_transients.simulation.core.SurveySimulator.run_event_summary_action`.
+"""
+
+PHASE_SPACE_SIMULATION = "phase_space"
+"""str: The simulation name of the phase-space recovery maps, ``phase_space.zip`` on a release."""
+
+PHASE_SPACE_FILES = {"points": "points.ecsv", "map": "map.ecsv", "overlay": "overlay.ecsv", "figure": "map.png"}
+"""dict of str to str: The files of one phase-space map, by short name.
+
+``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`),
+``points`` the simulated points it was fitted to, ``overlay`` the measured shipped transient classes, and ``figure`` the
+four-panel image.
 """
 
 _API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
@@ -449,6 +462,13 @@ def _get_simulation_results(
             for name, filename in filenames.items():
                 info = members[filename]
                 dest = out_dir / filename
+
+                # A member may sit in a subdirectory (a phase-space map's), but never outside the cache
+                if not dest.resolve().is_relative_to(out_dir.resolve()):
+                    raise ValueError(
+                        f"{archive_name} has a member, {filename!r}, that would be written outside {out_dir}."
+                    )
+                dest.parent.mkdir(parents=True, exist_ok=True)
                 if dest.exists():
                     if dest.stat().st_size == info.file_size:
                         logger.info("Results file %s already present at %s.", filename, dest)
@@ -581,3 +601,84 @@ def get_results(
         paths[name] = dest
 
     return paths
+
+
+def get_phase_space_map(
+    map_id: str,
+    files: list[str] | tuple[str, ...] = ("map", "points", "overlay"),
+    tag: str | None = None,
+    directory: str | os.PathLike | None = None,
+    overwrite: bool = False,
+    timeout: float = 60.0,
+) -> dict[str, Path]:
+    """
+    Download the files of one phase-space recovery map of a published release.
+
+    The maps are the ones ``configs/phase_space.yaml`` defines, attached to each release as one ``phase_space.zip``;
+    only the requested files of the requested map are downloaded from it. They are read with
+    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into a sampler that can evaluate the map
+    anywhere with `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.load`.
+
+    Parameters
+    ----------
+    map_id : str
+        The ``id`` of the map in the run-config, for example ``"fuv_detection"``.
+    files : sequence of str, optional
+        What to fetch, from `PHASE_SPACE_FILES`: ``"map"``, ``"points"``, ``"overlay"`` and ``"figure"``. The default
+        is the first three, the data products.
+    tag : str, optional
+        The release tag. The default is the newest published release.
+    directory : str or os.PathLike, optional
+        Place the files directly in this directory instead of the per-release cache directory.
+    overwrite : bool, optional
+        Replace an existing file whose size differs from the archive member, instead of raising.
+    timeout : float, optional
+        Network timeout in seconds, per request. The default is 60.
+
+    Returns
+    -------
+    dict of str to pathlib.Path
+        Each requested file, as named in `files`, mapped to its local path.
+
+    Raises
+    ------
+    ConnectionError
+        If the GitHub releases API cannot be reached.
+    LookupError
+        If there are no published releases, `tag` does not exist, the release has no phase-space maps, or the map or a
+        file is not in the archive.
+    ValueError
+        If a name in `files` is not one of `PHASE_SPACE_FILES`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from astropy.table import (
+            Table,
+        )
+        from uvex_transients.utils import (
+            get_phase_space_map,
+        )
+
+        paths = get_phase_space_map(
+            "fuv_detection", ["map"]
+        )
+        grid = Table.read(
+            paths["map"], format="ascii.ecsv"
+        )
+    """
+    unknown = sorted(set(files) - set(PHASE_SPACE_FILES))
+    if unknown:
+        raise ValueError(f"Unknown phase-space file(s) {unknown}; choose from {sorted(PHASE_SPACE_FILES)}.")
+
+    members = {key: f"{map_id}/{PHASE_SPACE_FILES[key]}" for key in files}
+    paths = get_results(
+        list(members.values()),
+        tag=tag,
+        directory=directory,
+        overwrite=overwrite,
+        timeout=timeout,
+        simulation=PHASE_SPACE_SIMULATION,
+    )
+    return {key: paths[member] for key, member in members.items()}

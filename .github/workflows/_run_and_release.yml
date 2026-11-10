@@ -13,6 +13,11 @@
 # `<name>.zip` first, so the release page gains one asset per simulation rather
 # than four, and `get_results(..., simulation="<name>")` fetches individual
 # files out of the archive with HTTP range requests.
+#
+# `kind: phase_space` runs `uvex-transients phase-space <config>` instead. That run writes one
+# directory per map (`<id>/points.ecsv`, `map.ecsv`, `overlay.ecsv`, `map.png`), which are zipped
+# with their directories intact, and always packaged, as `<name>.zip`;
+# `uvex_transients.utils.get_phase_space_map` fetches them.
 name: (Reusable) Run Simulation and Release Outputs
 
 on:
@@ -26,6 +31,11 @@ on:
         description: Short simulation name. Names the output directory and, when `package` is true, the `<name>.zip` asset.
         required: true
         type: string
+      kind:
+        description: "What the config is: a `simulation` (`uvex-transients run`) or a `phase_space` run (`uvex-transients phase-space`)."
+        required: false
+        type: string
+        default: simulation
       release_tag:
         description: Tag of the (already existing, possibly draft) release to upload to.
         required: true
@@ -64,24 +74,54 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check the inputs
+        run: |
+          case "${{ inputs.kind }}" in
+            simulation) ;;
+            phase_space)
+              [ "${{ inputs.package }}" = "true" ] || { echo "a phase_space run is always packaged; set package: true"; exit 1; } ;;
+            *) echo "unknown kind: ${{ inputs.kind }}"; exit 1 ;;
+          esac
+
+      # rubin: the event summary flags events against the LSST footprint. phase_space: the Gaussian process.
       - name: Install package
-        run: pip install -e ".[rubin]"  # rubin: the event summary flags events against the LSST footprint
+        run: pip install -e ".[${{ inputs.kind == 'phase_space' && 'phase_space' || 'rubin' }}]"
 
       - name: Run pipeline
+        if: ${{ inputs.kind == 'simulation' }}
         run: uvex-transients run "${{ inputs.config }}" --out-dir "results/${{ inputs.name }}" --overwrite
+
+      - name: Run phase-space maps
+        if: ${{ inputs.kind == 'phase_space' }}
+        run: uvex-transients phase-space "${{ inputs.config }}" --out-dir "results/${{ inputs.name }}" --overwrite
 
       - name: Check the expected data products exist
         run: |
-          for f in final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv; do
-            test -s "results/${{ inputs.name }}/$f" || { echo "missing output: $f"; exit 1; }
-          done
-          ls -lh "results/${{ inputs.name }}"
+          if [ "${{ inputs.kind }}" = "phase_space" ]; then
+            maps=$(find "results/${{ inputs.name }}" -mindepth 1 -maxdepth 1 -type d)
+            test -n "$maps" || { echo "no maps were written"; exit 1; }
+            for d in $maps; do
+              for f in points.ecsv map.ecsv overlay.ecsv map.png; do
+                test -s "$d/$f" || { echo "missing output: $d/$f"; exit 1; }
+              done
+            done
+          else
+            for f in final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv; do
+              test -s "results/${{ inputs.name }}/$f" || { echo "missing output: $f"; exit 1; }
+            done
+          fi
+          ls -lhR "results/${{ inputs.name }}"
 
       - name: Package outputs into a zip archive
         if: ${{ inputs.package }}
         run: |
           cd "results/${{ inputs.name }}"
-          zip -j "../${{ inputs.name }}.zip" final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv
+          if [ "${{ inputs.kind }}" = "phase_space" ]; then
+            # Keep the directories: a map is addressed as <id>/<file> in the archive
+            zip -r "../${{ inputs.name }}.zip" */points.ecsv */map.ecsv */overlay.ecsv */map.png
+          else
+            zip -j "../${{ inputs.name }}.zip" final_catalog.ecsv exposure.ecsv photometry.ecsv event_summary.ecsv
+          fi
           ls -lh "../${{ inputs.name }}.zip"
 
       - name: Attach data products to the release

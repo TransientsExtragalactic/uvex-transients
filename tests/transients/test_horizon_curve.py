@@ -306,6 +306,21 @@ def test_stored_curves_match_their_classes(name):
 
 
 @pytest.mark.parametrize("name", SHIPPED)
+def test_default_z_lim_is_the_stored_horizon_rounded_up(name):
+    """
+    A class's `DEFAULT_Z_LIM` is the redshift limit of its stored curve at 24.5 AB, rounded up to two figures.
+
+    A lower value truncates events the survey could detect; a much higher one wastes simulated events. If this fails
+    after rebuilding the curves (``make horizons``), set `DEFAULT_Z_LIM` to the new limit, rounded up.
+    """
+    curve = HorizonCurve.read(curve_path(name))
+    assert curve is not None
+    limit = float(curve.z_limit(24.5))
+    default = TransientBase.registry()[name].DEFAULT_Z_LIM
+    assert limit <= default <= 1.1 * limit, f"{name}: DEFAULT_Z_LIM is {default}, the stored horizon is {limit:.4f}."
+
+
+@pytest.mark.parametrize("name", SHIPPED)
 def test_stored_curves_were_built_with_the_current_settings(name):
     """A stored curve was built with the module's `SETTINGS` and `MAG_LIMITS`, which the fingerprint does not cover."""
     curve = HorizonCurve.read(curve_path(name))

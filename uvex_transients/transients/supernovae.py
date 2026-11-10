@@ -8,7 +8,6 @@ from astropy import units as u
 from astropy.units import Quantity
 from numpy.typing import NDArray
 
-from uvex_transients.models._utils import convert_CI_to_fractional
 from uvex_transients.models.shock_cooling import MoragShockCoolingSED
 from uvex_transients.models.supernovae import (
     ArnettMagnetarSpindownSED,
@@ -24,6 +23,11 @@ from uvex_transients.utils.cosmology import (
     core_collapse_rate_coefficient,
     core_collapse_rate_shape,
     supernovae_Ia_rate,
+)
+from uvex_transients.utils.stat_utils import (
+    combine_fractional_errors,
+    convert_CI_to_fractional,
+    fractional_error_to_bounds,
 )
 
 from .base import ExtragalacticTransient
@@ -48,48 +52,11 @@ __all__ = [
 # published uncertainty), and `RATE_FRACTION`/`RATE_CI` are built by multiplying the relevant links
 # and propagating their fractional uncertainties, rather than hand-computing and hardcoding the
 # already-multiplied-out numbers. `convert_CI_to_fractional` turns each literature-quoted "value
-# +upper/-lower" into a `(lower, upper)` fractional-error pair; `_combine_fractional_errors`
+# +upper/-lower" into a `(lower, upper)` fractional-error pair; `combine_fractional_errors`
 # propagates any number of *independent* such pairs through a product, in quadrature (standard
-# linear/small-error propagation in log space); `_fractional_error_to_rate_ci` turns a combined
+# linear/small-error propagation in log space); `fractional_error_to_bounds` turns a combined
 # fractional error into the multiplicative `RATE_CI` form every `ExtragalacticTransient` uses.
-
-
-def _combine_fractional_errors(*errors: tuple[float, float]) -> tuple[float, float]:
-    r"""
-    Combine independent fractional ``(lower, upper)`` errors in quadrature.
-
-    For independent quantities :math:`x_i`, each with its own fractional error
-    :math:`(\delta_i^-, \delta_i^+)` (e.g. as returned by `convert_CI_to_fractional`), the
-    fractional error of their product :math:`\prod_i x_i` is
-    :math:`\bigl(\sqrt{\sum_i(\delta_i^-)^2},\ \sqrt{\sum_i(\delta_i^+)^2}\bigr)` -- ordinary
-    linear error propagation applied to :math:`\ln\prod_i x_i = \sum_i \ln x_i`.
-
-    Parameters
-    ----------
-    *errors : tuple of float
-        Any number of ``(lower, upper)`` fractional-error pairs for independent factors in a
-        product.
-
-    Returns
-    -------
-    tuple of float
-        The combined ``(lower, upper)`` fractional error of the product.
-    """
-    lower = float(np.sqrt(sum(lo**2 for lo, _ in errors)))
-    upper = float(np.sqrt(sum(hi**2 for _, hi in errors)))
-    return lower, upper
-
-
-def _fractional_error_to_rate_ci(error: tuple[float, float]) -> tuple[float, float]:
-    """
-    Convert a ``(lower, upper)`` fractional error into `RATE_CI`-style multiplicative bounds.
-
-    The lower bound is floored at zero: a rate cannot be negative, but a fractional lower error of
-    100% or more (e.g. a measured fraction whose published lower bound is itself zero, once combined
-    in quadrature with any other term) would otherwise give a negative multiplicative bound.
-    """
-    lower, upper = error
-    return max(0.0, 1.0 - lower), 1.0 + upper
+# All three are in `uvex_transients.utils.stat_utils`.
 
 
 # ------------------------------------------------------------------------------------------- #
@@ -144,7 +111,7 @@ def _with_cc_normalization_uncertainty(fraction_err: tuple[float, float]) -> tup
     (`_CC_NORMALIZATION_ERR`), common to every `_CoreCollapseSNe` subtype. Returns `RATE_CI`-style
     multiplicative bounds.
     """
-    return _fractional_error_to_rate_ci(_combine_fractional_errors(fraction_err, _CC_NORMALIZATION_ERR))
+    return fractional_error_to_bounds(combine_fractional_errors(fraction_err, _CC_NORMALIZATION_ERR))
 
 
 # ------------------------------------------------------------------------------------------- #
@@ -153,7 +120,7 @@ def _with_cc_normalization_uncertainty(fraction_err: tuple[float, float]) -> tup
 # Type IIP fraction of the total CC rate: Li et al. 2011's II-P share of the Type II rate, times
 # Shivvers et al. 2017's Type II share of the total CC rate.
 _TYPE_IIP_FRACTION = _TYPE_II_OF_CC * _IIP_OF_TYPEII
-_TYPE_IIP_FRACTION_ERR = _combine_fractional_errors(_TYPE_II_OF_CC_ERR, _IIP_OF_TYPEII_ERR)
+_TYPE_IIP_FRACTION_ERR = combine_fractional_errors(_TYPE_II_OF_CC_ERR, _IIP_OF_TYPEII_ERR)
 
 # Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,
 # following the high incidence of early CSM-interaction signatures found among Type II SNe by
@@ -163,16 +130,16 @@ _TYPE_IIP_EXCESS_FRACTION = 0.30 * _TYPE_IIP_FRACTION
 _TYPE_IIP_EXCESS_FRACTION_ERR = _TYPE_IIP_FRACTION_ERR
 
 _TYPE_IIB_FRACTION = _SESNE_FRACTION * _IIB_OF_SESNE
-_TYPE_IIB_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _IIB_OF_SESNE_ERR)
+_TYPE_IIB_FRACTION_ERR = combine_fractional_errors(_SESNE_FRACTION_ERR, _IIB_OF_SESNE_ERR)
 
 _TYPE_IB_FRACTION = _SESNE_FRACTION * _IB_OF_SESNE
-_TYPE_IB_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _IB_OF_SESNE_ERR)
+_TYPE_IB_FRACTION_ERR = combine_fractional_errors(_SESNE_FRACTION_ERR, _IB_OF_SESNE_ERR)
 
 _TYPE_IC_FRACTION = _SESNE_FRACTION * _IC_OF_SESNE
-_TYPE_IC_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _IC_OF_SESNE_ERR)
+_TYPE_IC_FRACTION_ERR = combine_fractional_errors(_SESNE_FRACTION_ERR, _IC_OF_SESNE_ERR)
 
 _TYPE_ICBL_FRACTION = _SESNE_FRACTION * _ICBL_OF_SESNE
-_TYPE_ICBL_FRACTION_ERR = _combine_fractional_errors(_SESNE_FRACTION_ERR, _ICBL_OF_SESNE_ERR)
+_TYPE_ICBL_FRACTION_ERR = combine_fractional_errors(_SESNE_FRACTION_ERR, _ICBL_OF_SESNE_ERR)
 
 # Type I superluminous SNe (SLSNe-I) as a fraction of the total CC SNe rate: a local ratio of
 # 1/3500 (+2800/-720 on the *denominator*), from the PTF rates of Frohmaier et al. 2021
@@ -229,7 +196,7 @@ class TypeIIPSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.50
+    DEFAULT_Z_LIM = 0.51
 
     RATE_FRACTION = _TYPE_IIP_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_FRACTION_ERR)
@@ -242,7 +209,7 @@ class TypeIIPExcessSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.62
+    DEFAULT_Z_LIM = 0.53
 
     RATE_FRACTION = _TYPE_IIP_EXCESS_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_EXCESS_FRACTION_ERR)
@@ -290,7 +257,7 @@ class TypeIIbSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 200 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 1.8
+    DEFAULT_Z_LIM = 1.0
     # The shock cooling component is evaluated at every epoch and its luminosity grows without bound toward t -> 0,
     # so the horizon is taken from 0.1 d after explosion, where its formulas are not wildly outside their regime.
     HORIZON_T_MIN = 0.1 * u.day
@@ -311,7 +278,7 @@ class TypeIbSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.17
+    DEFAULT_Z_LIM = 0.23
 
     RATE_FRACTION = _TYPE_IB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IB_FRACTION_ERR)
@@ -329,7 +296,7 @@ class TypeIcSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.25
+    DEFAULT_Z_LIM = 0.24
 
     RATE_FRACTION = _TYPE_IC_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IC_FRACTION_ERR)
@@ -347,7 +314,7 @@ class TypeIcBLSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.26
+    DEFAULT_Z_LIM = 0.27
 
     RATE_FRACTION = _TYPE_ICBL_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_ICBL_FRACTION_ERR)
@@ -383,7 +350,7 @@ class MagnetarSLSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 600 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 2.6
+    DEFAULT_Z_LIM = 3.2
 
     RATE_FRACTION = _SLSN_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_SLSN_FRACTION_ERR)
@@ -451,7 +418,7 @@ class TypeIaSNe(ExtragalacticTransient):
     DEFAULT_DURATION = 365 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.30
+    DEFAULT_Z_LIM = 0.33
 
     RATE_CI = _TYPE_IA_RATE_CI
 

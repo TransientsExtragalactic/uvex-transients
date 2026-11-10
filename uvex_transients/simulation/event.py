@@ -25,6 +25,7 @@ from m4opt.missions import Mission
 from uvex_transients.dust import log_attenuation
 from uvex_transients.utils import get_rng
 from uvex_transients.utils.keyed_noise import time_key
+from uvex_transients.utils.phot_utils import bandpass_table
 
 from ..surveys.base import SurveySchedule
 from ..surveys.footprints import SurveyFootprint, default_registry
@@ -187,15 +188,23 @@ class Event:
 
         t_explosion = self._t_explosion
         post = self._photometry_post_window
-        candidate = self._schedule.get_observations_of(
-            self._coord, t_explosion - self._photometry_pre_window, t_explosion + post
-        )
+        pre = self._photometry_pre_window
 
-        # Determine the set of candidates that are actually observed.
-        in_model = np.logical_and(
-            candidate["start_time"] >= t_explosion,
-            candidate["start_time"] + candidate["duration"] <= t_explosion + post,
-        )
+        # A transient measured over the whole exposure also sees an exposure that started before the explosion, so the
+        # search reaches back by the longest exposure to find those
+        average_exposure = bool(self._transient.AVERAGE_OVER_EXPOSURE)
+        reach_back = self._schedule.observe_rows["duration"].max() if average_exposure else 0 * u.s
+        candidate = self._schedule.get_observations_of(self._coord, t_explosion - pre - reach_back, t_explosion + post)
+        end_time = candidate["start_time"] + candidate["duration"]
+
+        if average_exposure:
+            # Keep what overlaps the window, and measure whatever has a source in it: whatever ends after the
+            # explosion, wherever it started and however far it runs on, since the SED is valid for all later times
+            candidate = candidate[end_time > t_explosion - pre]
+            in_model = (candidate["start_time"] + candidate["duration"]) > t_explosion
+        else:
+            # Determine the set of candidates that are actually observed.
+            in_model = np.logical_and(candidate["start_time"] >= t_explosion, end_time <= t_explosion + post)
 
         # Everything else in the query window -- pre-explosion rows from
         # `photometry_pre_window`, plus any row whose exposure runs past
@@ -294,6 +303,11 @@ class Event:
         ``[t_explosion - photometry_pre_window, t_explosion + photometry_post_window]`` --
         i.e. `observations` before it's narrowed to rows the transient's SED is actually
         valid for. See `observations`/`background_observations` for the split.
+
+        For a transient measured over the whole exposure
+        (`~uvex_transients.transients.base.TransientBase.AVERAGE_OVER_EXPOSURE`) it also holds the exposures that
+        started before the window and overlap it, and `observations` is every row that ends after the explosion,
+        however far it runs past `photometry_post_window`. `background_observations` is then only what ends before it.
         """
         self._resolve_observations()
         return self._window_observations
@@ -423,9 +437,8 @@ class Event:
             `bandpass`'s observed frequency grid, its dimensionless throughput on that grid, and the natural
             log of this event's dust attenuation on that grid (see :func:`~uvex_transients.dust.log_attenuation`).
         """
-        wave = bandpass.waveset
-        nu = wave.to(u.Hz, equivalencies=u.spectral())
-        throughput = np.asarray(bandpass(wave).to_value(u.dimensionless_unscaled))
+        nu_hz, throughput = bandpass_table(bandpass)
+        nu = nu_hz * u.Hz
         return nu, throughput, log_attenuation(nu, self._ebv)
 
     def mag(self, t: Quantity, mission: Mission, band: Hashable | None = None) -> Quantity:
@@ -689,6 +702,7 @@ class Event:
             luminosity_distance=self._luminosity_distance,
             ebv=self._ebv,
             in_model=self._in_model,
+            average_exposure=bool(self._transient.AVERAGE_OVER_EXPOSURE),
             n_sigma=n_sigma,
             noise_seed=self._seed,
             noise_observation_keys=time_key(window["start_time"]),

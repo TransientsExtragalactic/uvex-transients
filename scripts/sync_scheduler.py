@@ -2,9 +2,9 @@
 Pin this repository to the latest uvex-scheduler release.
 
 The package config (``uvex_transients/config.yaml``) registers every released schedule by name
-(``uvex_v0.5.0``, ...), and the release runs (``configs/full_run.yaml``, ``configs/infant_sne.yaml``)
-and the package defaults point at the newest one. This script looks up the latest release of
-``m4opt/uvex-scheduler`` and makes the following edits, all in place and all idempotent:
+(``uvex_v0.5.0``, ...), and the release runs (``configs/full_run.yaml``, ``configs/infant_sne.yaml`` and
+``configs/phase_space.yaml``) and the package defaults point at the newest one. This script looks up the latest
+release of ``m4opt/uvex-scheduler`` and makes the following edits, all in place and all idempotent:
 
 - registers ``uvex_v<latest>`` in ``schedules.schedule_urls`` (older entries are left alone, so
   they remain available as references to the previous schedules),
@@ -34,7 +34,11 @@ from pathlib import Path
 UPSTREAM = "m4opt/uvex-scheduler"
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_CONFIG = ROOT / "uvex_transients" / "config.yaml"
-RUN_CONFIGS = (ROOT / "configs" / "full_run.yaml", ROOT / "configs" / "infant_sne.yaml")
+RUN_CONFIGS = (
+    ROOT / "configs" / "full_run.yaml",
+    ROOT / "configs" / "infant_sne.yaml",
+    ROOT / "configs" / "phase_space.yaml",
+)
 """tuple of pathlib.Path: The run-configs whose data products are attached to each release."""
 
 _RAW = f"https://raw.githubusercontent.com/{UPSTREAM}/refs/tags"

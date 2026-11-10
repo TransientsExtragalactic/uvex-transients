@@ -21,6 +21,8 @@ from uvex_transients.models.core.priors import PowerLawPrior
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
 from uvex_transients.models.lfbots import LFBOTCoolingBlackbodySED
 from uvex_transients.models.shock_cooling import (
+    InverseGammaBlackbodySED,
+    KhatamiSED,
     MoragShockCoolingArnettSED,
     MoragShockCoolingBlackbodySED,
     MoragShockCoolingSED,
@@ -28,6 +30,7 @@ from uvex_transients.models.shock_cooling import (
 )
 from uvex_transients.models.shock_cooling.morag import _UncutMoragShockCoolingSED
 from uvex_transients.models.supernovae import (
+    LLGRBSED,
     ArnettMagnetarSpindownSED,
     TypeIaSED,
     TypeIbSED,
@@ -39,6 +42,7 @@ from uvex_transients.models.supernovae import (
     VillarCoolingBlackbodySED,
 )
 from uvex_transients.models.tdes import AlushStoneTDESED, VanVelzenTDESED
+from uvex_transients.phase_space.transient import _FREDPowerLawSED
 
 from ._contracts import SpectralModelContract, assert_full_coverage
 
@@ -119,6 +123,10 @@ class TestTypeIcBLSED(SpectralModelContract):
     model_class = TypeIcBLSED
 
 
+class TestLLGRBSED(SpectralModelContract):
+    model_class = LLGRBSED
+
+
 class TestVanVelzenTDESED(SpectralModelContract):
     model_class = VanVelzenTDESED
 
@@ -146,6 +154,14 @@ class TestKilonovaCoolingBlackbodySED(SpectralModelContract):
     model_class = KilonovaCoolingBlackbodySED
 
 
+class TestInverseGammaBlackbodySED(SpectralModelContract):
+    model_class = InverseGammaBlackbodySED
+
+
+class TestKhatamiSED(SpectralModelContract):
+    model_class = KhatamiSED
+
+
 def test_all_seds_covered():
     """Fail loudly if a new `SpectralModel` subclass is added without a `Test*` class above.
 
@@ -157,4 +173,8 @@ def test_all_seds_covered():
         for name, cls in globals().items()
         if name.startswith("Test") and issubclass(cls, SpectralModelContract)
     }
-    assert_full_coverage(SpectralModel, tested, exclude={ComposedSpectralModel, _UncutMoragShockCoolingSED})
+    assert_full_coverage(
+        SpectralModel,
+        tested,
+        exclude={ComposedSpectralModel, _UncutMoragShockCoolingSED, _FREDPowerLawSED},
+    )
