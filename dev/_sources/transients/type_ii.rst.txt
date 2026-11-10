@@ -334,6 +334,31 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
          plot_swift_uv_calibration(TypeIIPSED, "IIP", band="UVW2")
          plt.show()
 
+      .. rubric:: Luminosity Function
+
+      The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
+      priors above. Each draw's rest-frame band light curve is measured at its brightest point. The curve
+      is normalized per event, so it integrates to 1 over :math:`M_V`: multiply it by the rate to get a
+      volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
+      bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
+      :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
+      Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
+      magnitude of the SED itself.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.transients.supernovae import TypeIIPSNe
+         from uvex_transients.utils.filter_utils import get_bandpass
+         from uvex_transients.utils.plotting import plot_luminosity_function
+
+         v_band = get_bandpass("Generic/Johnson.V")
+         lf = TypeIIPSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
+         plot_luminosity_function(lf, band="V")
+         plt.show()
+
       .. rubric:: Observability Summary
 
       The plots below show how the redshift limit follows from the SED. We draw 1000 sets of
@@ -715,6 +740,31 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
          plot_swift_uv_calibration(TypeIIPExcessSED, "IIP+Excess", band="UVW2")
+         plt.show()
+
+      .. rubric:: Luminosity Function
+
+      The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
+      priors above. Each draw's rest-frame band light curve is measured at its brightest point. The curve
+      is normalized per event, so it integrates to 1 over :math:`M_V`: multiply it by the rate to get a
+      volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
+      bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
+      :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
+      Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
+      magnitude of the SED itself.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.transients.supernovae import TypeIIPExcessSNe
+         from uvex_transients.utils.filter_utils import get_bandpass
+         from uvex_transients.utils.plotting import plot_luminosity_function
+
+         v_band = get_bandpass("Generic/Johnson.V")
+         lf = TypeIIPExcessSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
+         plot_luminosity_function(lf, band="V")
          plt.show()
 
       .. rubric:: Observability Summary
@@ -1114,6 +1164,31 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
          from uvex_transients.utils.plotting import plot_swift_uv_calibration
 
          plot_swift_uv_calibration(TypeIIbSED, "IIb", band="UVW2")
+         plt.show()
+
+      .. rubric:: Luminosity Function
+
+      The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
+      priors above. Each draw's rest-frame band light curve is measured at its brightest point. The curve
+      is normalized per event, so it integrates to 1 over :math:`M_V`: multiply it by the rate to get a
+      volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
+      bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
+      :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
+      Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
+      magnitude of the SED itself.
+
+      .. plot::
+         :include-source: false
+
+         import matplotlib.pyplot as plt
+
+         from uvex_transients.transients.supernovae import TypeIIbSNe
+         from uvex_transients.utils.filter_utils import get_bandpass
+         from uvex_transients.utils.plotting import plot_luminosity_function
+
+         v_band = get_bandpass("Generic/Johnson.V")
+         lf = TypeIIbSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
+         plot_luminosity_function(lf, band="V")
          plt.show()
 
       .. rubric:: Observability Summary

@@ -466,7 +466,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lightcurve</span><span class="p">,</span> <span class="n">LogNormalPrior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">Parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lightcurve</span><span class="p">,</span> <span class="n">LogNormalPrior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">UniformPrior</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_BOL_LUM_UNIT</span>
@@ -480,9 +480,12 @@
     <span class="s2">"GaussianPulseLightcurve"</span><span class="p">,</span>
     <span class="s2">"GaussianRiseBrokenPowerLawLightcurve"</span><span class="p">,</span>
     <span class="s2">"GaussianRisePowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"InverseGammaBrokenPowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"KhatamiSBOLightcurve"</span><span class="p">,</span>
     <span class="s2">"LogNormalPulseLightcurve"</span><span class="p">,</span>
     <span class="s2">"PlateauPowerLawLightcurve"</span><span class="p">,</span>
     <span class="s2">"PowerLawLightcurve"</span><span class="p">,</span>
+    <span class="s2">"SBOPhenomenologicalLightcurve"</span><span class="p">,</span>
     <span class="s2">"SmoothBrokenPowerLawLightcurve"</span><span class="p">,</span>
     <span class="s2">"TopHatLightcurve"</span><span class="p">,</span>
     <span class="s2">"TwoComponentBazinLightcurve"</span><span class="p">,</span>
@@ -2203,6 +2206,653 @@
             <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude_0"</span><span class="p">])</span> <span class="o">+</span> <span class="n">log_bazin_0</span><span class="p">,</span>
             <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude_1"</span><span class="p">])</span> <span class="o">+</span> <span class="n">log_bazin_1</span><span class="p">,</span>
         <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="InverseGammaBrokenPowerLawLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.InverseGammaBrokenPowerLawLightcurve.html#uvex_transients.models.lightcurves.generic.InverseGammaBrokenPowerLawLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InverseGammaBrokenPowerLawLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    An inverse-gamma rise with a smoothly broken power-law decline, normalized to a given peak luminosity.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \frac{L_0}{\mathcal{N}}\; x^{-p}\, \exp\left[p\left(1-\frac{1}{x}\right)\right]</span>
+<span class="sd">        \left[1+\left(\frac{x}{x_s}\right)^{k(p-q)}\right]^{1/k},</span>
+<span class="sd">        \qquad x = \frac{t}{t_0},\quad t &gt; 0.</span>
+
+<span class="sd">    The factor :math:`x^{-p} \exp[p(1-1/x)]` switches the emission on as :math:`t \rightarrow 0`</span>
+<span class="sd">    (it vanishes faster than any power of :math:`x`), peaks at :math:`x = 1`, and then declines as</span>
+<span class="sd">    :math:`x^{-p}`. The bracket is a smooth break in that power law, centred on :math:`x_s` with sharpness</span>
+<span class="sd">    :math:`k` (larger is sharper). For :math:`p &gt; q` the light curve follows :math:`x^{-p}` before the break and</span>
+<span class="sd">    flattens onto</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L \propto x^{-q}, \qquad x \gg x_s,</span>
+
+<span class="sd">    after it. For :math:`p &lt; q` the roles of the two indices are exchanged. A peak exists for :math:`q &gt; 0`.</span>
+
+<span class="sd">    The normalization :math:`\mathcal{N}` is the maximum of the unnormalized expression, so that</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \max_t L(t) = L_0</span>
+
+<span class="sd">    exactly. The maximum has no closed form once the break is present. It is bracketed analytically, since</span>
+<span class="sd">    it lies between :math:`x = 1` and :math:`x = p/q`, and then located numerically, independently for each</span>
+<span class="sd">    set of parameters.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`L_0`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_scale``</span>
+<span class="sd">         - :math:`t_0`</span>
+<span class="sd">         - Time scale; the dimensionless time is :math:`x = t / t_0`.</span>
+<span class="sd">       * - ``p``</span>
+<span class="sd">         - :math:`p`</span>
+<span class="sd">         - Index of the rise-and-decline factor, and of the decline before the break.</span>
+<span class="sd">       * - ``q``</span>
+<span class="sd">         - :math:`q`</span>
+<span class="sd">         - Index of the late-time decline after the break.</span>
+<span class="sd">       * - ``x_break``</span>
+<span class="sd">         - :math:`x_s`</span>
+<span class="sd">         - Location of the break, in units of :math:`t_0`.</span>
+<span class="sd">       * - ``smoothness``</span>
+<span class="sd">         - :math:`k`</span>
+<span class="sd">         - Sharpness of the break.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SmoothBrokenPowerLawLightcurve :</span>
+<span class="sd">        A smoothly broken power law with a power-law rise, normalized to peak at a given time.</span>
+<span class="sd">    DelayedExponentialLightcurve :</span>
+<span class="sd">        A gamma-like pulse with an exponential decline.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="c1"># Number of grid points, and of bisection steps, used to find the peak of the shape.</span>
+    <span class="n">_N_PEAK_GRID</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65</span>
+    <span class="n">_N_PEAK_BISECT</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_scale"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time scale; the dimensionless time is t / t_scale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"p"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Index of the rise-and-decline factor, and of the decline before the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"p"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"q"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Index of the late-time decline after the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"q"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"x_break"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Location of the break, in units of t_scale."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"x_s"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"smoothness"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the break."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"k"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_shape</span><span class="p">(</span>
+        <span class="n">log_x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">p</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">q</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">x_break</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">smoothness</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Natural log of the unnormalized shape as a function of the log of the dimensionless time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        log_x : numpy.ndarray</span>
+<span class="sd">            Natural log of the dimensionless time :math:`x = t/t_0`. Must be finite.</span>
+<span class="sd">        p, q, x_break, smoothness : numpy.ndarray</span>
+<span class="sd">            The shape parameters, broadcastable against `log_x`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the unnormalized shape.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="o">-</span><span class="n">p</span> <span class="o">*</span> <span class="n">log_x</span>
+            <span class="o">+</span> <span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">log_x</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">smoothness</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x_break</span><span class="p">)))</span> <span class="o">/</span> <span class="n">smoothness</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_peak</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">p</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">q</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">x_break</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">smoothness</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Location and height of the maximum of the unnormalized shape, for each set of parameters.</span>
+
+<span class="sd">        The maximum lies between :math:`x = 1` and :math:`x = p/q`. It is found on a grid in :math:`\ln x`</span>
+<span class="sd">        over that interval, and then refined by bisection on the sign of the logarithmic derivative.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p, q, x_break, smoothness : numpy.ndarray</span>
+<span class="sd">            The shape parameters, all broadcastable against one another.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_x_peak : numpy.ndarray</span>
+<span class="sd">            The natural log of the dimensionless time of the maximum, :math:`x_\mathrm{pk}`.</span>
+<span class="sd">        log_shape_peak : numpy.ndarray</span>
+<span class="sd">            The natural log of the maximum.</span>
+<span class="sd">        """</span>
+        <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_arrays</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">)</span>
+
+        <span class="c1"># The interval bracketing the peak, as ln x. It collapses to a point at p = q.</span>
+        <span class="n">log_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">log_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="n">q</span><span class="p">)</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">log_a</span><span class="p">,</span> <span class="n">log_b</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">log_a</span><span class="p">,</span> <span class="n">log_b</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">))</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">lo</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_N_PEAK_GRID</span><span class="p">)</span>
+        <span class="n">i_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_log_shape</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># Bisect within the two grid cells around the grid maximum.</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take_along_axis</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">i_max</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take_along_axis</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">i_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_N_PEAK_GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">slope</span><span class="p">(</span><span class="n">log_x</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">"""</span>
+<span class="sd">            Return the logarithmic derivative of the shape with respect to x, times x.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            log_x : numpy.ndarray</span>
+<span class="sd">                The natural log of the dimensionless time.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            numpy.ndarray</span>
+<span class="sd">                The derivative, which is positive left of the peak.</span>
+<span class="sd">            """</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">smoothness</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x_break</span><span class="p">))))</span>
+            <span class="k">return</span> <span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">log_x</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_N_PEAK_BISECT</span><span class="p">):</span>
+            <span class="n">mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span>
+            <span class="n">rising</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rising</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rising</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>
+
+        <span class="n">log_x_peak</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">log_x_peak</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_shape</span><span class="p">(</span><span class="n">log_x_peak</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_peak_time</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Time of the maximum of the light curve.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The time of peak luminosity since explosion, in seconds. It lies between ``t_scale`` and</span>
+<span class="sd">            ``t_scale * p / q``.</span>
+<span class="sd">        """</span>
+        <span class="n">log_x_peak</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_peak</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"p"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"q"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"x_break"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"smoothness"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_scale"</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_x_peak</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_scale</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_scale"</span><span class="p">]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"q"</span><span class="p">]</span>
+        <span class="n">x_break</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"x_break"</span><span class="p">]</span>
+        <span class="n">smoothness</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"smoothness"</span><span class="p">]</span>
+
+        <span class="c1"># The shape is evaluated only at t &gt; 0; elsewhere the luminosity is exactly zero.</span>
+        <span class="n">positive</span> <span class="o">=</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">log_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">positive</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t_scale</span><span class="p">)</span> <span class="o">/</span> <span class="n">t_scale</span><span class="p">)</span>
+
+        <span class="n">log_shape</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_shape</span><span class="p">(</span><span class="n">log_x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">log_shape_peak</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_peak</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">x_break</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">)</span>
+        <span class="n">log_luminosity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">+</span> <span class="n">log_shape</span> <span class="o">-</span> <span class="n">log_shape_peak</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">positive</span><span class="p">,</span> <span class="n">log_luminosity</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SBOPhenomenologicalLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.SBOPhenomenologicalLightcurve.html#uvex_transients.models.lightcurves.generic.SBOPhenomenologicalLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SBOPhenomenologicalLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A phenomenological shock-breakout light curve: a broken power law plus a log-time bump, with an early cutoff.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \exp\left[-\left(\frac{t_r}{t}\right)^{n}\right]</span>
+<span class="sd">        \left\{</span>
+<span class="sd">            L_p \left[1 + \left(\frac{t}{t_p}\right)^{s}\right]^{-\beta/s}</span>
+<span class="sd">            + L_b \exp\left[-\frac{\ln^2(t/t_b)}{2\sigma^2}\right]</span>
+<span class="sd">        \right\}.</span>
+
+<span class="sd">    The light curve is the sum of two components, multiplied by an overall early-time cutoff:</span>
+
+<span class="sd">    - **Smoothly broken power law.** :math:`L_p [1 + (t/t_p)^s]^{-\beta/s}` is a plateau at</span>
+<span class="sd">      :math:`L_p` for :math:`t \ll t_p` that turns over into a power-law decline</span>
+<span class="sd">      :math:`\propto t^{-\beta}` for :math:`t \gg t_p`. The smoothness :math:`s` sets the sharpness</span>
+<span class="sd">      of the turnover (larger is sharper). Note that :math:`L_p` is the plateau level, and the peak</span>
+<span class="sd">      of this component is only equal to it when the cutoff has already switched off.</span>
+<span class="sd">    - **Log-normal bump.** :math:`L_b \exp[-\ln^2(t/t_b)/2\sigma^2]` is a Gaussian in :math:`\ln t`</span>
+<span class="sd">      centred on :math:`t_b`, with peak :math:`L_b` and logarithmic width :math:`\sigma`. It models</span>
+<span class="sd">      a secondary component (for example a delayed cooling or interaction bump) on top of the</span>
+<span class="sd">      declining component.</span>
+<span class="sd">    - **Early-time cutoff.** :math:`\exp[-(t_r/t)^n]` suppresses the emission at</span>
+<span class="sd">      :math:`t \lesssim t_r`, going to zero at :math:`t = 0`, with the sharpness of the switch-on</span>
+<span class="sd">      set by :math:`n`. It is applied to both components.</span>
+
+<span class="sd">    The luminosity is zero for :math:`t \le 0`.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``cutoff_time``</span>
+<span class="sd">         - :math:`t_r`</span>
+<span class="sd">         - Time scale of the early-time cutoff.</span>
+<span class="sd">       * - ``cutoff_index``</span>
+<span class="sd">         - :math:`n`</span>
+<span class="sd">         - Sharpness of the early-time cutoff.</span>
+<span class="sd">       * - ``amplitude``</span>
+<span class="sd">         - :math:`L_p`</span>
+<span class="sd">         - Plateau luminosity of the broken power law.</span>
+<span class="sd">       * - ``t_break``</span>
+<span class="sd">         - :math:`t_p`</span>
+<span class="sd">         - Time at which the broken power law turns over.</span>
+<span class="sd">       * - ``smoothness``</span>
+<span class="sd">         - :math:`s`</span>
+<span class="sd">         - Sharpness of the turnover of the broken power law.</span>
+<span class="sd">       * - ``decline_index``</span>
+<span class="sd">         - :math:`\beta`</span>
+<span class="sd">         - Late-time power-law decline index.</span>
+<span class="sd">       * - ``bump_amplitude``</span>
+<span class="sd">         - :math:`L_b`</span>
+<span class="sd">         - Peak luminosity of the log-normal bump.</span>
+<span class="sd">       * - ``bump_time``</span>
+<span class="sd">         - :math:`t_b`</span>
+<span class="sd">         - Time of the peak of the log-normal bump.</span>
+<span class="sd">       * - ``bump_width``</span>
+<span class="sd">         - :math:`\sigma`</span>
+<span class="sd">         - Width of the bump in logarithmic time.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SmoothBrokenPowerLawLightcurve :</span>
+<span class="sd">        A smoothly broken power law with a rise branch, normalized to peak at a given time.</span>
+<span class="sd">    LogNormalPulseLightcurve :</span>
+<span class="sd">        The log-normal pulse shape that the bump component is built from.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"cutoff_time"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time scale of the early-time cutoff."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_r"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"cutoff_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the early-time cutoff."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"n"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau luminosity of the broken power law."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_p"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_break"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time at which the broken power law turns over."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_p"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"smoothness"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Sharpness of the turnover of the broken power law."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"decline_index"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Late-time power-law decline index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"bump_amplitude"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">3e42</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak luminosity of the log-normal bump."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_b"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"bump_time"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Time of the peak of the log-normal bump."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_b"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"bump_width"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.4</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Width of the bump in logarithmic time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\sigma"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
+        <span class="n">cutoff_time</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"cutoff_time"</span><span class="p">]</span>
+        <span class="n">cutoff_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"cutoff_index"</span><span class="p">]</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span>
+        <span class="n">t_break</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_break"</span><span class="p">]</span>
+        <span class="n">smoothness</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"smoothness"</span><span class="p">]</span>
+        <span class="n">decline_index</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"decline_index"</span><span class="p">]</span>
+        <span class="n">bump_amplitude</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"bump_amplitude"</span><span class="p">]</span>
+        <span class="n">bump_time</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"bump_time"</span><span class="p">]</span>
+        <span class="n">bump_width</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"bump_width"</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">over</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+            <span class="c1"># ln of the broken power law: ln Lp - (beta/s) ln[1 + (t/tp)^s], via logaddexp to avoid overflow.</span>
+            <span class="n">log_broken</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">decline_index</span> <span class="o">/</span> <span class="n">smoothness</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+                <span class="mf">0.0</span><span class="p">,</span> <span class="n">smoothness</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_t</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">t_break</span><span class="p">))</span>
+            <span class="p">)</span>
+
+            <span class="c1"># ln of the log-normal bump.</span>
+            <span class="n">log_bump</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">bump_amplitude</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">log_t</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">bump_time</span><span class="p">))</span> <span class="o">/</span> <span class="n">bump_width</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+            <span class="c1"># ln of the early-time cutoff; the exponent overflows to +inf as t -&gt; 0, giving exp(-inf) = 0.</span>
+            <span class="n">log_cutoff</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">cutoff_index</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cutoff_time</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_t</span><span class="p">))</span>
+
+            <span class="n">log_luminosity</span> <span class="o">=</span> <span class="n">log_cutoff</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">log_broken</span><span class="p">,</span> <span class="n">log_bump</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">log_luminosity</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># Calibration of the one-parameter shape family behind `KhatamiSBOLightcurve`. #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="n">_DAY</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+
+<span class="c1"># Shape parameters of `SBOPhenomenologicalLightcurve` that are the same for every member of the family.</span>
+<span class="n">_KHATAMI_FIXED</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"cutoff_index"</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s2">"t_break"</span><span class="p">:</span> <span class="mf">0.78</span><span class="p">,</span> <span class="s2">"smoothness"</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s2">"bump_width"</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">}</span>  <span class="c1"># t_break in days</span>
+
+<span class="c1"># The remaining shape parameters, (log10 L_b / L_p, t_b [d], t_r [d], beta), at the two ends of the family</span>
+<span class="c1"># (q = 0 and q = 1). They are interpolated linearly in the shape variable q in between.</span>
+<span class="n">_KHATAMI_SHAPE_Q0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.81</span><span class="p">,</span> <span class="mf">1.75</span><span class="p">,</span> <span class="mf">0.52</span><span class="p">,</span> <span class="mf">2.05</span><span class="p">])</span>
+<span class="n">_KHATAMI_SHAPE_Q1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.56</span><span class="p">,</span> <span class="mf">1.99</span><span class="p">,</span> <span class="mf">0.79</span><span class="p">,</span> <span class="mf">0.33</span><span class="p">])</span>
+
+<span class="c1"># Time grid [d] over which the luminosity-weighted duration is taken, and the number of shape-variable grid points.</span>
+<span class="n">_KHATAMI_T_GRID</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">4.4</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span>
+<span class="n">_KHATAMI_N_Q</span> <span class="o">=</span> <span class="mi">201</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_khatami_log_shape</span><span class="p">(</span><span class="n">t_day</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">q</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Natural log of the unnormalized light-curve shape of the family at shape variable `q`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_day : numpy.ndarray</span>
+<span class="sd">        Time since breakout, in days.</span>
+<span class="sd">    q : numpy.ndarray or float</span>
+<span class="sd">        Shape variable in [0, 1], broadcastable against `t_day`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The natural log of the shape, which has unit plateau amplitude (not unit peak).</span>
+<span class="sd">    """</span>
+    <span class="n">log_bump_ratio</span><span class="p">,</span> <span class="n">t_bump</span><span class="p">,</span> <span class="n">t_cutoff</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">p0</span> <span class="o">+</span> <span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">p0</span><span class="p">)</span> <span class="o">*</span> <span class="n">q</span> <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_KHATAMI_SHAPE_Q0</span><span class="p">,</span> <span class="n">_KHATAMI_SHAPE_Q1</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">SBOPhenomenologicalLightcurve</span><span class="o">.</span><span class="n">_eval</span><span class="p">(</span>
+        <span class="n">t_day</span> <span class="o">*</span> <span class="n">_DAY</span><span class="p">,</span>
+        <span class="n">cutoff_time</span><span class="o">=</span><span class="n">t_cutoff</span> <span class="o">*</span> <span class="n">_DAY</span><span class="p">,</span>
+        <span class="n">cutoff_index</span><span class="o">=</span><span class="n">_KHATAMI_FIXED</span><span class="p">[</span><span class="s2">"cutoff_index"</span><span class="p">],</span>
+        <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">t_break</span><span class="o">=</span><span class="n">_KHATAMI_FIXED</span><span class="p">[</span><span class="s2">"t_break"</span><span class="p">]</span> <span class="o">*</span> <span class="n">_DAY</span><span class="p">,</span>
+        <span class="n">smoothness</span><span class="o">=</span><span class="n">_KHATAMI_FIXED</span><span class="p">[</span><span class="s2">"smoothness"</span><span class="p">],</span>
+        <span class="n">decline_index</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+        <span class="n">bump_amplitude</span><span class="o">=</span><span class="mf">10.0</span><span class="o">**</span><span class="n">log_bump_ratio</span><span class="p">,</span>
+        <span class="n">bump_time</span><span class="o">=</span><span class="n">t_bump</span> <span class="o">*</span> <span class="n">_DAY</span><span class="p">,</span>
+        <span class="n">bump_width</span><span class="o">=</span><span class="n">_KHATAMI_FIXED</span><span class="p">[</span><span class="s2">"bump_width"</span><span class="p">],</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_khatami_tables</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Tabulate the family on a grid of the shape variable.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    q : numpy.ndarray</span>
+<span class="sd">        Shape variable grid, increasing from 0 to 1.</span>
+<span class="sd">    t_bar : numpy.ndarray</span>
+<span class="sd">        The luminosity-weighted duration (days) at each `q`. Monotonically increasing in `q`.</span>
+<span class="sd">    log_peak : numpy.ndarray</span>
+<span class="sd">        The natural log of the peak of the unnormalized shape at each `q`.</span>
+<span class="sd">    """</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">_KHATAMI_N_Q</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_khatami_log_shape</span><span class="p">(</span><span class="n">_KHATAMI_T_GRID</span><span class="p">,</span> <span class="n">q</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]))</span>  <span class="c1"># (n_q, n_t)</span>
+
+    <span class="n">t_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">_KHATAMI_T_GRID</span> <span class="o">*</span> <span class="n">shape</span><span class="p">,</span> <span class="n">_KHATAMI_T_GRID</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">_KHATAMI_T_GRID</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">q</span><span class="p">,</span> <span class="n">t_bar</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">shape</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="KhatamiSBOLightcurve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.lightcurves.generic.KhatamiSBOLightcurve.html#uvex_transients.models.lightcurves.generic.KhatamiSBOLightcurve">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KhatamiSBOLightcurve</span><span class="p">(</span><span class="n">Lightcurve</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A shock-breakout light curve family set by its peak luminosity and luminosity-weighted duration.</span>
+
+<span class="sd">    The light curve has the functional form of :class:`SBOPhenomenologicalLightcurve`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L(t) = \exp\left[-\left(\frac{t_r}{t}\right)^{n}\right]</span>
+<span class="sd">        \left\{</span>
+<span class="sd">            \left[1 + \left(\frac{t}{t_p}\right)^{s}\right]^{-\beta/s}</span>
+<span class="sd">            + \frac{L_b}{L_p} \exp\left[-\frac{\ln^2(t/t_b)}{2\sigma^2}\right]</span>
+<span class="sd">        \right\},</span>
+
+<span class="sd">    but rather than being free, its shape is a one-parameter family. The exponent :math:`n`, break time</span>
+<span class="sd">    :math:`t_p`, smoothness :math:`s` and bump width :math:`\sigma` are fixed for every member, and</span>
+<span class="sd">    the other four shape parameters :math:`(\log_{10} L_b/L_p,\ t_b,\ t_r,\ \beta)` are linearly interpolated</span>
+<span class="sd">    between two calibrated endpoints by a shape variable :math:`q \in [0, 1]`. The light curve is then</span>
+<span class="sd">    normalized so that its maximum is :math:`L_\mathrm{pk}` (to about one part in :math:`10^{5}`).</span>
+
+<span class="sd">    The shape variable is not a parameter of the model. It is set by the luminosity-weighted duration</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \bar{t} = \frac{\int t\, L\, \mathrm{d}t}{\int L\, \mathrm{d}t},</span>
+
+<span class="sd">    taken over 0.02 to 4.4 days, which increases monotonically with :math:`q`, so that</span>
+<span class="sd">    :math:`\bar{t}` and :math:`q` are in one-to-one correspondence. This correspondence is tabulated once, at</span>
+<span class="sd">    import, in the class attributes ``_Q_GRID``, ``_T_BAR_GRID`` and ``_LOG_PEAK_GRID``, and then interpolated.</span>
+<span class="sd">    :math:`\bar{t}` ranges from about 1.5 days (:math:`q = 0`, dominated by the main peak) to about</span>
+<span class="sd">    2.3 days (:math:`q = 1`, dominated by the bump); ``t_bar`` outside of this range is clamped to the</span>
+<span class="sd">    nearest end of it.</span>
+
+<span class="sd">    The endpoints were calibrated by eye-digitizing curves, so the family should be recalibrated</span>
+<span class="sd">    against real simulation output before it is relied on quantitatively.</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    The light curve parameters are summarized below.</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``peak_luminosity``</span>
+<span class="sd">         - :math:`L_\mathrm{pk}`</span>
+<span class="sd">         - Peak bolometric luminosity.</span>
+<span class="sd">       * - ``t_bar``</span>
+<span class="sd">         - :math:`\bar{t}`</span>
+<span class="sd">         - Luminosity-weighted duration, which sets the shape of the light curve.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SBOPhenomenologicalLightcurve :</span>
+<span class="sd">        The unconstrained nine-parameter form this family is a slice of.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_LIGHTCURVE_TYPE</span> <span class="o">=</span> <span class="s2">"bolometric"</span>
+
+    <span class="n">_Q_GRID</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: Grid of the shape variable :math:`q`, from 0 to 1."""</span>
+    <span class="n">_T_BAR_GRID</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: The luminosity-weighted duration :math:`\\bar{t}` (days) on :attr:`_Q_GRID`."""</span>
+    <span class="n">_LOG_PEAK_GRID</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: The natural log of the maximum of the unnormalized shape on :attr:`_Q_GRID`."""</span>
+    <span class="n">_Q_GRID</span><span class="p">,</span> <span class="n">_T_BAR_GRID</span><span class="p">,</span> <span class="n">_LOG_PEAK_GRID</span> <span class="o">=</span> <span class="n">_khatami_tables</span><span class="p">()</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"peak_luminosity"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">LogNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1e43</span> <span class="o">*</span> <span class="n">_BOL_LUM_UNIT</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Peak bolometric luminosity."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_\mathrm</span><span class="si">{pk}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_bar"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">_T_BAR_GRID</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">upper</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">_T_BAR_GRID</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Luminosity-weighted duration, which sets the shape of the light curve."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\bar</span><span class="si">{t}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Evaluate the natural log of :math:`L_\mathrm{bol}(t)`; see the class docstring for the functional form.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"t_bar"</span><span class="p">]</span> <span class="o">/</span> <span class="n">_DAY</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_T_BAR_GRID</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_Q_GRID</span><span class="p">)</span>
+        <span class="n">log_peak</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_Q_GRID</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_LOG_PEAK_GRID</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"peak_luminosity"</span><span class="p">])</span> <span class="o">+</span> <span class="n">_khatami_log_shape</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">_DAY</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_peak</span></div>
 
 </pre></div>
 

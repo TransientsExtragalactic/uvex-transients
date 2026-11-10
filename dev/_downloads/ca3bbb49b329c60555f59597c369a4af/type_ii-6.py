@@ -2,54 +2,64 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from uvex_transients.models.supernovae import TypeIIPExcessSED
-from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+from uvex_transients.missions import uvex_fast as uvex
+from uvex_transients.transients.supernovae import TypeIIPSNe
+from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
-rng = np.random.default_rng(20260910)
-n_samples = 300
+rng = np.random.default_rng(20260911)
+n_samples = 3000
 
-params = TypeIIPExcessSED().sample_parameters(size=n_samples, rng=rng)
-params_grid = {name: value[:, None] for name, value in params.items()}
+sn = TypeIIPSNe()
+redshift = sn.sample_event_redshift(n_samples, rng=rng)
+params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+params_grid = {pname: value[:, None] for pname, value in params.items()}
 
-t = np.geomspace(0.2, 200, 400) * u.day
-L_bol = TypeIIPExcessSED.eval_bolometric(t, **params_grid)
-T = TypeIIPExcessSED.temperature(t, **params_grid)
+# The all-sky rate, with no survey footprint applied.
+all_sky_rate = sn.all_sky_rate
 
-fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
+# Numerically search each event's own light curve for its brightest (peak)
+# apparent magnitude -- see the discussion above for why the peak
+# doesn't sit at a single named parameter.
+t_grid_rest = np.geomspace(0.5, 200, 200) * u.day
+t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-for row in range(n_samples):
-    ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.2)
-    ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.2)
+visible_counts = {}
+for band_name, bandpass in uvex.detector.bandpasses.items():
+    mag_curve = sn.sed.mag_bandpass(
+        bandpass,
+        t_obs_grid,
+        redshift=z_grid_bcast,
+        **params_grid,
+    ).to_value(u.ABmag)
+    magnitudes = np.nanmin(mag_curve, axis=1)
 
-archive = LightcurveArchive()
-observed_excess_sne = [
-    ("2023ixf_hsu2025", "SN 2023ixf", "o", "k"),
-    ("2024ggi_chen2024", "SN 2024ggi", "s", "firebrick"),
-]
+    visible = magnitudes < 24.5
+    visible_counts[band_name] = int(np.count_nonzero(visible))
 
-for suffix, label, marker, color in observed_excess_sne:
-    lbol_obs = archive.table("supernovae/II", suffix, "L_bol")
-    Tphot_obs = archive.table("supernovae/II", suffix, "T_phot")
-    ax_L.scatter(
-        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
-        marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
-        label=label,
+    print(
+        f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+        f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
     )
-    ax_T.scatter(
-        Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
-        marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
-        label=label,
-    )
 
-ax_L.set_xscale("log")
-ax_L.set_yscale("log")
-ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
-ax_L.set_title("Type IIP + Excess SNe: simulated bolometric light curves (n=300)")
-ax_L.legend(loc="lower left", fontsize=8, frameon=False)
-ax_L.set_ylim([1e40,None])
-ax_T.set_yscale("log")
-ax_T.set_xlabel("Time since explosion [days]")
-ax_T.set_ylabel("Photospheric temperature [K]")
-ax_T.set_ylim([1e3,None])
+# Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+# uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+band_names = list(visible_counts)
+
+fig, ax = plt.subplots(figsize=(5, 4))
+plot_rate_bars(
+    ax,
+    band_names,
+    [visible_counts[band] for band in band_names],
+    n_samples,
+    all_sky_rate,
+    rate_ci=sn.RATE_CI,
+    color=[get_band_color(band) for band in band_names],
+)
+ax.set_yscale("log")
+ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+ax.set_title("Peak-visible Type IIP SNe rate")
+add_funnel_legend(ax, loc="lower right")
 
 fig.tight_layout()
+plt.show()

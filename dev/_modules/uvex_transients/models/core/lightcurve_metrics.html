@@ -490,7 +490,7 @@
 <div class="viewcode-block" id="resolve_time_grid">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.lightcurve_metrics.resolve_time_grid.html#uvex_transients.models.core.lightcurve_metrics.resolve_time_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_time_grid</span><span class="p">(</span>
-    <span class="n">t_rest</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_min</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_max</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">t_rest</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_min</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_max</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">spacing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"log"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Turn the user's time-grid arguments into rest-frame times in seconds.</span>
@@ -500,10 +500,12 @@
 <span class="sd">    t_rest : ~astropy.units.Quantity or None</span>
 <span class="sd">        An explicit grid. If given, `t_min`, `t_max` and `n_time` are ignored.</span>
 <span class="sd">    t_min, t_max : ~astropy.units.Quantity or None</span>
-<span class="sd">        Ends of a logarithmically spaced grid, used when `t_rest` is `None`. Logarithmic spacing</span>
-<span class="sd">        puts the resolution where light curves change fastest, near rise and peak.</span>
+<span class="sd">        Ends of the grid, used when `t_rest` is `None`. Logarithmic spacing (the default) puts the resolution where</span>
+<span class="sd">        light curves change fastest, near rise and peak.</span>
 <span class="sd">    n_time : int</span>
-<span class="sd">        Number of points of the logarithmic grid.</span>
+<span class="sd">        Number of points of the grid.</span>
+<span class="sd">    spacing : {"log", "linear"}, optional</span>
+<span class="sd">        How the points are spaced between `t_min` and `t_max`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -513,7 +515,8 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If neither an explicit grid nor both ends are given, or if ``0 &lt; t_min &lt; t_max`` fails.</span>
+<span class="sd">        If neither an explicit grid nor both ends are given, if ``0 &lt; t_min &lt; t_max`` fails, or if `spacing` is not</span>
+<span class="sd">        ``"log"`` or ``"linear"``.</span>
 <span class="sd">        A model has no notion of its own duration, so there is deliberately no default.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">t_rest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -523,7 +526,11 @@
     <span class="n">t_lo</span><span class="p">,</span> <span class="n">t_hi</span> <span class="o">=</span> <span class="n">t_min</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">),</span> <span class="n">t_max</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">t_lo</span> <span class="o">&lt;</span> <span class="n">t_hi</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Need 0 &lt; 't_min' &lt; 't_max'."</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">t_lo</span><span class="p">,</span> <span class="n">t_hi</span><span class="p">,</span> <span class="n">n_time</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">spacing</span> <span class="o">==</span> <span class="s2">"log"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">t_lo</span><span class="p">,</span> <span class="n">t_hi</span><span class="p">,</span> <span class="n">n_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spacing</span> <span class="o">==</span> <span class="s2">"linear"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t_lo</span><span class="p">,</span> <span class="n">t_hi</span><span class="p">,</span> <span class="n">n_time</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'spacing' must be 'log' or 'linear', not </span><span class="si">{</span><span class="n">spacing</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span></div>
 
 
 

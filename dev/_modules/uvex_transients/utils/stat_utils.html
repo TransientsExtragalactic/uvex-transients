@@ -474,6 +474,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">beta</span><span class="p">,</span> <span class="n">binom</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"binned_density"</span><span class="p">,</span>
     <span class="s2">"binomial_logit"</span><span class="p">,</span>
     <span class="s2">"clopper_pearson_interval"</span><span class="p">,</span>
     <span class="s2">"combine_fractional_errors"</span><span class="p">,</span>
@@ -519,6 +520,57 @@
     <span class="n">lower</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">beta</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">upper</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">n</span> <span class="k">else</span> <span class="n">beta</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">upper</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="binned_density">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.stat_utils.binned_density.html#uvex_transients.utils.stat_utils.binned_density">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">binned_density</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6827</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Histogram samples into counts and a probability density, with a confidence interval on each bin.</span>
+
+<span class="sd">    A bin that holds :math:`k` of the :math:`n` samples is a binomial proportion :math:`k/n`, so its interval is the</span>
+<span class="sd">    exact one of `clopper_pearson_interval`. This stays well-behaved in bins with few or no samples, where a Poisson</span>
+<span class="sd">    :math:`\sqrt{k}` does not. The density is the proportion divided by the width of the bin.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : array-like</span>
+<span class="sd">        The samples, shape ``(n,)`` and finite. Samples outside `edges` count towards :math:`n` but fall in no bin, so</span>
+<span class="sd">        the density integrates to less than 1 over a range that does not cover them.</span>
+<span class="sd">    edges : array-like</span>
+<span class="sd">        Increasing bin edges, shape ``(B + 1,)``. The last bin includes its upper edge.</span>
+<span class="sd">    confidence : float, optional</span>
+<span class="sd">        Confidence level of the intervals. The default is the central 68.27% of a normal distribution.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of numpy.ndarray</span>
+<span class="sd">        Arrays of shape ``(B,)``: ``count`` (integer) with ``count_lo`` and ``count_hi``, the interval on the count that</span>
+<span class="sd">        the same number of samples would give, and ``density`` with ``density_lo`` and ``density_hi``, in the inverse</span>
+<span class="sd">        of the units of `values`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `edges` has fewer than two entries or does not increase.</span>
+<span class="sd">    """</span>
+    <span class="n">values</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">edges</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">edges</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"'edges' must be a 1-D array of at least two strictly increasing values."</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">count</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+    <span class="n">proportion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">clopper_pearson_interval</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">confidence</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">count</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+        <span class="s2">"count_lo"</span><span class="p">:</span> <span class="n">proportion</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span>
+        <span class="s2">"count_hi"</span><span class="p">:</span> <span class="n">proportion</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span>
+        <span class="s2">"density"</span><span class="p">:</span> <span class="n">count</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span> <span class="k">if</span> <span class="n">n</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="s2">"density_lo"</span><span class="p">:</span> <span class="n">proportion</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">width</span><span class="p">,</span>
+        <span class="s2">"density_hi"</span><span class="p">:</span> <span class="n">proportion</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">width</span><span class="p">,</span>
+    <span class="p">}</span></div>
 
 
 

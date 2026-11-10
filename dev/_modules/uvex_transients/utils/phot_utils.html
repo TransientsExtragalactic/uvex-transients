@@ -484,6 +484,7 @@
     <span class="s2">"flux_to_ab_mag"</span><span class="p">,</span>
     <span class="s2">"hz_per_unit"</span><span class="p">,</span>
     <span class="s2">"integrate_chunk"</span><span class="p">,</span>
+    <span class="s2">"luminosity_to_absolute_magnitude"</span><span class="p">,</span>
     <span class="s2">"photon_weighted_band_average"</span><span class="p">,</span>
     <span class="s2">"relative_bandpass_table"</span><span class="p">,</span>
     <span class="s2">"resolve_bandpasses"</span><span class="p">,</span>
@@ -516,6 +517,37 @@
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
         <span class="k">return</span> <span class="o">-</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">flux_density</span> <span class="o">/</span> <span class="n">AB_MAG_ZERO_POINT</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="luminosity_to_absolute_magnitude">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.utils.phot_utils.luminosity_to_absolute_magnitude.html#uvex_transients.utils.phot_utils.luminosity_to_absolute_magnitude">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">luminosity_to_absolute_magnitude</span><span class="p">(</span><span class="n">luminosity</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">bandpass</span><span class="p">:</span> <span class="n">SpectralElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Convert a band luminosity to an absolute AB magnitude, by the distance modulus of a flat spectrum.</span>
+
+<span class="sd">    The spectrum is taken to be flat in :math:`L_\nu`, so that :math:`L_\nu=L_\mathrm{band}/\Delta\nu` with</span>
+<span class="sd">    :math:`\Delta\nu` the `equivalent_bandwidth` of the band, and the magnitude is that of this :math:`L_\nu` seen</span>
+<span class="sd">    from 10 pc. It is the AB magnitude a flat-spectrum source with this band luminosity would have, which is not</span>
+<span class="sd">    exactly the photon-weighted band magnitude of an SED with colour; it is a fixed, monotonic conversion of the</span>
+<span class="sd">    luminosity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    luminosity : ~astropy.units.Quantity</span>
+<span class="sd">        The luminosity in the band, in units of erg/s. Any shape.</span>
+<span class="sd">    bandpass : synphot.SpectralElement</span>
+<span class="sd">        The band that `luminosity` is in, for example one of a detector's bandpasses.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~astropy.units.Quantity</span>
+<span class="sd">        The absolute AB magnitude, in `~astropy.units.ABmag`, with the shape of `luminosity`. ``NaN`` stays ``NaN`` and</span>
+<span class="sd">        zero luminosity is an infinitely faint magnitude.</span>
+<span class="sd">    """</span>
+    <span class="n">l_nu</span> <span class="o">=</span> <span class="n">luminosity</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span> <span class="o">/</span> <span class="n">equivalent_bandwidth</span><span class="p">(</span><span class="n">bandpass</span><span class="p">)</span>
+    <span class="n">flux_density</span> <span class="o">=</span> <span class="n">l_nu</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flux_to_ab_mag</span><span class="p">(</span><span class="n">flux_density</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">))</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ABmag</span></div>
 
 
 

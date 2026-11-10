@@ -1,19 +1,10 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
-from uvex_transients.missions import uvex_fast as uvex
 from uvex_transients.transients.supernovae import TypeIIPSNe
-from uvex_transients.utils.plotting import plot_detection_horizon
+from uvex_transients.utils.filter_utils import get_bandpass
+from uvex_transients.utils.plotting import plot_luminosity_function
 
-transient = TypeIIPSNe()
-curve, grid = transient.get_detection_horizon(
-    np.arange(22.0, 27.01, 0.5),
-    uvex.detector.bandpasses,
-    z_min=transient.redshift_limit / 4,
-    z_max=4 * transient.redshift_limit,
-    n_z=45,
-    rng=0,
-    progress=False,
-)
-plot_detection_horizon(transient, curve, grid, mag_limit=24.5)
+v_band = get_bandpass("Generic/Johnson.V")
+lf = TypeIIPSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
+plot_luminosity_function(lf, band="V")
 plt.show()

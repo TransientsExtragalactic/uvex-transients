@@ -2,67 +2,57 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from uvex_transients.models.supernovae import TypeIbSED as SEDClass
-from uvex_transients.utils.lightcurve_archive import LightcurveArchive
+from uvex_transients.missions import uvex_fast as uvex
+from uvex_transients.transients.supernovae import TypeIaSNe
+from uvex_transients.utils.plotting import add_funnel_legend, get_band_color, plot_rate_bars
 
-rng = np.random.default_rng(20260918)
-n_samples = 300
+rng = np.random.default_rng(20260923)
+n_samples = 2000
 
-params = SEDClass().sample_parameters(size=n_samples, rng=rng)
-params_grid = {name: value[:, None] for name, value in params.items()}
-archive = LightcurveArchive()
+sn = TypeIaSNe()
+redshift = sn.sample_event_redshift(n_samples, rng=rng)
+params = sn.sed.sample_parameters(size=n_samples, rng=rng)
+params_grid = {pname: value[:, None] for pname, value in params.items()}
 
-fig, (ax_P, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2))
+# The all-sky rate, with no survey footprint applied.
+all_sky_rate = sn.all_sky_rate
 
-# Top panel: simulated light curves aligned on their own peak, against Lyman+16
-# (whose times are already relative to maximum light).
-t_lin = np.linspace(0.05, 100, 2000) * u.day
-L_lin = SEDClass.eval_bolometric(t_lin, **params_grid).to_value(u.erg / u.s)
-t_peak = t_lin.to_value(u.day)[np.argmax(L_lin, axis=1)]
-for row in range(n_samples):
-    ax_P.plot(t_lin.to_value(u.day) - t_peak[row], L_lin[row], color="C0", lw=0.4, alpha=0.15)
+t_grid_rest = np.geomspace(0.1, 365, 300) * u.day
+t_obs_grid = t_grid_rest[None, :] * (1.0 + redshift)[:, None]
+z_grid_bcast = np.broadcast_to(redshift[:, None], t_obs_grid.shape)
 
-lyman_events = [name for name in archive.events("supernovae/Ib") if name.endswith("lyman2016")]
-for i, name in enumerate(lyman_events):
-    lbol_obs = archive.table("supernovae/Ib", name, "L_bol")
-    ax_P.plot(
-        lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
-        color="k", lw=0.8, marker="o", ms=2.5, alpha=0.7,
-        label="Lyman+16 (n=%d)" % len(lyman_events) if i == 0 else None,
+visible_counts = {}
+for band_name, bandpass in uvex.detector.bandpasses.items():
+    mag_curve = sn.sed.mag_bandpass(
+        bandpass, t_obs_grid, redshift=z_grid_bcast, **params_grid
+    ).to_value(u.ABmag)
+    magnitudes = np.nanmin(mag_curve, axis=1)
+
+    visible = magnitudes < 24.5
+    visible_counts[band_name] = int(np.count_nonzero(visible))
+
+    print(
+        f"{band_name}: {visible_counts[band_name] / n_samples * all_sky_rate:.2f} "
+        f"({visible_counts[band_name] / n_samples:.1%} of events visible)"
     )
-ax_P.set_yscale("log")
-ax_P.set_xlim([-25, 70])
-ax_P.set_ylim([1e40, 10**43.5])
-ax_P.set_xlabel("Time since peak [days]")
-ax_P.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
-ax_P.set_title("Type Ib: simulated bolometric light curves (n=300)")
-ax_P.legend(loc="lower right", fontsize=8, frameon=False)
 
-# Bottom panel: photospheric temperature against time since explosion.
-t = np.geomspace(0.5, 100, 400) * u.day
-T = SEDClass.temperature(t, **params_grid)
-for row in range(n_samples):
-    ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
+# Plot all-sky visible rates, with MC (statistical) and rate (systematic)
+# uncertainty -- see uvex_transients.utils.plotting.plot_rate_bars.
+band_names = list(visible_counts)
 
-# (archive key, label, marker, colour) from Prentice+19.
-observed_sne = [
-    ("2015ah_prentice2019", "SN 2015ah", "o", "k"),
-    ("2015ap_prentice2019", "SN 2015ap", "s", "firebrick"),
-    ("2016frp_prentice2019", "SN 2016frp", "^", "C2"),
-    ("2016jdw_prentice2019", "SN 2016jdw", "X", "C7"),
-]
-for suffix, label, marker, color in observed_sne:
-    Tphot_obs = archive.table("supernovae/Ib", suffix, "T_phot")
-    ax_T.scatter(
-        Tphot_obs["time"].to_value(u.day), Tphot_obs["T_phot"].to_value(u.K),
-        marker=marker, s=28, color=color, edgecolor="white", linewidth=0.5, zorder=5,
-        label=label,
-    )
-ax_T.set_xscale("log")
-ax_T.set_yscale("log")
-ax_T.set_xlabel("Time since explosion [days]")
-ax_T.set_ylabel("Photospheric temperature [K]")
-ax_T.set_ylim([3e3, 5e4])
-ax_T.legend(loc="upper right", fontsize=7, frameon=False)
+fig, ax = plt.subplots(figsize=(5, 4))
+plot_rate_bars(
+    ax,
+    band_names,
+    [visible_counts[band] for band in band_names],
+    n_samples,
+    all_sky_rate,
+    rate_ci=sn.RATE_CI,
+    color=[get_band_color(band) for band in band_names],
+)
+ax.set_yscale("log")
+ax.set_ylabel(r"All-sky rate [yr$^{-1}$]")
+ax.set_title("Peak-visible Type Ia rate")
+add_funnel_legend(ax, loc="lower right")
 
 fig.tight_layout()
