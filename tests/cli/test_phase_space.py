@@ -193,3 +193,96 @@ def test_an_existing_map_is_refused_unless_overwrite_or_resume(config_path, tmp_
     assert refused.exit_code == 1 and "overwrite" in refused.output
     assert CliRunner().invoke(cli, [*args, "--overwrite"]).exit_code == 0
     assert CliRunner().invoke(cli, [*args, "--resume"]).exit_code == 0
+
+
+# ---------------------------------------------------------------------------- #
+# A sampler of another kind                                                    #
+# ---------------------------------------------------------------------------- #
+BREAKOUT_MAP = """
+  - id: breakout_test
+    kind: breakout
+    recovery: {band: FUV, mag_limit: 25.0}
+    settings: {z_max: 8.0, table_points: 9}
+    map: {bounds: {log_L0: [45.0, 46.5], log_t0: [3.0, 4.5]}, grid_size: 5}
+"""
+
+
+@pytest.fixture
+def breakout_config_path(config_path):
+    path = config_path.with_name("breakout.yaml")
+    path.write_text(config_path.read_text() + BREAKOUT_MAP)
+    return path
+
+
+def test_a_map_is_canonical_unless_it_names_a_kind(config_path):
+    parsed = PhaseSpaceConfig.from_yaml(config_path)
+    assert {spec.kind for spec in parsed.maps} == {"canonical"}
+    assert all(spec.settings == {} and spec.axis_bounds is None for spec in parsed.maps)
+
+
+def test_a_map_of_another_kind_has_its_settings_and_axis_bounds(breakout_config_path):
+    spec = PhaseSpaceConfig.from_yaml(breakout_config_path).select(["breakout_test"])[0]
+    assert spec.kind == "breakout"
+    assert spec.settings == {"z_max": 8.0, "table_points": 9}
+    assert spec.axis_bounds == {"log_L0": (45.0, 46.5), "log_t0": (3.0, 4.5)}
+    assert spec.grid_size == 5 and spec.recovery["band"] == "FUV"
+
+
+def test_a_kind_can_be_given_at_the_top_level_and_overridden_by_a_map():
+    parsed = _parse("kind: breakout\nmaps:\n  - id: a\n  - id: b\n    kind: canonical\n")
+    assert [spec.kind for spec in parsed.maps] == ["breakout", "canonical"]
+
+
+def test_an_unknown_kind_is_reported_with_the_known_ones():
+    with pytest.raises(ValueError, match=r"unknown kind 'nothing'.*breakout"):
+        _parse("maps:\n  - id: a\n    kind: nothing\n")
+
+
+def test_the_transient_section_is_only_for_the_canonical_kind():
+    with pytest.raises(ValueError, match="transient.*canonical"):
+        _parse("maps:\n  - id: a\n    kind: breakout\n    transient: {rise_ratio: 0.2}\n")
+
+
+def test_axis_bounds_have_to_map_names_to_pairs():
+    with pytest.raises(ValueError, match="bounds"):
+        _parse("maps:\n  - id: a\n    kind: breakout\n    map: {bounds: [1, 2]}\n")
+
+
+def test_settings_are_free_form_and_the_dry_run_names_the_kind(breakout_config_path, tmp_path):
+    result = CliRunner().invoke(
+        cli, ["phase-space", str(breakout_config_path), "--out-dir", str(tmp_path / "o"), "--dry-run"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "breakout_test [breakout]: FUV" in result.output
+
+
+def test_a_breakout_map_is_run_as_an_experiment_and_writes_its_files(breakout_config_path, tmp_path):
+    from astropy.table import Table
+
+    out = tmp_path / "out"
+    args = ["phase-space", str(breakout_config_path), "--out-dir", str(out), "--map", "breakout_test"]
+    result = CliRunner().invoke(cli, args)
+    assert result.exit_code == 0, result.output
+    assert sorted(path.name for path in (out / "breakout_test").iterdir()) == ["map.ecsv", "map.png", "points.ecsv"]
+
+    points = Table.read(out / "breakout_test" / "points.ecsv", format="ascii.ecsv")
+    assert points.meta["schema_version"] == 2 and points.meta["sampler"]["kind"] == "breakout"
+    assert points.meta["sampler"]["settings"]["z_max"] == 8.0
+    assert points.colnames[:2] == ["log_L0", "log_t0"] and len(points) == 4
+    assert points["log_L0"].min() >= 45.0 and points["log_t0"].min() >= 3.0
+
+    grid = Table.read(out / "breakout_test" / "map.ecsv", format="ascii.ecsv")
+    assert len(grid) == 25 and "recovered_volume_time" in grid.colnames
+
+
+def test_a_setting_the_sampler_does_not_take_and_an_axis_it_does_not_have_are_errors(breakout_config_path, tmp_path):
+    for old, new, message in (
+        ("z_max: 8.0", "no_such_setting: 1", "does not take"),
+        ("log_L0: [45.0, 46.5]", "log_Q: [45.0, 46.5]", "no axis"),
+    ):
+        bad = tmp_path / "bad.yaml"
+        bad.write_text(breakout_config_path.read_text().replace(old, new))
+        result = CliRunner().invoke(
+            cli, ["phase-space", str(bad), "--out-dir", str(tmp_path / "o2"), "--map", "breakout_test"]
+        )
+        assert result.exit_code != 0 and message in str(result.output) + str(result.exception)

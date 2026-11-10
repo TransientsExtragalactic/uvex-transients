@@ -24,6 +24,20 @@ loader. Its layout is::
 
 Besides ``recovery:``, the shared sections ``transient:``, ``sampler:`` and ``map:`` may be given at the top level and
 in a map. Every key that is left out takes its value from ``config["phase_space"]``.
+
+A map is of the canonical transient unless it names another ``kind:`` of sampler (see
+`uvex_transients.phase_space.samplers.base.available_samplers`), and then ``settings:`` holds the arguments of that
+sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}`` the ranges of its axes by name::
+
+    maps:
+      - id: breakout_fuv
+        kind: breakout
+        recovery: {band: FUV, mag_limit: 25.0}
+        settings: {z_max: 8.0}
+        map: {bounds: {log_L0: [43.0, 46.0], log_t0: [1.0, 4.0]}, grid_size: 40}
+
+Such a map is run as an `~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``,
+``map.ecsv`` and ``map.png`` (no overlay, which belongs to the canonical transient).
 """
 
 import re
@@ -60,11 +74,26 @@ SECTIONS = {
         "order",
     ),
     "sampler": ("n_initial", "batch_size", "max_points", "tolerance", "acquisition"),
-    "map": ("log_luminosity", "log_half_time", "grid_size"),
+    "map": ("log_luminosity", "log_half_time", "bounds", "grid_size"),
+    # The arguments of a sampler of another kind, which only that sampler knows
+    "settings": None,
 }
 
-_TOP_LEVEL = frozenset({"schedule", "mission", "seed", "overlay", "rate", "maps", *SECTIONS})
-_MAP_KEYS = frozenset({"id", *SECTIONS})
+#: The settings of a recovery that a sampler of another kind takes, and the ones that belong to the stopping rule.
+_SURVEY_KEYS = (
+    "band",
+    "snr_threshold",
+    "n_visits",
+    "exclude_first_visit_detections",
+    "mag_limit",
+    "time_bins",
+    "nside",
+    "order",
+)
+_RULE_KEYS = ("chunk_size", "k_target", "n_max")
+
+_TOP_LEVEL = frozenset({"schedule", "mission", "seed", "overlay", "rate", "maps", "kind", *SECTIONS})
+_MAP_KEYS = frozenset({"id", "kind", *SECTIONS})
 
 # An id names a directory, and is later a path inside the release archive
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
@@ -92,6 +121,15 @@ class MapSpec:
     grid_size: int | None = None
     """int or None: Points per axis of the fitted map, or `None` for the configured size."""
 
+    kind: str = "canonical"
+    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.samplers.base.available_samplers`."""
+
+    settings: dict[str, Any] = field(default_factory=dict)
+    """dict: Arguments of a sampler of another kind than the canonical one, beyond its detection settings."""
+
+    axis_bounds: dict[str, tuple[float, float]] | None = None
+    """dict or None: The ranges of the axes of a sampler of another kind, by the name of the axis."""
+
     @property
     def band(self) -> str:
         """str: The band of the map, which is the one setting the configuration also holds a default for."""
@@ -104,6 +142,9 @@ def _merge(shared: Mapping, own: Mapping, section: str, where: str, errors: list
     for source, label in ((shared, "the top level"), (own, where)):
         if not isinstance(source, Mapping):
             errors.append(f"{label}: '{section}:' must be a mapping, got {type(source).__name__}.")
+            continue
+        if SECTIONS[section] is None:
+            merged.update(source)
             continue
         unknown = sorted(set(source) - set(SECTIONS[section]))
         if unknown:
@@ -139,7 +180,20 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
             errors.append(f"{where}: the id is used twice.")
         seen.add(map_id)
 
+        kind = str(entry.get("kind", raw.get("kind", "canonical")))
+        from uvex_transients.phase_space.samplers import available_samplers
+
+        if kind not in available_samplers():
+            errors.append(f"{where}: unknown kind {kind!r}; the registered kinds are {list(available_samplers())}.")
         sections = {name: _merge(raw.get(name) or {}, entry.get(name) or {}, name, where, errors) for name in SECTIONS}
+        if kind != "canonical" and sections["transient"]:
+            errors.append(f"{where}: 'transient:' is for the canonical transient; give a {kind!r} map its 'settings:'.")
+        axis_bounds = sections["map"].pop("bounds", None)
+        if axis_bounds is not None and not (
+            isinstance(axis_bounds, Mapping) and all(len(pair) == 2 for pair in axis_bounds.values())
+        ):
+            errors.append(f"{where}: 'map: bounds:' must map each axis name to [lo, hi].")
+            axis_bounds = None
         bounds = None
         if "log_luminosity" in sections["map"] or "log_half_time" in sections["map"]:
             bounds = (
@@ -154,6 +208,9 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
                 sampler=sections["sampler"],
                 bounds=bounds,
                 grid_size=sections["map"].get("grid_size"),
+                kind=kind,
+                settings=sections["settings"],
+                axis_bounds={name: tuple(pair) for name, pair in axis_bounds.items()} if axis_bounds else None,
             )
         )
 
@@ -312,8 +369,9 @@ def dry_run_report(
         if existing and not (overwrite or resume):
             problems.append(f"{existing} already exist (pass --overwrite or --resume)")
         ok &= not problems
+        kind = "" if spec.kind == "canonical" else f" [{spec.kind}]"
         lines.append(
-            f"  {spec.id}: {spec.band}, SNR >= {recovery['snr_threshold']:g} on {recovery['n_visits']} visit(s), "
+            f"  {spec.id}{kind}: {spec.band}, SNR >= {recovery['snr_threshold']:g} on {recovery['n_visits']} visit(s), "
             f"{recovery['mag_limit']:g} AB" + "".join(f"\n    ERROR: {problem}" for problem in problems)
         )
     return lines, ok
@@ -356,6 +414,11 @@ def run_maps(
     schedule = phase_space_config.schedule
     results = {}
     for spec in specs:
+        if spec.kind != "canonical":
+            results[spec.id] = _run_experiment_map(
+                phase_space_config, spec, out_dir, overwrite=overwrite, resume=resume, progress=progress
+            )
+            continue
         evaluator = RecoveryEvaluator(
             schedule,
             phase_space_config.mission_name,
@@ -379,3 +442,86 @@ def run_maps(
             progress=progress,
         )
     return results
+
+
+def _run_experiment_map(
+    phase_space_config: PhaseSpaceConfig,
+    spec: MapSpec,
+    out_dir: Path,
+    *,
+    overwrite: bool,
+    resume: bool,
+    progress: bool,
+) -> dict[str, Path]:
+    """
+    Make one map of a sampler of another kind than the canonical one, as an experiment.
+
+    The map is run with `~uvex_transients.phase_space.run.run_experiment`.
+
+    Parameters
+    ----------
+    phase_space_config : PhaseSpaceConfig
+        The parsed run-config.
+    out_dir : pathlib.Path
+        The directory to write to; the map goes to ``out_dir / <id>``.
+    spec : MapSpec
+        The map, of a registered kind.
+    overwrite, resume : bool
+        As for `uvex_transients.phase_space.run.run_experiment`.
+    progress : bool
+        Whether to show the progress bars of the simulation.
+
+    Returns
+    -------
+    dict of str to pathlib.Path
+        The files written (see `uvex_transients.phase_space.run.run_experiment`).
+
+    Raises
+    ------
+    ValueError
+        If the bounds name an axis that the sampler does not have, or the sampler does not take a setting.
+    """
+    from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
+    from uvex_transients.phase_space.run import run_experiment
+    from uvex_transients.phase_space.samplers import StoppingRule, get_sampler
+
+    sampler_class = get_sampler(spec.kind)
+    detection = {key: value for key, value in spec.recovery.items() if key in _SURVEY_KEYS}
+    try:
+        sampler = sampler_class(
+            phase_space_config.schedule,
+            phase_space_config.mission_name,
+            schedule_name=phase_space_config.schedule_name,
+            **detection,
+            **spec.settings,
+        )
+    except TypeError as error:
+        raise ValueError(f"Map {spec.id!r}: the {spec.kind!r} sampler does not take these settings: {error}") from error
+
+    bounds = None
+    if spec.axis_bounds is not None:
+        unknown = sorted(set(spec.axis_bounds) - set(sampler.space.names))
+        if unknown:
+            raise ValueError(f"Map {spec.id!r}: no axis {unknown}; the axes are {list(sampler.space.names)}.")
+        bounds = [spec.axis_bounds.get(axis.name, axis.bounds) for axis in sampler.space]
+
+    campaign_keys = ("n_initial", "batch_size", "max_points", "tolerance")
+    experiment = Experiment.create(
+        sampler,
+        bounds=bounds,
+        rule=StoppingRule.from_config(**{key: spec.recovery[key] for key in _RULE_KEYS if key in spec.recovery}),
+        campaign=CampaignSettings.from_config(
+            seed=phase_space_config.seed, **{key: spec.sampler[key] for key in campaign_keys if key in spec.sampler}
+        ),
+        seed=phase_space_config.seed,
+        **{key: spec.sampler[key] for key in ("acquisition",) if key in spec.sampler},
+    )
+    return run_experiment(
+        experiment,
+        out_dir / spec.id,
+        grid_size=spec.grid_size,
+        rate=phase_space_config.rate,
+        resume=resume,
+        overwrite=overwrite,
+        progress=progress,
+    )
