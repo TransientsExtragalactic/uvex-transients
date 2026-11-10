@@ -7,6 +7,7 @@ from astropy import units as u
 
 pytest.importorskip("sklearn")
 
+from uvex_transients.phase_space import map as map_module  # noqa: E402
 from uvex_transients.phase_space import overlay as overlay_module  # noqa: E402
 from uvex_transients.phase_space import sampler as sampler_module  # noqa: E402
 from uvex_transients.phase_space import transient as transient_module  # noqa: E402
@@ -83,6 +84,7 @@ def configured(monkeypatch):
     def apply(**overrides):
         fake = _Config({key.replace("__", "."): value for key, value in overrides.items()})
         for module in (
+            map_module,
             overlay_module,
             sampler_module,
             transient_module,

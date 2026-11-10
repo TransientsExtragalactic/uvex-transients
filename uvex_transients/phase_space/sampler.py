@@ -1,14 +1,17 @@
 """
-Active learning of a binomial recovery map with a Gaussian process.
+The legacy interface of the phase-space map: a map that drives an evaluator callable itself.
 
-`PhaseSpaceSampler` maps a recovery fraction over a rectangle of a two dimensional space (here, luminosity and
-half-decline time) when each evaluation is expensive and returns only a binomial count: ``k`` recoveries out of ``n``
-simulated events. Instead of filling a grid, it fits a Gaussian process to the points so far and puts each new batch
-where one more simulation teaches the most about the map.
+`PhaseSpaceSampler` is a `~uvex_transients.phase_space.map.PhaseSpaceMap` of a two dimensional space (here, luminosity
+and half-decline time) that also holds the callable that measures a point, runs the loop that evaluates the points the
+map asks for, writes and reads the points file, and makes the maps of the canonical recovery experiment. It is the
+interface `~uvex_transients.phase_space.evaluator.RecoveryEvaluator`, the command line and the saved files were written
+against. New work puts the three apart: a `~uvex_transients.phase_space.map.PhaseSpaceMap`, a
+`~uvex_transients.phase_space.samplers.base.Sampler` that answers "how many detections in n tries", and
+`~uvex_transients.phase_space.campaign.run_campaign` that connects them.
 
-The sampler knows nothing about transients. It needs a callable that takes a point and returns ``k`` and ``n``
-(`~uvex_transients.phase_space.evaluator.RecoveryEvaluator` is one), and, for the maps that need more than the fitted
-recovery fraction, an evaluator that also supplies the noise-free scales of the survey.
+Each evaluation is expensive and returns only a binomial count: ``k`` recoveries out of ``n`` simulated events. Instead
+of filling a grid, the map fits a Gaussian process to the points so far and puts each new batch where one more
+simulation teaches the most about it.
 """
 
 import importlib
@@ -20,33 +23,21 @@ from astropy import units as u
 from astropy.table import Table
 from astropy.units import Quantity
 from numpy.typing import NDArray
-from scipy.special import expit
-from scipy.stats import qmc
 
+from uvex_transients.phase_space.map import PhaseSpaceMap
+from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils import config, logger
-from uvex_transients.utils.stat_utils import binomial_logit
 
 __all__ = ["PhaseSpaceSampler"]
 
 # ============================================ #
 # Constants                                    #
 # ============================================ #
-#: The acquisition rules (see `PhaseSpaceSampler`).
-_ACQUISITIONS = ("variance", "imse")
-
-#: Recoveries are clipped this far from 0 and 1 where the logit and its weights would diverge.
-_P_CLIP = 1e-6
-
 #: What an evaluator has to provide for the maps that need more than the fitted recovery fraction.
 _SCALE_METHODS = ("coverage", "volume_time", "all_sky_volume_time", "redshift_limit")
 
 #: The only place a file may name an evaluator class from.
 _EVALUATOR_PACKAGE = "uvex_transients."
-
-#: Default kernel: an amplitude times an anisotropic Matern 5/2 on the unit square, as (initial value, bounds).
-_AMPLITUDE = (1.0, (1e-2, 1e2))
-_LENGTH_SCALE = (0.3, (0.03, 10.0))
-_MATERN_NU = 2.5
 
 
 def _configured(value, key: str):
@@ -68,23 +59,12 @@ class _MissingEvaluator:
         raise RuntimeError("This sampler has no evaluator, so it cannot simulate more points; pass `evaluate`.")
 
 
-def _require_sklearn():
-    """Import `sklearn.gaussian_process`, with a pointer to the optional extra if it is missing."""
-    try:
-        from sklearn import gaussian_process
-    except ImportError as exc:  # pragma: no cover - exercised only without the extra installed
-        raise ImportError(
-            "PhaseSpaceSampler needs scikit-learn; install it with `pip install 'uvex_transients[phase_space]'`."
-        ) from exc
-    return gaussian_process
-
-
 # ============================================ #
 # Sampler                                      #
 # ============================================ #
-class PhaseSpaceSampler:
+class PhaseSpaceSampler(PhaseSpaceMap):
     r"""
-    Adaptively map a recovery fraction over a rectangle of a two dimensional space.
+    Adaptively map a recovery fraction over a rectangle of a two dimensional space, driving an evaluator callable.
 
     Every argument that is `None` (the default) takes ``config["phase_space.sampler.<name>"]``.
 
@@ -185,10 +165,6 @@ class PhaseSpaceSampler:
         batch_size = _configured(batch_size, "sampler.batch_size")
         max_points = _configured(max_points, "sampler.max_points")
         tolerance = _configured(tolerance, "sampler.tolerance")
-        acquisition = _configured(acquisition, "sampler.acquisition")
-        n_candidates = _configured(n_candidates, "sampler.n_candidates")
-        floor = _configured(floor, "sampler.floor")
-        n_restarts = _configured(n_restarts, "sampler.n_restarts")
         k_target = _expected(k_target, evaluate, "k_target", "recovery.k_target")
         n_min = _expected(n_min, evaluate, "chunk_size", "recovery.chunk_size")
         n_max = _expected(n_max, evaluate, "n_max", "recovery.n_max")
@@ -199,44 +175,29 @@ class PhaseSpaceSampler:
             raise ValueError(f"`bounds` must be [(lo, hi), (lo, hi)] with lo < hi, got {bounds.tolist()}.")
         if len(names) != 2 or len(set(names)) != 2:
             raise ValueError(f"`names` must be two distinct strings, got {list(names)}.")
-        if acquisition not in _ACQUISITIONS:
-            raise ValueError(f"`acquisition` must be one of {_ACQUISITIONS}, got {acquisition!r}.")
         for label, value in (("n_initial", n_initial), ("batch_size", batch_size), ("max_points", max_points)):
             if int(value) != value or value < 1:
                 raise ValueError(f"`{label}` must be a positive integer, got {value!r}.")
-        if not 0.0 < floor < 1.0:
-            raise ValueError(f"`floor` must lie in (0, 1), got {floor!r}.")
 
+        super().__init__(
+            Space([Axis(name, lo, hi) for name, (lo, hi) in zip(names, bounds)]),
+            acquisition=acquisition,
+            n_candidates=n_candidates,
+            floor=floor,
+            n_restarts=n_restarts,
+            kernel=kernel,
+            seed=seed,
+            table=table,
+        )
         self._evaluate = evaluate
-        self._bounds = bounds
-        self._names = tuple(names)
         self.n_initial = int(n_initial)
         self.batch_size = int(batch_size)
         self.max_points = int(max_points)
         self.tolerance = float(tolerance)
-        self.acquisition = acquisition
-        self.n_candidates = int(n_candidates)
-        self.floor = float(floor)
         self.k_target = float(k_target)
         self.n_min = float(n_min)
         self.n_max = float(n_max)
-        self._kernel = kernel
-        self._n_restarts = int(n_restarts)
         self._map_fn = map_fn
-        self._seed = np.random.SeedSequence(seed) if not isinstance(seed, np.random.SeedSequence) else seed
-
-        # The Gaussian process is fitted on first use
-        self._gp = None
-        self._y_mean = 0.0
-        self._y_scale = 1.0
-
-        # Resume from the points of an earlier run
-        self._rows: list[dict] = []
-        if table is not None:
-            self._rows = [{name: row[name] for name in table.colnames} for row in table]
-            for name in (*self._names, "k", "n"):
-                if name not in table.colnames:
-                    raise ValueError(f"Cannot resume from a table with no {name!r} column.")
 
     # -------------------------------------- #
     # Data                                   #
@@ -244,12 +205,22 @@ class PhaseSpaceSampler:
     @property
     def bounds(self) -> NDArray[np.float64]:
         """numpy.ndarray: The mapped rectangle, ``[[lo, hi], [lo, hi]]``."""
-        return self._bounds.copy()
+        return self._space.bounds
 
     @property
     def names(self) -> tuple[str, str]:
         """Tuple of str: The coordinate names."""
-        return self._names
+        return self._space.names
+
+    @property
+    def _bounds(self) -> NDArray[np.float64]:
+        """numpy.ndarray: The mapped rectangle, for the methods that were written against it."""
+        return self._space.bounds
+
+    @property
+    def _names(self) -> tuple[str, str]:
+        """Tuple of str: The coordinate names, for the methods that were written against them."""
+        return self._space.names
 
     @property
     def settings(self) -> dict:
@@ -295,9 +266,6 @@ class PhaseSpaceSampler:
         if spec is not None:
             table.meta["evaluator"] = spec
         return table
-
-    def __len__(self) -> int:
-        return len(self._rows)
 
     def save(self, path: str | Path) -> None:
         """
@@ -372,132 +340,6 @@ class PhaseSpaceSampler:
                 evaluator_class = getattr(importlib.import_module(module_name), class_name)
                 evaluate = evaluator_class.from_settings(spec["settings"], **dict(evaluator_kwargs or {}))
         return cls(evaluate, table=table, **kwargs)
-
-    def _unit(self, x: NDArray) -> NDArray:
-        """Rescale points from `bounds` to the unit square."""
-        return (np.asarray(x, dtype=np.float64) - self._bounds[:, 0]) / (self._bounds[:, 1] - self._bounds[:, 0])
-
-    def _physical(self, u: NDArray) -> NDArray:
-        """Rescale points from the unit square to `bounds`."""
-        return self._bounds[:, 0] + np.asarray(u, dtype=np.float64) * (self._bounds[:, 1] - self._bounds[:, 0])
-
-    def _training_data(self) -> tuple[NDArray, NDArray, NDArray]:
-        """Return the unit-square inputs, the logit target and its noise variance, over every point so far."""
-        x = np.array([[row[name] for name in self._names] for row in self._rows], dtype=np.float64)
-        k = np.array([row["k"] for row in self._rows])
-        n = np.array([row["n"] for row in self._rows])
-        y, variance = binomial_logit(k, n)
-        return self._unit(x), y, variance
-
-    # -------------------------------------- #
-    # Model                                  #
-    # -------------------------------------- #
-    def fit(self) -> None:
-        """
-        Fit the Gaussian process to every point evaluated so far.
-
-        The target is centred and scaled by hand, and the noise variances are scaled with it, so that the noise
-        stays in the units of the data.
-        """
-        if len(self._rows) < 2:
-            raise ValueError("Need at least two evaluated points to fit.")
-        gaussian_process = _require_sklearn()
-        kernels = gaussian_process.kernels
-
-        # Standardize the target by hand, and scale the noise variances with it so that they stay in its units
-        x, y, variance = self._training_data()
-        self._y_mean = float(np.mean(y))
-        self._y_scale = float(np.std(y)) or 1.0
-
-        kernel = self._kernel
-        if kernel is None:
-            kernel = kernels.ConstantKernel(*_AMPLITUDE) * kernels.Matern(
-                length_scale=[_LENGTH_SCALE[0]] * 2, length_scale_bounds=_LENGTH_SCALE[1], nu=_MATERN_NU
-            )
-
-        # A child of the seed makes the optimizer's restarts reproducible without sharing a stream with the designs
-        child = self._seed.spawn(1)[0]
-        self._gp = gaussian_process.GaussianProcessRegressor(
-            kernel=kernel,
-            alpha=variance / self._y_scale**2,
-            normalize_y=False,
-            n_restarts_optimizer=self._n_restarts,
-            random_state=int(child.generate_state(1)[0]),
-        )
-        self._gp.fit(x, (y - self._y_mean) / self._y_scale)
-        logger.debug("PhaseSpaceSampler: fit %d points, kernel %s.", len(x), self._gp.kernel_)
-
-    def predict(self, x: NDArray, *, cov: bool = False):
-        """
-        Predict the logit of the recovery fraction at points of the space.
-
-        Parameters
-        ----------
-        x : array-like
-            Points in the units of `bounds`, shape ``(m, 2)``.
-        cov : bool, optional
-            If `True`, return the full posterior covariance instead of the standard deviation.
-
-        Returns
-        -------
-        mean : numpy.ndarray
-            Posterior mean of the logit, shape ``(m,)``.
-        spread : numpy.ndarray
-            Posterior standard deviation of the logit, shape ``(m,)``, or its covariance, ``(m, m)``.
-        """
-        if self._gp is None:
-            self.fit()
-        x = np.atleast_2d(x)
-        if cov:
-            mean, covariance = self._gp.predict(self._unit(x), return_cov=True)
-            return mean * self._y_scale + self._y_mean, covariance * self._y_scale**2
-        mean, std = self._gp.predict(self._unit(x), return_std=True)
-        return mean * self._y_scale + self._y_mean, std * self._y_scale
-
-    def recovery(self, x: NDArray, *, n_sigma: float = 1.0) -> dict[str, NDArray]:
-        """
-        Predict the recovery fraction, with an interval, at points of the space.
-
-        Parameters
-        ----------
-        x : array-like
-            Points in the units of `bounds`, shape ``(m, 2)``.
-        n_sigma : float, optional
-            Half-width of the interval, in posterior standard deviations of the logit. The default is 1.
-
-        Returns
-        -------
-        dict
-            ``"p"`` (the posterior median recovery), ``"p_lo"``, ``"p_hi"`` (the interval) and
-            ``"sigma_logit"`` (the posterior standard deviation of the logit), each of shape ``(m,)``.
-        """
-        mean, std = self.predict(x)
-        return {
-            "p": expit(mean),
-            "p_lo": expit(mean - n_sigma * std),
-            "p_hi": expit(mean + n_sigma * std),
-            "sigma_logit": std,
-        }
-
-    def log_uncertainty(self, x: NDArray) -> NDArray[np.float64]:
-        r"""
-        Return the posterior standard deviation of :math:`\ln(p+\epsilon)` at points of the space.
-
-        This is the quantity `tolerance` bounds and the acquisition spends points to reduce: the uncertainty of the
-        log recovery, with the floor :math:`\epsilon` (`floor`) so that a recovery of zero is not chased.
-
-        Parameters
-        ----------
-        x : array-like
-            Points in the units of `bounds`, shape ``(m, 2)``.
-
-        Returns
-        -------
-        numpy.ndarray
-            Shape ``(m,)``.
-        """
-        mean, std = self.predict(x)
-        return np.sqrt(self._weight(expit(mean))) * std
 
     # -------------------------------------- #
     # Maps                                   #
@@ -766,22 +608,9 @@ class PhaseSpaceSampler:
     # -------------------------------------- #
     # Acquisition                            #
     # -------------------------------------- #
-    def _weight(self, p: NDArray) -> NDArray:
-        r"""Return :math:`w=[p(1-p)/(p+\epsilon)]^2`, the squared slope of :math:`\ln(p+\epsilon)` in the logit."""
-        p = np.clip(p, _P_CLIP, 1.0 - _P_CLIP)
-        return (p * (1.0 - p) / (p + self.floor)) ** 2
-
-    def _expected_noise(self, p: NDArray) -> NDArray:
-        """Predict the logit noise variance of a point measured at recovery `p`, given how the evaluator tops up."""
-        p = np.clip(p, _P_CLIP, 1.0 - _P_CLIP)
-        n_expected = np.clip(self.k_target / p, self.n_min, self.n_max)
-        return 1.0 / (n_expected * p * (1.0 - p))
-
-    def _sobol(self, n: int) -> NDArray:
-        """Draw `n` points of a fresh scrambled Sobol design over the unit square."""
-        child = self._seed.spawn(1)[0]
-        sobol = qmc.Sobol(d=2, scramble=True, seed=np.random.default_rng(child))
-        return sobol.random_base2(int(np.ceil(np.log2(n))))[:n]
+    def _expected_tries(self, p: NDArray) -> NDArray:
+        """Predict how many events a point of recovery `p` gets: enough for `k_target`, within `n_min` and `n_max`."""
+        return np.clip(self.k_target / p, self.n_min, self.n_max)
 
     def propose(self, batch_size: int | None = None) -> tuple[NDArray, float]:
         r"""
@@ -801,37 +630,7 @@ class PhaseSpaceSampler:
             batch, which is what `tolerance` is compared to.
         """
         batch_size = self.batch_size if batch_size is None else int(batch_size)
-        self.fit()
-
-        # The posterior over a fresh candidate set, and what a point there would be worth
-        candidates = self._sobol(self.n_candidates)
-        mean, covariance = self.predict(self._physical(candidates), cov=True)
-        p = expit(mean)
-        weight = self._weight(p)
-        noise = self._expected_noise(p)
-
-        # The largest uncertainty before the batch, which is what `tolerance` is compared to
-        uncertainty = float(np.sqrt(np.max(weight * np.diag(covariance))))
-
-        chosen: list[int] = []
-        for _ in range(min(batch_size, len(candidates))):
-            diagonal = np.diag(covariance)
-            if self.acquisition == "variance":
-                score = weight * diagonal
-            else:
-                score = (weight[:, None] * covariance**2).sum(axis=0) / (diagonal + noise)
-
-            # Never the same candidate twice
-            score[chosen] = -np.inf
-            best = int(np.argmax(score))
-            chosen.append(best)
-
-            # Conditioning on a measurement changes the covariance but not the mean, so the batch can be built
-            # without knowing any outcome.
-            column = covariance[:, best].copy()
-            covariance = covariance - np.outer(column, column) / (column[best] + noise[best])
-
-        return self._physical(candidates[chosen]), uncertainty
+        return super().propose(batch_size, self._expected_tries)
 
     # -------------------------------------- #
     # Running                                #
@@ -853,9 +652,9 @@ class PhaseSpaceSampler:
     def _evaluate_initial_design(self) -> None:
         """Evaluate a scrambled Sobol design to bring the number of points up to `n_initial`."""
         n_new = self.n_initial - len(self._rows)
-        design = self._sobol(n_new)
+        design = self.initial_design(n_new)
         logger.info("PhaseSpaceSampler: evaluating an initial design of %d points.", n_new)
-        self._evaluate_points(self._physical(design))
+        self._evaluate_points(design)
 
     def run(self, callback: Callable[["PhaseSpaceSampler"], None] | None = None) -> "PhaseSpaceSampler":
         """

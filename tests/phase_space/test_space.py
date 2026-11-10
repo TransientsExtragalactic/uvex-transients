@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from scipy.stats import qmc
 
-from uvex_transients.phase_space.sampler import PhaseSpaceSampler
 from uvex_transients.phase_space.space import Axis, Space
 
 
@@ -130,13 +129,13 @@ def test_points_with_the_wrong_number_of_coordinates_are_refused(space):
         space.from_unit(np.zeros((5, 1)))
 
 
-def test_the_unit_cube_is_the_arithmetic_the_sampler_uses(space):
-    """The moves are the sampler's own `_unit` and `_physical`, so a map can adopt `Space` without changing a number."""
-    sampler = PhaseSpaceSampler(lambda x: {"k": 1, "n": 2}, space.bounds)
+def test_the_unit_cube_is_the_arithmetic_the_sampler_has_always_used(space):
+    """The moves are ``(x - lo) / (hi - lo)`` and its inverse, evaluated in that order, so that a map is unchanged."""
+    lo, hi = space.bounds[:, 0], space.bounds[:, 1]
     x = np.random.default_rng(1).uniform([36.5, -1.5], [45.0, 2.5], size=(11, 2))
-    np.testing.assert_array_equal(space.to_unit(x), sampler._unit(x))
+    np.testing.assert_array_equal(space.to_unit(x), (x - lo) / (hi - lo))
     u = np.random.default_rng(2).random((11, 2))
-    np.testing.assert_array_equal(space.from_unit(u), sampler._physical(u))
+    np.testing.assert_array_equal(space.from_unit(u), lo + u * (hi - lo))
 
 
 def test_contains_includes_the_edges(space):
@@ -173,7 +172,7 @@ def test_a_sobol_design_does_not_advance_a_seed_sequence(space):
     np.testing.assert_array_equal(space.sobol(16, seed=child), first)
 
 
-def test_a_sobol_design_is_the_one_the_sampler_draws(space):
+def test_a_sobol_design_is_the_one_the_sampler_has_always_drawn(space):
     """The same scrambled design the sampler's `_sobol` draws from a freshly spawned child seed, for two axes."""
 
     def fresh_child():
