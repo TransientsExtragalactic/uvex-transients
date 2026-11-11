@@ -297,14 +297,22 @@ class Experiment:
         Returns
         -------
         astropy.table.Table
-            The table of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`.
+            The table of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`, whose ``meta`` also holds the
+            ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for
+            `~uvex_transients.phase_space.compare.difference_map` to check) and the ``n_max`` of the stopping rule.
         """
         size = _configured(size, "map.grid_size")
         if products is None:
             products = list(self.sampler.products)
             if rate is not None and hasattr(self.sampler, "rate_products"):
                 products += list(self.sampler.rate_products(rate))
-        return self.phase_map.grid_table(size, products, bounds=bounds, n_sigma=n_sigma)
+        table = self.phase_map.grid_table(size, products, bounds=bounds, n_sigma=n_sigma)
+
+        # What `difference_map` checks before it compares two maps, and the resolution it takes its floor from
+        table.meta["sampler"] = self.sampler.kind
+        table.meta.update(getattr(self.sampler, "table_meta", {}))
+        table.meta["n_max"] = self.rule.n_max
+        return table
 
     # -------------------------------------- #
     # Files                                  #

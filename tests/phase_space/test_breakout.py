@@ -11,7 +11,8 @@ from uvex_transients.models.lightcurves import InverseGammaBrokenPowerLawLightcu
 from uvex_transients.models.shock_cooling import InverseGammaBlackbodySED
 from uvex_transients.phase_space.breakout import BreakoutSampler, half_decline_time
 from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
-from uvex_transients.phase_space.plotting import plot_grid
+from uvex_transients.phase_space.compare import difference_map
+from uvex_transients.phase_space.plotting import plot_difference, plot_grid
 from uvex_transients.phase_space.samplers import Sampler, StoppingRule, available_samplers, get_sampler
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 from uvex_transients.utils.phot_utils import bandpass_table
@@ -250,3 +251,12 @@ def test_an_experiment_of_the_breakout_runs_saves_loads_and_plots(schedule, samp
     figure = plot_grid(grid, loaded.phase_map.table)
     labels = {ax.get_xlabel() for ax in figure.axes}
     assert r"time scale $t_0$ [s]" in labels
+
+    # The table records what a comparison checks, so two breakout maps can be differenced and drawn
+    assert grid.meta["sampler"] == "breakout" and grid.meta["n_max"] == 900 and grid.meta["band"] == sampler.band
+    assert grid.meta["shape_p"] == pytest.approx(4 / 3) and grid.meta["shape_q"] == pytest.approx(0.3)
+    difference = difference_map(grid, grid)
+    assert difference.colnames[:2] == ["log_L0", "log_t0"]
+    assert difference.meta["floor"] == pytest.approx(1 / 900)
+    figure = plot_difference(difference)
+    assert r"time scale $t_0$ [s]" in {ax.get_xlabel() for ax in figure.axes}

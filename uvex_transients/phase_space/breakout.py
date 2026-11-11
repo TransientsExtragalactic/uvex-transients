@@ -307,6 +307,18 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
             values.append(float(np.asarray(to_cgs_value(sed[name].sample(size=1, rng=0))).ravel()[0]))
         return tuple(values)
 
+    @property
+    def table_meta(self) -> dict:
+        """
+        dict: What `~uvex_transients.phase_space.compare.difference_map` checks before it compares two breakout maps.
+
+        The band, and the four shape parameters of the light curve that the axes are measured with: the maps of two
+        shapes are not maps of the same plane.
+        """
+        meta = {"band": self.band}
+        meta.update(zip(("shape_p", "shape_q", "shape_x_break", "shape_smoothness"), self._fixed_shape()))
+        return meta
+
     # -------------------------------------- #
     # The transient                          #
     # -------------------------------------- #
