@@ -15,12 +15,12 @@ half-decline of its light curve, :math:`x_{1/2}\,t_0` after breakout with :math:
 window is a measurement of it. An exposure that runs past the window would be seeing the cooling emission that
 follows, not the breakout, so it does not count.
 
-**The shortest event.** Only an event that lasts longer than a dwell is mapped: the window has to hold at least one
-exposure (900 s), so the time scale has to be at least :math:`\text{dwell}/x_{1/2}`, about 250 s, and a lower bound
-below it is refused. A shorter event is a different question (the exposure then averages over a pulse and over the
-emission that follows it), and the survey sees it only by chance, so it is not mapped here. The source is measured at
-the start of each exposure, which is accurate when it changes little over a dwell, that is for a time scale that is
-not much shorter than one.
+**The range of time scales.** Only an event that lasts longer than a dwell is mapped, so the time scale :math:`t_0`
+has to be at least one dwell (900 s), and a lower bound below it is refused. A shorter event is a different question
+(the exposure then averages over a pulse and over the emission that follows it), and the survey sees it only by
+chance, so it is not mapped here. The upper end reaches the long breakouts of dense circumstellar material (CSM), days
+long, whose window of several time scales spans weeks. The source is measured at the start of each exposure, which is
+accurate when it changes little over a dwell, that is for a time scale that is not much shorter than one.
 
 **The redshift limit.** Events are drawn out to the redshift at which the *instantaneous* band magnitude at the
 brightest point of the window reaches the depth, a bound that no exposure beats. The temperature depends on the
@@ -210,7 +210,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     ------
     ValueError
         If the shape parameters of the SED are not fixed, which the window of the detection assumes, or if the lower
-        bound of ``log_t0`` is a time scale whose window is shorter than a dwell.
+        bound of ``log_t0`` is a time scale shorter than a dwell.
     """
 
     TRANSIENT_KEY = "breakout"
@@ -285,14 +285,13 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         # The window is a constant of the shape of the light curve, so the shape has to be fixed
         self.x_peak, self.x_half = half_decline_time(*self._fixed_shape())
 
-        # Only an event that lasts longer than a dwell is mapped: a window that cannot hold an exposure has no recovery
+        # Only an event that lasts longer than a dwell is mapped: its time scale has to be at least a dwell
         self.dwell = float(schedule.observe_rows["duration"].to_value(u.s).max()) * u.s
-        shortest = np.log10(self.dwell.to_value(u.s) / self.x_half)
+        shortest = np.log10(self.dwell.to_value(u.s))
         if log_t0[0] < shortest - 1e-9:
             raise ValueError(
-                f"The lower bound of log_t0 is {log_t0[0]:g}, whose window (the half-decline, {self.x_half:.2f} t_0) "
-                f"is shorter than the dwell of {self.dwell:g}. Only events longer than a dwell are mapped: use "
-                f"log_t0 >= {np.ceil(shortest * 100) / 100:g}."
+                f"The lower bound of log_t0 is {log_t0[0]:g}, a time scale shorter than the dwell of {self.dwell:g}. "
+                f"Only events longer than a dwell are mapped: use log_t0 >= {np.ceil(shortest * 100) / 100:g}."
             )
         self._log_redshift_table = None
         self._clipped_warning = False
