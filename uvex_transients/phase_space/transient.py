@@ -6,7 +6,7 @@ just those two free quantities. `_CanonicalTransient` is that transient: a fast-
 a power-law spectrum, whose shape, spectral index and band edges are fixed. `set_point` places it at a luminosity and
 a half-decline time, and it is otherwise an ordinary `~uvex_transients.transients.base.ExtragalacticTransient`, at a
 constant rate of one event per Mpc^3 per year, so the usual event sampling and SNR screening run on it unchanged (see
-`~uvex_transients.phase_space.evaluator.RecoveryEvaluator`). Any other SED is placed on the same map by measuring the
+`~uvex_transients.phase_space.sampling.core.CanonicalSampler`). Any other SED is placed on the same map by measuring the
 same two quantities on it (`~uvex_transients.models.core.base.SpectralModel.peak_luminosity` and ``decline_time``).
 
 A decaying light curve has no end, so an event is followed until it has faded by `fade_mag` magnitudes, which sets the

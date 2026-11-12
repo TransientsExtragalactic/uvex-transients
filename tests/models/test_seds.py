@@ -158,6 +158,41 @@ class TestInverseGammaBlackbodySED(SpectralModelContract):
     model_class = InverseGammaBlackbodySED
 
 
+def _breakout_radius(amplitude, t_scale, t=0.0):
+    """The photospheric radius in cm of the inverse-gamma breakout, of luminosity `amplitude` and time scale `t_scale`."""
+    parameters = {"amplitude": amplitude, "t_scale": t_scale, "p": 4 / 3, "q": 0.3, "x_break": 10.0, "smoothness": 2.0}
+    return float(InverseGammaBlackbodySED.photospheric_radius(t * u.s, **parameters).to_value(u.cm))
+
+
+class TestInverseGammaBreakoutRadius:
+    """The breakout radius is the smaller of the light-crossing size c t_0 and a cap that grows as t_0^(2/3) L_0^(1/3)."""
+
+    def test_a_short_event_is_light_crossing_limited(self):
+        assert _breakout_radius(1e44, 1.0) == pytest.approx(2.99792458e10, rel=1e-6)
+
+    def test_a_long_event_is_capped(self):
+        # At one day and 1e44 erg/s the cap is its coefficient, far below c t_0 = 2.6e15 cm
+        assert _breakout_radius(1e44, 86400.0) == pytest.approx(8.8e13, rel=1e-9)
+
+    def test_the_cap_scales_as_the_two_thirds_of_t0_and_the_third_of_l0(self):
+        reference = _breakout_radius(1e44, 86400.0)
+        assert _breakout_radius(1e44, 8 * 86400.0) == pytest.approx(4 * reference, rel=1e-9)
+        assert _breakout_radius(8e44, 86400.0) == pytest.approx(2 * reference, rel=1e-9)
+
+    def test_it_never_exceeds_the_light_crossing_size(self):
+        for amplitude in (1e42, 1e44, 1e47):
+            for t_scale in (0.01, 10.0, 1e3, 1e6):
+                assert _breakout_radius(amplitude, t_scale) <= 2.99792458e10 * t_scale * (1 + 1e-12)
+
+    def test_a_bright_long_event_crosses_over_at_the_expected_time_scale(self):
+        """At 1e46 erg/s the two terms are equal near 3e2 s, so the radius is c t_0 below it and the cap above it."""
+        assert _breakout_radius(1e46, 100.0) == pytest.approx(2.99792458e10 * 100.0, rel=1e-9)
+        assert _breakout_radius(1e46, 1e4) < 2.99792458e10 * 1e4
+
+    def test_the_photosphere_doubles_at_the_break_time(self):
+        assert _breakout_radius(1e44, 1e4, t=1e4 * 10.0) == pytest.approx(2 * _breakout_radius(1e44, 1e4), rel=1e-9)
+
+
 class TestKhatamiSED(SpectralModelContract):
     model_class = KhatamiSED
 

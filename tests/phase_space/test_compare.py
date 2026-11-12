@@ -6,6 +6,7 @@ from astropy.table import Table
 from scipy.special import expit
 
 from uvex_transients.phase_space.compare import difference_map
+from uvex_transients.phase_space.space import Axis, Space
 
 NAMES = ("log_luminosity", "log_half_time")
 N = 6
@@ -180,3 +181,107 @@ def test_a_difference_with_nothing_defined_still_draws():
     nothing = make_map(-20.0)
     figure = plot_difference(difference_map(nothing, nothing))
     matplotlib.pyplot.close(figure)
+
+
+# ---------------------------------------------------------------------------- #
+# Maps that record their space, over any two axes                              #
+# ---------------------------------------------------------------------------- #
+SPACE = Space(
+    [Axis("log_L0", 43.0, 46.0, label=r"peak luminosity $L_0$", unit="erg/s"), Axis("log_t0", 3.0, 6.0, unit="s")]
+)
+
+
+def make_space_map(logit, shape=(5, 4), volume_time=1e6, space=SPACE, **meta):
+    """A map over `space` on a grid that is not square, in the table of `PhaseSpaceMap.grid_table`."""
+    points = space.grid(shape)
+    table = Table()
+    for index, name in enumerate(space.names):
+        table[name] = points[:, index]
+    table["volume_time"] = np.full(len(points), float(volume_time))
+    for suffix, offset in (("", 0.0), ("_lo", -0.2), ("_hi", 0.2)):
+        table["f" + suffix] = expit(logit + offset) * np.ones(len(points))
+    table.meta.update({"space": space.to_dict(), "sampler": "breakout", "band": "FUV", "n_max": 1000, **meta})
+    return table
+
+
+def test_maps_that_record_their_space_are_differenced_on_the_axes_it_names():
+    diff = difference_map(make_space_map(0.0), make_space_map(0.0, volume_time=1e7))
+    assert diff.colnames[:2] == ["log_L0", "log_t0"]
+    assert len(diff) == 20 and np.allclose(diff["delta_dex"], 1.0)
+    assert Space.from_dict(diff.meta["space"]) == SPACE and diff.meta["sampler"] == "breakout"
+
+
+def test_the_floor_comes_from_the_n_max_a_map_records():
+    diff = difference_map(make_space_map(0.0, n_max=2000), make_space_map(0.0, n_max=500))
+    assert diff.meta["floor"] == pytest.approx(1 / 500)
+
+
+def test_maps_over_different_axes_are_refused():
+    other = Space([Axis("log_L0", 43.0, 46.0, unit="erg/s"), Axis("log_tau", 3.0, 6.0, unit="s")])
+    with pytest.raises(ValueError, match="different coordinates"):
+        difference_map(make_space_map(0.0), make_space_map(0.0, space=other))
+
+
+@pytest.mark.parametrize(
+    "meta, match",
+    [({"sampler": "canonical"}, "sampler"), ({"band": "NUV"}, "band"), ({"shape_q": 0.5}, "shape_q")],
+)
+def test_maps_of_different_samplers_bands_or_shapes_are_refused(meta, match):
+    with pytest.raises(ValueError, match=match):
+        difference_map(make_space_map(0.0, shape_q=0.3), make_space_map(0.0, **{"shape_q": 0.3, **meta}))
+    assert np.allclose(
+        difference_map(make_space_map(0.0), make_space_map(0.0, **meta), check_meta=False)["delta_dex"], 0
+    )
+
+
+def test_an_axis_in_other_units_is_refused():
+    other = Space([SPACE["log_L0"], Axis("log_t0", 3.0, 6.0, unit="day")])
+    with pytest.raises(ValueError, match="axis log_t0"):
+        difference_map(make_space_map(0.0), make_space_map(0.0, space=other))
+
+
+def test_the_figure_of_a_difference_takes_its_axes_from_the_space():
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    from uvex_transients.phase_space.plotting import plot_difference
+
+    diff = difference_map(make_space_map(0.0), make_space_map(1.0, volume_time=1e7))
+    calls = []
+    figure = plot_difference(diff, annotate=calls.append)
+    try:
+        ax = figure.axes[0]
+        assert ax.get_xlabel() == "log_t0 [s]" and ax.get_ylabel() == r"peak luminosity $L_0$ [erg/s]"
+        assert ax.get_xscale() == ax.get_yscale() == "log" and len(calls) == 1
+        assert ax.get_xlim() == pytest.approx((1e3, 1e6)) and ax.get_ylim() == pytest.approx((1e43, 1e46))
+    finally:
+        matplotlib.pyplot.close(figure)
+
+
+def test_a_linear_axis_is_drawn_linear_and_overlays_need_the_canonical_axes():
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    from uvex_transients.phase_space.plotting import plot_difference
+
+    linear = Space([Axis("log_L0", 43.0, 46.0, unit="erg/s"), Axis("beta", 0.0, 1.0, scale="linear")])
+    diff = difference_map(make_space_map(0.0, space=linear), make_space_map(1.0, space=linear))
+    figure = plot_difference(diff)
+    try:
+        assert figure.axes[0].get_xscale() == "linear" and figure.axes[0].get_yscale() == "log"
+    finally:
+        matplotlib.pyplot.close(figure)
+
+    overlay = Table({"log_luminosity": [42.0], "log_half_time": [1.0], "measured": [True]})
+    with pytest.raises(ValueError, match="overlays are of the axes"):
+        plot_difference(diff, overlays=[overlay])
+
+
+def test_a_space_that_is_not_two_axes_has_no_figure():
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    from uvex_transients.phase_space.plotting import plot_difference
+
+    three = Space([Axis("a", 0.0, 1.0), Axis("b", 0.0, 1.0), Axis("c", 0.0, 1.0)])
+    diff = difference_map(make_space_map(0.0, shape=3, space=three), make_space_map(1.0, shape=3, space=three))
+    assert len(diff) == 27
+    with pytest.raises(ValueError, match="two axes"):
+        plot_difference(diff)

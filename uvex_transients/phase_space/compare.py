@@ -2,21 +2,38 @@ r"""
 Compare two recovery maps.
 
 `difference_map` takes the fitted maps of two runs, each the ``map.ecsv`` table of
-`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`, and returns how much more (or less) one recovers
-than the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the
-factor by which the expected number of recoveries changes for a population of a given peak luminosity and half-decline
-time, whatever its rate (for a rate constant in redshift). It does not depend on the number of explosion-time bins, as
-the recovery fraction :math:`f` alone does. Nothing is simulated, so it needs neither the schedule nor scikit-learn.
+`~uvex_transients.phase_space.experiment.Experiment.grid_table`, and returns how much more (or less) one recovers than
+the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the factor
+by which the expected number of recoveries changes for a population at a given point, whatever its rate (for a rate
+constant in redshift). It does not depend on the number of explosion-time bins, as the recovery fraction :math:`f`
+alone does. Nothing is simulated, so it needs neither the schedule nor scikit-learn.
+
+The axes can be any: a table that records its ``space`` (everything `Experiment.grid_table` makes) is differenced on the
+axes it names, and an earlier table, which does not, on its first two columns.
 """
 
 import numpy as np
 from astropy.table import Table
 
+from uvex_transients.phase_space.space import Space
+
 __all__ = ["COMPARED_META", "difference_map"]
 
-#: The metadata of a map that gives its axes their meaning. Two maps that differ in one of these (when both record it)
-#: are not maps of the same plane, so `difference_map` refuses to compare them.
-COMPARED_META = ("band", "spectral_index", "rise_ratio", "fade_mag")
+#: The metadata of a map that gives its axes their meaning: the kind of sampler, the band, and the shape of the
+#: transient the axes are measured on (the canonical one's spectral index, rise and fade, the breakout's four shape
+#: parameters). Two maps that differ in one of these (when both record it) are not maps of the same plane, so
+#: `difference_map` refuses to compare them.
+COMPARED_META = (
+    "sampler",
+    "band",
+    "spectral_index",
+    "rise_ratio",
+    "fade_mag",
+    "shape_p",
+    "shape_q",
+    "shape_x_break",
+    "shape_smoothness",
+)
 
 #: The columns of a map that `difference_map` reads, besides its two coordinates.
 _REQUIRED = ("f", "f_lo", "f_hi", "volume_time")
@@ -35,7 +52,14 @@ def _resolution(table: Table) -> float:
     return 1.0 / float(n_max) if n_max else _DEFAULT_RESOLUTION
 
 
-def _check_grids(baseline: Table, comparison: Table) -> tuple[str, str]:
+def _coordinates(table: Table) -> tuple[str, ...]:
+    """Return the names of the coordinates of a map: its axes if it records its space, else its first two columns."""
+    if "space" in table.meta:
+        return Space.from_dict(table.meta["space"]).names
+    return tuple(table.colnames[:2])
+
+
+def _check_grids(baseline: Table, comparison: Table) -> tuple[str, ...]:
     """
     Check that two maps hold the columns `difference_map` needs and sit on the same grid; return the coordinate names.
 
@@ -49,9 +73,11 @@ def _check_grids(baseline: Table, comparison: Table) -> tuple[str, str]:
         if len(table.colnames) < 2 or missing:
             raise ValueError(f"The {label} map is missing the column(s) {missing or 'of its coordinates'}.")
 
-    names = tuple(baseline.colnames[:2])
-    if tuple(comparison.colnames[:2]) != names:
-        raise ValueError(f"The maps have different coordinates: {names} and {tuple(comparison.colnames[:2])}.")
+    names = _coordinates(baseline)
+    if _coordinates(comparison) != names:
+        raise ValueError(f"The maps have different coordinates: {names} and {_coordinates(comparison)}.")
+    if any(name not in table.colnames for table in (baseline, comparison) for name in names):
+        raise ValueError(f"A map lacks a column of its coordinates {names}.")
     if len(baseline) != len(comparison) or not all(
         np.allclose(baseline[name], comparison[name], rtol=0.0, atol=1e-9) for name in names
     ):
@@ -70,6 +96,11 @@ def _check_meta(baseline: Table, comparison: Table) -> None:
         held to it.
     """
     differ = []
+    if "space" in baseline.meta and "space" in comparison.meta:
+        axes = [Space.from_dict(table.meta["space"]).axes for table in (baseline, comparison)]
+        for a, b in zip(*axes):
+            if (a.scale, a.unit) != (b.scale, b.unit):
+                differ.append(f"axis {a.name} ({a.scale} of {a.unit!r} vs {b.scale} of {b.unit!r})")
     for key in COMPARED_META:
         if key not in baseline.meta or key not in comparison.meta:
             continue
@@ -107,8 +138,9 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
     Parameters
     ----------
     baseline, comparison : astropy.table.Table
-        The two maps, as made by `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table` or read from
-        ``map.ecsv``. They need the columns ``f``, ``f_lo``, ``f_hi`` and ``volume_time``, and must be on the same grid.
+        The two maps, as made by `~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from
+        ``map.ecsv``. They need the columns ``f``, ``f_lo``, ``f_hi`` and ``volume_time``, and must be on the same grid
+        of the same axes.
     floor : float, optional
         The recovery fraction below which a map is taken not to have recovered anything. If `None` (the default), the
         coarser of the resolutions of the two maps, :math:`1/n_\mathrm{max}` from the ``n_max`` that each records. A map
@@ -136,8 +168,8 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
             0 where :math:`\Delta` is a measurement, +1 where the baseline is below `floor` so that :math:`\Delta` is a
             lower bound, and -1 where the comparison is, so that it is an upper bound.
 
-        Its ``meta`` holds the band, the unit of the luminosity and the zero point of the absolute magnitude (from the
-        baseline), `floor`, and the metadata of each map as ``baseline_*`` and ``comparison_*``.
+        Its ``meta`` holds the ``space``, the band, the unit of the luminosity and the zero point of the absolute
+        magnitude (from the baseline), `floor`, and the metadata of each map as ``baseline_*`` and ``comparison_*``.
 
     Raises
     ------
@@ -179,7 +211,7 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
         undefined, 0, np.where(below_b & ~below_c, 1, np.where(below_c & ~below_b, -1, 0))
     ).astype(np.int8)
 
-    for key in ("band", "luminosity_unit", "absolute_magnitude_zero_point"):
+    for key in ("space", "sampler", "band", "luminosity_unit", "absolute_magnitude_zero_point"):
         if key in baseline.meta:
             table.meta[key] = baseline.meta[key]
     table.meta["floor"] = float(floor)

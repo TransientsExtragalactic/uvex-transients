@@ -332,8 +332,29 @@ phase_space:
     # observations that can see it. 6 drops the observations of a nearby event only when it is 250 times fainter.
     fade_mag: 6.0
 
+  # The shock breakout sampler (see uvex_transients.phase_space.sampling.breakout): a map over the peak luminosity L_0 and the time
+  # scale t_0 of a breakout, whose emission is a blackbody on an expanding photosphere.
+  breakout:
+    # The default ranges of the axes: log10 L_0 / (erg/s), and log10 t_0 / s. The redshift limit is tabulated over them.
+    # Only an event that lasts longer than a dwell is mapped, so t_0 is at least one dwell: 10^2.96 s = 912 s is the
+    # lowest value at or above the 900 s dwell of the UVEX schedule, and the sampler refuses a lower one. The upper end,
+    # 1e6 s (12 days), reaches the long breakouts of dense circumstellar material.
+    log_L0: [42.0, 46.5]
+    log_t0: [2.96, 6.0]
+    # An exposure of a breakout is only a detection if it lies within the window out to the bolometric half-decline of
+    # the light curve, so a single exposure that reaches the threshold is a detection, and there is no second visit.
+    n_visits: 1
+    # A breakout is far shorter than a bin of explosion times, so the fraction of events in the sampled footprint that
+    # land in an exposure falls as 1 / (the width of a bin). More bins make each point need fewer events, at about 0.1 s
+    # per bin per chunk; the recovered volume-time does not depend on it.
+    time_bins: 400
+    # The redshift the limit is tabulated to, and the points per axis of the table of the limit. A limit that reaches
+    # z_max is clipped to it.
+    z_max: 10.0
+    table_points: 33
+
   # What counts as a recovery, and how each point of a map is simulated (see
-  # uvex_transients.phase_space.evaluator.RecoveryEvaluator).
+  # uvex_transients.phase_space.sampling.core.SurveySampler).
   recovery:
     # The mission, and the band that recovers the events and defines the luminosity. One band makes one map.
     mission: uvex_fast
@@ -370,7 +391,7 @@ phase_space:
     volume_z_min: 1.0e-6
     volume_points: 6000
 
-  # Active learning of the recovery map (see uvex_transients.phase_space.sampler.PhaseSpaceSampler).
+  # Active learning of the recovery map (see uvex_transients.phase_space.map.PhaseSpaceMap and uvex_transients.phase_space.campaign).
   sampler:
     # Points of the space-filling design evaluated before the first fit, points added per round, and the most points
     # to evaluate in all.

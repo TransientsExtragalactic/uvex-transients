@@ -1,6 +1,6 @@
-"""Figures of a recovery map from `~uvex_transients.phase_space.sampler.PhaseSpaceSampler`."""
+"""Figures of a recovery map, from the tables of `~uvex_transients.phase_space.experiment.Experiment`."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import numpy as np
@@ -8,9 +8,10 @@ from astropy import units as u
 from astropy.table import Table
 from astropy.units import Quantity
 
+from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils.plotting import set_plot_style
 
-__all__ = ["plot_difference", "plot_map"]
+__all__ = ["plot_difference", "plot_grid", "plot_map"]
 
 # ============================================ #
 # Constants                                    #
@@ -47,6 +48,9 @@ _DIFFERENCE_RANGE = 2.0
 _DIFFERENCE_LEVELS = (-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0)
 _SIGNIFICANCE = 2.0
 _HATCH_INSIGNIFICANT, _HATCH_LOWER, _HATCH_UPPER = "..", "\\\\", "//"
+
+#: The axes of the canonical map, which the overlays (measurements of a class) are of.
+_CANONICAL_NAMES = ("log_luminosity", "log_half_time")
 
 #: Distinct colours for the shaded classes, which a legend tells apart, not names on the map.
 _OVERLAY_COLORS = (
@@ -237,9 +241,9 @@ def plot_map(
     Parameters
     ----------
     grid : astropy.table.Table
-        The output of `PhaseSpaceSampler.map_table`.
+        The output of `~uvex_transients.phase_space.experiment.Experiment.grid_table`.
     points : astropy.table.Table
-        The simulated points (`PhaseSpaceSampler.table`).
+        The measured points (`~uvex_transients.phase_space.map.PhaseSpaceMap.table`).
     path : str or pathlib.Path, optional
         Where to write the figure. If omitted, the figure is not saved.
     title : str, optional
@@ -369,9 +373,15 @@ def plot_difference(
     path: str | Path | None = None,
     title: str | None = None,
     overlays: Sequence[Table] | None = None,
+    annotate: Callable | None = None,
 ):
     r"""
     Draw the difference of two recovery maps, in dex of the recovered volume-time.
+
+    The axes come from the ``space`` in the table's ``meta`` when it has one (as a table of
+    `~uvex_transients.phase_space.compare.difference_map` of two maps made with
+    `~uvex_transients.phase_space.experiment.Experiment.grid_table` does), so the figure does not know what they are,
+    and from the canonical luminosity and half-decline time otherwise.
 
     The colour is :math:`\Delta = \log_{10}(R_\mathrm{c}/R_\mathrm{b})`, positive where the comparison recovers more,
     with contours at fixed numbers of dex. Cells where :math:`|\Delta|` is less than two standard deviations are dotted,
@@ -387,12 +397,21 @@ def plot_difference(
     title : str, optional
         A title.
     overlays : sequence of astropy.table.Table, optional
-        Measurements of populations to shade, as in `plot_map`.
+        Measurements of populations to shade, as in `plot_map`. They are of the canonical axes, so a map over others
+        takes `annotate` instead.
+    annotate : callable, optional
+        ``annotate(ax)``, called on the axes to draw anything else, as in `plot_grid`.
 
     Returns
     -------
     matplotlib.figure.Figure
         The figure, left open so that it can be adjusted or shown.
+
+    Raises
+    ------
+    ValueError
+        If the table records a space that does not have two axes, is not a regular grid, or (with `overlays`) is not
+        over the canonical axes.
     """
     import matplotlib.pyplot as plt
     from matplotlib.colors import Normalize
@@ -400,13 +419,33 @@ def plot_difference(
 
     set_plot_style()
 
-    names = difference.colnames[:2]
-    n = int(np.sqrt(len(difference)))
-    duration = 10.0 ** np.asarray(difference[names[1]]).reshape(n, n)
-    luminosity = 10.0 ** np.asarray(difference[names[0]]).reshape(n, n)
-    delta = np.ma.masked_invalid(np.asarray(difference["delta_dex"]).reshape(n, n))
-    significance = np.nan_to_num(np.asarray(difference["significance"]).reshape(n, n))
-    limit = np.asarray(difference["limit"]).reshape(n, n)
+    # The axes: the first is drawn vertically and the second horizontally, as in `plot_map` and `plot_grid`
+    if "space" in difference.meta:
+        space = Space.from_dict(difference.meta["space"])
+        if space.ndim != 2:
+            raise ValueError(f"A figure is of a map over two axes, and this one has {space.ndim}.")
+        names = space.names
+        vertical, horizontal = space.axes
+        x_log, y_log = horizontal.scale == "log10", vertical.scale == "log10"
+        x_label, y_label = _axis_label(horizontal), _axis_label(vertical)
+        if overlays and names != _CANONICAL_NAMES:
+            raise ValueError(f"The overlays are of the axes {_CANONICAL_NAMES}, and this map is over {names}.")
+    else:
+        names = tuple(difference.colnames[:2])
+        x_log = y_log = True
+        x_label = r"rest-frame half-decline time $t_{1/2}$ [day]"
+        band = difference.meta.get("band")
+        y_label = f"{rf'$L_\mathrm{{{band}}}$' if band else r'$L$'} [erg s$^{{-1}}$]"
+
+    shape = tuple(len(np.unique(difference[name])) for name in names)
+    if int(np.prod(shape)) != len(difference):
+        raise ValueError("The table is not a regular grid of its coordinates.")
+    duration = np.asarray(difference[names[1]]).reshape(shape)
+    luminosity = np.asarray(difference[names[0]]).reshape(shape)
+    duration, luminosity = (10.0**duration if x_log else duration), (10.0**luminosity if y_log else luminosity)
+    delta = np.ma.masked_invalid(np.asarray(difference["delta_dex"]).reshape(shape))
+    significance = np.nan_to_num(np.asarray(difference["significance"]).reshape(shape))
+    limit = np.asarray(difference["limit"]).reshape(shape)
 
     # Symmetric about no difference, and not stretched by one extreme corner
     reach = min(float(np.abs(delta).max()) if delta.count() else 1.0, _DIFFERENCE_RANGE)
@@ -416,8 +455,10 @@ def plot_difference(
     ax.set_facecolor("0.88")
     mesh = ax.pcolormesh(duration, luminosity, delta, norm=Normalize(-reach, reach), cmap="RdBu", shading="auto")
     fig.colorbar(mesh, ax=ax, label=r"$\log_{10}$(comparison / baseline) recovered volume-time [dex]")
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+    if x_log:
+        ax.set_xscale("log")
+    if y_log:
+        ax.set_yscale("log")
 
     # Contours of the difference, where it reaches them
     levels = [level for level in _DIFFERENCE_LEVELS if delta.min() < level < delta.max()] if delta.count() else []
@@ -447,9 +488,10 @@ def plot_difference(
     ax.set_xlim(duration.min(), duration.max())
     ax.set_ylim(luminosity.min(), luminosity.max())
 
-    ax.set_xlabel(r"rest-frame half-decline time $t_{1/2}$ [day]")
-    band = difference.meta.get("band")
-    ax.set_ylabel(f"{rf'$L_\mathrm{{{band}}}$' if band else r'$L$'} [erg s$^{{-1}}$]")
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    if annotate is not None:
+        annotate(ax)
 
     # Magnitude is linear in log L, so a twin axis with the limits of the luminosity axis converted lines up exactly
     zero_point = difference.meta.get("absolute_magnitude_zero_point")
@@ -460,6 +502,189 @@ def plot_difference(
 
     if title:
         ax.set_title(title)
+    if path is not None:
+        fig.savefig(path, dpi=_SAVE_DPI)
+    return fig
+
+
+# ============================================ #
+# Any two-axis map                             #
+# ============================================ #
+def _axis_label(axis: Axis) -> str:
+    """Return what a figure writes on an axis: its label and, if it has one, its unit."""
+    label = axis.label or axis.name
+    return f"{label} [{axis.unit}]" if axis.unit else label
+
+
+def _grid_panels(fields: dict, products: dict, selected: Sequence[str] | None) -> list[tuple]:
+    """
+    Describe the panels of `plot_grid`.
+
+    Each is a tuple of the column drawn, its colour bar label, colour scale and colour map, and the levels of its
+    contours.
+    """
+    from matplotlib.colors import LogNorm
+
+    if selected is None:
+        # The success fraction, every yield (a product with an interval), and the uncertainty
+        yields = [name for name in products if f"{name}_lo" in fields]
+        selected = ["f", *yields, "sigma_log"]
+
+    panels = []
+    for name in selected:
+        if name not in fields:
+            raise ValueError(f"The table has no column {name!r}; it has {sorted(fields)}.")
+        if name == "f":
+            panels.append((name, "success fraction f", LogNorm(*_F_RANGE), "viridis", list(_F_LEVELS)))
+        elif name == "sigma_log":
+            panels.append((name, r"uncertainty of $\ln(f+\epsilon)$", None, "cividis", []))
+        else:
+            product = products.get(name, {})
+            label = product.get("label") or name
+            label = f"{label} [{product['unit']}]" if product.get("unit") else label
+            positive = fields[name][np.isfinite(fields[name]) & (fields[name] > 0)]
+            if positive.size == 0:
+                panels.append((name, label, None, "viridis", []))
+                continue
+            vmax = positive.max()
+            vmin = max(positive.min(), vmax * 1e-6)
+            decades = range(int(np.ceil(np.log10(vmin))), int(np.floor(np.log10(vmax))) + 1)
+            panels.append((name, label, LogNorm(vmin, vmax), "viridis", [10.0**k for k in decades][::2]))
+    return panels
+
+
+def plot_grid(
+    grid: Table,
+    points: Table | None = None,
+    path: str | Path | None = None,
+    title: str | None = None,
+    *,
+    fields: Sequence[str] | None = None,
+    show_points: bool = False,
+    annotate: Callable | None = None,
+):
+    r"""
+    Draw a two-axis map: the success fraction, its yields and its uncertainty, from the metadata of the table alone.
+
+    The axes, their labels and units, and whether each is logarithmic come from the ``space`` in the table's ``meta``
+    (`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` records it), so nothing here knows what the axes
+    are. The first axis is drawn vertically and the second horizontally, as in `plot_map`. A panel is made of the
+    success fraction ``f``, of every product that carries an interval (a yield, ``<name>``, ``<name>_lo``,
+    ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
+
+    Parameters
+    ----------
+    grid : astropy.table.Table
+        The output of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` of a map over two axes.
+    points : astropy.table.Table, optional
+        The measured points (``PhaseSpaceMap.table``), drawn when `show_points` is set.
+    path : str or pathlib.Path, optional
+        Where to write the figure. If omitted, the figure is not saved.
+    title : str, optional
+        A suptitle.
+    fields : sequence of str, optional
+        The columns to draw, one panel each.
+    show_points : bool, optional
+        Whether to mark the measured points, as circles that grow with the number of tries.
+    annotate : callable, optional
+        ``annotate(ax)``, called on every panel to draw anything else, such as the region a class of transients
+        occupies. The coordinates are the plotted ones (the values of a logarithmic axis, not their logarithms).
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The figure, left open so that it can be adjusted or shown.
+
+    Raises
+    ------
+    ValueError
+        If the table does not record its space, the space does not have two axes, or a column asked for is missing.
+    """
+    import matplotlib.pyplot as plt
+
+    if "space" not in grid.meta:
+        raise ValueError("The table does not record its space; make it with PhaseSpaceMap.grid_table.")
+    space = Space.from_dict(grid.meta["space"])
+    if space.ndim != 2:
+        raise ValueError(f"A figure is of a map over two axes, and this one has {space.ndim}.")
+    set_plot_style()
+
+    # The grid, with the first axis varying slowest
+    shape = tuple(len(np.unique(grid[name])) for name in space.names)
+    if int(np.prod(shape)) != len(grid):
+        raise ValueError("The table is not a regular grid of its space.")
+    fields_by_name = {name: np.asarray(grid[name]).reshape(shape) for name in grid.colnames}
+
+    def plotted(axis: Axis) -> np.ndarray:
+        """
+        Return the grid of an axis as it is drawn: the values of a logarithmic axis, not their logarithms.
+
+        Parameters
+        ----------
+        axis : Axis
+            The axis.
+
+        Returns
+        -------
+        numpy.ndarray
+            The coordinate at each point of the grid.
+        """
+        values = fields_by_name[axis.name]
+        return 10.0**values if axis.scale == "log10" else values
+
+    vertical, horizontal = space.axes
+    y, x = plotted(vertical), plotted(horizontal)
+    products = {product["name"]: product for product in grid.meta.get("products", [])}
+    panels = _grid_panels(fields_by_name, products, fields)
+
+    n_rows = int(np.ceil(len(panels) / 2))
+    n_columns = 2 if len(panels) > 1 else 1
+    fig, axes = plt.subplots(
+        n_rows,
+        n_columns,
+        figsize=(7 * n_columns, 5.5 * n_rows),
+        sharex=True,
+        sharey=True,
+        constrained_layout=True,
+        squeeze=False,
+    )
+    for ax, (name, label, norm, cmap, levels) in zip(axes.ravel(), panels):
+        values = np.clip(fields_by_name[name], 1e-12, None) if norm is not None else fields_by_name[name]
+        mesh = ax.pcolormesh(x, y, values, norm=norm, cmap=cmap, shading="auto")
+        fig.colorbar(mesh, ax=ax, label=label)
+        if show_points and points is not None:
+            px, py = np.asarray(points[horizontal.name]), np.asarray(points[vertical.name])
+            ax.scatter(
+                10.0**px if horizontal.scale == "log10" else px,
+                10.0**py if vertical.scale == "log10" else py,
+                s=8 + 30 * np.log10(points["n"] / points["n"].min() + 1.0),
+                facecolor="none",
+                edgecolor="white",
+                linewidth=0.8,
+            )
+        if horizontal.scale == "log10":
+            ax.set_xscale("log")
+        if vertical.scale == "log10":
+            ax.set_yscale("log")
+        levels = [
+            level for level in levels if np.nanmin(fields_by_name[name]) < level < np.nanmax(fields_by_name[name])
+        ]
+        if levels:
+            _label_once(ax, ax.contour(x, y, fields_by_name[name], levels=levels, colors="white", linewidths=1), "%g")
+        if annotate is not None:
+            annotate(ax)
+
+    for ax in axes.ravel()[len(panels) :]:
+        ax.set_visible(False)
+    for ax in axes[-1]:
+        ax.set_xlabel(_axis_label(horizontal))
+    for ax in axes[:, 0]:
+        ax.set_ylabel(_axis_label(vertical))
+    axes[0, 0].set_xlim(x.min(), x.max())
+    axes[0, 0].set_ylim(y.min(), y.max())
+
+    if title:
+        fig.suptitle(title)
     if path is not None:
         fig.savefig(path, dpi=_SAVE_DPI)
     return fig
