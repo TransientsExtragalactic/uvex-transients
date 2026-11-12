@@ -453,7 +453,7 @@ def run_maps(
     specs : list of MapSpec
         The maps to make.
     overwrite, resume : bool, optional
-        As for `uvex_transients.phase_space.run.run_experiment`.
+        As for `uvex_transients.phase_space.stages.run_experiment`.
     progress : bool, optional
         Whether to show the progress bars of the simulation.
     workers : int, optional
@@ -466,7 +466,7 @@ def run_maps(
     Returns
     -------
     dict of str to dict
-        For each map id, the files written (see `uvex_transients.phase_space.run.run_experiment`).
+        For each map id, the files written (see `uvex_transients.phase_space.stages.run_experiment`).
     """
     return {
         spec.id: _run_experiment_map(
@@ -497,7 +497,7 @@ def _run_experiment_map(
     """
     Make one map, of any kind of sampler, as an experiment.
 
-    The map is run with `~uvex_transients.phase_space.run.run_experiment`.
+    The map is run with `~uvex_transients.phase_space.stages.run_experiment`.
 
     Parameters
     ----------
@@ -508,7 +508,7 @@ def _run_experiment_map(
     spec : MapSpec
         The map, of a registered kind.
     overwrite, resume : bool
-        As for `uvex_transients.phase_space.run.run_experiment`.
+        As for `uvex_transients.phase_space.stages.run_experiment`.
     progress : bool
         Whether to show the progress bars of the simulation.
     workers : int, optional
@@ -519,7 +519,7 @@ def _run_experiment_map(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written (see `uvex_transients.phase_space.run.run_experiment`).
+        The files written (see `uvex_transients.phase_space.stages.run_experiment`).
 
     Raises
     ------
@@ -527,8 +527,8 @@ def _run_experiment_map(
         If the bounds name an axis that the sampler does not have, or the sampler does not take a setting.
     """
     from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
-    from uvex_transients.phase_space.run import run_experiment
     from uvex_transients.phase_space.sampling import StoppingRule, get_sampler
+    from uvex_transients.phase_space.stages import run_experiment
 
     sampler_class = get_sampler(spec.kind)
     detection = {key: value for key, value in spec.recovery.items() if key in _SURVEY_KEYS}

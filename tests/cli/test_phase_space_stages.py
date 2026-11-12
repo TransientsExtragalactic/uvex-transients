@@ -12,7 +12,7 @@ pytest.importorskip("sklearn")
 pytest.importorskip("matplotlib")
 
 from uvex_transients.cli.main import cli  # noqa: E402
-from uvex_transients.phase_space import stages  # noqa: E402
+from uvex_transients.phase_space import files, stages  # noqa: E402
 
 from .test_phase_space import BREAKOUT_MAP, CONFIG_TEMPLATE  # noqa: E402
 
@@ -237,8 +237,8 @@ def test_kinds_lists_each_sampler_and_what_it_takes():
 # The library                                                                  #
 # ---------------------------------------------------------------------------- #
 def test_describe_reads_both_formats(built, earlier):
-    old, current = stages.describe(earlier), stages.describe(built / "fuv_test")
-    new = stages.describe(built / "breakout_test")
+    old, current = files.describe(earlier), files.describe(built / "fuv_test")
+    new = files.describe(built / "breakout_test")
     assert (old.flavor, old.kind, old.band) == ("legacy", "canonical", "FUV")
     assert (current.flavor, current.kind, current.band) == ("experiment", "canonical", "FUV")
     assert (new.flavor, new.kind, new.band) == ("experiment", "breakout", "FUV")
@@ -247,12 +247,12 @@ def test_describe_reads_both_formats(built, earlier):
 
 
 def test_find_maps_expands_a_run_and_refuses_what_is_not_a_map(built, tmp_path):
-    assert [path.name for path in stages.find_maps([built])] == ["breakout_test", "fuv_test", "nuv_test"]
-    assert stages.find_maps([built / "fuv_test" / "points.ecsv"]) == [built / "fuv_test"]
+    assert [path.name for path in files.find_maps([built])] == ["breakout_test", "fuv_test", "nuv_test"]
+    assert files.find_maps([built / "fuv_test" / "points.ecsv"]) == [built / "fuv_test"]
     with pytest.raises(FileNotFoundError, match="is not a map"):
-        stages.find_maps([tmp_path])
+        files.find_maps([tmp_path])
     with pytest.raises(FileNotFoundError, match="does not exist"):
-        stages.find_maps([tmp_path / "nothing"])
+        files.find_maps([tmp_path / "nothing"])
 
 
 def test_an_overlay_is_refused_for_a_map_that_is_not_over_the_canonical_axes(built, tmp_path):

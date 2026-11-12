@@ -40,7 +40,7 @@ sequence of seeds.
 import contextlib
 import functools
 import multiprocessing
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
@@ -50,21 +50,13 @@ from astropy.units import Quantity
 from numpy.typing import ArrayLike, NDArray
 
 from uvex_transients.phase_space._config import configured
+from uvex_transients.phase_space.files import LEGACY, SCHEMA_VERSION, flavor, upgrade_legacy_header
 from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling.base import Outcome, Product, Sampler, StoppingRule, get_sampler
 from uvex_transients.phase_space.space import Space
 from uvex_transients.utils import logger
 
-__all__ = ["SCHEMA_VERSION", "CampaignSettings", "Experiment", "fork_map", "point_seed", "run_campaign"]
-
-#: The version of the points file that `Experiment.save` writes.
-SCHEMA_VERSION = 2
-
-#: What the earlier format recorded as its evaluator, which is the canonical sampler with a stopping rule.
-_LEGACY_EVALUATOR = "uvex_transients.phase_space.evaluator.RecoveryEvaluator"
-
-#: What of the settings of the earlier format's evaluator belongs to the stopping rule and the seed, not the sampler.
-_LEGACY_RULE_KEYS = ("chunk_size", "k_target", "n_max")
+__all__ = ["CampaignSettings", "Experiment", "fork_map", "point_seed", "run_campaign"]
 
 
 # ============================================ #
@@ -618,8 +610,8 @@ class Experiment:
         """
         table = Table.read(Path(path), format="ascii.ecsv")
         meta = dict(table.meta)
-        if "evaluator" in meta and "schema_version" not in meta:
-            meta = _upgrade_legacy_header(meta)
+        if flavor(meta) == LEGACY:
+            meta = upgrade_legacy_header(meta)
 
         if sampler is None:
             record = meta.get("sampler", {})
@@ -638,59 +630,3 @@ class Experiment:
         campaign = CampaignSettings(**meta["campaign"])
         phase_map = PhaseSpaceMap(space, table=table, seed=campaign.seed, **meta.get("map", {}))
         return cls(sampler, phase_map, StoppingRule(**meta["rule"]), campaign)
-
-
-def _upgrade_legacy_header(meta: Mapping) -> dict:
-    """
-    Turn the header of the earlier points format into that of the current one.
-
-    The earlier format recorded the bounds and names, the settings of the map and of its loop, and an evaluator: the
-    canonical sampler together with the stopping rule and a seed.
-
-    Parameters
-    ----------
-    meta : Mapping
-        The header of a file of the earlier format.
-
-    Returns
-    -------
-    dict
-        The header in the current format.
-
-    Raises
-    ------
-    ValueError
-        If the file recorded an evaluator that is not the canonical one.
-    """
-    evaluator = meta["evaluator"]
-    if evaluator["class"] != _LEGACY_EVALUATOR:
-        raise ValueError(f"Cannot read a file that records the evaluator {evaluator['class']!r}.")
-    settings = dict(evaluator["settings"])
-    legacy_map = dict(meta.get("sampler", {}))
-
-    # The stopping rule and the seed were settings of the evaluator, and are no longer settings of the sampler
-    rule = {key: int(settings.pop(key)) for key in _LEGACY_RULE_KEYS}
-    seed = settings.pop("seed", None)
-
-    return {
-        "schema_version": SCHEMA_VERSION,
-        "space": {
-            "axes": [
-                {"name": name, "lo": lo, "hi": hi, "label": "", "unit": "", "scale": "log10"}
-                for name, (lo, hi) in zip(meta["names"], meta["bounds"])
-            ]
-        },
-        "map": {
-            key: legacy_map[key] for key in ("acquisition", "n_candidates", "floor", "n_restarts") if key in legacy_map
-        },
-        "rule": rule,
-        "campaign": {
-            **{
-                key: legacy_map[key]
-                for key in ("n_initial", "batch_size", "max_points", "tolerance")
-                if key in legacy_map
-            },
-            "seed": int(seed) if seed is not None else 0,
-        },
-        "sampler": {"kind": "canonical", "settings": settings},
-    }

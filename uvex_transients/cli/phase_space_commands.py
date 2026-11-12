@@ -345,7 +345,8 @@ def fit_command(
     overwrite : bool
         Whether to replace files that exist.
     """
-    from uvex_transients.phase_space.stages import describe, find_maps, fit_map
+    from uvex_transients.phase_space.files import describe, find_maps
+    from uvex_transients.phase_space.stages import fit_map
 
     directories = _guard(find_maps, paths)
     context = {}
@@ -418,7 +419,8 @@ def plot_command(
     overlay : bool
         Whether to shade the classes.
     """
-    from uvex_transients.phase_space.stages import find_maps, plot_files
+    from uvex_transients.phase_space.files import find_maps
+    from uvex_transients.phase_space.stages import plot_files
 
     directories = _guard(find_maps, paths)
     if out_path is not None and len(directories) != 1:
@@ -476,7 +478,8 @@ def compare_command(
     overwrite : bool
         Whether to replace files that exist.
     """
-    from uvex_transients.phase_space.stages import compare_maps, find_maps
+    from uvex_transients.phase_space.files import find_maps
+    from uvex_transients.phase_space.stages import compare_maps
 
     (baseline_dir,), (comparison_dir,) = (_guard(find_maps, [path]) for path in (baseline, comparison))
     written = _guard(
@@ -509,7 +512,7 @@ def info_command(paths: tuple[Path, ...]) -> None:
     paths : tuple of Path
         The directories.
     """
-    from uvex_transients.phase_space.stages import describe, find_maps
+    from uvex_transients.phase_space.files import describe, find_maps
 
     for directory in _guard(find_maps, paths):
         info = _guard(describe, directory)

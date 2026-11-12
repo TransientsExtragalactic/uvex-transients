@@ -1,42 +1,61 @@
 """
 The stages of a recovery map as operations on its directory.
 
-A map is a directory of files (see `~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of
-them and writes others, so that a stage can be run, repeated or changed without the ones before it:
+A map is a directory of files (see `~uvex_transients.phase_space.files` and
+`~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of them and writes others, so that a
+stage can be run, repeated or changed without the ones before it:
 
-1. ``points.ecsv`` is the simulation, made by `~uvex_transients.phase_space.run.run_experiment` (with
-   ``products=False`` to stop there). It is the only expensive file, and its header records everything needed to
-   rebuild the experiment.
+1. `run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop there), and then the products below. It is
+   the only expensive stage, and the header of the points records everything needed to rebuild the experiment.
 2. `fit_map` makes ``map.ecsv`` (and, for the canonical map, ``overlay.ecsv``) from the points; `write_map` does the
    same for an experiment that is already in memory. They rebuild the sampler, so they need the survey schedule and
    scikit-learn.
 3. `plot_files` makes ``map.png`` from the files alone, and so needs neither.
 4. `compare_maps` differences the ``map.ecsv`` of two maps, again from the files alone.
 
-`describe` reads only the header of the points. Every function accepts both formats of points file, the current one
-(which records a registered sampler kind) and the earlier canonical one (which records an evaluator, and is read as the
-canonical sampler), so the files of a published release can be fitted again and drawn.
+Up to four files are written to the directory of a map:
+
+``points.ecsv``
+    Every measured point: its coordinates, ``k`` successes out of ``n`` tries, and what the sampler records of it. It
+    is rewritten after every batch and read back by ``resume``.
+``map.ecsv``
+    The fitted map on a grid (see `~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success
+    fraction with a 1 sigma interval (``_lo``, ``_hi``), and the quantities of the sampler.
+``overlay.ecsv``
+    For the canonical map only, and with ``overlay``, the measured peak luminosity and half-decline time of draws from
+    every shipped transient class, in the band of the map.
+``map.png``
+    The figure of the map.
+
+Every stage accepts both formats of points file, so the files of a published release can be fitted again and drawn.
+Running a map needs the optional ``phase_space`` extra.
 """
 
-from collections.abc import Sequence
-from dataclasses import dataclass
+import contextlib
+import time
+from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from astropy.table import Table
 from astropy.units import Quantity
+from tqdm import tqdm
 
+from uvex_transients.phase_space.files import describe, map_paths, read_table
 from uvex_transients.phase_space.space import Space
+from uvex_transients.utils import logger
 from uvex_transients.utils.results import PHASE_SPACE_FILES
+
+if TYPE_CHECKING:
+    from uvex_transients.phase_space.experiment import Experiment
+    from uvex_transients.phase_space.map import PhaseSpaceMap
 
 __all__ = [
     "DIFFERENCE_FILES",
-    "MapInfo",
     "compare_maps",
-    "describe",
-    "find_maps",
     "fit_map",
     "map_title",
     "plot_files",
+    "run_experiment",
     "write_map",
 ]
 
@@ -46,151 +65,181 @@ DIFFERENCE_FILES = {"difference": "difference.ecsv", "figure": "difference.png"}
 #: The axes of the canonical map, which the overlay of the shipped classes is measured on.
 _CANONICAL_NAMES = ("log_luminosity", "log_half_time")
 
-#: The two formats of a points file.
-LEGACY, CURRENT = "legacy", "experiment"
+
+#: The progress bar constructor, kept so that `_quiet_progress` can put it back.
+_TQDM_INIT = tqdm.__init__
 
 
-@dataclass(frozen=True)
-class MapInfo:
-    """What the points file of a map records, and which of its files are there."""
-
-    directory: Path
-    """pathlib.Path: The directory of the map."""
-
-    flavor: str
-    """str: ``"experiment"`` for the current format of the points file, ``"legacy"`` for the earlier canonical one."""
-
-    kind: str
-    """str: The registered kind of the sampler, ``"canonical"`` for the earlier format."""
-
-    space: Space
-    """Space: The axes the map was made over."""
-
-    n_points: int
-    """int: The number of points measured."""
-
-    n_tries: int
-    """int: The total number of tries (events) over all points."""
-
-    header: dict
-    """dict: The header in the current format (``space``, ``map``, ``rule``, ``campaign``, ``sampler``)."""
-
-    files: tuple[str, ...]
-    """tuple of str: The keys of `~uvex_transients.utils.results.PHASE_SPACE_FILES` whose file is present."""
-
-    @property
-    def settings(self) -> dict:
-        """dict: The settings the sampler records."""
-        return dict(self.header["sampler"]["settings"])
-
-    @property
-    def band(self) -> str | None:
-        """Str or None: The band of the map, if the sampler records one."""
-        return self.settings.get("band")
-
-
-def _paths(directory: str | Path) -> dict[str, Path]:
-    """Return the file paths of a map directory, by key."""
-    directory = Path(directory)
-    return {key: directory / name for key, name in PHASE_SPACE_FILES.items()}
-
-
-def _read(path: Path, what: str) -> Table:
-    """Read an ECSV file, or raise a `FileNotFoundError` that says what is missing and which stage makes it."""
-    if not path.exists():
-        raise FileNotFoundError(f"{path} does not exist; it is needed for {what}.")
-    return Table.read(path, format="ascii.ecsv")
-
-
-def _flavor(meta) -> str:
-    """Return the format of a points file from its header."""
-    if "schema_version" in meta:
-        return CURRENT
-    if "evaluator" in meta:
-        return LEGACY
-    raise ValueError("The file is not a points file of a phase-space map: its header records no sampler or evaluator.")
-
-
-def find_maps(paths: Sequence[str | Path]) -> list[Path]:
+def _silent_tqdm_init(self, *args, **kwargs) -> None:
     """
-    Resolve the paths a command was given to the directories of maps.
-
-    A directory that holds a ``points.ecsv`` is a map. One that does not is taken to be the output of a run, and its
-    subdirectories that are maps are used, in order of name. A ``points.ecsv`` file stands for its directory.
+    Construct a progress bar that is disabled, whatever it asks for.
 
     Parameters
     ----------
-    paths : sequence of str or pathlib.Path
-        Directories (or points files).
-
-    Returns
-    -------
-    list of pathlib.Path
-        The directories of the maps, in the order given, without repeats.
-
-    Raises
-    ------
-    FileNotFoundError
-        If a path does not exist, or is neither a map nor holds any.
+    *args
+        Positional arguments of `tqdm.tqdm`.
+    **kwargs
+        Keyword arguments of `tqdm.tqdm`; ``disable`` is overridden.
     """
-    points = PHASE_SPACE_FILES["points"]
-    found: dict[Path, None] = {}
-    for path in map(Path, paths):
-        if not path.exists():
-            raise FileNotFoundError(f"{path} does not exist.")
-        if path.is_file():
-            if path.name != points:
-                raise FileNotFoundError(f"{path} is a file, but not a {points}.")
-            path = path.parent
-        if (path / points).exists():
-            found[path] = None
-            continue
-        children = sorted(child for child in path.iterdir() if (child / points).exists()) if path.is_dir() else []
-        if not children:
-            raise FileNotFoundError(f"{path} is not a map and holds none: there is no {points} in it or below it.")
-        found.update(dict.fromkeys(children))
-    return list(found)
+    kwargs["disable"] = True
+    _TQDM_INIT(self, *args, **kwargs)
 
 
-def describe(directory: str | Path) -> MapInfo:
+@contextlib.contextmanager
+def _quiet_progress(enabled: bool) -> Iterator[None]:
     """
-    Describe a map from the header of its points file.
+    Silence every progress bar of the simulation for the duration of the block, unless `enabled`.
+
+    Some bars pass ``disable`` explicitly, so a default would not silence them, and a map makes thousands of them.
 
     Parameters
     ----------
-    directory : str or pathlib.Path
-        The directory of the map.
+    enabled : bool
+        Whether the bars are wanted, in which case nothing is changed.
+
+    Yields
+    ------
+    None
+        The block runs with the bars silenced.
+    """
+    if enabled:
+        yield
+        return
+
+    tqdm.__init__ = _silent_tqdm_init
+    try:
+        yield
+    finally:
+        tqdm.__init__ = _TQDM_INIT
+
+
+def run_experiment(
+    experiment: "Experiment",
+    out_dir: str | Path,
+    *,
+    grid_size: int | None = None,
+    rate: Quantity | None = None,
+    overlay: bool = False,
+    overlay_draws: int | None = None,
+    plot: bool = True,
+    show_points: bool = False,
+    resume: bool = False,
+    overwrite: bool = False,
+    progress: bool = False,
+    callback: Callable[["PhaseSpaceMap"], None] | None = None,
+    map_fn: Callable = map,
+    title: str | None = None,
+    products: bool = True,
+) -> dict[str, Path]:
+    """
+    Run an experiment of any sampler and write its data products and figure.
+
+    The points are saved after every batch, so a run that stops can be resumed, and the fitted map is written on a grid
+    with the quantities of the sampler. The files are the ones the module's docstring lists: ``points.ecsv`` (see
+    `~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
+    `~uvex_transients.phase_space.experiment.Experiment.grid_table`), ``overlay.ecsv`` and ``map.png`` (see
+    `~uvex_transients.phase_space.stages.plot_files`, which needs a map over two axes).
+
+    Parameters
+    ----------
+    experiment : ~uvex_transients.phase_space.experiment.Experiment
+        What to run: a sampler, the map, the stopping rule and the campaign.
+    out_dir : str or pathlib.Path
+        Directory for the files, created if needed.
+    grid_size : int, optional
+        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
+    rate : ~astropy.units.Quantity, optional
+        A volumetric rate; adds ``expected_recoveries`` to the map for a sampler that can make it.
+    overlay : bool, optional
+        Whether to measure the shipped transient classes in the band of the map and shade them on the figure. Only the
+        canonical map has an overlay.
+    overlay_draws : int, optional
+        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
+    plot : bool, optional
+        Whether to draw the figure. The default is `True`.
+    show_points : bool, optional
+        Whether to mark the measured points on the figure.
+    resume : bool, optional
+        Continue from the ``points.ecsv`` in `out_dir`, if there is one.
+    overwrite : bool, optional
+        Replace the files that are already in `out_dir`. Without it, or `resume`, existing ``points.ecsv`` or
+        ``map.ecsv`` raises.
+    progress : bool, optional
+        Whether to show the progress bars of the simulation. The default is `False`.
+    callback : callable, optional
+        Called with the map after the initial design and after every batch, once the points are saved.
+    map_fn : callable, optional
+        ``map_fn(function, tasks)`` returning the results in order, to measure a batch in parallel.
+    title : str, optional
+        The title of the figure. By default one that says how many points and tries it took.
+    products : bool, optional
+        Whether to make the map and the figure after the sampling. If `False`, only ``points.ecsv`` is written, and the
+        rest can be made from it later with `~uvex_transients.phase_space.stages.fit_map` and
+        `~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
 
     Returns
     -------
-    MapInfo
-        The kind, the axes, the number of points and tries, and the files present.
+    dict of str to pathlib.Path
+        The files written, by their key in `PHASE_SPACE_FILES`.
 
     Raises
     ------
-    FileNotFoundError
-        If the directory has no ``points.ecsv``.
-    ValueError
-        If the points file does not record a phase-space map.
+    FileExistsError
+        If `out_dir` already holds a map and neither `resume` nor `overwrite` is set.
     """
-    from uvex_transients.phase_space.experiment import _upgrade_legacy_header
+    out_dir = Path(out_dir)
+    paths = {key: out_dir / name for key, name in PHASE_SPACE_FILES.items()}
+    existing = [paths[key].name for key in ("points", "map") if paths[key].exists()]
+    if existing and not (resume or overwrite):
+        raise FileExistsError(f"{out_dir} already holds {existing}; pass overwrite (or resume) to continue.")
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    directory = Path(directory)
-    paths = _paths(directory)
-    table = _read(paths["points"], "describing a map")
-    meta = dict(table.meta)
-    flavor = _flavor(meta)
-    header = _upgrade_legacy_header(meta) if flavor == LEGACY else meta
-    return MapInfo(
-        directory=directory,
-        flavor=flavor,
-        kind=header["sampler"]["kind"],
-        space=Space.from_dict(header["space"]),
-        n_points=len(table),
-        n_tries=int(table["n"].sum()) if len(table) else 0,
-        header=header,
-        files=tuple(key for key, path in paths.items() if path.exists()),
-    )
+    if resume and paths["points"].exists():
+        experiment.resume_from(paths["points"])
+        logger.info("Resuming from %d points in %s.", len(experiment.phase_map), paths["points"])
+
+    def checkpoint(phase_map: "PhaseSpaceMap") -> None:
+        """
+        Save the points, then pass the map on to the caller's callback.
+
+        Parameters
+        ----------
+        phase_map : PhaseSpaceMap
+            The map, after its initial design or a batch.
+        """
+        experiment.save(paths["points"])
+        if callback is not None:
+            callback(phase_map)
+
+    start = time.perf_counter()
+    with _quiet_progress(progress):
+        experiment.run(map_fn=map_fn, callback=checkpoint)
+    elapsed = time.perf_counter() - start
+    experiment.save(paths["points"])
+    if not products:
+        logger.info(
+            "Sampled %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(experiment.phase_map)
+        )
+        return {"points": paths["points"]}
+
+    points = experiment.phase_map.table
+    written = {
+        "points": paths["points"],
+        **write_map(experiment, out_dir, grid_size=grid_size, rate=rate, overlay=overlay, overlay_draws=overlay_draws),
+    }
+
+    if plot:
+        title = title or map_title(
+            experiment.sampler.kind,
+            experiment.sampler.settings,
+            len(points),
+            int(points["n"].sum()),
+            minutes=elapsed / 60,
+        )
+        written["figure"] = plot_files(out_dir, title=title, show_points=show_points, overlay=overlay)
+
+    logger.info("Ran %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(points))
+    return written
 
 
 def fit_map(
@@ -250,7 +299,7 @@ def fit_map(
         If scikit-learn is not installed.
     """
     info = describe(directory)
-    paths = _paths(directory)
+    paths = map_paths(directory)
     targets = ["map", *(["overlay"] if overlay else [])]
     existing = [paths[key].name for key in targets if paths[key].exists()]
     if existing and not overwrite:
@@ -316,7 +365,7 @@ def write_map(
         raise ValueError(f"Only the canonical map has an overlay, and this one is of kind {sampler.kind!r}.")
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    paths = _paths(directory)
+    paths = map_paths(directory)
 
     grid = experiment.grid_table(grid_size, rate=rate)
     grid.write(paths["map"], format="ascii.ecsv", overwrite=True)
@@ -410,12 +459,12 @@ def plot_files(
     from uvex_transients.phase_space.plotting import plot_grid, plot_map
 
     info = describe(directory)
-    paths = _paths(directory)
+    paths = map_paths(directory)
     figure_path = Path(path) if path is not None else paths["figure"]
     if figure_path.exists() and not overwrite:
         raise FileExistsError(f"{figure_path} exists; pass overwrite to replace it.")
-    grid = _read(paths["map"], "drawing the map (make it with `fit`)")
-    points = _read(paths["points"], "drawing the map")
+    grid = read_table(paths["map"], "drawing the map (make it with `fit`)")
+    points = read_table(paths["points"], "drawing the map")
 
     if title is None:
         title = map_title(info.kind, info.settings, info.n_points, info.n_tries)
@@ -425,7 +474,7 @@ def plot_files(
         if overlay and paths["overlay"].exists():
             from uvex_transients.phase_space.overlay import split_measurements
 
-            overlays = split_measurements(_read(paths["overlay"], "shading the classes"))
+            overlays = split_measurements(read_table(paths["overlay"], "shading the classes"))
         figure = plot_map(grid, points, figure_path, title, overlays=overlays, show_points=show_points)
     else:
         figure = plot_grid(grid, points, figure_path, title, show_points=show_points)
@@ -497,7 +546,8 @@ def compare_maps(
         raise FileExistsError(f"{out_dir} already holds {existing}; pass overwrite to replace them.")
 
     maps = [
-        _read(_paths(directory)["map"], "a comparison (make it with `fit`)") for directory in (baseline, comparison)
+        read_table(map_paths(directory)["map"], "a comparison (make it with `fit`)")
+        for directory in (baseline, comparison)
     ]
     difference = difference_map(*maps, floor=floor, check_meta=check_meta)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -506,12 +556,12 @@ def compare_maps(
 
     if plot:
         overlays = None
-        overlay_path = _paths(baseline)["overlay"]
+        overlay_path = map_paths(baseline)["overlay"]
         names = Space.from_dict(difference.meta["space"]).names if "space" in difference.meta else _CANONICAL_NAMES
         if overlay and overlay_path.exists() and names == _CANONICAL_NAMES:
             from uvex_transients.phase_space.overlay import split_measurements
 
-            overlays = split_measurements(_read(overlay_path, "shading the classes"))
+            overlays = split_measurements(read_table(overlay_path, "shading the classes"))
         title = title or f"{Path(comparison).name} relative to {Path(baseline).name}"
         figure = plot_difference(difference, targets["figure"], title, overlays=overlays)
         plt.close(figure)
