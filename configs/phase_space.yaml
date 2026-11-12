@@ -12,6 +12,18 @@
 #
 # or `make phase-space PS_OUT_DIR=results/phase_space/`. Add `--map fuv_detection` to make one map.
 #
+# That runs every stage (`build`). The stages are also commands over the files of a map, so the simulation (the slow
+# part) can be run once and the rest repeated or changed:
+#
+#     uvex-transients phase-space run configs/phase_space.yaml --out-dir results/phase_space/ --workers 8
+#     uvex-transients phase-space fit results/phase_space/ --config configs/phase_space.yaml
+#     uvex-transients phase-space plot results/phase_space/
+#     uvex-transients phase-space compare results/a/fuv_detection results/b/fuv_detection --out-dir results/diff
+#     uvex-transients phase-space info results/phase_space/      # and `kinds` for the registered samplers
+#
+# The sections `recovery:`, `transient:` and `map:` below are the defaults of the canonical maps only: a map of another
+# `kind:` (see `uvex-transients phase-space kinds`) takes its own `recovery:`, `settings:` and `map: bounds:`.
+#
 # A map is a detection map: an event is recovered when at least `n_visits` of the
 # survey's observations of it reach `snr_threshold`, which is what `snr_screen` of
 # `full_run.yaml` asks of the Standard Run (`exclude_first_visit_detections` is on

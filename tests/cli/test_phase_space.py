@@ -286,3 +286,51 @@ def test_a_setting_the_sampler_does_not_take_and_an_axis_it_does_not_have_are_er
             cli, ["phase-space", str(bad), "--out-dir", str(tmp_path / "o2"), "--map", "breakout_test"]
         )
         assert result.exit_code != 0 and message in str(result.output) + str(result.exception)
+
+
+# ---------------------------------------------------------------------------- #
+# Which maps the shared sections apply to                                      #
+# ---------------------------------------------------------------------------- #
+def test_the_shared_sections_that_define_a_detection_are_the_defaults_of_the_top_level_kind_only():
+    parsed = _parse(
+        "recovery: {n_visits: 2, band: NUV}\nmap: {grid_size: 9}\nsampler: {max_points: 7}\n"
+        "maps:\n  - id: a\n  - id: b\n    kind: breakout\n"
+    )
+    canonical, breakout = parsed.maps
+    assert canonical.recovery == {"n_visits": 2, "band": "NUV"} and canonical.grid_size == 9
+    # What a visit count or a grid means is the sampler's own, so a canonical default does not reach another kind
+    assert breakout.recovery == {} and breakout.grid_size is None
+    # How points are placed is the same for every kind
+    assert canonical.sampler == breakout.sampler == {"max_points": 7}
+
+
+def test_a_top_level_kind_gives_its_shared_sections_to_that_kind():
+    parsed = _parse("kind: breakout\nrecovery: {n_visits: 1}\nmaps:\n  - id: a\n  - id: b\n    kind: canonical\n")
+    breakout, canonical = parsed.maps
+    assert breakout.kind == "breakout" and breakout.recovery == {"n_visits": 1}
+    assert canonical.kind == "canonical" and canonical.recovery == {}
+
+
+def test_a_section_can_be_shared_across_kinds_on_purpose_with_a_yaml_anchor():
+    parsed = _parse(
+        "recovery: &detection {mag_limit: 24.0}\n"
+        "maps:\n  - id: a\n  - id: b\n    kind: breakout\n    recovery: {<<: *detection, band: NUV}\n"
+    )
+    assert parsed.maps[1].recovery == {"mag_limit": 24.0, "band": "NUV"}
+
+
+def test_the_canonical_axes_are_an_error_for_another_kind():
+    with pytest.raises(ValueError, match="canonical axes"):
+        _parse("maps:\n  - id: a\n    kind: breakout\n    map: {log_luminosity: [40, 45]}\n")
+
+
+def test_the_dry_run_reports_the_default_of_the_kind_not_the_canonical_one(tmp_path):
+    path = tmp_path / "kinds.yaml"
+    path.write_text(
+        "schedule: {name: uvex_v0.6.0}\nmission: uvex_fast\nrecovery: {n_visits: 2}\n"
+        "maps:\n  - id: canon\n    recovery: {band: FUV}\n  - id: sbo\n    kind: breakout\n    recovery: {band: FUV}\n"
+    )
+    result = CliRunner().invoke(cli, ["phase-space", str(path), "--out-dir", str(tmp_path / "o"), "--dry-run"])
+    assert result.exit_code == 0, result.output
+    assert "canon: FUV, SNR >= 5 on 2 visit(s)" in result.output
+    assert "sbo [breakout]: FUV, SNR >= 5 on 1 visit(s)" in result.output

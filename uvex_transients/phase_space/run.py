@@ -127,6 +127,7 @@ def run_map(
     seed: int = 0,
     progress: bool = False,
     callback: Callable[[PhaseSpaceSampler], None] | None = None,
+    products: bool = True,
 ) -> dict[str, Path]:
     """
     Map the recovery of an evaluator over its two axes and write the data products.
@@ -167,6 +168,10 @@ def run_map(
         Whether to show the progress bars of the simulation. The default is `False`.
     callback : callable, optional
         Called with the sampler after the initial design and after every batch, once the points are saved.
+    products : bool, optional
+        Whether to make the map, the overlay and the figure after the sampling. If `False`, only ``points.ecsv`` is
+        written, and the rest can be made from it later with `~uvex_transients.phase_space.stages.fit_map` and
+        `~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
 
     Returns
     -------
@@ -205,6 +210,10 @@ def run_map(
     with _quiet_progress(progress):
         sampler.run(callback=lambda state: _save(state, paths["points"], callback))
     elapsed = time.perf_counter() - start
+    if not products:
+        sampler.save(paths["points"])
+        logger.info("Sampled %s in %.1f min with %d points.", evaluator.band, elapsed / 60, len(sampler))
+        return {"points": paths["points"]}
 
     # ---------------------------------------------- #
     # Products                                       #
@@ -253,6 +262,7 @@ def run_experiment(
     callback: Callable[[PhaseSpaceMap], None] | None = None,
     map_fn: Callable = map,
     title: str | None = None,
+    products: bool = True,
 ) -> dict[str, Path]:
     """
     Run an experiment of any sampler and write its data products and figure.
@@ -290,6 +300,10 @@ def run_experiment(
         ``map_fn(function, tasks)`` returning the results in order, to measure a batch in parallel.
     title : str, optional
         The title of the figure. By default one that says how many points and tries it took.
+    products : bool, optional
+        Whether to make the map and the figure after the sampling. If `False`, only ``points.ecsv`` is written, and the
+        rest can be made from it later with `~uvex_transients.phase_space.stages.fit_map` and
+        `~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
 
     Returns
     -------
@@ -330,6 +344,11 @@ def run_experiment(
         experiment.run(map_fn=map_fn, callback=checkpoint)
     elapsed = time.perf_counter() - start
     experiment.save(paths["points"])
+    if not products:
+        logger.info(
+            "Sampled %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(experiment.phase_map)
+        )
+        return {"points": paths["points"]}
 
     points = experiment.phase_map.table
     grid = experiment.grid_table(grid_size, rate=rate)

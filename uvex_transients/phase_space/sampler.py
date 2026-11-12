@@ -352,6 +352,11 @@ class PhaseSpaceSampler(PhaseSpaceMap):
         )
         return log_luminosity, log_half_time, np.column_stack([log_luminosity.ravel(), log_half_time.ravel()])
 
+    @property
+    def evaluator(self) -> Callable[[NDArray], Mapping]:
+        """callable: What evaluates a point, as given or as rebuilt from the file (a `RecoveryEvaluator` for a map)."""
+        return self._evaluate
+
     def _scales(self):
         """Return the evaluator, which supplies the noise-free scales of the maps, if it can."""
         missing = [name for name in _SCALE_METHODS if not hasattr(self._evaluate, name)]

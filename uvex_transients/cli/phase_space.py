@@ -25,6 +25,14 @@ loader. Its layout is::
 Besides ``recovery:``, the shared sections ``transient:``, ``sampler:`` and ``map:`` may be given at the top level and
 in a map. Every key that is left out takes its value from ``config["phase_space"]``.
 
+The shared sections ``transient:``, ``recovery:``, ``map:`` and ``settings:`` are the defaults of the maps of the
+top-level ``kind:`` (the canonical one unless it is given) and of no other kind, since what they set (how many visits
+make a detection, how finely time is binned, the names of the axes) means something different for each sampler, and a
+canonical default that leaked into a breakout map would silently change its definition of a detection. A map of another
+kind takes its defaults from the package configuration (``phase_space.<kind>``, then ``phase_space.recovery``) and its
+own sections. ``sampler:``, which sets how points are placed and not what one is, is shared by every map. To share a
+section on purpose, use a YAML anchor (``recovery: &detection {...}`` and ``recovery: {<<: *detection}``).
+
 A map is of the canonical transient unless it names another ``kind:`` of sampler (see
 `uvex_transients.phase_space.samplers.base.available_samplers`), and then ``settings:`` holds the arguments of that
 sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}`` the ranges of its axes by name::
@@ -38,8 +46,14 @@ sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}
 
 Such a map is run as an `~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``,
 ``map.ecsv`` and ``map.png`` (no overlay, which belongs to the canonical transient).
+
+The run-config says what to simulate. What is done with the files afterwards (fitting, drawing, comparing) is the job of
+the other commands of ``uvex-transients phase-space``, which take the directories of maps and no run-config; see
+`uvex_transients.phase_space.stages`.
 """
 
+import functools
+import os
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -50,7 +64,7 @@ from astropy import units as u
 from m4opt.missions import Mission
 
 from uvex_transients.surveys.base import SurveySchedule
-from uvex_transients.utils import config
+from uvex_transients.utils import config, logger
 
 from .config import _resolve_mission, _resolve_schedule
 from .yaml_tags import get_run_yaml
@@ -91,6 +105,9 @@ _SURVEY_KEYS = (
     "order",
 )
 _RULE_KEYS = ("chunk_size", "k_target", "n_max")
+
+#: The shared sections that are the defaults of the top-level kind only. The others (``sampler:``) are shared by all.
+_KIND_SPECIFIC = ("transient", "recovery", "map", "settings")
 
 _TOP_LEVEL = frozenset({"schedule", "mission", "seed", "overlay", "rate", "maps", "kind", *SECTIONS})
 _MAP_KEYS = frozenset({"id", "kind", *SECTIONS})
@@ -160,6 +177,7 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
     if not isinstance(entries, list) or not entries:
         raise ValueError("The run-config needs a non-empty 'maps:' list.")
 
+    top_kind = str(raw.get("kind", "canonical"))
     specs, seen = [], set()
     for index, entry in enumerate(entries):
         where = f"maps[{index}]"
@@ -180,14 +198,28 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
             errors.append(f"{where}: the id is used twice.")
         seen.add(map_id)
 
-        kind = str(entry.get("kind", raw.get("kind", "canonical")))
+        kind = str(entry.get("kind", top_kind))
         from uvex_transients.phase_space.samplers import available_samplers
 
         if kind not in available_samplers():
             errors.append(f"{where}: unknown kind {kind!r}; the registered kinds are {list(available_samplers())}.")
-        sections = {name: _merge(raw.get(name) or {}, entry.get(name) or {}, name, where, errors) for name in SECTIONS}
+        sections = {
+            name: _merge(
+                raw.get(name) or {} if name not in _KIND_SPECIFIC or kind == top_kind else {},
+                entry.get(name) or {},
+                name,
+                where,
+                errors,
+            )
+            for name in SECTIONS
+        }
         if kind != "canonical" and sections["transient"]:
             errors.append(f"{where}: 'transient:' is for the canonical transient; give a {kind!r} map its 'settings:'.")
+        if kind != "canonical" and {"log_luminosity", "log_half_time"} & set(sections["map"]):
+            errors.append(
+                f"{where}: 'map: log_luminosity/log_half_time' are the canonical axes; "
+                f"give a {kind!r} map 'map: bounds:'."
+            )
         axis_bounds = sections["map"].pop("bounds", None)
         if axis_bounds is not None and not (
             isinstance(axis_bounds, Mapping) and all(len(pair) == 2 for pair in axis_bounds.values())
@@ -331,6 +363,33 @@ class PhaseSpaceConfig:
         return [spec for spec in self.maps if spec.id in ids]
 
 
+def _default(kind: str, key: str):
+    """
+    Return the configured default of a detection setting for a kind of map.
+
+    A sampler of another kind reads ``config["phase_space.<kind>.<key>"]`` before
+    ``config["phase_space.recovery.<key>"]``, which is what the breakout sampler does.
+
+    Parameters
+    ----------
+    kind : str
+        The kind of the map.
+    key : str
+        The setting.
+
+    Returns
+    -------
+    object
+        The default.
+    """
+    if kind != "canonical":
+        try:
+            return config[f"phase_space.{kind}.{key}"]
+        except KeyError:
+            pass
+    return config[f"phase_space.recovery.{key}"]
+
+
 def dry_run_report(
     phase_space_config: PhaseSpaceConfig, out_dir: Path, specs: list[MapSpec], overwrite: bool, resume: bool
 ) -> tuple[list[str], bool]:
@@ -360,7 +419,7 @@ def dry_run_report(
     lines = [f"dry run: phase-space{source}: {len(specs)} map(s) -> {out_dir}"]
     ok = True
     for spec in specs:
-        recovery = {key: config[f"phase_space.recovery.{key}"] for key in ("snr_threshold", "n_visits", "mag_limit")}
+        recovery = {key: _default(spec.kind, key) for key in ("snr_threshold", "n_visits", "mag_limit")}
         recovery.update(spec.recovery)
         problems = []
         if spec.band not in bands:
@@ -385,6 +444,8 @@ def run_maps(
     overwrite: bool = False,
     resume: bool = False,
     progress: bool = False,
+    workers: int = 1,
+    products: bool = True,
 ) -> dict[str, dict[str, Path]]:
     """
     Make the maps, one after the other, each in its own subdirectory of `out_dir`.
@@ -401,6 +462,13 @@ def run_maps(
         As for `uvex_transients.phase_space.run.run_map`.
     progress : bool, optional
         Whether to show the progress bars of the simulation.
+    workers : int, optional
+        The number of processes that measure the points of a batch, for the maps of a sampler of another kind than the
+        canonical one; 0 is one for each CPU. The canonical map is made by the sequential loop that its published
+        files were made with, and ignores it (with a warning). The default is 1.
+    products : bool, optional
+        Whether to fit and draw each map after sampling it. If `False`, only ``points.ecsv`` is written, and the rest
+        is made with `uvex_transients.phase_space.stages.fit_map` and `plot_files`.
 
     Returns
     -------
@@ -416,9 +484,21 @@ def run_maps(
     for spec in specs:
         if spec.kind != "canonical":
             results[spec.id] = _run_experiment_map(
-                phase_space_config, spec, out_dir, overwrite=overwrite, resume=resume, progress=progress
+                phase_space_config,
+                spec,
+                out_dir,
+                overwrite=overwrite,
+                resume=resume,
+                progress=progress,
+                workers=workers,
+                products=products,
             )
             continue
+        if workers != 1:
+            logger.warning(
+                "Map %r is canonical, and is made by the sequential loop of its published files; workers is ignored.",
+                spec.id,
+            )
         evaluator = RecoveryEvaluator(
             schedule,
             phase_space_config.mission_name,
@@ -440,6 +520,7 @@ def run_maps(
             overwrite=overwrite,
             seed=phase_space_config.seed,
             progress=progress,
+            products=products,
         )
     return results
 
@@ -452,6 +533,8 @@ def _run_experiment_map(
     overwrite: bool,
     resume: bool,
     progress: bool,
+    workers: int = 1,
+    products: bool = True,
 ) -> dict[str, Path]:
     """
     Make one map of a sampler of another kind than the canonical one, as an experiment.
@@ -470,6 +553,10 @@ def _run_experiment_map(
         As for `uvex_transients.phase_space.run.run_experiment`.
     progress : bool
         Whether to show the progress bars of the simulation.
+    workers : int, optional
+        The processes that measure a batch (see `run_maps`).
+    products : bool, optional
+        Whether to fit and draw the map after sampling it.
 
     Returns
     -------
@@ -516,7 +603,8 @@ def _run_experiment_map(
         seed=phase_space_config.seed,
         **{key: spec.sampler[key] for key in ("acquisition",) if key in spec.sampler},
     )
-    return run_experiment(
+    run = functools.partial(
+        run_experiment,
         experiment,
         out_dir / spec.id,
         grid_size=spec.grid_size,
@@ -524,4 +612,14 @@ def _run_experiment_map(
         resume=resume,
         overwrite=overwrite,
         progress=progress,
+        products=products,
     )
+    processes = (os.cpu_count() or 1) if workers == 0 else workers
+    if processes <= 1:
+        return run()
+
+    # The workers are forked, since a sampler that holds a schedule cannot be sent to a process pool
+    from uvex_transients.phase_space.campaign import fork_map
+
+    with fork_map(sampler, experiment.rule, processes) as map_fn:
+        return run(map_fn=map_fn)
