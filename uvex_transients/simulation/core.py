@@ -1827,6 +1827,35 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         """Tuple of str: Every cut name registered on this class via `@cut`, sorted."""
         return tuple(sorted(cls._CUT_REGISTRY))
 
+    @classmethod
+    def get_cut(cls, name: str):
+        """
+        Return the function of a registered cut, without running it.
+
+        A caller that applies cuts many times (such as a sampler that counts detections) uses this instead of
+        `run_cut`, which logs every call, and can read the parameters a cut takes from the signature of the result.
+
+        Parameters
+        ----------
+        name : str
+            One of `available_cuts`.
+
+        Returns
+        -------
+        callable
+            The cut, to be called as ``cut(simulator, catalog, mission, **params)``.
+
+        Raises
+        ------
+        ValueError
+            If `name` is not a registered cut.
+        """
+        try:
+            method_name = cls._CUT_REGISTRY[name]
+        except KeyError:
+            raise ValueError(f"Unknown cut {name!r}; available: {cls.available_cuts()}.") from None
+        return getattr(cls, method_name)
+
     def run_cut(self, name: str, catalog: EventCatalog, mission: Mission, **params) -> EventCatalog:
         """
         Run one `@cut`-registered screening method by name.
@@ -1853,12 +1882,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         EventCatalog
             The filtered catalog.
         """
-        try:
-            method_name = self._CUT_REGISTRY[name]
-        except KeyError:
-            raise ValueError(f"Unknown cut {name!r}; available: {self.available_cuts()}.") from None
+        method = self.get_cut(name)
         logger.info("Running cut %r on %d events.", name, len(catalog))
-        result = getattr(self, method_name)(catalog, mission, **params)
+        result = method(self, catalog, mission, **params)
         logger.info("Cut %r kept %d of %d events.", name, len(result), len(catalog))
         return result
 
