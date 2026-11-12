@@ -7,7 +7,7 @@ process. It does one thing beyond that, which is to say where the next measureme
 It knows nothing about transients, surveys or how a point is measured: a point comes in as coordinates and counts, and
 the quantities derived from the fraction (volume-times, efficiencies, redshift limits) are made by
 `~uvex_transients.phase_space.sampling.base.Product` objects that are handed the map's estimate. The loop that
-evaluates the points the map asks for is not here either; see `~uvex_transients.phase_space.campaign.run_campaign`.
+evaluates the points the map asks for is not here either; see `~uvex_transients.phase_space.experiment.run_campaign`.
 
 The model is a Gaussian process on the logit of the success fraction, :math:`y_i=\mathrm{logit}\,\hat p_i` with
 :math:`\hat p_i=(k_i+1/2)/(n_i+1)`, and a per-point noise variance :math:`1/[(n_i+1)\hat p_i(1-\hat p_i)]` from the

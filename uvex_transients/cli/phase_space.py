@@ -580,7 +580,7 @@ def _run_experiment_map(
         return run()
 
     # The workers are forked, since a sampler that holds a schedule cannot be sent to a process pool
-    from uvex_transients.phase_space.campaign import fork_map
+    from uvex_transients.phase_space.experiment import fork_map
 
     with fork_map(sampler, experiment.rule, processes) as map_fn:
         return run(map_fn=map_fn)

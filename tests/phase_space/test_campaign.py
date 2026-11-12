@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import pytest
 
-from uvex_transients.phase_space.campaign import point_seed, run_campaign
+from uvex_transients.phase_space.experiment import point_seed, run_campaign
 from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling import LogisticSampler, StoppingRule
 from uvex_transients.phase_space.space import Axis, Space
@@ -215,7 +215,7 @@ def test_a_sampler_that_cannot_be_pickled_cannot_go_to_an_ordinary_process_pool(
 
 
 def test_forked_workers_measure_what_the_loop_does_with_a_sampler_that_cannot_be_pickled(space):
-    from uvex_transients.phase_space.campaign import fork_map
+    from uvex_transients.phase_space.experiment import fork_map
 
     sampler = _Unpicklable(space, [0.5, 0.0], [8.0, 4.0])
     serial = campaign(space, sampler)
@@ -228,7 +228,7 @@ def test_forked_workers_measure_what_the_loop_does_with_a_sampler_that_cannot_be
 
 def test_the_workers_share_what_the_sampler_had_computed_when_they_were_forked(space):
     """A table built before the pool is made is inherited, not rebuilt in every worker."""
-    from uvex_transients.phase_space.campaign import _FORKED, fork_map
+    from uvex_transients.phase_space.experiment import _FORKED, fork_map
 
     sampler = _Unpicklable(space, [0.5, 0.0], [8.0, 4.0])
     with fork_map(sampler, RULE, processes=1) as map_fn:
