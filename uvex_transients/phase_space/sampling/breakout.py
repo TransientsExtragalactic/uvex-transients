@@ -42,7 +42,8 @@ from uvex_transients.models.core.detection_horizon import peak_band_magnitudes, 
 from uvex_transients.models.core.priors import ConstantPrior
 from uvex_transients.models.lightcurves.generic import InverseGammaBrokenPowerLawLightcurve
 from uvex_transients.models.shock_cooling import InverseGammaBlackbodySED
-from uvex_transients.phase_space.sampling.core import ParameterAxis, SurveySampler, _configured
+from uvex_transients.phase_space._config import configured
+from uvex_transients.phase_space.sampling.core import ParameterAxis, SurveySampler
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.transients.base import ExtragalacticTransient
@@ -240,19 +241,19 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
             mission,
             band=band,
             snr_threshold=snr_threshold,
-            n_visits=_configured(n_visits, "breakout.n_visits"),
+            n_visits=configured(n_visits, "breakout.n_visits"),
             exclude_first_visit_detections=exclude_first_visit_detections,
             mag_limit=mag_limit,
-            time_bins=_configured(time_bins, "breakout.time_bins"),
+            time_bins=configured(time_bins, "breakout.time_bins"),
             nside=nside,
             order=order,
             cosmology=cosmology,
             schedule_name=schedule_name,
         )
-        log_L0 = [float(v) for v in _configured(log_L0, "breakout.log_L0")]
-        log_t0 = [float(v) for v in _configured(log_t0, "breakout.log_t0")]
-        self.z_max = float(_configured(z_max, "breakout.z_max"))
-        self.table_points = int(_configured(table_points, "breakout.table_points"))
+        log_L0 = [float(v) for v in configured(log_L0, "breakout.log_L0")]
+        log_t0 = [float(v) for v in configured(log_t0, "breakout.log_t0")]
+        self.z_max = float(configured(z_max, "breakout.z_max"))
+        self.table_points = int(configured(table_points, "breakout.table_points"))
 
         self._space = Space(
             [

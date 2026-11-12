@@ -33,8 +33,9 @@ from astropy.table import Table
 from astropy.units import Quantity
 from numpy.typing import ArrayLike
 
+from uvex_transients.phase_space._config import configured
 from uvex_transients.phase_space.campaign import run_campaign
-from uvex_transients.phase_space.map import PhaseSpaceMap, _configured
+from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling.base import Product, Sampler, StoppingRule, get_sampler
 from uvex_transients.phase_space.space import Space
 
@@ -116,10 +117,10 @@ class CampaignSettings:
             The settings.
         """
         return cls(
-            n_initial=_configured(n_initial, "sampler.n_initial"),
-            batch_size=_configured(batch_size, "sampler.batch_size"),
-            max_points=_configured(max_points, "sampler.max_points"),
-            tolerance=_configured(tolerance, "sampler.tolerance"),
+            n_initial=configured(n_initial, "sampler.n_initial"),
+            batch_size=configured(batch_size, "sampler.batch_size"),
+            max_points=configured(max_points, "sampler.max_points"),
+            tolerance=configured(tolerance, "sampler.tolerance"),
             seed=seed,
         )
 
@@ -299,7 +300,7 @@ class Experiment:
             ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for
             `~uvex_transients.phase_space.compare.difference_map` to check) and the ``n_max`` of the stopping rule.
         """
-        size = _configured(size, "map.grid_size")
+        size = configured(size, "map.grid_size")
         if products is None:
             products = list(self.sampler.products)
             if rate is not None and hasattr(self.sampler, "rate_products"):

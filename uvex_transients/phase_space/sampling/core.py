@@ -56,6 +56,7 @@ from scipy.integrate import cumulative_trapezoid
 from scipy.special import expit
 
 from uvex_transients.missions import get_mission
+from uvex_transients.phase_space._config import configured
 from uvex_transients.phase_space.sampling.base import Product, Sampler, Scale, Weighted
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.phase_space.transient import FREQUENCY_MAX, _CanonicalTransient
@@ -187,11 +188,6 @@ class LogisticSampler(Sampler, kind="logistic"):
 # ============================================ #
 
 
-def _configured(value, key: str):
-    """Return `value`, or ``config["phase_space.<key>"]`` if it is `None`."""
-    return config[f"phase_space.{key}"] if value is None else value
-
-
 # ============================================ #
 # Parameter axes                               #
 # ============================================ #
@@ -308,20 +304,20 @@ class SurveySampler(Sampler):
         cosmology: Cosmology | None = None,
         schedule_name: str | None = None,
     ):
-        mission = _configured(mission, "recovery.mission")
+        mission = configured(mission, "recovery.mission")
         self.schedule = schedule
         self.mission = get_mission(mission) if isinstance(mission, str) else mission
-        self.band = str(_configured(band, "recovery.band"))
+        self.band = str(configured(band, "recovery.band"))
         if self.band not in self.mission.detector.bandpasses:
             raise ValueError(f"Unknown band {self.band!r}; the detector has {list(self.mission.detector.bandpasses)}.")
 
-        self.snr_threshold = float(_configured(snr_threshold, "recovery.snr_threshold"))
-        self.n_visits = int(_configured(n_visits, "recovery.n_visits"))
+        self.snr_threshold = float(configured(snr_threshold, "recovery.snr_threshold"))
+        self.n_visits = int(configured(n_visits, "recovery.n_visits"))
         self.exclude_first_visit_detections = bool(
-            _configured(exclude_first_visit_detections, "recovery.exclude_first_visit_detections")
+            configured(exclude_first_visit_detections, "recovery.exclude_first_visit_detections")
         )
-        self.mag_limit = float(_configured(mag_limit, "recovery.mag_limit"))
-        self.time_bins = int(_configured(time_bins, "recovery.time_bins"))
+        self.mag_limit = float(configured(mag_limit, "recovery.mag_limit"))
+        self.time_bins = int(configured(time_bins, "recovery.time_bins"))
         self.nside, self.order = resolve_healpix_resolution(nside, order)
         self.cosmology = get_cosmology(cosmology)
         self._exposure_spacing = float(config["phase_space.numerics.exposure_spacing"])
@@ -1032,7 +1028,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
             cosmology=cosmology,
             schedule_name=schedule_name,
         )
-        self.spectral_index = float(_configured(spectral_index, "transient.spectral_index"))
+        self.spectral_index = float(configured(spectral_index, "transient.spectral_index"))
 
         # The scale of the luminosity axis: the luminosity in the band, from the spectral one at the band's
         # effective frequency
@@ -1046,8 +1042,8 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
             "mission": self._mission_name,
             "band": self.band,
             "spectral_index": self.spectral_index,
-            "rise_ratio": float(_configured(rise_ratio, "transient.rise_ratio")),
-            "fade_mag": float(_configured(fade_mag, "transient.fade_mag")),
+            "rise_ratio": float(configured(rise_ratio, "transient.rise_ratio")),
+            "fade_mag": float(configured(fade_mag, "transient.fade_mag")),
             "snr_threshold": self.snr_threshold,
             "n_visits": self.n_visits,
             "exclude_first_visit_detections": self.exclude_first_visit_detections,

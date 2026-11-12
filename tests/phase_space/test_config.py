@@ -1,5 +1,7 @@
 """Tests that the phase-space defaults come from the configuration, and that an argument overrides them."""
 
+import sys
+
 import numpy as np
 import pytest
 import synphot
@@ -7,13 +9,8 @@ from astropy import units as u
 
 pytest.importorskip("sklearn")
 
-from uvex_transients.phase_space import map as map_module  # noqa: E402
-from uvex_transients.phase_space import overlay as overlay_module  # noqa: E402
-from uvex_transients.phase_space import transient as transient_module  # noqa: E402
 from uvex_transients.phase_space.overlay import measure_class  # noqa: E402
-from uvex_transients.phase_space.sampling import base as base_module  # noqa: E402
 from uvex_transients.phase_space.sampling import CanonicalSampler, StoppingRule  # noqa: E402
-from uvex_transients.phase_space.sampling import core as core_module  # noqa: E402
 from uvex_transients.phase_space.transient import _CanonicalTransient  # noqa: E402
 from uvex_transients.transients.TDEs import TidalDisruptionEvent  # noqa: E402
 from uvex_transients.utils import config  # noqa: E402
@@ -85,14 +82,9 @@ def configured(monkeypatch):
 
     def apply(**overrides):
         fake = _Config({key.replace("__", "."): value for key, value in overrides.items()})
-        for module in (
-            map_module,
-            overlay_module,
-            transient_module,
-            base_module,
-            core_module,
-        ):
-            monkeypatch.setattr(module, "config", fake)
+        for name, module in list(sys.modules.items()):
+            if name.startswith("uvex_transients.phase_space") and hasattr(module, "config"):
+                monkeypatch.setattr(module, "config", fake)
 
     return apply
 

@@ -35,9 +35,10 @@ from astropy.table import Table
 from numpy.typing import ArrayLike, NDArray
 from scipy.special import expit
 
+from uvex_transients.phase_space._config import configured
 from uvex_transients.phase_space.sampling.base import Estimate, Product
 from uvex_transients.phase_space.space import Space
-from uvex_transients.utils import config, logger
+from uvex_transients.utils import logger
 from uvex_transients.utils.stat_utils import binomial_logit
 
 __all__ = ["PhaseSpaceMap"]
@@ -55,11 +56,6 @@ _P_CLIP = 1e-6
 _AMPLITUDE = (1.0, (1e-2, 1e2))
 _LENGTH_SCALE = (0.3, (0.03, 10.0))
 _MATERN_NU = 2.5
-
-
-def _configured(value, key: str):
-    """Return `value`, or ``config["phase_space.<key>"]`` if it is `None`."""
-    return config[f"phase_space.{key}"] if value is None else value
 
 
 def _require_sklearn():
@@ -121,10 +117,10 @@ class PhaseSpaceMap:
         seed: int | np.random.SeedSequence | None = None,
         table: Table | None = None,
     ):
-        acquisition = _configured(acquisition, "sampler.acquisition")
-        n_candidates = _configured(n_candidates, "sampler.n_candidates")
-        floor = _configured(floor, "sampler.floor")
-        n_restarts = _configured(n_restarts, "sampler.n_restarts")
+        acquisition = configured(acquisition, "sampler.acquisition")
+        n_candidates = configured(n_candidates, "sampler.n_candidates")
+        floor = configured(floor, "sampler.floor")
+        n_restarts = configured(n_restarts, "sampler.n_restarts")
 
         # Validate everything before anything is stored
         if acquisition not in _ACQUISITIONS:

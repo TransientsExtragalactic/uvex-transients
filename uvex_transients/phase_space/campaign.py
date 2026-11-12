@@ -21,7 +21,8 @@ from collections.abc import Callable, Iterator, Sequence
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from uvex_transients.phase_space.map import PhaseSpaceMap, _configured
+from uvex_transients.phase_space._config import configured
+from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling.base import Outcome, Sampler, StoppingRule
 from uvex_transients.utils import logger
 
@@ -187,10 +188,10 @@ def run_campaign(
     ValueError
         If the sampler's space is not the map's, or a count is not a positive integer.
     """
-    n_initial = _configured(n_initial, "sampler.n_initial")
-    batch_size = _configured(batch_size, "sampler.batch_size")
-    max_points = _configured(max_points, "sampler.max_points")
-    tolerance = float(_configured(tolerance, "sampler.tolerance"))
+    n_initial = configured(n_initial, "sampler.n_initial")
+    batch_size = configured(batch_size, "sampler.batch_size")
+    max_points = configured(max_points, "sampler.max_points")
+    tolerance = float(configured(tolerance, "sampler.tolerance"))
     for label, value in (("n_initial", n_initial), ("batch_size", batch_size), ("max_points", max_points)):
         if int(value) != value or value < 1:
             raise ValueError(f"`{label}` must be a positive integer, got {value!r}.")
