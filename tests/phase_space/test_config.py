@@ -11,7 +11,7 @@ pytest.importorskip("sklearn")
 
 from uvex_transients.phase_space.overlay import measure_class  # noqa: E402
 from uvex_transients.phase_space.sampling import CanonicalSampler, StoppingRule  # noqa: E402
-from uvex_transients.phase_space.transient import _CanonicalTransient  # noqa: E402
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient  # noqa: E402
 from uvex_transients.transients.TDEs import TidalDisruptionEvent  # noqa: E402
 from uvex_transients.utils import config  # noqa: E402
 

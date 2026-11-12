@@ -6,7 +6,7 @@ from astropy import units as u
 from scipy.integrate import quad
 
 from uvex_transients.phase_space.sampling import CanonicalSampler, RedshiftLimit, StoppingRule
-from uvex_transients.phase_space.transient import FREQUENCY_MAX
+from uvex_transients.phase_space.sampling.canonical import FREQUENCY_MAX
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.utils.cosmology import get_cosmology
 

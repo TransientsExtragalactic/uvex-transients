@@ -7,7 +7,7 @@ from astropy import units as u
 
 from uvex_transients.models.core.lightcurve_metrics import decline_time, peak_luminosity
 from uvex_transients.models.kilonovae import KilonovaCoolingBlackbodySED
-from uvex_transients.phase_space.transient import _CanonicalTransient
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient
 from uvex_transients.utils import phot_utils
 from uvex_transients.utils.phot_utils import effective_frequency, equivalent_bandwidth
 

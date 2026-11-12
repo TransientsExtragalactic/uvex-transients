@@ -42,7 +42,7 @@ from uvex_transients.models.supernovae import (
     VillarCoolingBlackbodySED,
 )
 from uvex_transients.models.tdes import AlushStoneTDESED, VanVelzenTDESED
-from uvex_transients.phase_space.transient import _FREDPowerLawSED
+from uvex_transients.phase_space.sampling.canonical import _FREDPowerLawSED
 
 from ._contracts import SpectralModelContract, assert_full_coverage
 

@@ -15,7 +15,7 @@ from astropy.table import QTable, vstack
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
 
-from uvex_transients.phase_space.transient import _CanonicalTransient
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.transients import LFBOTs, TDEs, kilonovae, supernovae  # noqa: F401  (register every transient type)

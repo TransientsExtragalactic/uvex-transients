@@ -6,7 +6,7 @@ import synphot
 from astropy import units as u
 
 from uvex_transients.models.core.priors import PowerLawPrior
-from uvex_transients.phase_space.transient import _CanonicalTransient
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient
 from uvex_transients.transients.base import TransientBase
 from uvex_transients.transients.kilonovae import Kilonova
 from uvex_transients.utils.phot_utils import equivalent_bandwidth, luminosity_to_absolute_magnitude
