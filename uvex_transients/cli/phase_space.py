@@ -64,7 +64,7 @@ from astropy import units as u
 from m4opt.missions import Mission
 
 from uvex_transients.surveys.base import SurveySchedule
-from uvex_transients.utils import config, logger
+from uvex_transients.utils import config
 
 from .config import _resolve_mission, _resolve_schedule
 from .yaml_tags import get_run_yaml
@@ -124,16 +124,13 @@ class MapSpec:
     """str: Names the map's output directory."""
 
     transient: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of `RecoveryEvaluator` that shape the transient (``spectral_index``, ``rise_ratio``, ...)."""
+    """dict: Arguments of the canonical sampler that shape its transient (``spectral_index``, ``rise_ratio``, ...)."""
 
     recovery: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of `RecoveryEvaluator` that define a recovery (``band``, the detection and the sampling)."""
+    """dict: Arguments that define a recovery (``band``, the detection and the sampling)."""
 
     sampler: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of `PhaseSpaceSampler` (``n_initial``, ``batch_size``, ``max_points``, ...)."""
-
-    bounds: tuple[tuple[float, float], tuple[float, float]] | None = None
-    """tuple or None: The ranges of the log luminosity and log half-decline time, or `None` for the configured ones."""
+    """dict: Arguments of the campaign and the map (``n_initial``, ``batch_size``, ``max_points``, ...)."""
 
     grid_size: int | None = None
     """int or None: Points per axis of the fitted map, or `None` for the configured size."""
@@ -145,7 +142,7 @@ class MapSpec:
     """dict: Arguments of a sampler of another kind than the canonical one, beyond its detection settings."""
 
     axis_bounds: dict[str, tuple[float, float]] | None = None
-    """dict or None: The ranges of the axes of a sampler of another kind, by the name of the axis."""
+    """dict or None: The ranges of the axes of the map, by the name of the axis, or `None` for the sampler's own."""
 
     @property
     def band(self) -> str:
@@ -226,19 +223,16 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
         ):
             errors.append(f"{where}: 'map: bounds:' must map each axis name to [lo, hi].")
             axis_bounds = None
-        bounds = None
-        if "log_luminosity" in sections["map"] or "log_half_time" in sections["map"]:
-            bounds = (
-                tuple(sections["map"].get("log_luminosity", config["phase_space.map.log_luminosity"])),
-                tuple(sections["map"].get("log_half_time", config["phase_space.map.log_half_time"])),
-            )
+        # The canonical axes can be given by their own keys, which are shorthand for ``bounds:``
+        canonical = {key: pair for key, pair in sections["map"].items() if key in ("log_luminosity", "log_half_time")}
+        if canonical:
+            axis_bounds = {**canonical, **(axis_bounds or {})}
         specs.append(
             MapSpec(
                 id=map_id,
                 transient=sections["transient"],
                 recovery=sections["recovery"],
                 sampler=sections["sampler"],
-                bounds=bounds,
                 grid_size=sections["map"].get("grid_size"),
                 kind=kind,
                 settings=sections["settings"],
@@ -459,13 +453,12 @@ def run_maps(
     specs : list of MapSpec
         The maps to make.
     overwrite, resume : bool, optional
-        As for `uvex_transients.phase_space.run.run_map`.
+        As for `uvex_transients.phase_space.run.run_experiment`.
     progress : bool, optional
         Whether to show the progress bars of the simulation.
     workers : int, optional
-        The number of processes that measure the points of a batch, for the maps of a sampler of another kind than the
-        canonical one; 0 is one for each CPU. The canonical map is made by the sequential loop that its published
-        files were made with, and ignores it (with a warning). The default is 1.
+        The number of processes that measure the points of a batch; 0 is one for each CPU. The results do not depend on
+        it, since each point has its own seed. The default is 1.
     products : bool, optional
         Whether to fit and draw each map after sampling it. If `False`, only ``points.ecsv`` is written, and the rest
         is made with `uvex_transients.phase_space.stages.fit_map` and `plot_files`.
@@ -473,56 +466,21 @@ def run_maps(
     Returns
     -------
     dict of str to dict
-        For each map id, the files written (see `uvex_transients.phase_space.run.run_map`).
+        For each map id, the files written (see `uvex_transients.phase_space.run.run_experiment`).
     """
-    # Imported here: the optional ``phase_space`` extra (scikit-learn) is needed only by this command
-    from uvex_transients.phase_space.evaluator import RecoveryEvaluator
-    from uvex_transients.phase_space.run import run_map
-
-    schedule = phase_space_config.schedule
-    results = {}
-    for spec in specs:
-        if spec.kind != "canonical":
-            results[spec.id] = _run_experiment_map(
-                phase_space_config,
-                spec,
-                out_dir,
-                overwrite=overwrite,
-                resume=resume,
-                progress=progress,
-                workers=workers,
-                products=products,
-            )
-            continue
-        if workers != 1:
-            logger.warning(
-                "Map %r is canonical, and is made by the sequential loop of its published files; workers is ignored.",
-                spec.id,
-            )
-        evaluator = RecoveryEvaluator(
-            schedule,
-            phase_space_config.mission_name,
-            seed=phase_space_config.seed,
-            schedule_name=phase_space_config.schedule_name,
-            **spec.transient,
-            **spec.recovery,
-        )
-        results[spec.id] = run_map(
-            evaluator,
-            out_dir / spec.id,
-            bounds=spec.bounds,
-            sampler_settings=spec.sampler,
-            grid_size=spec.grid_size,
-            rate=phase_space_config.rate,
-            overlay=phase_space_config.overlay,
-            overlay_draws=phase_space_config.overlay_draws,
-            resume=resume,
+    return {
+        spec.id: _run_experiment_map(
+            phase_space_config,
+            spec,
+            out_dir,
             overwrite=overwrite,
-            seed=phase_space_config.seed,
+            resume=resume,
             progress=progress,
+            workers=workers,
             products=products,
         )
-    return results
+        for spec in specs
+    }
 
 
 def _run_experiment_map(
@@ -537,7 +495,7 @@ def _run_experiment_map(
     products: bool = True,
 ) -> dict[str, Path]:
     """
-    Make one map of a sampler of another kind than the canonical one, as an experiment.
+    Make one map, of any kind of sampler, as an experiment.
 
     The map is run with `~uvex_transients.phase_space.run.run_experiment`.
 
@@ -580,6 +538,7 @@ def _run_experiment_map(
             phase_space_config.mission_name,
             schedule_name=phase_space_config.schedule_name,
             **detection,
+            **spec.transient,
             **spec.settings,
         )
     except TypeError as error:
@@ -609,6 +568,8 @@ def _run_experiment_map(
         out_dir / spec.id,
         grid_size=spec.grid_size,
         rate=phase_space_config.rate,
+        overlay=phase_space_config.overlay and spec.kind == "canonical",
+        overlay_draws=phase_space_config.overlay_draws,
         resume=resume,
         overwrite=overwrite,
         progress=progress,

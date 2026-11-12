@@ -1,4 +1,4 @@
-"""Figures of a recovery map from `~uvex_transients.phase_space.sampler.PhaseSpaceSampler`."""
+"""Figures of a recovery map, from the tables of `~uvex_transients.phase_space.experiment.Experiment`."""
 
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -241,9 +241,9 @@ def plot_map(
     Parameters
     ----------
     grid : astropy.table.Table
-        The output of `PhaseSpaceSampler.map_table`.
+        The output of `~uvex_transients.phase_space.experiment.Experiment.grid_table`.
     points : astropy.table.Table
-        The simulated points (`PhaseSpaceSampler.table`).
+        The measured points (`~uvex_transients.phase_space.map.PhaseSpaceMap.table`).
     path : str or pathlib.Path, optional
         Where to write the figure. If omitted, the figure is not saved.
     title : str, optional

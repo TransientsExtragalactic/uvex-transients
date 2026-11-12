@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 from astropy import units as u
 
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator, RedshiftLimit
 from uvex_transients.phase_space.sampling import (
     CanonicalSampler,
     Estimate,
@@ -42,22 +41,6 @@ def make_sampler(schedule, **kwargs):
     defaults = {"mission": MISSION, "nside": NSIDE, "order": "nested", "time_bins": TIME_BINS, "n_visits": 1}
     defaults.update(kwargs)
     return CanonicalSampler(schedule, **defaults)
-
-
-def make_evaluator(schedule, **kwargs):
-    defaults = {
-        "mission": MISSION,
-        "nside": NSIDE,
-        "order": "nested",
-        "time_bins": TIME_BINS,
-        "chunk_size": 200,
-        "n_max": 600,
-        "k_target": 5,
-        "n_visits": 1,
-        "seed": 3,
-    }
-    defaults.update(kwargs)
-    return RecoveryEvaluator(schedule, **defaults)
 
 
 @pytest.fixture(scope="module")
@@ -151,11 +134,10 @@ def test_a_settings_without_a_schedule_or_a_mission_say_so(sampler):
         CanonicalSampler.from_settings({**settings, "schedule_name": None}, mission=MISSION)
 
 
-def test_the_table_meta_labels_the_axis_and_leaves_the_rule_to_the_evaluator(schedule, sampler):
+def test_the_table_meta_labels_the_axis_and_leaves_the_rule_to_the_experiment(sampler):
     meta = sampler.table_meta
     assert meta["band"] == "FUV" and meta["luminosity_unit"] == "erg/s"
     assert "n_max" not in meta
-    assert "n_max" in make_evaluator(schedule).table_meta
 
 
 # ---------------------------------------------------------------------------- #
@@ -191,15 +173,6 @@ def test_a_draw_refuses_a_simulation_that_returns_another_number_of_events(sched
     monkeypatch.setattr(core_module, "SurveySimulator", _Short)
     with pytest.raises(RuntimeError, match="got 199"):
         sampler.draw(BRIGHT_AND_LONG, 200, np.random.SeedSequence(0))
-
-
-@pytest.mark.parametrize("point", [BRIGHT_AND_LONG, HOPELESS, [28.0 + BW, 0.5]])
-def test_the_rule_on_the_sampler_is_what_the_evaluator_does(schedule, sampler, point):
-    """`RecoveryEvaluator` is a `StoppingRule` run on a `CanonicalSampler`: the same counts, from the same seed."""
-    rule = StoppingRule(chunk_size=200, k_target=5, n_max=600)
-    outcome = rule.run(sampler, point, np.random.SeedSequence(3))
-    result = make_evaluator(schedule, seed=3)(point)
-    assert (outcome.k, outcome.n, outcome.extras["n_chunks"]) == (result["k"], result["n"], result["n_chunks"])
 
 
 # ---------------------------------------------------------------------------- #
@@ -348,57 +321,8 @@ def test_a_sampler_with_no_bindings_sets_no_parameters(sampler):
 
 
 # ---------------------------------------------------------------------------- #
-# The evaluator over them                                                      #
+# The shape of the transient                                                   #
 # ---------------------------------------------------------------------------- #
-def test_the_evaluator_keeps_the_rule_and_hands_the_physics_to_the_sampler(schedule):
-    evaluator = make_evaluator(schedule)
-    assert (evaluator.chunk_size, evaluator.k_target, evaluator.n_max) == (200, 5, 600)
-    assert isinstance(evaluator._sampler, CanonicalSampler)
-    assert evaluator.band == "FUV" and evaluator.mission is evaluator._sampler.mission
-    assert evaluator.redshift_limit is evaluator._sampler._limit
-    assert not hasattr(evaluator, "no_such_attribute")
-
-
-def test_the_evaluator_settings_are_the_sampler_settings_with_the_rule_and_the_seed(schedule):
-    evaluator = make_evaluator(schedule, seed=7)
-    settings = evaluator.settings
-    assert {key: settings[key] for key in ("chunk_size", "k_target", "n_max", "seed")} == {
-        "chunk_size": 200,
-        "k_target": 5,
-        "n_max": 600,
-        "seed": 7,
-    }
-    sampler_settings = evaluator._sampler.settings
-    assert {key: settings[key] for key in sampler_settings} == sampler_settings
-
-    # The keys come in the order the header has always had them
-    assert list(settings) == [
-        "schedule_name",
-        "mission",
-        "band",
-        "spectral_index",
-        "rise_ratio",
-        "fade_mag",
-        "snr_threshold",
-        "n_visits",
-        "exclude_first_visit_detections",
-        "mag_limit",
-        "time_bins",
-        "nside",
-        "order",
-        "chunk_size",
-        "k_target",
-        "n_max",
-        "seed",
-        "cosmology",
-    ]
-
-
-def test_the_evaluator_rule_is_validated_before_anything_else(schedule):
-    with pytest.raises(ValueError, match="Need chunk_size >= 1"):
-        make_evaluator(schedule, chunk_size=0)
-
-
 def test_the_shape_of_the_transient_reaches_the_sampler(schedule):
     sampler = make_sampler(schedule, rise_ratio=0.2, fade_mag=8.0)
     assert sampler.settings["rise_ratio"] == 0.2 and sampler.settings["fade_mag"] == 8.0

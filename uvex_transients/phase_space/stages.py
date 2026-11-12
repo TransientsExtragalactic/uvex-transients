@@ -4,18 +4,18 @@ The stages of a recovery map as operations on its directory.
 A map is a directory of files (see `~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of
 them and writes others, so that a stage can be run, repeated or changed without the ones before it:
 
-1. ``points.ecsv`` is the simulation, made by `~uvex_transients.phase_space.run.run_map` or
-   `~uvex_transients.phase_space.run.run_experiment` (with ``products=False`` to stop there). It is the only expensive
-   file, and its header records everything needed to rebuild the experiment.
-2. `fit_map` makes ``map.ecsv`` (and, for the canonical axes, ``overlay.ecsv``) from the points. It rebuilds the
-   sampler, so it needs the survey schedule and scikit-learn.
+1. ``points.ecsv`` is the simulation, made by `~uvex_transients.phase_space.run.run_experiment` (with
+   ``products=False`` to stop there). It is the only expensive file, and its header records everything needed to
+   rebuild the experiment.
+2. `fit_map` makes ``map.ecsv`` (and, for the canonical map, ``overlay.ecsv``) from the points; `write_map` does the
+   same for an experiment that is already in memory. They rebuild the sampler, so they need the survey schedule and
+   scikit-learn.
 3. `plot_files` makes ``map.png`` from the files alone, and so needs neither.
 4. `compare_maps` differences the ``map.ecsv`` of two maps, again from the files alone.
 
 `describe` reads only the header of the points. Every function accepts both formats of points file, the current one
-(which records a registered sampler kind) and the earlier canonical one (which records an evaluator), and chooses the
-code that made it: the earlier format is fitted and drawn exactly as `~uvex_transients.phase_space.run.run_map` does, so
-the files of a published release can be reused.
+(which records a registered sampler kind) and the earlier canonical one (which records an evaluator, and is read as the
+canonical sampler), so the files of a published release can be fitted again and drawn.
 """
 
 from collections.abc import Sequence
@@ -28,7 +28,17 @@ from astropy.units import Quantity
 from uvex_transients.phase_space.space import Space
 from uvex_transients.utils.results import PHASE_SPACE_FILES
 
-__all__ = ["DIFFERENCE_FILES", "MapInfo", "compare_maps", "describe", "find_maps", "fit_map", "plot_files"]
+__all__ = [
+    "DIFFERENCE_FILES",
+    "MapInfo",
+    "compare_maps",
+    "describe",
+    "find_maps",
+    "fit_map",
+    "map_title",
+    "plot_files",
+    "write_map",
+]
 
 #: The files `compare_maps` writes, by key.
 DIFFERENCE_FILES = {"difference": "difference.ecsv", "figure": "difference.png"}
@@ -245,39 +255,111 @@ def fit_map(
     existing = [paths[key].name for key in targets if paths[key].exists()]
     if existing and not overwrite:
         raise FileExistsError(f"{directory} already holds {existing}; pass overwrite to replace them.")
-    if overlay and (info.flavor != LEGACY and info.space.names != _CANONICAL_NAMES):
-        raise ValueError(f"Only a map over {_CANONICAL_NAMES} has an overlay, and this one is over {info.space.names}.")
+    if overlay and info.kind != "canonical":
+        raise ValueError(f"Only the canonical map has an overlay, and this one is of kind {info.kind!r}.")
+
+    from uvex_transients.phase_space.experiment import Experiment
 
     context = {key: value for key, value in (("schedule", schedule), ("mission", mission)) if value is not None}
-    written = {}
-    overlays_from = None
-    if info.flavor == LEGACY:
-        # The map as `run_map` makes it, so that a file of a release can be fitted again
-        from uvex_transients.phase_space.sampler import PhaseSpaceSampler
+    experiment = Experiment.load(paths["points"], **context)
+    return write_map(
+        experiment, directory, grid_size=grid_size, rate=rate, overlay=overlay, overlay_draws=overlay_draws, seed=seed
+    )
 
-        sampler = PhaseSpaceSampler.load(paths["points"], evaluator_kwargs=context)
-        grid = sampler.map_table(grid_size, rate=rate)
-        overlays_from = sampler.evaluator
-    else:
-        from uvex_transients.phase_space.experiment import Experiment
 
-        experiment = Experiment.load(paths["points"], **context)
-        grid = experiment.grid_table(grid_size, rate=rate)
+def write_map(
+    experiment,
+    directory: str | Path,
+    *,
+    grid_size: int | None = None,
+    rate: Quantity | None = None,
+    overlay: bool = False,
+    overlay_draws: int | None = None,
+    seed: int | None = None,
+) -> dict[str, Path]:
+    """
+    Write ``map.ecsv`` (and ``overlay.ecsv``) of an experiment whose model is fitted to its points.
 
+    This is what `fit_map` does after rebuilding the experiment, and what a run does with the experiment it has just
+    measured.
+
+    Parameters
+    ----------
+    experiment : ~uvex_transients.phase_space.experiment.Experiment
+        The experiment, with the points measured.
+    directory : str or pathlib.Path
+        The directory of the map, created if needed.
+    grid_size : int, optional
+        Points per axis of the fitted map. By default ``config["phase_space.map.grid_size"]``.
+    rate : ~astropy.units.Quantity, optional
+        A volumetric rate; adds ``expected_recoveries`` to the map.
+    overlay : bool, optional
+        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only the
+        canonical map has an overlay.
+    overlay_draws : int, optional
+        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
+    seed : int, optional
+        The seed of the overlay draws. By default the seed of the experiment's campaign.
+
+    Returns
+    -------
+    dict of str to pathlib.Path
+        The files written, by their key in `~uvex_transients.utils.results.PHASE_SPACE_FILES`.
+
+    Raises
+    ------
+    ValueError
+        If an overlay is asked for a map that is not the canonical one.
+    """
+    sampler = experiment.sampler
+    if overlay and sampler.kind != "canonical":
+        raise ValueError(f"Only the canonical map has an overlay, and this one is of kind {sampler.kind!r}.")
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    paths = _paths(directory)
+
+    grid = experiment.grid_table(grid_size, rate=rate)
     grid.write(paths["map"], format="ascii.ecsv", overwrite=True)
-    written["map"] = paths["map"]
+    written = {"map": paths["map"]}
 
     if overlay:
         from uvex_transients.phase_space.overlay import measure_class, shipped_classes, stack_measurements
 
-        if overlays_from is None:
-            raise ValueError("The overlay is made from the evaluator of a canonical map made by `run_map`.")
-        bandpass = overlays_from.mission.detector.bandpasses[overlays_from.band]
-        seed = int(info.header["campaign"].get("seed", 0)) if seed is None else int(seed)
+        bandpass = sampler.mission.detector.bandpasses[sampler.band]
+        seed = experiment.campaign.seed if seed is None else int(seed)
         measured = [measure_class(cls, bandpass, n_draws=overlay_draws, rng=seed) for cls in shipped_classes().values()]
         stack_measurements(measured).write(paths["overlay"], format="ascii.ecsv", overwrite=True)
         written["overlay"] = paths["overlay"]
     return written
+
+
+def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: float | None = None) -> str:
+    """
+    Return the title of the figure of a map.
+
+    Parameters
+    ----------
+    kind : str
+        The kind of the sampler.
+    settings : dict
+        The settings the sampler records, which for the canonical one say what a detection is.
+    n_points, n_tries : int
+        The number of points measured and of tries made.
+    minutes : float, optional
+        How long the run took, if it is known.
+
+    Returns
+    -------
+    str
+        The title.
+    """
+    took = "" if minutes is None else f", {minutes:.1f} min"
+    if kind == "canonical":
+        return (
+            f"{settings['band']}: SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s), "
+            f"{n_points} points, {n_tries:,} events{took}"
+        )
+    return f"{kind}: {n_points} points, {n_tries:,} tries{took}"
 
 
 def plot_files(
@@ -292,8 +374,8 @@ def plot_files(
     """
     Draw the map of a directory from its ``map.ecsv`` and ``points.ecsv``, and write ``map.png``.
 
-    The earlier canonical format is drawn with `~uvex_transients.phase_space.plotting.plot_map` and the current one with
-    `~uvex_transients.phase_space.plotting.plot_grid`, as the runs do. It needs matplotlib only.
+    The canonical map is drawn with `~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of
+    its overlay, and any other with `~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only.
 
     Parameters
     ----------
@@ -336,16 +418,9 @@ def plot_files(
     points = _read(paths["points"], "drawing the map")
 
     if title is None:
-        tries = f"{info.n_points} points, {info.n_tries:,} " + ("events" if info.flavor == LEGACY else "tries")
-        if info.flavor == LEGACY:
-            settings = info.settings
-            title = (
-                f"{settings['band']}: SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s), {tries}"
-            )
-        else:
-            title = f"{info.kind}: {tries}"
+        title = map_title(info.kind, info.settings, info.n_points, info.n_tries)
 
-    if info.flavor == LEGACY:
+    if info.kind == "canonical":
         overlays = None
         if overlay and paths["overlay"].exists():
             from uvex_transients.phase_space.overlay import split_measurements

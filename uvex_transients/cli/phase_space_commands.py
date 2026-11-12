@@ -173,9 +173,7 @@ def _simulation_options(function):
                 type=click.IntRange(min=0),
                 default=1,
                 show_default=True,
-                help="Processes that measure the points of a batch (0: one per CPU). For the maps of a sampler other "
-                "than the canonical one; the canonical map is made by the sequential loop its published files were "
-                "made with.",
+                help="Processes that measure the points of a batch (0: one per CPU). The points do not depend on it.",
             ),
             click.option("--progress", is_flag=True, default=False, help="Show the progress bars of the simulation."),
             click.option(
@@ -366,7 +364,7 @@ def fit_command(
     for directory in directories:
         info = _guard(describe, directory)
         # An overlay that came from the run-config is for the canonical maps; one asked for outright is for this map
-        make_overlay = asked and (overlay is True or info.flavor == "legacy")
+        make_overlay = asked and (overlay is True or info.kind == "canonical")
         written = _guard(
             fit_map,
             directory,

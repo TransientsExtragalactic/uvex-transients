@@ -52,7 +52,7 @@ PHASE_SPACE_SIMULATION = "phase_space"
 PHASE_SPACE_FILES = {"points": "points.ecsv", "map": "map.ecsv", "overlay": "overlay.ecsv", "figure": "map.png"}
 """dict of str to str: The files of one phase-space map, by short name.
 
-``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`),
+``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.experiment.Experiment.grid_table`),
 ``points`` the simulated points it was fitted to, ``overlay`` the measured shipped transient classes, and ``figure`` the
 four-panel image.
 """
@@ -616,8 +616,8 @@ def get_phase_space_map(
 
     The maps are the ones ``configs/phase_space.yaml`` defines, attached to each release as one ``phase_space.zip``;
     only the requested files of the requested map are downloaded from it. They are read with
-    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into a sampler that can evaluate the map
-    anywhere with `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.load`.
+    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into an experiment that can evaluate the map
+    anywhere with `~uvex_transients.phase_space.experiment.Experiment.load`.
 
     Parameters
     ----------

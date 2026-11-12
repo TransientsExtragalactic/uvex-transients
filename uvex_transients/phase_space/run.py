@@ -1,47 +1,42 @@
 """
 Run one recovery map: place the points, fit the map, and write the data products and the figure.
 
-`run_map` is the whole of a map for one `~uvex_transients.phase_space.evaluator.RecoveryEvaluator`, and what the
-``uvex-transients phase-space`` command calls once per map of a run-config. It needs the optional ``phase_space`` extra.
+`run_experiment` is the whole of a map for one `~uvex_transients.phase_space.experiment.Experiment`, whatever its
+sampler, and what the ``uvex-transients phase-space`` command calls once per map of a run-config. It needs the optional
+``phase_space`` extra.
 
-Four files are written to the output directory:
+Up to four files are written to the output directory (see `~uvex_transients.utils.results.PHASE_SPACE_FILES`):
 
 ``points.ecsv``
-    Every simulated point: its coordinates, ``k`` recoveries out of ``n`` events, the redshift limit, the footprint
-    coverage and the effective volume-time. It is rewritten after every batch and read back by ``resume``.
+    Every measured point: its coordinates, ``k`` successes out of ``n`` tries, and what the sampler records of it. It
+    is rewritten after every batch and read back by ``resume``.
 ``map.ecsv``
-    The fitted map on a grid, from `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`: each recovery
-    quantity with a 1 sigma interval (``_lo``, ``_hi``), and the noise-free scales it is built from.
+    The fitted map on a grid (see `~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success
+    fraction with a 1 sigma interval (``_lo``, ``_hi``), and the quantities of the sampler.
 ``overlay.ecsv``
-    With ``overlay``, the measured peak luminosity and half-decline time of draws from every shipped transient class,
-    in the band of the map.
+    For the canonical map only, and with ``overlay``, the measured peak luminosity and half-decline time of draws from
+    every shipped transient class, in the band of the map.
 ``map.png``
-    The recovery fraction, the all-sky efficiency, the rate needed to recover one event, and the remaining uncertainty.
+    The figure of the map.
 """
 
 import contextlib
 import time
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 from astropy.units import Quantity
 from tqdm import tqdm
 
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator
 from uvex_transients.phase_space.experiment import Experiment
 from uvex_transients.phase_space.map import PhaseSpaceMap
-from uvex_transients.phase_space.overlay import measure_class, shipped_classes, stack_measurements
-from uvex_transients.phase_space.plotting import plot_grid, plot_map
-from uvex_transients.phase_space.sampler import PhaseSpaceSampler
-from uvex_transients.utils import config, logger
+from uvex_transients.phase_space.stages import map_title, plot_files, write_map
+from uvex_transients.utils import logger
 from uvex_transients.utils.results import PHASE_SPACE_FILES
 
-__all__ = ["MAP_FILES", "NAMES", "run_experiment", "run_map"]
+__all__ = ["MAP_FILES", "run_experiment"]
 
-#: Names of the two coordinates of a map, as they appear in its files.
-NAMES = ("log_luminosity", "log_half_time")
-
-#: The files of a map, by the key `run_map` returns them under.
+#: The files of a map, by the key `run_experiment` returns them under.
 MAP_FILES = PHASE_SPACE_FILES
 
 
@@ -92,168 +87,14 @@ def _quiet_progress(enabled: bool) -> Iterator[None]:
         tqdm.__init__ = _TQDM_INIT
 
 
-def _save(sampler: PhaseSpaceSampler, path: Path, callback: Callable[[PhaseSpaceSampler], None] | None) -> None:
-    """
-    Save the points of a sampler, then pass it on to the caller's callback.
-
-    Parameters
-    ----------
-    sampler : PhaseSpaceSampler
-        The sampler, after its initial design or a batch.
-    path : pathlib.Path
-        Where to write ``points.ecsv``.
-    callback : callable or None
-        The caller's callback, if any.
-    """
-    sampler.save(path)
-    if callback is not None:
-        callback(sampler)
-
-
-def run_map(
-    evaluator: RecoveryEvaluator,
-    out_dir: str | Path,
-    *,
-    bounds: Sequence[Sequence[float]] | None = None,
-    sampler_settings: Mapping | None = None,
-    grid_size: int | None = None,
-    rate: Quantity | None = None,
-    overlay: bool = False,
-    overlay_draws: int | None = None,
-    show_points: bool = False,
-    plot: bool = True,
-    resume: bool = False,
-    overwrite: bool = False,
-    seed: int = 0,
-    progress: bool = False,
-    callback: Callable[[PhaseSpaceSampler], None] | None = None,
-    products: bool = True,
-) -> dict[str, Path]:
-    """
-    Map the recovery of an evaluator over its two axes and write the data products.
-
-    Parameters
-    ----------
-    evaluator : ~uvex_transients.phase_space.evaluator.RecoveryEvaluator
-        What recovers the events; it fixes the band, the depth and the definition of a detection.
-    out_dir : str or pathlib.Path
-        Directory for the files (see `MAP_FILES`), created if needed.
-    bounds : sequence of (float, float), optional
-        ``[(log10 L_band / (erg/s) lo, hi), (log10 t_half / day lo, hi)]``. If `None` (the default), uses
-        ``config["phase_space.map.log_luminosity"]`` and ``config["phase_space.map.log_half_time"]``.
-    sampler_settings : Mapping, optional
-        Arguments of `~uvex_transients.phase_space.sampler.PhaseSpaceSampler` (``n_initial``, ``batch_size``,
-        ``max_points``, ``tolerance``, ``acquisition``). Any that is missing or `None` is taken from
-        ``config["phase_space.sampler"]``.
-    grid_size : int, optional
-        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
-    rate : ~astropy.units.Quantity, optional
-        A volumetric rate; adds ``expected_recoveries`` to the map and its contours to the figure.
-    overlay : bool, optional
-        Whether to measure the shipped transient classes in the band of the map and shade them on the figure.
-    overlay_draws : int, optional
-        SED draws per class. If `None` (the default), uses ``config["phase_space.overlay.n_draws"]``.
-    show_points : bool, optional
-        Whether to mark the simulated points on the figure.
-    plot : bool, optional
-        Whether to draw the figure. The default is `True`.
-    resume : bool, optional
-        Continue from the ``points.ecsv`` in `out_dir`, if there is one.
-    overwrite : bool, optional
-        Replace the files that are already in `out_dir`. Without it, or `resume`, existing ``points.ecsv`` or
-        ``map.ecsv`` raises.
-    seed : int, optional
-        Root seed of the sampler and of the overlay draws. The default is 0.
-    progress : bool, optional
-        Whether to show the progress bars of the simulation. The default is `False`.
-    callback : callable, optional
-        Called with the sampler after the initial design and after every batch, once the points are saved.
-    products : bool, optional
-        Whether to make the map, the overlay and the figure after the sampling. If `False`, only ``points.ecsv`` is
-        written, and the rest can be made from it later with `~uvex_transients.phase_space.stages.fit_map` and
-        `~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
-
-    Returns
-    -------
-    dict of str to pathlib.Path
-        The files written, by their key in `MAP_FILES`.
-
-    Raises
-    ------
-    FileExistsError
-        If `out_dir` already holds a map and neither `resume` nor `overwrite` is set.
-    """
-    out_dir = Path(out_dir)
-    paths = {key: out_dir / name for key, name in MAP_FILES.items()}
-    existing = [paths[key].name for key in ("points", "map") if paths[key].exists()]
-    if existing and not (resume or overwrite):
-        raise FileExistsError(f"{out_dir} already holds {existing}; pass overwrite (or resume) to continue.")
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    # Anything not given comes from the configuration
-    if bounds is None:
-        bounds = [config["phase_space.map.log_luminosity"], config["phase_space.map.log_half_time"]]
-    bounds = [tuple(axis) for axis in bounds]
-    settings = {"names": NAMES, "seed": seed, **{k: v for k, v in (sampler_settings or {}).items() if v is not None}}
-
-    # ---------------------------------------------- #
-    # Sampling                                       #
-    # ---------------------------------------------- #
-    start = time.perf_counter()
-    if resume and paths["points"].exists():
-        sampler = PhaseSpaceSampler.load(paths["points"], evaluator, bounds=bounds, **settings)
-        logger.info("Resuming from %d points in %s.", len(sampler), paths["points"])
-    else:
-        sampler = PhaseSpaceSampler(evaluator, bounds, **settings)
-
-    # The points are saved after every batch, so a run that stops can be resumed
-    with _quiet_progress(progress):
-        sampler.run(callback=lambda state: _save(state, paths["points"], callback))
-    elapsed = time.perf_counter() - start
-    if not products:
-        sampler.save(paths["points"])
-        logger.info("Sampled %s in %.1f min with %d points.", evaluator.band, elapsed / 60, len(sampler))
-        return {"points": paths["points"]}
-
-    # ---------------------------------------------- #
-    # Products                                       #
-    # ---------------------------------------------- #
-    points = sampler.table
-    grid = sampler.map_table(grid_size, rate=rate)
-    grid.write(paths["map"], format="ascii.ecsv", overwrite=True)
-    written = {"points": paths["points"], "map": paths["map"]}
-
-    # The shipped classes, measured in the band of the map
-    overlays = None
-    if overlay:
-        bandpass = evaluator.mission.detector.bandpasses[evaluator.band]
-        overlays = [measure_class(cls, bandpass, n_draws=overlay_draws, rng=seed) for cls in shipped_classes().values()]
-        stack_measurements(overlays).write(paths["overlay"], format="ascii.ecsv", overwrite=True)
-        written["overlay"] = paths["overlay"]
-
-    if plot:
-        title = (
-            f"{evaluator.band}: SNR >= {evaluator.snr_threshold:g} on {evaluator.n_visits} visit(s), "
-            f"{len(points)} points, {int(points['n'].sum()):,} events, {elapsed / 60:.1f} min"
-        )
-        figure = plot_map(grid, points, paths["figure"], title, overlays=overlays, show_points=show_points)
-        written["figure"] = paths["figure"]
-
-        # A run makes several maps, so do not keep the figures open
-        import matplotlib.pyplot as plt
-
-        plt.close(figure)
-
-    logger.info("Mapped %s in %.1f min with %d points.", evaluator.band, elapsed / 60, len(points))
-    return written
-
-
 def run_experiment(
     experiment: Experiment,
     out_dir: str | Path,
     *,
     grid_size: int | None = None,
     rate: Quantity | None = None,
+    overlay: bool = False,
+    overlay_draws: int | None = None,
     plot: bool = True,
     show_points: bool = False,
     resume: bool = False,
@@ -268,10 +109,10 @@ def run_experiment(
     Run an experiment of any sampler and write its data products and figure.
 
     The points are saved after every batch, so a run that stops can be resumed, and the fitted map is written on a grid
-    with the quantities of the sampler. Three files are written to the output directory, named as for `run_map`:
-    ``points.ecsv`` (see `~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
-    `~uvex_transients.phase_space.experiment.Experiment.grid_table`) and ``map.png`` (see
-    `~uvex_transients.phase_space.plotting.plot_grid`, which needs a map over two axes).
+    with the quantities of the sampler. The files are those in the module's docstring: ``points.ecsv`` (see
+    `~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
+    `~uvex_transients.phase_space.experiment.Experiment.grid_table`), ``overlay.ecsv`` and ``map.png`` (see
+    `~uvex_transients.phase_space.stages.plot_files`, which needs a map over two axes).
 
     Parameters
     ----------
@@ -283,6 +124,11 @@ def run_experiment(
         Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
     rate : ~astropy.units.Quantity, optional
         A volumetric rate; adds ``expected_recoveries`` to the map for a sampler that can make it.
+    overlay : bool, optional
+        Whether to measure the shipped transient classes in the band of the map and shade them on the figure. Only the
+        canonical map has an overlay.
+    overlay_draws : int, optional
+        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
     plot : bool, optional
         Whether to draw the figure. The default is `True`.
     show_points : bool, optional
@@ -351,20 +197,20 @@ def run_experiment(
         return {"points": paths["points"]}
 
     points = experiment.phase_map.table
-    grid = experiment.grid_table(grid_size, rate=rate)
-    grid.write(paths["map"], format="ascii.ecsv", overwrite=True)
-    written = {"points": paths["points"], "map": paths["map"]}
+    written = {
+        "points": paths["points"],
+        **write_map(experiment, out_dir, grid_size=grid_size, rate=rate, overlay=overlay, overlay_draws=overlay_draws),
+    }
 
     if plot:
-        title = title or (
-            f"{experiment.sampler.kind}: {len(points)} points, {int(points['n'].sum()):,} tries, {elapsed / 60:.1f} min"
+        title = title or map_title(
+            experiment.sampler.kind,
+            experiment.sampler.settings,
+            len(points),
+            int(points["n"].sum()),
+            minutes=elapsed / 60,
         )
-        figure = plot_grid(grid, points, paths["figure"], title, show_points=show_points)
-        written["figure"] = paths["figure"]
-
-        import matplotlib.pyplot as plt
-
-        plt.close(figure)
+        written["figure"] = plot_files(out_dir, title=title, show_points=show_points, overlay=overlay)
 
     logger.info("Ran %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(points))
     return written

@@ -21,8 +21,8 @@ else:
 experiment: the space, the settings of the model, the stopping rule, the campaign, and the sampler as its registered
 kind and settings (see `~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is
 stored.
-`Experiment.load` reads that, and also the files of the earlier format, which recorded a
-`~uvex_transients.phase_space.evaluator.RecoveryEvaluator`; it rebuilds those as the canonical sampler.
+`Experiment.load` reads that, and also the files of the earlier format, which recorded a ``RecoveryEvaluator`` (a class
+that no longer exists); it rebuilds those as the canonical sampler.
 """
 
 from collections.abc import Callable, Mapping, Sequence

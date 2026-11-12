@@ -11,7 +11,7 @@ There are several test scenarios considered here:
   - The sensitivity drops off at durations below the revisit time.
   - The relative position of that drop varies between the two maps.
 
-- **Map Difference**: The same two schedules, now of equal length, are fitted with the recovery emulator, and the
+- **Map Difference**: The same two schedules, now of equal length, are fitted as experiments, and the
   difference of the two maps is checked. The denser cadence must never do worse, so the difference has to be
   negative (or consistent with zero) everywhere, strongly so where the half-decline time lies between the two revisit
   times, and the surveys must have the same volume-time, so that the difference is the cadence alone.
@@ -28,7 +28,8 @@ from astropy.time import Time
 from m4opt.missions._uvex import uvex
 
 from uvex_transients.phase_space.compare import difference_map
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator
+from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
+from uvex_transients.phase_space.sampling import CanonicalSampler, StoppingRule
 from uvex_transients.surveys.base import SurveySchedule
 
 MISSION = "uvex_fast"
@@ -82,35 +83,19 @@ MAP_GRID = 24
 
 
 def fit_map(schedule, seed):
-    """Fit the recovery map of `schedule` with the emulator, and return it on a `MAP_GRID` square grid."""
+    """Fit the recovery map of `schedule` with an experiment, and return it on a `MAP_GRID` square grid."""
     pytest.importorskip("sklearn")
-    from uvex_transients.phase_space.run import NAMES
-    from uvex_transients.phase_space.sampler import PhaseSpaceSampler
-
-    evaluator = RecoveryEvaluator(
-        schedule,
-        MISSION,
-        nside=NSIDE,
-        order="nested",
-        time_bins=TIME_BINS,
-        chunk_size=250,
-        n_max=2000,
-        k_target=50,
-        n_visits=2,
+    sampler = CanonicalSampler(schedule, MISSION, nside=NSIDE, order="nested", time_bins=TIME_BINS, n_visits=2)
+    experiment = Experiment.create(
+        sampler,
+        bounds=MAP_BOUNDS,
+        rule=StoppingRule(chunk_size=250, k_target=50, n_max=2000),
+        campaign=CampaignSettings(n_initial=24, batch_size=8, max_points=64, tolerance=0.1, seed=seed),
         seed=seed,
-    )
-    sampler = PhaseSpaceSampler(
-        evaluator,
-        MAP_BOUNDS,
-        names=NAMES,
-        n_initial=24,
-        batch_size=8,
-        max_points=64,
-        tolerance=0.1,
         n_restarts=1,
-        seed=seed,
     )
-    return sampler.run().map_table(MAP_GRID)
+    experiment.run()
+    return experiment.grid_table(MAP_GRID)
 
 
 @pytest.mark.slow
@@ -125,32 +110,32 @@ def test_the_schedule_revisits_one_field_at_the_requested_cadence(fov, hot_spot)
 
 
 @pytest.fixture(scope="module")
-def evaluators(fov, hot_spot):
-    """One `RecoveryEvaluator` per revisit time."""
+def samplers(fov, hot_spot):
+    """One `CanonicalSampler` per revisit time."""
     return {
-        revisit: RecoveryEvaluator(
+        revisit: CanonicalSampler(
             revisit_schedule(fov, hot_spot, revisit),
             MISSION,
             nside=NSIDE,
             order="nested",
             time_bins=TIME_BINS,
-            chunk_size=250,
-            n_max=2000,
-            k_target=60,
             n_visits=2,
-            seed=0,
         )
         for revisit in REVISITS
     }
 
 
 @pytest.fixture(scope="module")
-def recovery(evaluators):
+def recovery(samplers):
     """The recoveries ``(k, n)`` along `LOG_HALF_TIME` at `LOG_LUMINOSITY`, for each revisit time."""
+    rule = StoppingRule(chunk_size=250, k_target=60, n_max=2000)
     curves = {}
-    for revisit, evaluator in evaluators.items():
-        results = [evaluator([LOG_LUMINOSITY, log_half_time]) for log_half_time in LOG_HALF_TIME]
-        curves[revisit] = np.array([result["k"] for result in results]), np.array([result["n"] for result in results])
+    for revisit, sampler in samplers.items():
+        outcomes = [
+            rule.run(sampler, [LOG_LUMINOSITY, log_half_time], np.random.SeedSequence([0, index]))
+            for index, log_half_time in enumerate(LOG_HALF_TIME)
+        ]
+        curves[revisit] = np.array([outcome.k for outcome in outcomes]), np.array([outcome.n for outcome in outcomes])
     return curves
 
 
@@ -177,9 +162,9 @@ class TestSingleFieldResponse:
         shift = onset(k_long / n_long) - onset(k_short / n_short)
         assert shift == pytest.approx(np.log10(REVISITS[1] / REVISITS[0]), abs=0.4)
 
-    def test_the_surveys_have_the_same_volume_time(self, evaluators):
+    def test_the_surveys_have_the_same_volume_time(self, samplers):
         # The map difference is then the cadence alone, with no factor for the length of the survey.
-        short, long = (evaluators[revisit].volume_time(LOG_LUMINOSITY, 1.0) for revisit in REVISITS)
+        short, long = (samplers[revisit].volume_time([LOG_LUMINOSITY, 1.0]) for revisit in REVISITS)
         assert long == pytest.approx(short, rel=0.01)
 
     def test_the_denser_cadence_never_recovers_less(self, recovery):

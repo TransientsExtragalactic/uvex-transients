@@ -1,12 +1,13 @@
 """Tests for `CampaignSettings` and `Experiment`: running, the points file, and reading the earlier format."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
+from astropy import units as u
 from astropy.table import Table
 
-from uvex_transients.phase_space.evaluator import RecoveryEvaluator
 from uvex_transients.phase_space.experiment import SCHEMA_VERSION, CampaignSettings, Experiment
-from uvex_transients.phase_space.sampler import PhaseSpaceSampler
 from uvex_transients.phase_space.sampling import CanonicalSampler, LogisticSampler, Sampler, StoppingRule
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils import config
@@ -212,56 +213,34 @@ def schedule(make_schedule):
 
 
 @pytest.fixture(scope="module")
-def legacy_file(schedule, tmp_path_factory):
-    """Return a points file of the earlier format, written by the evaluator and the sampler that wrote them."""
-    evaluator = RecoveryEvaluator(
-        schedule,
-        mission="uvex_fast",
-        nside=32,
-        order="nested",
-        time_bins=3,
-        chunk_size=200,
-        n_max=600,
-        k_target=5,
-        n_visits=1,
-        seed=3,
-    )
-    sampler = PhaseSpaceSampler(
-        evaluator,
-        [(40.0, 44.5), (-1.0, 2.0)],
-        names=("log_luminosity", "log_half_time"),
-        n_initial=4,
-        batch_size=2,
-        max_points=6,
-        n_restarts=0,
-        n_candidates=64,
-        tolerance=0.0,
-        seed=1,
-    )
-    sampler.run()
-    path = tmp_path_factory.mktemp("legacy") / "points.ecsv"
-    sampler.save(path)
-    return path, sampler, evaluator
+def legacy_file():
+    """Return a points file of the earlier format, as the releases made before the evaluator was removed hold them.
+
+    It has six points of a map over the FUV band, and no sampler registry: its header names the evaluator class.
+    """
+    return Path(__file__).parent / "data" / "legacy_points.ecsv"
 
 
 def test_a_file_of_the_earlier_format_is_read_as_the_canonical_experiment(schedule, legacy_file):
-    path, legacy, evaluator = legacy_file
-    assert "schema_version" not in Table.read(path, format="ascii.ecsv").meta
+    table = Table.read(legacy_file, format="ascii.ecsv")
+    assert "schema_version" not in table.meta
 
-    experiment = Experiment.load(path, schedule=schedule)
+    experiment = Experiment.load(legacy_file, schedule=schedule)
     assert isinstance(experiment.sampler, CanonicalSampler)
     assert experiment.rule == StoppingRule(chunk_size=200, k_target=5, n_max=600)
     assert experiment.campaign.max_points == 6 and experiment.campaign.n_initial == 4
     assert experiment.campaign.seed == 3
 
-    # The points are the ones the legacy sampler measured, and the model settings are carried over
-    np.testing.assert_array_equal(experiment.phase_map.points, legacy.points)
-    assert list(experiment.phase_map.table["k"]) == list(legacy.table["k"])
-    assert experiment.phase_map.settings["acquisition"] == legacy.acquisition
+    # The points are the ones the file holds, and the model settings are carried over
+    np.testing.assert_array_equal(
+        experiment.phase_map.points, np.column_stack([table["log_luminosity"], table["log_half_time"]])
+    )
+    assert list(experiment.phase_map.table["k"]) == list(table["k"])
+    assert experiment.phase_map.settings["acquisition"] == table.meta["sampler"]["acquisition"]
 
 
 def test_the_axes_of_an_old_file_get_their_labels_from_the_sampler(schedule, legacy_file):
-    experiment = Experiment.load(legacy_file[0], schedule=schedule)
+    experiment = Experiment.load(legacy_file, schedule=schedule)
     space = experiment.phase_map.space
     assert space.names == ("log_luminosity", "log_half_time")
     np.testing.assert_array_equal(space.bounds, [[40.0, 44.5], [-1.0, 2.0]])
@@ -269,18 +248,26 @@ def test_the_axes_of_an_old_file_get_their_labels_from_the_sampler(schedule, leg
     assert "FUV" in space["log_luminosity"].label
 
 
-def test_an_old_file_gives_the_same_map_through_the_new_loader_as_through_the_old_sampler(schedule, legacy_file):
-    path, legacy, evaluator = legacy_file
-    experiment = Experiment.load(path, schedule=schedule)
-    grid = experiment.grid_table(5)
-    old = legacy.map_table(5)
-    np.testing.assert_allclose(grid["f"], old["f"], rtol=0.05, atol=1e-4)
-    np.testing.assert_allclose(grid["volume_time"], old["volume_time"], rtol=1e-10)
+def test_an_old_file_gives_a_map_with_the_columns_the_earlier_maps_had(schedule, legacy_file):
+    grid = Experiment.load(legacy_file, schedule=schedule).grid_table(5, rate=1e-8 / u.Mpc**3 / u.yr)
+    earlier = {
+        "log_luminosity",
+        "log_half_time",
+        "z_limit",
+        "coverage",
+        "volume_time",
+        "all_sky_volume_time",
+        "sigma_log",
+    }
+    for name in ("f", "efficiency", "recovered_volume_time", "expected_recoveries"):
+        earlier |= {name, name + "_lo", name + "_hi"}
+    assert set(grid.colnames) == earlier
+    assert {"band", "spectral_index", "rise_ratio", "fade_mag", "n_max"} <= set(grid.meta)
     np.testing.assert_allclose(grid["recovered_volume_time"], grid["f"] * grid["volume_time"], rtol=1e-12)
 
 
 def test_a_file_that_recorded_another_evaluator_is_refused(legacy_file, tmp_path):
-    table = Table.read(legacy_file[0], format="ascii.ecsv")
+    table = Table.read(legacy_file, format="ascii.ecsv")
     table.meta["evaluator"] = {**table.meta["evaluator"], "class": "uvex_transients.phase_space.evaluator.Other"}
     table.write(tmp_path / "other.ecsv", format="ascii.ecsv")
     with pytest.raises(ValueError, match="Cannot read"):

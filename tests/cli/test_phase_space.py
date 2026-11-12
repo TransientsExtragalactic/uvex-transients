@@ -73,14 +73,15 @@ maps:
     a, b = parsed.maps
     assert a.recovery == {"snr_threshold": 5.0, "n_visits": 2, "band": "FUV"}
     assert b.recovery == {"snr_threshold": 5.0, "n_visits": 1, "band": "NUV"}
-    assert a.bounds is None and a.grid_size is None
+    assert a.axis_bounds is None and a.grid_size is None
 
 
 def test_the_map_section_sets_the_bounds_and_the_grid():
     parsed = _parse("map: {log_luminosity: [40, 42], grid_size: 9}\nmaps: [{id: a}]")
     (spec,) = parsed.maps
     assert spec.grid_size == 9
-    assert spec.bounds[0] == (40, 42) and spec.bounds[1] == tuple(config["phase_space.map.log_half_time"])
+    # The axis that is not given has no bounds of its own, so it keeps the sampler's configured range
+    assert spec.axis_bounds == {"log_luminosity": (40, 42)}
 
 
 def test_every_problem_is_reported_at_once():
@@ -179,8 +180,9 @@ def test_a_run_writes_one_directory_per_map(config_path, tmp_path):
     from astropy.table import Table
 
     points = Table.read(out / "fuv_test" / "points.ecsv", format="ascii.ecsv")
-    assert len(points) == 4 and points.meta["evaluator"]["settings"]["band"] == "FUV"
-    assert points.meta["evaluator"]["settings"]["mag_limit"] == 24.0
+    settings = points.meta["sampler"]["settings"]
+    assert len(points) == 4 and points.meta["sampler"]["kind"] == "canonical" and settings["band"] == "FUV"
+    assert settings["mag_limit"] == 24.0
     assert len(Table.read(out / "fuv_test" / "map.ecsv", format="ascii.ecsv")) == 25  # 5 x 5 grid
 
 
@@ -217,7 +219,9 @@ def breakout_config_path(config_path):
 def test_a_map_is_canonical_unless_it_names_a_kind(config_path):
     parsed = PhaseSpaceConfig.from_yaml(config_path)
     assert {spec.kind for spec in parsed.maps} == {"canonical"}
-    assert all(spec.settings == {} and spec.axis_bounds is None for spec in parsed.maps)
+    # The canonical axes are given by their own keys, which are the shorthand for ``bounds:``
+    assert all(spec.settings == {} for spec in parsed.maps)
+    assert all(set(spec.axis_bounds or {}) <= {"log_luminosity", "log_half_time"} for spec in parsed.maps)
 
 
 def test_a_map_of_another_kind_has_its_settings_and_axis_bounds(breakout_config_path):

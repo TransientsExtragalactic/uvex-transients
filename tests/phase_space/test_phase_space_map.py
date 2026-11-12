@@ -5,7 +5,6 @@ import pytest
 from astropy.table import Table
 
 from uvex_transients.phase_space.map import PhaseSpaceMap
-from uvex_transients.phase_space.sampler import PhaseSpaceSampler
 from uvex_transients.phase_space.sampling import Estimate, LogisticSampler, Scale, StoppingRule, Weighted
 from uvex_transients.phase_space.space import Axis, Space
 
@@ -49,12 +48,6 @@ def test_a_map_refuses_an_unknown_acquisition_or_a_floor_outside_the_unit_interv
     for floor in (0.0, 1.0, -0.1, 2.0):
         with pytest.raises(ValueError, match="floor"):
             PhaseSpaceMap(space, floor=floor)
-
-
-def test_the_legacy_sampler_is_a_map():
-    sampler = PhaseSpaceSampler(lambda x: {"k": 1, "n": 2}, [(0.0, 1.0), (0.0, 1.0)])
-    assert isinstance(sampler, PhaseSpaceMap)
-    assert sampler.space.names == ("x0", "x1")
 
 
 # ---------------------------------------------------------------------------- #

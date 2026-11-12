@@ -2,7 +2,6 @@ r"""
 Compare two recovery maps.
 
 `difference_map` takes the fitted maps of two runs, each the ``map.ecsv`` table of
-`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table` or of
 `~uvex_transients.phase_space.experiment.Experiment.grid_table`, and returns how much more (or less) one recovers than
 the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the factor
 by which the expected number of recoveries changes for a population at a given point, whatever its rate (for a rate
@@ -139,9 +138,9 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
     Parameters
     ----------
     baseline, comparison : astropy.table.Table
-        The two maps, as made by `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table` or
-        `~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from ``map.ecsv``. They need the
-        columns ``f``, ``f_lo``, ``f_hi`` and ``volume_time``, and must be on the same grid of the same axes.
+        The two maps, as made by `~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from
+        ``map.ecsv``. They need the columns ``f``, ``f_lo``, ``f_hi`` and ``volume_time``, and must be on the same grid
+        of the same axes.
     floor : float, optional
         The recovery fraction below which a map is taken not to have recovered anything. If `None` (the default), the
         coarser of the resolutions of the two maps, :math:`1/n_\mathrm{max}` from the ``n_max`` that each records. A map

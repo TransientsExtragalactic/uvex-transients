@@ -1,5 +1,8 @@
 """Tests for the stage commands of ``phase-space`` (run, fit, plot, compare, info, kinds) and `phase_space.stages`."""
 
+import shutil
+from pathlib import Path
+
 import numpy as np
 import pytest
 from astropy.table import Table
@@ -14,6 +17,9 @@ from uvex_transients.phase_space import stages  # noqa: E402
 from .test_phase_space import BREAKOUT_MAP, CONFIG_TEMPLATE  # noqa: E402
 
 MAPS = ("fuv_test", "breakout_test")
+
+#: A points file of the earlier format, as the releases made before the evaluator was removed hold them.
+EARLIER = Path(__file__).parents[1] / "phase_space" / "data" / "legacy_points.ecsv"
 
 
 def invoke(*args, ok=True):
@@ -89,14 +95,9 @@ def test_the_points_do_not_depend_on_the_stages_or_the_workers(built, staged):
     same_table(built / "breakout_test" / "points.ecsv", staged / "breakout_test" / "points.ecsv")
 
 
-def test_the_canonical_points_are_those_of_a_build(built, staged):
+def test_the_canonical_points_are_those_of_a_build_whatever_the_workers(built, staged):
+    """The staged run measured on two workers, and each point has its own seed, so the points are the serial ones."""
     same_table(built / "fuv_test" / "points.ecsv", staged / "fuv_test" / "points.ecsv")
-
-
-def test_workers_do_not_stop_the_canonical_map_from_running(run_config, tmp_path):
-    """The canonical map is made by its sequential loop, so workers is ignored (with a warning) and it still runs."""
-    invoke("run", run_config, "--out-dir", tmp_path, "--map", "fuv_test", "--workers", 2)
-    assert (tmp_path / "fuv_test" / "points.ecsv").exists()
 
 
 # ---------------------------------------------------------------------------- #
@@ -157,6 +158,30 @@ def test_plot_needs_a_fitted_map(run_config, tmp_path):
 
 
 # ---------------------------------------------------------------------------- #
+# Points files of the earlier format                                           #
+# ---------------------------------------------------------------------------- #
+@pytest.fixture
+def earlier(tmp_path):
+    """A map directory holding only a points file of the earlier format."""
+    directory = tmp_path / "earlier"
+    directory.mkdir()
+    shutil.copy(EARLIER, directory / "points.ecsv")
+    return directory
+
+
+def test_info_says_that_a_points_file_is_of_the_earlier_format(earlier):
+    assert "kind      canonical (earlier points format)" in invoke("info", earlier).output
+
+
+def test_a_points_file_of_the_earlier_format_can_be_fitted_and_drawn(run_config, earlier):
+    """The files of a published release are read as the canonical experiment, with an overlay if one is asked for."""
+    invoke("fit", earlier, "--config", run_config, "--grid-size", 4, "--overlay", "--overlay-draws", 5)
+    invoke("plot", earlier)
+    for name in ("map.ecsv", "overlay.ecsv", "map.png"):
+        assert (earlier / name).stat().st_size > 0
+
+
+# ---------------------------------------------------------------------------- #
 # compare                                                                      #
 # ---------------------------------------------------------------------------- #
 def test_compare_a_map_with_itself_is_no_difference(built, tmp_path):
@@ -193,7 +218,7 @@ def test_compare_does_not_overwrite_without_being_told_to(built, tmp_path):
 # ---------------------------------------------------------------------------- #
 def test_info_says_what_a_map_is(built):
     out = invoke("info", built).output
-    assert "kind      canonical (earlier points format)" in out and "kind      breakout" in out
+    assert "kind      canonical\n" in out and "kind      breakout" in out and "earlier" not in out
     assert "axis      log_L0: " in out and "axis      log_luminosity: " in out
     assert "files     points, map, overlay, figure" in out or "files     points, map, figure" in out
 
@@ -211,11 +236,13 @@ def test_kinds_lists_each_sampler_and_what_it_takes():
 # ---------------------------------------------------------------------------- #
 # The library                                                                  #
 # ---------------------------------------------------------------------------- #
-def test_describe_reads_both_formats(built):
-    old, new = stages.describe(built / "fuv_test"), stages.describe(built / "breakout_test")
+def test_describe_reads_both_formats(built, earlier):
+    old, current = stages.describe(earlier), stages.describe(built / "fuv_test")
+    new = stages.describe(built / "breakout_test")
     assert (old.flavor, old.kind, old.band) == ("legacy", "canonical", "FUV")
+    assert (current.flavor, current.kind, current.band) == ("experiment", "canonical", "FUV")
     assert (new.flavor, new.kind, new.band) == ("experiment", "breakout", "FUV")
-    assert old.n_points == new.n_points == 4 and old.n_tries > 0
+    assert old.n_points == 6 and current.n_points == new.n_points == 4 and old.n_tries > 0
     assert new.space.names == ("log_L0", "log_t0")
 
 
