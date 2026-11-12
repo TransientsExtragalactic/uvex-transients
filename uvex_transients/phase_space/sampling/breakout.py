@@ -311,7 +311,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     @property
     def table_meta(self) -> dict:
         """
-        dict: What `~uvex_transients.phase_space.compare.difference_map` checks before it compares two breakout maps.
+        dict: What `~uvex_transients.phase_space.analysis.compare.difference_map` checks before it compares two maps.
 
         The band, and the four shape parameters of the light curve that the axes are measured with: the maps of two
         shapes are not maps of the same plane.

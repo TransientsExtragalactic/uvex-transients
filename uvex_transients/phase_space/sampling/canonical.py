@@ -532,7 +532,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         absolute AB magnitude of a source of luminosity :math:`L_\mathrm{band}` is
         :math:`M = Z - 2.5\log_{10}L_\mathrm{band}`. Also the shape of the canonical transient the axes are measured
         on (``spectral_index``, ``rise_ratio``, ``fade_mag``), which
-        `~uvex_transients.phase_space.compare.difference_map` checks before it compares two maps.
+        `~uvex_transients.phase_space.analysis.compare.difference_map` checks before it compares two maps.
         """
         bandwidth_hz = float(self.bandwidth.to_value(u.Hz))
         return {

@@ -27,7 +27,7 @@ from astropy.table import QTable
 from astropy.time import Time
 from m4opt.missions._uvex import uvex
 
-from uvex_transients.phase_space.compare import difference_map
+from uvex_transients.phase_space.analysis.compare import difference_map
 from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
 from uvex_transients.phase_space.sampling import CanonicalSampler, StoppingRule
 from uvex_transients.surveys.base import SurveySchedule

@@ -5,7 +5,7 @@ import pytest
 from astropy.table import Table
 from scipy.special import expit
 
-from uvex_transients.phase_space.compare import difference_map
+from uvex_transients.phase_space.analysis.compare import difference_map
 from uvex_transients.phase_space.space import Axis, Space
 
 NAMES = ("log_luminosity", "log_half_time")

@@ -11,7 +11,7 @@ from uvex_transients.models.lightcurves import InverseGammaBrokenPowerLawLightcu
 from uvex_transients.models.shock_cooling import InverseGammaBlackbodySED
 from uvex_transients.phase_space.sampling.breakout import BreakoutSampler, half_decline_time
 from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
-from uvex_transients.phase_space.compare import difference_map
+from uvex_transients.phase_space.analysis.compare import difference_map
 from uvex_transients.phase_space.plotting import plot_difference, plot_grid
 from uvex_transients.phase_space.sampling import Sampler, StoppingRule, available_samplers, get_sampler
 from uvex_transients.utils.cosmology import resolve_cosmological_distances

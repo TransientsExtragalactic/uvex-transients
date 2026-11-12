@@ -372,7 +372,7 @@ def write_map(
     written = {"map": paths["map"]}
 
     if overlay:
-        from uvex_transients.phase_space.overlay import measure_class, shipped_classes, stack_measurements
+        from uvex_transients.phase_space.analysis.overlay import measure_class, shipped_classes, stack_measurements
 
         bandpass = sampler.mission.detector.bandpasses[sampler.band]
         seed = experiment.campaign.seed if seed is None else int(seed)
@@ -472,7 +472,7 @@ def plot_files(
     if info.kind == "canonical":
         overlays = None
         if overlay and paths["overlay"].exists():
-            from uvex_transients.phase_space.overlay import split_measurements
+            from uvex_transients.phase_space.analysis.overlay import split_measurements
 
             overlays = split_measurements(read_table(paths["overlay"], "shading the classes"))
         figure = plot_map(grid, points, figure_path, title, overlays=overlays, show_points=show_points)
@@ -497,8 +497,8 @@ def compare_maps(
     """
     Difference the ``map.ecsv`` of two maps, and write ``difference.ecsv`` and ``difference.png``.
 
-    See `~uvex_transients.phase_space.compare.difference_map` for what is compared and refused. It reads only the
-    fitted maps, so it needs neither the schedule nor scikit-learn.
+    See `~uvex_transients.phase_space.analysis.compare.difference_map` for what is compared and refused. It reads only
+    the fitted maps, so it needs neither the schedule nor scikit-learn.
 
     Parameters
     ----------
@@ -536,7 +536,7 @@ def compare_maps(
     """
     import matplotlib.pyplot as plt
 
-    from uvex_transients.phase_space.compare import difference_map
+    from uvex_transients.phase_space.analysis.compare import difference_map
     from uvex_transients.phase_space.plotting import plot_difference
 
     out_dir = Path(out_dir)
@@ -559,7 +559,7 @@ def compare_maps(
         overlay_path = map_paths(baseline)["overlay"]
         names = Space.from_dict(difference.meta["space"]).names if "space" in difference.meta else _CANONICAL_NAMES
         if overlay and overlay_path.exists() and names == _CANONICAL_NAMES:
-            from uvex_transients.phase_space.overlay import split_measurements
+            from uvex_transients.phase_space.analysis.overlay import split_measurements
 
             overlays = split_measurements(read_table(overlay_path, "shading the classes"))
         title = title or f"{Path(comparison).name} relative to {Path(baseline).name}"

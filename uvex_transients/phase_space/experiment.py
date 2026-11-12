@@ -519,7 +519,8 @@ class Experiment:
         astropy.table.Table
             The table of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`, whose ``meta`` also holds the
             ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for
-            `~uvex_transients.phase_space.compare.difference_map` to check) and the ``n_max`` of the stopping rule.
+            `~uvex_transients.phase_space.analysis.compare.difference_map` to check) and the ``n_max`` of the stopping
+            rule.
         """
         size = configured(size, "map.grid_size")
         if products is None:

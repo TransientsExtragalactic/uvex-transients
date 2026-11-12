@@ -250,8 +250,8 @@ def plot_map(
         A suptitle.
     overlays : sequence of astropy.table.Table, optional
         Measurements of populations to shade on the map, as returned by
-        `~uvex_transients.phase_space.overlay.measure_class`. Each is the smallest region holding 68% of its draws, in
-        its own colour, named in a legend.
+        `~uvex_transients.phase_space.analysis.overlay.measure_class`. Each is the smallest region holding 68% of its
+        draws, in its own colour, named in a legend.
     show_points : bool, optional
         Whether to mark the simulated points, as circles that grow with the number of events simulated.
     reference_rate : ~astropy.units.Quantity, optional
@@ -379,7 +379,7 @@ def plot_difference(
     Draw the difference of two recovery maps, in dex of the recovered volume-time.
 
     The axes come from the ``space`` in the table's ``meta`` when it has one (as a table of
-    `~uvex_transients.phase_space.compare.difference_map` of two maps made with
+    `~uvex_transients.phase_space.analysis.compare.difference_map` of two maps made with
     `~uvex_transients.phase_space.experiment.Experiment.grid_table` does), so the figure does not know what they are,
     and from the canonical luminosity and half-decline time otherwise.
 
@@ -391,7 +391,7 @@ def plot_difference(
     Parameters
     ----------
     difference : astropy.table.Table
-        The output of `~uvex_transients.phase_space.compare.difference_map`.
+        The output of `~uvex_transients.phase_space.analysis.compare.difference_map`.
     path : str or pathlib.Path, optional
         Where to write the figure. If omitted, the figure is not saved.
     title : str, optional

@@ -5,7 +5,12 @@ import pytest
 import synphot
 from astropy import units as u
 
-from uvex_transients.phase_space.overlay import measure_class, shipped_classes, split_measurements, stack_measurements
+from uvex_transients.phase_space.analysis.overlay import (
+    measure_class,
+    shipped_classes,
+    split_measurements,
+    stack_measurements,
+)
 from uvex_transients.transients.kilonovae import Kilonova
 from uvex_transients.transients.TDEs import TidalDisruptionEvent
 
