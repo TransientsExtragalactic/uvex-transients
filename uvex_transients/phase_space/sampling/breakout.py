@@ -28,6 +28,7 @@ luminosity and the time scale together, so the limit is a function of both and i
 the same band weights the detection horizon uses.
 """
 
+from collections.abc import Mapping, Sequence
 from typing import Union
 
 import numpy as np
@@ -191,6 +192,10 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         How many exposures must reach it. One, by default, since only the first exposures count.
     exclude_first_visit_detections : bool, optional
         Whether a detection that is only on a field's first visit is discarded; see `SurveySimulator.filter_by_snr`.
+    detection : sequence of Mapping, optional
+        What counts as a recovery, as a list of the simulator's registered cuts; see `SurveySampler` and
+        `~uvex_transients.phase_space.sampling.core.check_detection`. By default one ``snr`` cut made of the three
+        settings above.
     mag_limit : float, optional
         The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.
     time_bins : int, optional
@@ -227,6 +232,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         snr_threshold: float | None = None,
         n_visits: int | None = None,
         exclude_first_visit_detections: bool | None = None,
+        detection: Sequence[Mapping] | None = None,
         mag_limit: float | None = None,
         time_bins: int | None = None,
         nside: int | None = None,
@@ -243,6 +249,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
             snr_threshold=snr_threshold,
             n_visits=configured(n_visits, "breakout.n_visits"),
             exclude_first_visit_detections=exclude_first_visit_detections,
+            detection=detection,
             mag_limit=mag_limit,
             time_bins=configured(time_bins, "breakout.time_bins"),
             nside=nside,

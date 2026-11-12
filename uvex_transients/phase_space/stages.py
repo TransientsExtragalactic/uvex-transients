@@ -33,7 +33,7 @@ Running a map needs the optional ``phase_space`` extra.
 
 import contextlib
 import time
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 __all__ = [
     "DIFFERENCE_FILES",
     "compare_maps",
+    "describe_detection",
     "fit_map",
     "map_title",
     "plot_files",
@@ -382,6 +383,32 @@ def write_map(
     return written
 
 
+def describe_detection(settings: Mapping) -> str:
+    """
+    Describe what a map counts as a detection, in a few words.
+
+    Parameters
+    ----------
+    settings : Mapping
+        The settings of a survey-backed sampler, with ``snr_threshold`` and ``n_visits`` and, if it was given a
+        definition of a detection, ``detection``.
+
+    Returns
+    -------
+    str
+        For the default, the threshold and the number of visits. For a list of cuts, the threshold and the cuts, in
+        order, each with the arguments it was given.
+    """
+    steps = settings.get("detection")
+    if not steps:
+        return f"SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s)"
+    parts = []
+    for step in steps:
+        params = ", ".join(f"{key}={value}" for key, value in step.get("params", {}).items())
+        parts.append(f"{step['cut']}({params})" if params else step["cut"])
+    return f"SNR >= {settings['snr_threshold']:g}: " + " + ".join(parts)
+
+
 def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: float | None = None) -> str:
     """
     Return the title of the figure of a map.
@@ -404,10 +431,7 @@ def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: f
     """
     took = "" if minutes is None else f", {minutes:.1f} min"
     if kind == "canonical":
-        return (
-            f"{settings['band']}: SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s), "
-            f"{n_points} points, {n_tries:,} events{took}"
-        )
+        return f"{settings['band']}: {describe_detection(settings)}, {n_points} points, {n_tries:,} events{took}"
     return f"{kind}: {n_points} points, {n_tries:,} tries{took}"
 
 

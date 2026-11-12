@@ -30,6 +30,17 @@
 # there too, so the two agree). Events are drawn out to the redshift where the source
 # falls below `mag_limit`, set to the 25 AB magnitude screen of `full_run.yaml`.
 #
+# A different definition of a detection is a `detection:` in `recovery:`, a list of the cuts that a run-config's `steps:`
+# use (see `uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point
+# draws. A cut that takes `snr_threshold`, `n_visits`, `exclude_first_visit_detections` or `bands` and is not given them
+# gets the map's. For example, a first detection that the survey brackets to within a day:
+#
+#   recovery:
+#     detection:
+#       - cut: snr
+#       - cut: time_since_last_nondetection
+#         params: {max_delay: 1.0}   # days
+#
 # Each map is one band, which both recovers the events and defines the luminosity. The
 # sampler, transient and map settings that are not given here come from the
 # `phase_space:` section of the package config.

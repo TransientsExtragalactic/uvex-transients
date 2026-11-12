@@ -359,7 +359,9 @@ phase_space:
     # The mission, and the band that recovers the events and defines the luminosity. One band makes one map.
     mission: uvex_fast
     band: FUV
-    # A recovery is a detection above snr_threshold on at least n_visits visits. A detection that is only on a field's
+    # A recovery is a detection above snr_threshold on at least n_visits visits. Another definition is a `detection:`, a
+    # list of cuts of the simulator (`SurveySimulator.available_cuts`) that is not in the configuration, since it has no
+    # default; see `uvex_transients.phase_space.sampling.core.check_detection`. A detection that is only on a field's
     # first visit is discarded when exclude_first_visit_detections is set, since nothing there can confirm it.
     snr_threshold: 5.0
     n_visits: 2

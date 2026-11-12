@@ -14,6 +14,13 @@ parameter in a unit (or the parameter itself, on a linear axis), and the sampler
 axis can be a derived quantity, such as a luminosity in a band, and the subclass places the point itself. The link is
 declared here, on the sampler, so that a `~uvex_transients.phase_space.space.Space` stays free of any model.
 
+**What counts as a detection.** By default a recovery is at least `n_visits` observations above `snr_threshold` in the
+band (`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`). Any other definition is a `detection`: an
+ordered list of the simulator's registered cuts, the same ones a run-config's ``steps:`` use, applied to the events a
+point draws, and the events that survive them are the recoveries. A subclass whose rule is not a sequence of cuts
+overrides `SurveySampler.detect`. The noise-free scales do not depend on the rule, only on the window events are
+followed for, so a rule that needs observations beyond that window has to be given a longer one.
+
 The recovery fraction of a point is conditional on the footprint that was sampled, which depends on the number of
 explosion-time bins. The noise-free volume-time :math:`\mathcal V T` is the expected number of events over the survey in
 that footprint at one event per :math:`\mathrm{Mpc}^3\,\mathrm{yr}`. The product :math:`f\,\mathcal V T` does not depend
@@ -23,8 +30,9 @@ The samplers built on it are in their own modules: `~uvex_transients.phase_space
 map) and `~uvex_transients.phase_space.sampling.breakout` (shock breakout).
 """
 
+import inspect
 from abc import abstractmethod
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -39,12 +47,106 @@ from uvex_transients.missions import get_mission
 from uvex_transients.phase_space._config import configured
 from uvex_transients.phase_space.sampling.base import Product, Sampler, Scale, Weighted
 from uvex_transients.simulation.core import SurveySimulator
+from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.surveys.utils import get_schedule
 from uvex_transients.utils import config, logger, resolve_healpix_resolution
 from uvex_transients.utils.cosmology import get_cosmology
 
-__all__ = ["ParameterAxis", "SurveySampler"]
+__all__ = ["ParameterAxis", "SurveySampler", "check_detection"]
+
+
+# ============================================ #
+# What counts as a detection                   #
+# ============================================ #
+def _cut_parameters(function) -> tuple[str, ...]:
+    """Return the names of the parameters of a cut, after the simulator, the catalog and the mission."""
+    return tuple(inspect.signature(function).parameters)[3:]
+
+
+def _plain(value):
+    """Return `value` as plain types (numbers, strings, booleans, `None`, lists and mappings of them) or raise."""
+    # Subclasses of the builtin types (a value read from YAML, say) are converted, since a header cannot hold them
+    if isinstance(value, np.generic):
+        return value.item()
+    if value is None:
+        return None
+    for kind in (bool, int, float, str):
+        if isinstance(value, kind):
+            return kind(value)
+    if isinstance(value, (list, tuple)):
+        return [_plain(item) for item in value]
+    if isinstance(value, Mapping):
+        return {str(key): _plain(item) for key, item in value.items()}
+    raise TypeError(f"{value!r} is not a plain value (number, string, boolean, list or mapping).")
+
+
+def check_detection(detection: Sequence[Mapping] | None) -> tuple[dict, ...] | None:
+    """
+    Check a definition of a detection and return it as plain types.
+
+    A definition is a list of cuts. Each entry is a mapping with the name of a cut registered on
+    `~uvex_transients.simulation.core.SurveySimulator` as ``cut``, and the arguments of that cut as ``params``, as in
+    the ``steps:`` of a run-config::
+
+        [
+            {"cut": "snr", "params": {"n_visits": 2}},
+            {
+                "cut": "time_since_last_nondetection",
+                "params": {"max_delay": 1.0},
+            },
+        ]
+
+    Parameters
+    ----------
+    detection : sequence of Mapping or None
+        The entries, applied in order, or `None` for the sampler's default.
+
+    Returns
+    -------
+    tuple of dict or None
+        The entries as plain dicts (``params`` left out when empty), or `None`.
+
+    Raises
+    ------
+    ValueError
+        If `detection` is empty or not a list of mappings, an entry has a key other than ``cut`` and ``params``, a cut
+        is not registered, or a cut does not take one of its ``params``.
+    """
+    if detection is None:
+        return None
+    if isinstance(detection, (str, Mapping)) or not isinstance(detection, Sequence):
+        raise ValueError(f"`detection` must be a list of cuts, each with a 'cut' name, got {detection!r}.")
+    if not len(detection):
+        raise ValueError("`detection` needs at least one cut; leave it out for the default.")
+
+    steps = []
+    for index, step in enumerate(detection):
+        where = f"detection[{index}]"
+        if not isinstance(step, Mapping) or "cut" not in step:
+            raise ValueError(f"{where}: an entry is a mapping with a 'cut' name and optional 'params', got {step!r}.")
+        unknown = sorted(set(step) - {"cut", "params"})
+        if unknown:
+            raise ValueError(f"{where}: unknown key(s) {unknown}; an entry has 'cut' and optionally 'params'.")
+        name = str(step["cut"])
+        try:
+            function = SurveySimulator.get_cut(name)
+        except ValueError as error:
+            raise ValueError(f"{where}: {error}") from error
+
+        params = step.get("params") or {}
+        if not isinstance(params, Mapping):
+            raise ValueError(f"{where}: 'params' must be a mapping, got {params!r}.")
+        accepted = _cut_parameters(function)
+        unknown = sorted(set(params) - set(accepted))
+        if unknown:
+            raise ValueError(f"{where}: the cut {name!r} takes no parameter(s) {unknown}; it takes {list(accepted)}.")
+        try:
+            entry = {"cut": name, **({"params": _plain(params)} if params else {})}
+        except TypeError as error:
+            raise ValueError(f"{where}: {error}") from error
+        steps.append(entry)
+    return tuple(steps)
 
 
 # ============================================ #
@@ -123,6 +225,11 @@ class SurveySampler(Sampler):
         How many visits must reach it.
     exclude_first_visit_detections : bool, optional
         Whether a detection that is only on a field's first visit is discarded; see `SurveySimulator.filter_by_snr`.
+    detection : sequence of Mapping, optional
+        What counts as a recovery, as a list of the simulator's registered cuts (see `check_detection`). By default
+        one ``snr`` cut, which is the three settings above. A cut that takes `snr_threshold`, `n_visits`,
+        `exclude_first_visit_detections` or ``bands`` and is not given them gets the sampler's, with ``bands`` the
+        band of the map. A rule that is not a list of cuts is written by overriding `detect`.
     mag_limit : float, optional
         The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.
     time_bins : int, optional
@@ -156,6 +263,7 @@ class SurveySampler(Sampler):
         snr_threshold: float | None = None,
         n_visits: int | None = None,
         exclude_first_visit_detections: bool | None = None,
+        detection: Sequence[Mapping] | None = None,
         mag_limit: float | None = None,
         time_bins: int | None = None,
         nside: int | None = None,
@@ -175,6 +283,8 @@ class SurveySampler(Sampler):
         self.exclude_first_visit_detections = bool(
             configured(exclude_first_visit_detections, "recovery.exclude_first_visit_detections")
         )
+        self.detection = check_detection(detection)
+        """tuple of dict or None: The cuts that define a recovery, or `None` for the default (see `detect`)."""
         self.mag_limit = float(configured(mag_limit, "recovery.mag_limit"))
         self.time_bins = int(configured(time_bins, "recovery.time_bins"))
         self.nside, self.order = resolve_healpix_resolution(nside, order)
@@ -410,7 +520,10 @@ class SurveySampler(Sampler):
         The mission and schedule are recorded by name. A mission given as an object, or a schedule given without a
         ``schedule_name``, is recorded as `None` and has to be supplied again to `from_settings`.
         """
-        return dict(self._settings)
+        settings = dict(self._settings)
+        if self.detection is not None:
+            settings["detection"] = [dict(step) for step in self.detection]
+        return settings
 
     @classmethod
     def _rebuild_arguments(
@@ -511,15 +624,50 @@ class SurveySampler(Sampler):
         catalog = simulator.sample_N_events(int(n), self.time_bins, nside=self.nside, order=self.order)
         if len(catalog) != n:
             raise RuntimeError(f"Asked the simulator for {n} events and got {len(catalog)}.")
-        recovered = simulator.filter_by_snr(
-            catalog,
-            self.mission,
-            self.snr_threshold,
-            bands=[self.band],
-            n_visits=self.n_visits,
-            exclude_first_visit_detections=self.exclude_first_visit_detections,
-        )
-        return len(recovered)
+        return len(self.detect(simulator, catalog))
+
+    def detect(self, simulator: SurveySimulator, catalog: EventCatalog) -> EventCatalog:
+        """
+        Return the events of a catalog that count as recovered.
+
+        This is what a recovery is. It applies each cut of `detection` in turn to the events that survived the one
+        before, and with no `detection` it is the one ``snr`` cut, so that an event is recovered when at least
+        `n_visits` of its observations reach `snr_threshold` in the band. A cut is given the sampler's `snr_threshold`,
+        `n_visits`, `exclude_first_visit_detections` and ``bands`` (the band of the map) for each of those it takes and
+        its entry leaves out.
+
+        Override it for a rule that is not a sequence of cuts. It is called once per draw, and has to return the
+        rows of `catalog` that are recovered. The epochs of the events (each observation, with its time and its
+        measured SNR) are from `~uvex_transients.simulation.core.SurveySimulator.iter_epochs`, and a boolean mask over
+        the rows of the catalog is applied with ``dataclasses.replace(catalog, table=catalog.table[mask])``.
+
+        Parameters
+        ----------
+        simulator : ~uvex_transients.simulation.core.SurveySimulator
+            The simulator that made `catalog`, which the cuts and the epochs of the events are taken from.
+        catalog : ~uvex_transients.simulation.event_catalog.EventCatalog
+            The `n` events drawn at a point.
+
+        Returns
+        -------
+        ~uvex_transients.simulation.event_catalog.EventCatalog
+            The events of `catalog` that are recovered.
+        """
+        defaults = {
+            "snr_threshold": self.snr_threshold,
+            "bands": [self.band],
+            "n_visits": self.n_visits,
+            "exclude_first_visit_detections": self.exclude_first_visit_detections,
+        }
+        for step in self.detection or ({"cut": "snr"},):
+            function = SurveySimulator.get_cut(step["cut"])
+            accepted = _cut_parameters(function)
+            params = {key: value for key, value in defaults.items() if key in accepted}
+            params.update(step.get("params", {}))
+            catalog = function(simulator, catalog, self.mission, **params)
+            if not len(catalog):
+                break
+        return catalog
 
     # -------------------------------------- #
     # Absolute scale                         #

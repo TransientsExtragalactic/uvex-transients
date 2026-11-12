@@ -82,6 +82,31 @@ def fitted(run_config, staged):
     return staged
 
 
+#: A map whose detection is a first detection that the survey brackets to within a day, not a number of visits.
+BRACKET_MAP = """
+  - id: bracket_test
+    recovery:
+      band: FUV
+      detection:
+        - cut: snr
+        - cut: time_since_last_nondetection
+          params: {max_delay: 1.0}
+"""
+
+
+@pytest.fixture(scope="module")
+def bracketed(tmp_path_factory, make_schedule):
+    """A run-config with a map of that kind, and the map built from it."""
+    directory = tmp_path_factory.mktemp("bracket")
+    schedule_path, fov_path = directory / "schedule.ecsv", directory / "schedule.reg"
+    make_schedule().to_disk(schedule_path, fov_path=fov_path)
+    path = directory / "phase_space.yaml"
+    path.write_text(CONFIG_TEMPLATE.format(schedule_path=schedule_path, fov_path=fov_path) + BRACKET_MAP)
+    out = directory / "out"
+    invoke(path, "--out-dir", out, "--map", "bracket_test")
+    return path, out / "bracket_test"
+
+
 # ---------------------------------------------------------------------------- #
 # run                                                                          #
 # ---------------------------------------------------------------------------- #
@@ -262,3 +287,29 @@ def test_an_overlay_is_refused_for_a_map_that_is_not_over_the_canonical_axes(bui
     shutil.copytree(built / "breakout_test", copy)
     with pytest.raises(ValueError, match="overlay"):
         stages.fit_map(copy, overlay=True, overwrite=True)
+
+
+# ---------------------------------------------------------------------------- #
+# A map with its own definition of a detection                                 #
+# ---------------------------------------------------------------------------- #
+def test_a_map_with_its_own_detection_is_built_and_records_it(bracketed):
+    _, directory = bracketed
+    assert sorted(path.name for path in directory.iterdir()) == ["map.ecsv", "map.png", "overlay.ecsv", "points.ecsv"]
+    assert files.describe(directory).settings["detection"] == [
+        {"cut": "snr"},
+        {"cut": "time_since_last_nondetection", "params": {"max_delay": 1.0}},
+    ]
+
+
+def test_a_map_with_its_own_detection_is_fitted_again_from_its_points(bracketed):
+    """The rule is rebuilt from the header of the points, with nothing but the schedule given again."""
+    path, directory = bracketed
+    invoke("fit", directory, "--config", path, "--grid-size", 5, "--overwrite")
+    assert files.describe(directory).settings["detection"][1]["params"] == {"max_delay": 1.0}
+
+
+def test_a_map_with_its_own_detection_says_so_in_its_title(bracketed):
+    _, directory = bracketed
+    info = files.describe(directory)
+    title = stages.map_title(info.kind, info.settings, info.n_points, info.n_tries)
+    assert "snr + time_since_last_nondetection(max_delay=1.0)" in title

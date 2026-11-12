@@ -33,6 +33,22 @@ kind takes its defaults from the package configuration (``phase_space.<kind>``, 
 own sections. ``sampler:``, which sets how points are placed and not what one is, is shared by every map. To share a
 section on purpose, use a YAML anchor (``recovery: &detection {...}`` and ``recovery: {<<: *detection}``).
 
+By default a detection is ``n_visits`` observations above ``snr_threshold``. Any other definition is a ``detection:``
+in ``recovery:``, a list of the cuts a run-config's ``steps:`` use (see
+`uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point draws, with
+the survivors counted as recovered. A cut that takes ``snr_threshold``, ``n_visits``,
+``exclude_first_visit_detections`` or ``bands`` and is not given them gets the map's::
+
+    maps:
+      - id: fuv_bracketed
+        recovery:
+          band: FUV
+          detection:
+            - cut: snr
+              params: {n_visits: 2}
+            - cut: time_since_last_nondetection
+              params: {max_delay: 1.0}  # days
+
 A map is of the canonical transient unless it names another ``kind:`` of sampler (see
 `uvex_transients.phase_space.sampling.base.available_samplers`), and then ``settings:`` holds the arguments of that
 sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}`` the ranges of its axes by name::
@@ -79,6 +95,7 @@ SECTIONS = {
         "snr_threshold",
         "n_visits",
         "exclude_first_visit_detections",
+        "detection",
         "mag_limit",
         "time_bins",
         "chunk_size",
@@ -99,6 +116,7 @@ _SURVEY_KEYS = (
     "snr_threshold",
     "n_visits",
     "exclude_first_visit_detections",
+    "detection",
     "mag_limit",
     "time_bins",
     "nside",
@@ -196,7 +214,7 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
         seen.add(map_id)
 
         kind = str(entry.get("kind", top_kind))
-        from uvex_transients.phase_space.sampling import available_samplers
+        from uvex_transients.phase_space.sampling import available_samplers, check_detection
 
         if kind not in available_samplers():
             errors.append(f"{where}: unknown kind {kind!r}; the registered kinds are {list(available_samplers())}.")
@@ -210,6 +228,11 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
             )
             for name in SECTIONS
         }
+        if "detection" in sections["recovery"]:
+            try:
+                check_detection(sections["recovery"]["detection"])
+            except ValueError as error:
+                errors.append(f"{where}: 'recovery: detection:' is invalid: {error}")
         if kind != "canonical" and sections["transient"]:
             errors.append(f"{where}: 'transient:' is for the canonical transient; give a {kind!r} map its 'settings:'.")
         if kind != "canonical" and {"log_luminosity", "log_half_time"} & set(sections["map"]):
@@ -408,6 +431,8 @@ def dry_run_report(
     ok : bool
         Whether the run would proceed: false if a band is not one of the mission's or a map would hit existing output.
     """
+    from uvex_transients.phase_space.stages import describe_detection
+
     source = f" (config: {phase_space_config.source})" if phase_space_config.source else ""
     bands = list(phase_space_config.mission.detector.bandpasses)
     lines = [f"dry run: phase-space{source}: {len(specs)} map(s) -> {out_dir}"]
@@ -424,8 +449,8 @@ def dry_run_report(
         ok &= not problems
         kind = "" if spec.kind == "canonical" else f" [{spec.kind}]"
         lines.append(
-            f"  {spec.id}{kind}: {spec.band}, SNR >= {recovery['snr_threshold']:g} on {recovery['n_visits']} visit(s), "
-            f"{recovery['mag_limit']:g} AB" + "".join(f"\n    ERROR: {problem}" for problem in problems)
+            f"  {spec.id}{kind}: {spec.band}, {describe_detection(recovery)}, {recovery['mag_limit']:g} AB"
+            + "".join(f"\n    ERROR: {problem}" for problem in problems)
         )
     return lines, ok
 
