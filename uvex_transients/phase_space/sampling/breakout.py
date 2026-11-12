@@ -6,7 +6,7 @@ transient is the `~uvex_transients.models.shock_cooling.inverse_gamma.InverseGam
 curve that rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands from
 the breakout radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``, and
 both axes are parameters of the SED, so they are bound to it by name
-(`~uvex_transients.phase_space.samplers.survey.ParameterAxis`) and no placing code is written.
+(`~uvex_transients.phase_space.sampling.core.ParameterAxis`) and no placing code is written.
 
 **What counts as a detection.** A breakout is detected if at least one exposure reaches the signal-to-noise threshold,
 and only an exposure that lies within the event counts: an event is followed for the window out to the *bolometric*
@@ -42,7 +42,7 @@ from uvex_transients.models.core.detection_horizon import peak_band_magnitudes, 
 from uvex_transients.models.core.priors import ConstantPrior
 from uvex_transients.models.lightcurves.generic import InverseGammaBrokenPowerLawLightcurve
 from uvex_transients.models.shock_cooling import InverseGammaBlackbodySED
-from uvex_transients.phase_space.samplers.survey import ParameterAxis, SurveySampler, _configured
+from uvex_transients.phase_space.sampling.core import ParameterAxis, SurveySampler, _configured
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.transients.base import ExtragalacticTransient
@@ -171,7 +171,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     the defaults of `~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`. One sampler makes
     the map of one band. See the module documentation for what counts as a detection.
 
-    Every argument that is `None` (the default) takes ``config["phase_space.breakout.<name>"]`` or
+    Every argument that is `None` (the default) takes ``config["phase_space.sampling.breakout.<name>"]`` or
     ``config["phase_space.recovery.<name>"]``.
 
     Parameters

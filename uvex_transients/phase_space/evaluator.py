@@ -8,8 +8,8 @@ how many `SurveySimulator.filter_by_snr` recovers, adding chunks of events until
 been simulated.
 
 It is a thin layer over two parts that do not know about each other:
-`~uvex_transients.phase_space.samplers.canonical.CanonicalSampler`, which answers how many events of `n` at a point are
-recovered, and `~uvex_transients.phase_space.samplers.stopping.StoppingRule`, which decides how many to try. It keeps
+`~uvex_transients.phase_space.sampling.core.CanonicalSampler`, which answers how many events of `n` at a point are
+recovered, and `~uvex_transients.phase_space.sampling.base.StoppingRule`, which decides how many to try. It keeps
 the interface the map and the command line were written against.
 
 The recovery fraction :math:`f=k/n` is conditional on the footprint that was sampled, which depends on the number of
@@ -23,8 +23,8 @@ import numpy as np
 from astropy.cosmology import Cosmology
 from numpy.typing import ArrayLike, NDArray
 
-from uvex_transients.phase_space.samplers.canonical import CanonicalSampler, RedshiftLimit
-from uvex_transients.phase_space.samplers.stopping import StoppingRule
+from uvex_transients.phase_space.sampling.base import StoppingRule
+from uvex_transients.phase_space.sampling.core import CanonicalSampler, RedshiftLimit
 from uvex_transients.surveys.base import SurveySchedule
 from uvex_transients.utils import get_seed_sequence, logger
 

@@ -6,7 +6,7 @@ and half-decline time) that also holds the callable that measures a point, runs 
 map asks for, writes and reads the points file, and makes the maps of the canonical recovery experiment. It is the
 interface `~uvex_transients.phase_space.evaluator.RecoveryEvaluator`, the command line and the saved files were written
 against. New work puts the three apart: a `~uvex_transients.phase_space.map.PhaseSpaceMap`, a
-`~uvex_transients.phase_space.samplers.base.Sampler` that answers "how many detections in n tries", and
+`~uvex_transients.phase_space.sampling.base.Sampler` that answers "how many detections in n tries", and
 `~uvex_transients.phase_space.campaign.run_campaign` that connects them.
 
 Each evaluation is expensive and returns only a binomial count: ``k`` recoveries out of ``n`` simulated events. Instead

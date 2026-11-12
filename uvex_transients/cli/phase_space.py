@@ -34,7 +34,7 @@ own sections. ``sampler:``, which sets how points are placed and not what one is
 section on purpose, use a YAML anchor (``recovery: &detection {...}`` and ``recovery: {<<: *detection}``).
 
 A map is of the canonical transient unless it names another ``kind:`` of sampler (see
-`uvex_transients.phase_space.samplers.base.available_samplers`), and then ``settings:`` holds the arguments of that
+`uvex_transients.phase_space.sampling.base.available_samplers`), and then ``settings:`` holds the arguments of that
 sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}`` the ranges of its axes by name::
 
     maps:
@@ -139,7 +139,7 @@ class MapSpec:
     """int or None: Points per axis of the fitted map, or `None` for the configured size."""
 
     kind: str = "canonical"
-    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.samplers.base.available_samplers`."""
+    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.sampling.base.available_samplers`."""
 
     settings: dict[str, Any] = field(default_factory=dict)
     """dict: Arguments of a sampler of another kind than the canonical one, beyond its detection settings."""
@@ -199,7 +199,7 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
         seen.add(map_id)
 
         kind = str(entry.get("kind", top_kind))
-        from uvex_transients.phase_space.samplers import available_samplers
+        from uvex_transients.phase_space.sampling import available_samplers
 
         if kind not in available_samplers():
             errors.append(f"{where}: unknown kind {kind!r}; the registered kinds are {list(available_samplers())}.")
@@ -570,7 +570,7 @@ def _run_experiment_map(
     """
     from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
     from uvex_transients.phase_space.run import run_experiment
-    from uvex_transients.phase_space.samplers import StoppingRule, get_sampler
+    from uvex_transients.phase_space.sampling import StoppingRule, get_sampler
 
     sampler_class = get_sampler(spec.kind)
     detection = {key: value for key, value in spec.recovery.items() if key in _SURVEY_KEYS}

@@ -10,7 +10,7 @@ import pytest
 from astropy import units as u
 
 from uvex_transients.phase_space.evaluator import RecoveryEvaluator, RedshiftLimit
-from uvex_transients.phase_space.samplers import (
+from uvex_transients.phase_space.sampling import (
     CanonicalSampler,
     Estimate,
     ParameterAxis,
@@ -20,7 +20,7 @@ from uvex_transients.phase_space.samplers import (
     available_samplers,
     get_sampler,
 )
-from uvex_transients.phase_space.samplers import survey as survey_module
+from uvex_transients.phase_space.sampling import core as core_module
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils import config
 
@@ -82,21 +82,12 @@ def test_the_canonical_sampler_is_a_complete_registered_sampler(sampler):
     assert "canonical" in available_samplers()
 
 
-def test_the_survey_samplers_are_imported_only_when_a_built_in_kind_is_asked_for():
-    """Importing the sampler package does not import the survey samplers; asking for the kind does."""
-    code = (
-        "import sys; import uvex_transients.phase_space.samplers as s; "
-        "survey = ('uvex_transients.phase_space.samplers.canonical', 'uvex_transients.phase_space.samplers.survey', "
-        "'uvex_transients.phase_space.transient'); "
-        "assert not any(m in sys.modules for m in survey), [m for m in survey if m in sys.modules]; "
-        "assert 'canonical' in s.available_samplers(); "
-        "assert not any(m in sys.modules for m in survey); "
-        "s.get_sampler('canonical'); "
-        "assert all(m in sys.modules for m in survey)"
-    )
-    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2])}
-    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False, env=env)
-    assert result.returncode == 0, result.stderr[-600:]
+def test_every_built_in_kind_is_registered_by_importing_the_package():
+    """The registry is complete as soon as the sampling package is imported, with no lazy loading to remember."""
+    from uvex_transients.phase_space.sampling import BreakoutSampler
+
+    assert set(available_samplers()) >= {"breakout", "canonical", "logistic"}
+    assert get_sampler("breakout") is BreakoutSampler and get_sampler("canonical") is CanonicalSampler
 
 
 # ---------------------------------------------------------------------------- #
@@ -197,7 +188,7 @@ def test_a_draw_refuses_a_simulation_that_returns_another_number_of_events(sched
         def sample_N_events(self, n, *args, **kwargs):
             return list(range(n - 1))
 
-    monkeypatch.setattr(survey_module, "SurveySimulator", _Short)
+    monkeypatch.setattr(core_module, "SurveySimulator", _Short)
     with pytest.raises(RuntimeError, match="got 199"):
         sampler.draw(BRIGHT_AND_LONG, 200, np.random.SeedSequence(0))
 
@@ -266,13 +257,6 @@ def test_a_rate_gives_the_expected_recoveries(sampler):
     per_mpc3_yr = 10.0 * 1e-9
     np.testing.assert_allclose(columns["expected_recoveries"], p * per_mpc3_yr * sampler.volume_time(x), rtol=1e-12)
     assert set(columns) == {"expected_recoveries", "expected_recoveries_lo", "expected_recoveries_hi"}
-
-
-def test_the_redshift_limit_table_is_the_one_that_moved_with_it():
-    assert RedshiftLimit(24.5)(43.0) > 0
-    from uvex_transients.phase_space.samplers.canonical import RedshiftLimit as moved
-
-    assert moved is RedshiftLimit
 
 
 # ---------------------------------------------------------------------------- #

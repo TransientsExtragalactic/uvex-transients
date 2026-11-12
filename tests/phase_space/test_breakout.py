@@ -9,11 +9,11 @@ from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.core.priors import LogNormalPrior
 from uvex_transients.models.lightcurves import InverseGammaBrokenPowerLawLightcurve
 from uvex_transients.models.shock_cooling import InverseGammaBlackbodySED
-from uvex_transients.phase_space.breakout import BreakoutSampler, half_decline_time
+from uvex_transients.phase_space.sampling.breakout import BreakoutSampler, half_decline_time
 from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
 from uvex_transients.phase_space.compare import difference_map
 from uvex_transients.phase_space.plotting import plot_difference, plot_grid
-from uvex_transients.phase_space.samplers import Sampler, StoppingRule, available_samplers, get_sampler
+from uvex_transients.phase_space.sampling import Sampler, StoppingRule, available_samplers, get_sampler
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 from uvex_transients.utils.phot_utils import bandpass_table
 

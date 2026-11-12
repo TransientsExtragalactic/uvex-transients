@@ -6,7 +6,7 @@ A `PhaseSpaceMap` holds what has been measured so far, ``k`` successes of ``n`` 
 process. It does one thing beyond that, which is to say where the next measurements should be (`PhaseSpaceMap.propose`).
 It knows nothing about transients, surveys or how a point is measured: a point comes in as coordinates and counts, and
 the quantities derived from the fraction (volume-times, efficiencies, redshift limits) are made by
-`~uvex_transients.phase_space.samplers.products.Product` objects that are handed the map's estimate. The loop that
+`~uvex_transients.phase_space.sampling.base.Product` objects that are handed the map's estimate. The loop that
 evaluates the points the map asks for is not here either; see `~uvex_transients.phase_space.campaign.run_campaign`.
 
 The model is a Gaussian process on the logit of the success fraction, :math:`y_i=\mathrm{logit}\,\hat p_i` with
@@ -35,7 +35,7 @@ from astropy.table import Table
 from numpy.typing import ArrayLike, NDArray
 from scipy.special import expit
 
-from uvex_transients.phase_space.samplers.products import Estimate, Product
+from uvex_transients.phase_space.sampling.base import Estimate, Product
 from uvex_transients.phase_space.space import Space
 from uvex_transients.utils import config, logger
 from uvex_transients.utils.stat_utils import binomial_logit
@@ -326,7 +326,7 @@ class PhaseSpaceMap:
         """
         Estimate the success fraction, with an interval, at points of any leading shape.
 
-        This is what a `~uvex_transients.phase_space.samplers.products.Product` is given.
+        This is what a `~uvex_transients.phase_space.sampling.base.Product` is given.
 
         Parameters
         ----------
@@ -337,7 +337,7 @@ class PhaseSpaceMap:
 
         Returns
         -------
-        ~uvex_transients.phase_space.samplers.products.Estimate
+        ~uvex_transients.phase_space.sampling.base.Estimate
             The estimate, of shape ``(...)``.
         """
         points = np.asarray(x, dtype=np.float64)
@@ -490,7 +490,7 @@ class PhaseSpaceMap:
         expected_n : callable
             ``expected_n(p)`` gives how many tries a point of success fraction `p` is expected to get, which the
             acquisition needs to predict the noise of a point before it is measured. A
-            `~uvex_transients.phase_space.samplers.stopping.StoppingRule` supplies it.
+            `~uvex_transients.phase_space.sampling.base.StoppingRule` supplies it.
 
         Returns
         -------

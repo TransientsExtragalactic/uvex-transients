@@ -7,7 +7,7 @@ from astropy.table import Table
 from uvex_transients.phase_space.evaluator import RecoveryEvaluator
 from uvex_transients.phase_space.experiment import SCHEMA_VERSION, CampaignSettings, Experiment
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler
-from uvex_transients.phase_space.samplers import CanonicalSampler, LogisticSampler, Sampler, StoppingRule
+from uvex_transients.phase_space.sampling import CanonicalSampler, LogisticSampler, Sampler, StoppingRule
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils import config
 

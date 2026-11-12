@@ -14,9 +14,8 @@ from uvex_transients.phase_space import transient as transient_module  # noqa: E
 from uvex_transients.phase_space.evaluator import RecoveryEvaluator  # noqa: E402
 from uvex_transients.phase_space.overlay import measure_class  # noqa: E402
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler  # noqa: E402
-from uvex_transients.phase_space.samplers import canonical as canonical_module  # noqa: E402
-from uvex_transients.phase_space.samplers import stopping as stopping_module  # noqa: E402
-from uvex_transients.phase_space.samplers import survey as survey_module  # noqa: E402
+from uvex_transients.phase_space.sampling import base as base_module  # noqa: E402
+from uvex_transients.phase_space.sampling import core as core_module  # noqa: E402
 from uvex_transients.phase_space.transient import _CanonicalTransient  # noqa: E402
 from uvex_transients.transients.TDEs import TidalDisruptionEvent  # noqa: E402
 from uvex_transients.utils import config  # noqa: E402
@@ -94,9 +93,8 @@ def configured(monkeypatch):
             overlay_module,
             sampler_module,
             transient_module,
-            canonical_module,
-            stopping_module,
-            survey_module,
+            base_module,
+            core_module,
         ):
             monkeypatch.setattr(module, "config", fake)
 

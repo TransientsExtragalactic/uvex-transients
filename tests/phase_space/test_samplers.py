@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from uvex_transients.phase_space.samplers import (
+from uvex_transients.phase_space.sampling import (
     Estimate,
     LogisticSampler,
     Outcome,
@@ -12,7 +12,7 @@ from uvex_transients.phase_space.samplers import (
     available_samplers,
     get_sampler,
 )
-from uvex_transients.phase_space.samplers import base as base_module
+from uvex_transients.phase_space.sampling import base as base_module
 from uvex_transients.phase_space.space import Axis, Space
 from uvex_transients.utils import config
 

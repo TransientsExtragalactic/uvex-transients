@@ -7,7 +7,7 @@ import pytest
 
 from uvex_transients.phase_space.campaign import point_seed, run_campaign
 from uvex_transients.phase_space.map import PhaseSpaceMap
-from uvex_transients.phase_space.samplers import LogisticSampler, StoppingRule
+from uvex_transients.phase_space.sampling import LogisticSampler, StoppingRule
 from uvex_transients.phase_space.space import Axis, Space
 
 pytest.importorskip("sklearn")

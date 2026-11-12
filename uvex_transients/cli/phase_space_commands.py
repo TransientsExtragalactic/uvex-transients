@@ -533,7 +533,7 @@ def info_command(paths: tuple[Path, ...]) -> None:
 @phase_space_group.command("kinds")
 def kinds_command() -> None:
     """List the registered kinds of sampler, and the settings each takes under ``settings:`` or ``recovery:``."""
-    from uvex_transients.phase_space.samplers import available_samplers, get_sampler
+    from uvex_transients.phase_space.sampling import available_samplers, get_sampler
 
     for kind in sorted(available_samplers()):
         sampler_class = get_sampler(kind)

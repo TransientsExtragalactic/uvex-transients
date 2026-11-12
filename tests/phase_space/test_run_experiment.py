@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 from uvex_transients.phase_space.experiment import CampaignSettings, Experiment  # noqa: E402
 from uvex_transients.phase_space.plotting import plot_grid  # noqa: E402
 from uvex_transients.phase_space.run import run_experiment  # noqa: E402
-from uvex_transients.phase_space.samplers import LogisticSampler, StoppingRule, Weighted  # noqa: E402
+from uvex_transients.phase_space.sampling import LogisticSampler, StoppingRule, Weighted  # noqa: E402
 from uvex_transients.phase_space.space import Axis, Space  # noqa: E402
 
 pytest.importorskip("sklearn")

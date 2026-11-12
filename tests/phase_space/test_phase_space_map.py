@@ -6,7 +6,7 @@ from astropy.table import Table
 
 from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampler import PhaseSpaceSampler
-from uvex_transients.phase_space.samplers import Estimate, LogisticSampler, Scale, StoppingRule, Weighted
+from uvex_transients.phase_space.sampling import Estimate, LogisticSampler, Scale, StoppingRule, Weighted
 from uvex_transients.phase_space.space import Axis, Space
 
 pytest.importorskip("sklearn")

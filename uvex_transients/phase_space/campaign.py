@@ -22,8 +22,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from uvex_transients.phase_space.map import PhaseSpaceMap, _configured
-from uvex_transients.phase_space.samplers.base import Outcome, Sampler
-from uvex_transients.phase_space.samplers.stopping import StoppingRule
+from uvex_transients.phase_space.sampling.base import Outcome, Sampler, StoppingRule
 from uvex_transients.utils import logger
 
 __all__ = ["fork_map", "point_seed", "run_campaign"]
@@ -87,9 +86,9 @@ def fork_map(sampler: Sampler, rule: StoppingRule, processes: int | None = None)
 
     Parameters
     ----------
-    sampler : ~uvex_transients.phase_space.samplers.base.Sampler
+    sampler : ~uvex_transients.phase_space.sampling.base.Sampler
         What measures a point. It is not changed by the workers.
-    rule : ~uvex_transients.phase_space.samplers.stopping.StoppingRule
+    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule
         How many tries a point gets.
     processes : int, optional
         The number of worker processes. By default the number of CPUs.
@@ -156,9 +155,9 @@ def run_campaign(
     ----------
     phase_map : ~uvex_transients.phase_space.map.PhaseSpaceMap
         The map, which is added to. It can already hold points, in which case the campaign continues from them.
-    sampler : ~uvex_transients.phase_space.samplers.base.Sampler
+    sampler : ~uvex_transients.phase_space.sampling.base.Sampler
         What measures a point. Its space has to be the map's.
-    rule : ~uvex_transients.phase_space.samplers.stopping.StoppingRule
+    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule
         How many tries a point gets. The map uses it to predict the noise of a point it has not measured.
     n_initial : int, optional
         Size of the scrambled Sobol design measured before the first fit.

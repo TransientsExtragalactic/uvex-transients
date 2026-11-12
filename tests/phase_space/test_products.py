@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from uvex_transients.phase_space.samplers import Estimate, Product, Scale, Weighted
+from uvex_transients.phase_space.sampling import Estimate, Product, Scale, Weighted
 
 
 @pytest.fixture

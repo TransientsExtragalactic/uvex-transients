@@ -1,8 +1,8 @@
 r"""
 The experiment: a sampler, a map, a stopping rule and a campaign, as one object that can be run and saved.
 
-A phase-space scenario is made of four things. A `~uvex_transients.phase_space.samplers.base.Sampler` answers "how many
-detections in n tries at a point", a `~uvex_transients.phase_space.samplers.stopping.StoppingRule` says how many tries a
+A phase-space scenario is made of four things. A `~uvex_transients.phase_space.sampling.base.Sampler` answers "how many
+detections in n tries at a point", a `~uvex_transients.phase_space.sampling.base.StoppingRule` says how many tries a
 point gets, a `~uvex_transients.phase_space.map.PhaseSpaceMap` holds the points and models the success fraction, and
 `CampaignSettings` says how long to run. `Experiment` holds the four, so a new scenario is a new sampler and nothing
 else:
@@ -19,7 +19,7 @@ else:
 
 **Files.** `Experiment.save` writes the points as an ECSV table whose header records everything needed to rebuild the
 experiment: the space, the settings of the model, the stopping rule, the campaign, and the sampler as its registered
-kind and settings (see `~uvex_transients.phase_space.samplers.base.get_sampler`), so that no Python import path is
+kind and settings (see `~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is
 stored.
 `Experiment.load` reads that, and also the files of the earlier format, which recorded a
 `~uvex_transients.phase_space.evaluator.RecoveryEvaluator`; it rebuilds those as the canonical sampler.
@@ -35,9 +35,7 @@ from numpy.typing import ArrayLike
 
 from uvex_transients.phase_space.campaign import run_campaign
 from uvex_transients.phase_space.map import PhaseSpaceMap, _configured
-from uvex_transients.phase_space.samplers.base import Sampler, get_sampler
-from uvex_transients.phase_space.samplers.products import Product
-from uvex_transients.phase_space.samplers.stopping import StoppingRule
+from uvex_transients.phase_space.sampling.base import Product, Sampler, StoppingRule, get_sampler
 from uvex_transients.phase_space.space import Space
 
 __all__ = ["CampaignSettings", "Experiment", "SCHEMA_VERSION"]
@@ -135,11 +133,11 @@ class Experiment:
 
     Parameters
     ----------
-    sampler : ~uvex_transients.phase_space.samplers.base.Sampler
+    sampler : ~uvex_transients.phase_space.sampling.base.Sampler
         What measures a point.
     phase_map : ~uvex_transients.phase_space.map.PhaseSpaceMap
         The map, over the space of the sampler (with the ranges to be mapped).
-    rule : ~uvex_transients.phase_space.samplers.stopping.StoppingRule
+    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule
         How many tries a point gets.
     campaign : CampaignSettings
         How long to run.
@@ -176,12 +174,12 @@ class Experiment:
 
         Parameters
         ----------
-        sampler : ~uvex_transients.phase_space.samplers.base.Sampler
+        sampler : ~uvex_transients.phase_space.sampling.base.Sampler
             What measures a point.
         bounds : array-like, optional
             The ranges to map, shape ``(ndim, 2)``. By default the ranges of the sampler's space.
-        rule : ~uvex_transients.phase_space.samplers.stopping.StoppingRule, optional
-            By default `~uvex_transients.phase_space.samplers.stopping.StoppingRule.from_config`.
+        rule : ~uvex_transients.phase_space.sampling.base.StoppingRule, optional
+            By default `~uvex_transients.phase_space.sampling.base.StoppingRule.from_config`.
         campaign : CampaignSettings, optional
             By default `CampaignSettings.from_config` with `seed`.
         seed : int, optional
@@ -372,7 +370,7 @@ class Experiment:
         ----------
         path : str or pathlib.Path
             An ECSV file of points.
-        sampler : ~uvex_transients.phase_space.samplers.base.Sampler, optional
+        sampler : ~uvex_transients.phase_space.sampling.base.Sampler, optional
             A sampler to use instead of rebuilding the one the file records, for example one whose survey schedule is
             not in the registry.
         **context
