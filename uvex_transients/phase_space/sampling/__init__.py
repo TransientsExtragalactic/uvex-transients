@@ -11,12 +11,13 @@ from uvex_transients.phase_space.sampling.base import (
     available_samplers,
     get_sampler,
 )
-from uvex_transients.phase_space.sampling.breakout import BreakoutSampler
+from uvex_transients.phase_space.sampling.breakout import BracketedBreakoutSampler, BreakoutSampler
 from uvex_transients.phase_space.sampling.canonical import CanonicalSampler, RedshiftLimit
 from uvex_transients.phase_space.sampling.core import ParameterAxis, SurveySampler, check_detection
 from uvex_transients.phase_space.sampling.logistic import LogisticSampler
 
 __all__ = [
+    "BracketedBreakoutSampler",
     "BreakoutSampler",
     "CanonicalSampler",
     "Estimate",

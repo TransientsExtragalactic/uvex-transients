@@ -51,7 +51,7 @@ from uvex_transients.transients.base import ExtragalacticTransient
 from uvex_transients.utils import logger
 from uvex_transients.utils.cosmology import resolve_cosmological_distances
 
-__all__ = ["BreakoutSampler", "half_decline_time"]
+__all__ = ["BracketedBreakoutSampler", "BreakoutSampler", "half_decline_time"]
 
 _SECONDS_PER_DAY = 86400.0
 
@@ -449,3 +449,90 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         x = self._points(x)
         clipped = np.clip(x, self._table_bounds[:, 0], self._table_bounds[:, 1])
         return 10.0 ** self._log_redshift_table(clipped.reshape(-1, 2)).reshape(x.shape[:-1])
+
+
+class BracketedBreakoutSampler(BreakoutSampler, kind="breakout_bracketed"):
+    r"""
+    Count the breakouts whose explosion the survey brackets to within the duration of the breakout.
+
+    The same measurement as `BreakoutSampler`, with a stricter detection. An event is recovered when its first
+    detection comes within :math:`g\,x_{1/2}\,t_0\,(1+z)` of its last non-detection, :math:`g` being `gap_factor` and
+    :math:`z` the redshift of the *event*: the duration of the breakout in its own frame, stretched by its own time
+    dilation. The last non-detection can be before the explosion. So that the survey knows when it happened to within
+    that duration, an event with no non-detection that close to its first detection, which includes one whose first
+    visit of a field is already a detection, is not recovered.
+
+    The window of a point (the one `BreakoutSampler` follows its events for) is that of its farthest event, and a
+    nearby event is shorter in its own frame. A cut that takes the one window of the point would give every event the
+    farthest one's, up to twice what a nearby event is due, so the gap is compared event by event.
+
+    Parameters
+    ----------
+    schedule : ~uvex_transients.surveys.base.SurveySchedule
+        The survey to recover events against.
+    mission : str or m4opt.missions.Mission, optional
+        The mission (detector and background), or the name of one.
+    gap_factor : float, optional
+        The longest gap, in units of the event's own :math:`x_{1/2}\,t_0\,(1+z)`. The default is one.
+    **kwargs
+        The arguments of `BreakoutSampler` except ``detection``, which this sampler defines itself.
+
+    Raises
+    ------
+    ValueError
+        If `gap_factor` is not positive, or a ``detection`` is given.
+    """
+
+    def __init__(self, schedule: SurveySchedule, mission=None, *, gap_factor: float = 1.0, **kwargs):
+        if kwargs.get("detection") is not None:
+            raise ValueError("A bracketed breakout defines its own detection; leave `detection` out.")
+        if not gap_factor > 0:
+            raise ValueError(f"`gap_factor` must be positive, got {gap_factor!r}.")
+        super().__init__(schedule, mission, **kwargs)
+        self.gap_factor = float(gap_factor)
+        self._settings["gap_factor"] = self.gap_factor
+        self._point = None
+
+    def _place(self, x: NDArray[np.float64]) -> None:
+        """
+        Move the transient to a point, and remember it for the window of each event.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            The point, shape ``(2,)``.
+        """
+        self._point = np.asarray(x, dtype=np.float64)
+        super()._place(x)
+
+    def detect(self, simulator, catalog):
+        """
+        Return the events whose first detection is within their own window of their last non-detection.
+
+        Parameters
+        ----------
+        simulator : ~uvex_transients.simulation.core.SurveySimulator
+            The simulator that made `catalog`.
+        catalog : ~uvex_transients.simulation.event_catalog.EventCatalog
+            The events drawn at the placed point.
+
+        Returns
+        -------
+        ~uvex_transients.simulation.event_catalog.EventCatalog
+            The rows of `catalog` that are recovered.
+        """
+        if not len(catalog):
+            return catalog
+        z = np.asarray(catalog.table["redshift"], dtype=np.float64)
+        # In days. The farthest event has the longest window, and a non-detection before the explosion by more than
+        # an event's own window could not bracket it, so one search back of that length covers every event.
+        own = self.gap_factor * 10.0 ** self._log_window(z, self._point)
+        far = self.gap_factor * float(self._transient.duration_limit.to_value(u.day))
+        return simulator.filter_by_time_since_last_nondetection(
+            catalog,
+            self.mission,
+            snr_threshold=self.snr_threshold,
+            max_delay=own,
+            lookback=far,
+            bands=[self.band],
+        )
