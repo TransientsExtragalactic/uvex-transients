@@ -25,6 +25,7 @@ from astropy.table import QTable, vstack
 from astropy.time import Time
 from m4opt.fov import contains as fov_contains
 from m4opt.missions import Mission
+from numpy.typing import ArrayLike
 from regions import Regions, SkyRegion
 from tqdm.auto import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -2927,8 +2928,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         catalog: EventCatalog,
         mission: Mission,
         snr_threshold: float,
-        min_delay: float | None = None,
-        max_delay: float | None = None,
+        min_delay: float | ArrayLike | None = None,
+        max_delay: float | ArrayLike | None = None,
         lookback: float | None = None,
         keep_if_no_nondetection: bool = False,
         bands: list[str] | None = None,
@@ -2956,16 +2957,22 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             Forwarded to `iter_epochs`.
         snr_threshold : float
             Same definition as `filter_by_snr`.
-        min_delay : float, optional
+        min_delay : float or array-like, optional
             Minimum time (days) from the last non-detection to the first detection.
-            `None` (the default) leaves the lower end unconstrained.
-        max_delay : float, optional
+            `None` (the default) leaves the lower end unconstrained. An array has one value
+            for each row of `catalog`, in its order, for a limit that differs between events.
+        max_delay : float or array-like, optional
             Maximum time (days) from the last non-detection to the first detection, e.g.
             to require the explosion be bracketed to within a few days. `None` (the
-            default) leaves the upper end unconstrained.
+            default) leaves the upper end unconstrained. An array has one value for each
+            row of `catalog`, in its order, for a limit that differs between events, such as
+            one that scales with the redshift of each.
         lookback : float, optional
             Days before each explosion to search for a non-detection. `None` (the default)
-            searches back to the start of the schedule. Smaller values cost less.
+            searches back to the start of the schedule. Smaller values cost less. It is one
+            number for the whole catalog, so with a `max_delay` that differs between events
+            give it the largest of them (a non-detection before the explosion by more than
+            an event's own `max_delay` could not bracket it in any case).
         keep_if_no_nondetection : bool, optional
             What to do with an event that has a detection but no earlier non-detection
             within the lookback, so no delay can be measured: its first observation was
@@ -2984,7 +2991,8 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         Raises
         ------
         ValueError
-            If both `min_delay` and `max_delay` are `None`.
+            If both `min_delay` and `max_delay` are `None`, or one is an array that does not have a value for
+            each row of `catalog`.
 
         See Also
         --------
@@ -3004,6 +3012,20 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
         """
         if min_delay is None and max_delay is None:
             raise ValueError("At least one of 'min_delay'/'max_delay' must be given.")
+
+        # A limit is one number or one per event, which is broadcast to one per row so that the loop below indexes it
+        limits = []
+        for name, limit in (("min_delay", min_delay), ("max_delay", max_delay)):
+            if limit is not None:
+                limit = np.asarray(limit, dtype=np.float64)
+                if limit.ndim > 1 or (limit.ndim == 1 and limit.shape != (len(catalog),)):
+                    raise ValueError(
+                        f"'{name}' is a number or one value for each of the {len(catalog)} events, "
+                        f"got an array of shape {limit.shape}."
+                    )
+                limit = np.broadcast_to(limit, (len(catalog),))
+            limits.append(limit)
+        min_delay, max_delay = limits
 
         gaps = self._reduce_events(
             catalog,
@@ -3025,9 +3047,9 @@ class SurveySimulator(metaclass=_PipelineRegistryMeta):
             if np.isnan(gap):
                 keep[i] = keep_if_no_nondetection
                 continue
-            if min_delay is not None and gap < min_delay:
+            if min_delay is not None and gap < min_delay[i]:
                 continue
-            if max_delay is not None and gap > max_delay:
+            if max_delay is not None and gap > max_delay[i]:
                 continue
             keep[i] = True
 
