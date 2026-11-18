@@ -1,11 +1,13 @@
 r"""
 The map: the data and the model of a phase-space recovery map, and the hook that chooses the next points.
 
-A `PhaseSpaceMap` holds what has been measured so far, ``k`` successes of ``n`` tries at a set of points of a
+A :class:`~uvex_transients.phase_space.map.PhaseSpaceMap` holds what has been measured so far, ``k`` successes of ``n``
+tries at a set of points of a
 :class:`~uvex_transients.phase_space.space.Space`, and models the success fraction over the whole space with a Gaussian
-process. It does one thing beyond that, which is to say where the next measurements should be (`PhaseSpaceMap.propose`).
-It knows nothing about transients, surveys or how a point is measured: a point comes in as coordinates and counts, and
-the quantities derived from the fraction (volume-times, efficiencies, redshift limits) are made by
+process. It does one thing beyond that, which is to say where the next measurements should be
+(:meth:`PhaseSpaceMap.propose <uvex_transients.phase_space.map.PhaseSpaceMap.propose>`). It knows nothing about
+transients, surveys or how a point is measured: a point comes in as coordinates and counts, and the quantities derived
+from the fraction (volume-times, efficiencies, redshift limits) are made by
 :class:`~uvex_transients.phase_space.sampling.base.Product` objects that are handed the map's estimate. The loop that
 evaluates the points the map asks for is not here either; see
 :func:`~uvex_transients.phase_space.experiment.run_campaign`.
@@ -198,7 +200,8 @@ class PhaseSpaceMap:
         k, n : int
             The successes and the tries at the point.
         **extras
-            Any other entries of the point, which become columns of `table`.
+            Any other entries of the point, which become columns of
+            :attr:`~uvex_transients.phase_space.map.PhaseSpaceMap.table`.
 
         Raises
         ------
@@ -386,7 +389,8 @@ class PhaseSpaceMap:
         -------
         dict of str to numpy.ndarray
             ``f``, ``f_lo`` and ``f_hi`` (the success fraction and its interval), ``sigma_log`` (see
-            `log_uncertainty`), and every column of every product, each of shape ``(...)``.
+            :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.log_uncertainty`), and every column of every product,
+            each of shape ``(...)``.
         """
         x = np.asarray(x, dtype=np.float64)
         estimate = self.estimate(x, n_sigma=n_sigma)
@@ -416,7 +420,7 @@ class PhaseSpaceMap:
         size : int or sequence of int
             Points per axis; see :meth:`~uvex_transients.phase_space.space.Space.grid`.
         products : sequence of Product, optional
-            The derived quantities to make; see `evaluate`.
+            The derived quantities to make; see :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.evaluate`.
         bounds : array-like, optional
             The rectangle to evaluate, shape ``(ndim, 2)``, which can differ from the ranges of the space.
         n_sigma : float, optional
@@ -426,8 +430,9 @@ class PhaseSpaceMap:
         -------
         astropy.table.Table
             One row per grid point, in the order of :meth:`~uvex_transients.phase_space.space.Space.grid`, with the
-            coordinates, then the columns of `evaluate`. Its ``meta`` holds the ``space`` that was evaluated and the
-            ``products`` (name, label, unit and whether the default figure draws it).
+            coordinates, then the columns of :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.evaluate`. Its
+            ``meta`` holds the ``space`` that was evaluated and the ``products`` (name, label, unit and whether the
+            default figure draws it).
         """
         grid_space = self._space if bounds is None else self._space.with_bounds(bounds)
         points = self._space.grid(size, bounds)

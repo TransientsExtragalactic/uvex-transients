@@ -1,15 +1,17 @@
 r"""
 Compare two recovery maps.
 
-`difference_map` takes the fitted maps of two runs, each the ``map.ecsv`` table of
+:func:`~uvex_transients.phase_space.analysis.compare.difference_map` takes the fitted maps of two runs, each the
+``map.ecsv`` table of
 :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`, and returns how much more (or less) one recovers
 than the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the
 factor by which the expected number of recoveries changes for a population at a given point, whatever its rate (for a
 rate constant in redshift). It does not depend on the number of explosion-time bins, as the recovery fraction :math:`f`
 alone does. Nothing is simulated, so it needs neither the schedule nor scikit-learn.
 
-The axes can be any: a table that records its ``space`` (everything `Experiment.grid_table` makes) is differenced on the
-axes it names, and an earlier table, which does not, on its first two columns.
+The axes can be any: a table that records its ``space`` (everything
+:meth:`Experiment.grid_table <uvex_transients.phase_space.experiment.Experiment.grid_table>` makes) is differenced on
+the axes it names, and an earlier table, which does not, on its first two columns.
 """
 
 import numpy as np
@@ -77,7 +79,9 @@ def _coordinates(table: Table) -> tuple[str, ...]:
 
 def _check_grids(baseline: Table, comparison: Table) -> tuple[str, ...]:
     """
-    Check that two maps hold the columns `difference_map` needs and sit on the same grid; return the coordinate names.
+    Check that two maps can be differenced and sit on the same grid; return the coordinate names.
+
+    The columns they need are those of :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
 
     Raises
     ------
@@ -114,8 +118,8 @@ def _check_meta(baseline: Table, comparison: Table) -> None:
     Raises
     ------
     ValueError
-        If a quantity of `COMPARED_META` that both record differs. A map written before one was recorded is not
-        held to it.
+        If a quantity of :data:`~uvex_transients.phase_space.analysis.compare.COMPARED_META` that both record differs. A
+        map written before one was recorded is not held to it.
     """
     differ = []
     if "space" in baseline.meta and "space" in comparison.meta:
@@ -171,10 +175,11 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
         coarser of the resolutions of the two maps, :math:`1/n_\mathrm{max}` from the ``n_max`` that each records. A map
         that does not (those made before it was recorded) is taken to resolve 1e-4.
     check_meta : bool, optional
-        Whether to require that the two maps agree on the quantities of `COMPARED_META` that they both record. A
-        luminosity in one band is not one in another, so a comparison across them is only meaningful when it is
-        deliberate. The default is `True`. The depth, the schedule and the definition of a detection are not checked, as
-        they are what maps are most often compared for, and a map does not record them.
+        Whether to require that the two maps agree on the quantities of
+        :data:`~uvex_transients.phase_space.analysis.compare.COMPARED_META` that they both record. A luminosity in one
+        band is not one in another, so a comparison across them is only meaningful when it is deliberate. The default is
+        `True`. The depth, the schedule and the definition of a detection are not checked, as they are what maps are
+        most often compared for, and a map does not record them.
 
     Returns
     -------

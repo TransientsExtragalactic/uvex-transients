@@ -2,9 +2,10 @@
 Parsing and running of a phase-space run-config, for ``uvex-transients phase-space``.
 
 A phase-space run-config describes a survey and a list of maps (see :mod:`uvex_transients.phase_space`), and has nothing
-to do with the ``steps:`` pipeline of `RunConfig`, so it has its own loader. Its layout is::
+to do with the ``steps:`` pipeline of :class:`~uvex_transients.cli.config.RunConfig`, so it has its own loader. Its
+layout is::
 
-    schedule:                   # as for `RunConfig`
+    schedule:                   # as for :class:`~uvex_transients.cli.config.RunConfig`
       name: uvex_v0.6.0
     mission: uvex_fast
     seed: 0
@@ -498,7 +499,8 @@ def run_maps(
         it, since each point has its own seed. The default is 1.
     products : bool, optional
         Whether to fit and draw each map after sampling it. If `False`, only ``points.ecsv`` is written, and the rest
-        is made with :func:`uvex_transients.phase_space.stages.fit_map` and `plot_files`.
+        is made with :func:`uvex_transients.phase_space.stages.fit_map` and
+        :func:`~uvex_transients.phase_space.stages.plot_files`.
 
     Returns
     -------
@@ -549,7 +551,7 @@ def _run_experiment_map(
     progress : bool
         Whether to show the progress bars of the simulation.
     workers : int, optional
-        The processes that measure a batch (see `run_maps`).
+        The processes that measure a batch (see :func:`~uvex_transients.cli.phase_space.run_maps`).
     products : bool, optional
         Whether to fit and draw the map after sampling it.
 

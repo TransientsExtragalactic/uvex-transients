@@ -14,7 +14,8 @@ def default(section: str, key: str, kinds: Sequence[str] = ()) -> Any:
 
     A section named for a kind of sampler (``phase_space.canonical``, ``phase_space.breakout``) holds the settings of
     that kind, and a key in it takes the place of the key of the same name in the shared section, for that kind only.
-    The kinds are tried in order, so a kind built on another (see `Sampler.kinds`) takes its own value, then its
+    The kinds are tried in order, so a kind built on another (see
+    :meth:`Sampler.kinds <uvex_transients.phase_space.sampling.base.Sampler.kinds>`) takes its own value, then its
     parent's, then the shared one.
 
     Parameters

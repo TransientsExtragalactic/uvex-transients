@@ -4,8 +4,9 @@ The experiment: a sampler, a map, a stopping rule and a campaign, as one object 
 A phase-space scenario is made of four things. A :class:`~uvex_transients.phase_space.sampling.base.Sampler` answers
 "how many detections in n tries at a point", a :class:`~uvex_transients.phase_space.sampling.base.StoppingRule` says how
 many tries a point gets, a :class:`~uvex_transients.phase_space.map.PhaseSpaceMap` holds the points and models the
-success fraction, and `CampaignSettings` says how long to run. `Experiment` holds the four, so a new scenario is a new
-sampler and nothing else:
+success fraction, and :class:`~uvex_transients.phase_space.experiment.CampaignSettings` says how long to run.
+:class:`~uvex_transients.phase_space.experiment.Experiment` holds the four, so a new scenario is a new sampler and
+nothing else:
 
 .. code-block:: python
 
@@ -17,24 +18,27 @@ sampler and nothing else:
     experiment.save("points.ecsv")
     table = experiment.grid_table(60)
 
-**Files.** `Experiment.save` writes the points as an ECSV table whose header records everything needed to rebuild the
-experiment: the space, the settings of the model, the stopping rule, the campaign, and the sampler as its registered
-kind and settings (see :func:`~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is
-stored.
-`Experiment.load` reads that, and also the files of the earlier format, which recorded a ``RecoveryEvaluator`` (a class
-that no longer exists); it rebuilds those as the canonical sampler.
+**Files.** :meth:`Experiment.save <uvex_transients.phase_space.experiment.Experiment.save>` writes the points as an ECSV
+table whose header records everything needed to rebuild the experiment: the space, the settings of the model, the
+stopping rule, the campaign, and the sampler as its registered kind and settings (see
+:func:`~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is stored.
+:meth:`Experiment.load <uvex_transients.phase_space.experiment.Experiment.load>` reads that, and also the files of the
+earlier format, which recorded a ``RecoveryEvaluator`` (a class that no longer exists); it rebuilds those as the
+canonical sampler.
 
-**The campaign.** `run_campaign` is the loop that joins a map, a sampler and a stopping rule. The map says where to
-measure next, the sampler measures a point, and the rule says how many tries a point gets, so the loop measures an
-initial space-filling design, then repeats: ask the map for a batch of points, measure them and add the counts, until
-the budget is spent or the map is good enough. It is short on purpose, and everything it needs to be extended (a
-different sampler, a different rule, another acquisition) is in the three objects it is given.
+**The campaign.** :func:`~uvex_transients.phase_space.experiment.run_campaign` is the loop that joins a map, a sampler
+and a stopping rule. The map says where to measure next, the sampler measures a point, and the rule says how many tries
+a point gets, so the loop measures an initial space-filling design, then repeats: ask the map for a batch of points,
+measure them and add the counts, until the budget is spent or the map is good enough. It is short on purpose, and
+everything it needs to be extended (a different sampler, a different rule, another acquisition) is in the three objects
+it is given.
 
-**Seeds.** The randomness of the measurement of a point is the seed of the point, `point_seed`: a child of the
-campaign's root seed that is identified by the *index* of the point in the map, not by when it happened to be measured.
-A point is measured the same way whatever the order a batch is evaluated in, and so whether it is evaluated in a loop,
-on a thread pool or on a cluster (`fork_map`), and resuming a campaign from its saved points continues the same
-sequence of seeds.
+**Seeds.** The randomness of the measurement of a point is the seed of the point,
+:func:`~uvex_transients.phase_space.experiment.point_seed`: a child of the campaign's root seed that is identified by
+the *index* of the point in the map, not by when it happened to be measured. A point is measured the same way whatever
+the order a batch is evaluated in, and so whether it is evaluated in a loop, on a thread pool or on a cluster
+(:func:`~uvex_transients.phase_space.experiment.fork_map`), and resuming a campaign from its saved points continues the
+same sequence of seeds.
 """
 
 import contextlib
@@ -130,8 +134,10 @@ def fork_map(sampler: Sampler, rule: StoppingRule, processes: int | None = None)
     Yields
     ------
     callable
-        ``map_fn(function, tasks)``, for the ``map_fn`` of `run_campaign`, `Experiment.run` or `run_experiment`. It
-        measures the tasks and ignores `function`, which it could not send to the workers.
+        ``map_fn(function, tasks)``, for the ``map_fn`` of :func:`~uvex_transients.phase_space.experiment.run_campaign`,
+        :meth:`Experiment.run <uvex_transients.phase_space.experiment.Experiment.run>` or
+        :func:`~uvex_transients.phase_space.stages.run_experiment`. It measures the tasks and ignores `function`, which
+        it could not send to the workers.
 
     Raises
     ------
@@ -190,9 +196,11 @@ def run_campaign(
     rule : ~uvex_transients.phase_space.sampling.base.StoppingRule
         How many tries a point gets. The map uses it to predict the noise of a point it has not measured.
     campaign : CampaignSettings, optional
-        How long to run, how many points to place per round, and the root seed of the measurements (see `point_seed`;
-        this is separate from the seed of the map, which is that of its designs and its model). By default
-        `CampaignSettings.from_config` for the kinds of the sampler.
+        How long to run, how many points to place per round, and the root seed of the measurements (see
+        :func:`~uvex_transients.phase_space.experiment.point_seed`; this is separate from the seed of the map, which is
+        that of its designs and its model). By default
+        :meth:`CampaignSettings.from_config <uvex_transients.phase_space.experiment.CampaignSettings.from_config>` for
+        the kinds of the sampler.
     map_fn : callable, optional
         ``map_fn(function, tasks)`` returning the results in order; replace it to measure a batch in parallel. The
         default is the builtin `map`. Because each point carries its own seed, the order does not matter.
@@ -287,7 +295,8 @@ class CampaignSettings:
     r"""float: Stop once the largest posterior standard deviation of :math:`\ln(p+\epsilon)` falls below this."""
 
     seed: int = 0
-    """int: The root seed of the measurements of the points; see `point_seed`."""
+    """int: The root seed of the measurements of the points; see
+    :func:`~uvex_transients.phase_space.experiment.point_seed`."""
 
     def __post_init__(self):
         for name in ("n_initial", "batch_size", "max_points"):
@@ -393,7 +402,9 @@ class Experiment:
         rule : ~uvex_transients.phase_space.sampling.base.StoppingRule, optional
             By default :meth:`~uvex_transients.phase_space.sampling.base.StoppingRule.from_config` for the sampler.
         campaign : CampaignSettings, optional
-            By default `CampaignSettings.from_config` with `seed`.
+            By default
+            :meth:`CampaignSettings.from_config <uvex_transients.phase_space.experiment.CampaignSettings.from_config>`
+            with `seed`.
         seed : int, optional
             The root seed of the measurements, and the seed of the map.
         **map_settings
@@ -539,7 +550,8 @@ class Experiment:
         Returns
         -------
         astropy.table.Table
-            One row per measured point, with the header of `header` as its ``meta``.
+            One row per measured point, with the header of
+            :attr:`~uvex_transients.phase_space.experiment.Experiment.header` as its ``meta``.
 
         Raises
         ------
@@ -569,7 +581,10 @@ class Experiment:
     @classmethod
     def load(cls, path: str | Path, *, sampler: Sampler | None = None, **context) -> "Experiment":
         """
-        Rebuild an experiment from a file written by `save`, or by the earlier format.
+        Rebuild an experiment from a points file of either format.
+
+        The file is one written by :meth:`~uvex_transients.phase_space.experiment.Experiment.save`, or by the earlier
+        format.
 
         Parameters
         ----------

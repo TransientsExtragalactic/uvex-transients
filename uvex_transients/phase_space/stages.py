@@ -5,13 +5,16 @@ A map is a directory of files (see :mod:`~uvex_transients.phase_space.files` and
 :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of them and writes others, so that
 a stage can be run, repeated or changed without the ones before it:
 
-1. `run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop there), and then the products below. It is
+1. :func:`~uvex_transients.phase_space.stages.run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop
+  there), and then the products below. It is
    the only expensive stage, and the header of the points records everything needed to rebuild the experiment.
-2. `fit_map` makes ``map.ecsv`` (and ``overlay.ecsv``, for a sampler that has an overlay) from the points; `write_map`
+2. :func:`~uvex_transients.phase_space.stages.fit_map` makes ``map.ecsv`` (and ``overlay.ecsv``, for a sampler that has
+  an overlay) from the points; :func:`~uvex_transients.phase_space.stages.write_map`
    does the same for an experiment that is already in memory. They rebuild the sampler, so they need the survey
    schedule and scikit-learn.
-3. `plot_files` makes ``map.png`` from the files alone, and so needs neither.
-4. `compare_maps` differences the ``map.ecsv`` of two maps, again from the files alone.
+3. :func:`~uvex_transients.phase_space.stages.plot_files` makes ``map.png`` from the files alone, and so needs neither.
+4. :func:`~uvex_transients.phase_space.stages.compare_maps` differences the ``map.ecsv`` of two maps, again from the
+  files alone.
 
 Up to four files are written to the directory of a map:
 
@@ -177,7 +180,7 @@ def run_experiment(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written, by their key in `PHASE_SPACE_FILES`.
+        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.
 
     Raises
     ------
@@ -328,8 +331,8 @@ def write_map(
     """
     Write ``map.ecsv`` (and ``overlay.ecsv``) of an experiment whose model is fitted to its points.
 
-    This is what `fit_map` does after rebuilding the experiment, and what a run does with the experiment it has just
-    measured.
+    This is what :func:`~uvex_transients.phase_space.stages.fit_map` does after rebuilding the experiment, and what a
+    run does with the experiment it has just measured.
 
     Parameters
     ----------
@@ -501,9 +504,11 @@ def compare_maps(
     out_dir : str or pathlib.Path
         Where to write the files, created if needed.
     floor : float, optional
-        The recovery fraction below which a map is taken not to recover anything; see `difference_map`.
+        The recovery fraction below which a map is taken not to recover anything; see
+        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
     check_meta : bool, optional
-        Whether to refuse maps that do not measure the same axes; see `difference_map`.
+        Whether to refuse maps that do not measure the same axes; see
+        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
     plot : bool, optional
         Whether to draw the figure. The default is `True`. Maps over more than two axes have no figure.
     overlay : bool, optional
@@ -517,7 +522,7 @@ def compare_maps(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written, by their key in `DIFFERENCE_FILES`.
+        The files written, by their key in :data:`~uvex_transients.phase_space.stages.DIFFERENCE_FILES`.
 
     Raises
     ------
@@ -526,7 +531,7 @@ def compare_maps(
     FileExistsError
         If a file to write exists and `overwrite` is not set.
     ValueError
-        As for `difference_map`.
+        As for :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
     """
     import matplotlib.pyplot as plt
 

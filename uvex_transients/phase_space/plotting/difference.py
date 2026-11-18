@@ -64,11 +64,12 @@ def plot_difference(
     title : str, optional
         A title.
     overlays : sequence of astropy.table.Table, optional
-        Measurements of populations to shade, as in `plot_map`. They are of the canonical axes, so a map over others
-        takes `annotate` instead.
+        Measurements of populations to shade, as in :func:`~uvex_transients.phase_space.plotting.map.plot_map`. They are
+        of the canonical axes, so a map over others takes `annotate` instead.
     annotate : callable, optional
-        ``annotate(ax)``, called on the axes to draw anything else, as in `plot_grid`. The legend handles it returns
-        are added to the legend of the figure.
+        ``annotate(ax)``, called on the axes to draw anything else, as in
+        :func:`~uvex_transients.phase_space.plotting.grid.plot_grid`. The legend handles it returns are added to the
+        legend of the figure.
 
     Returns
     -------

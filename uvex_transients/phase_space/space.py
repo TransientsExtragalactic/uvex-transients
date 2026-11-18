@@ -1,14 +1,22 @@
 r"""
 The space a phase-space map is over: its axes, and the moves between physical points and the unit cube.
 
-A map is over any number of axes. An `Axis` names one coordinate and says what it is (a label and a unit for a figure,
-and whether the coordinate is the logarithm of the quantity), and a `Space` is the ordered set of them. Everything that
-needs the shape of the map takes a `Space`, so none of it hard-codes two dimensions or the names of the axes:
+A map is over any number of axes. An :class:`~uvex_transients.phase_space.space.Axis` names one coordinate and says what
+it is (a label and a unit for a figure, and whether the coordinate is the logarithm of the quantity), and a
+:class:`~uvex_transients.phase_space.space.Space` is the ordered set of them. Everything that needs the shape of the map
+takes a :class:`~uvex_transients.phase_space.space.Space`, so none of it hard-codes two dimensions or the names of the
+axes:
 
-* the Gaussian process works on the unit cube, which `Space.to_unit` and `Space.from_unit` move to and from;
-* `Space.sobol` draws a scrambled Sobol design over it, for the initial points and the candidates;
-* `Space.grid` lays out the regular grid that a map is evaluated on;
-* a figure labels its axes from `Axis.label` and `Axis.unit`, and a file records the space with `Space.to_dict`.
+* the Gaussian process works on the unit cube, which
+  :meth:`Space.to_unit <uvex_transients.phase_space.space.Space.to_unit>` and
+  :meth:`Space.from_unit <uvex_transients.phase_space.space.Space.from_unit>` move to and from;
+* :meth:`Space.sobol <uvex_transients.phase_space.space.Space.sobol>` draws a scrambled Sobol design over it, for the
+  initial points and the candidates;
+* :meth:`Space.grid <uvex_transients.phase_space.space.Space.grid>` lays out the regular grid that a map is evaluated
+  on;
+* a figure labels its axes from :attr:`Axis.label <uvex_transients.phase_space.space.Axis.label>` and
+  :attr:`Axis.unit <uvex_transients.phase_space.space.Axis.unit>`, and a file records the space with
+  :meth:`Space.to_dict <uvex_transients.phase_space.space.Space.to_dict>`.
 """
 
 from collections.abc import Mapping, Sequence
@@ -102,7 +110,7 @@ class Axis:
         Returns
         -------
         dict
-            The fields of the axis, which `from_dict` turns back into it.
+            The fields of the axis, which :meth:`~uvex_transients.phase_space.space.Axis.from_dict` turns back into it.
         """
         return {
             "name": self.name,
@@ -116,7 +124,7 @@ class Axis:
     @classmethod
     def from_dict(cls, data: Mapping) -> "Axis":
         """
-        Rebuild an axis from `to_dict`.
+        Rebuild an axis from :meth:`~uvex_transients.phase_space.space.Axis.to_dict`.
 
         Parameters
         ----------
@@ -202,7 +210,7 @@ class Space:
         Returns
         -------
         int
-            Its index in `axes`.
+            Its index in :attr:`~uvex_transients.phase_space.space.Space.axes`.
 
         Raises
         ------
@@ -313,7 +321,8 @@ class Space:
         Returns
         -------
         numpy.ndarray
-            Points in the unit cube, shape ``(n, ndim)``. Use `from_unit` for points in the coordinates of the axes.
+            Points in the unit cube, shape ``(n, ndim)``. Use :meth:`~uvex_transients.phase_space.space.Space.from_unit`
+            for points in the coordinates of the axes.
 
         Raises
         ------
@@ -392,19 +401,20 @@ class Space:
         Returns
         -------
         dict
-            ``{"axes": [...]}``, which `from_dict` turns back into the space.
+            ``{"axes": [...]}``, which :meth:`~uvex_transients.phase_space.space.Space.from_dict` turns back into the
+            space.
         """
         return {"axes": [axis.to_dict() for axis in self._axes]}
 
     @classmethod
     def from_dict(cls, data: Mapping) -> "Space":
         """
-        Rebuild a space from `to_dict`.
+        Rebuild a space from :meth:`~uvex_transients.phase_space.space.Space.to_dict`.
 
         Parameters
         ----------
         data : Mapping
-            What `to_dict` returned.
+            What :meth:`~uvex_transients.phase_space.space.Space.to_dict` returned.
 
         Returns
         -------

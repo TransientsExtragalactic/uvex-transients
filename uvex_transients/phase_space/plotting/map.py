@@ -41,7 +41,7 @@ _RECOVERY_LEVELS = (1, 10, 100, 1000, 1e4)
 # ============================================ #
 def _panel_specs(fields: dict, reference_label: str) -> list[tuple]:
     """
-    Describe the four panels of `plot_map`.
+    Describe the four panels of :func:`~uvex_transients.phase_space.plotting.map.plot_map`.
 
     Each is a tuple of the column drawn, its colour bar label, colour scale and colour map, and the levels of its
     contours.

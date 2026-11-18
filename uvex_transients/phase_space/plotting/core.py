@@ -131,8 +131,9 @@ def draw_overlay(axes, overlay: Table, color):
     """
     Shade the region of the map that one measured population occupies, on every panel.
 
-    The region is the smallest one that holds `_REGION_MASS` of the draws, from a kernel density estimate. A population
-    too small or degenerate for one is shown as the box between the 16th and 84th percentiles of its two quantities.
+    The region is the smallest one that holds :data:`~uvex_transients.phase_space.plotting.core._REGION_MASS` of the
+    draws, from a kernel density estimate. A population too small or degenerate for one is shown as the box between the
+    16th and 84th percentiles of its two quantities.
 
     Parameters
     ----------

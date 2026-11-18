@@ -1,25 +1,28 @@
 r"""
 Survey-backed samplers: the machinery shared by every sampler that simulates events against a survey schedule.
 
-A `SurveySampler` answers "how many detections in n tries at a point?" by placing a transient at the point, drawing `n`
-events volume-weighted out to its redshift limit on the footprint the survey covers, and counting how many
+A :class:`~uvex_transients.phase_space.sampling.core.SurveySampler` answers "how many detections in n tries at a point?"
+by placing a transient at the point, drawing `n` events volume-weighted out to its redshift limit on the footprint the
+survey covers, and counting how many
 :meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr` recovers. What differs between the kinds of map
 is only the transient, how a point of the space places it, and the redshift limit, so those are what a subclass
 supplies. The rest is here: the detection definition, the survey and its settings, the noise-free scales (the exposure,
 volume-time and coverage of a point) and the products made from them.
 
 **Axes and parameters.** A point of the space is turned into the parameters of the transient's SED in one of two ways.
-An axis can be bound to a parameter by name with a `ParameterAxis`: the coordinate is then :math:`\log_{10}` of the
-parameter in a unit (or the parameter itself, on a linear axis), and the sampler fixes it with no physics code. Or an
-axis can be a derived quantity, such as a luminosity in a band, and the subclass places the point itself. The link is
-declared here, on the sampler, so that a :class:`~uvex_transients.phase_space.space.Space` stays free of any model.
+An axis can be bound to a parameter by name with a :class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`:
+the coordinate is then :math:`\log_{10}` of the parameter in a unit (or the parameter itself, on a linear axis), and the
+sampler fixes it with no physics code. Or an axis can be a derived quantity, such as a luminosity in a band, and the
+subclass places the point itself. The link is declared here, on the sampler, so that a
+:class:`~uvex_transients.phase_space.space.Space` stays free of any model.
 
 **What counts as a detection.** By default a recovery is at least `n_visits` observations above `snr_threshold` in the
 band (:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`). Any other definition is a `detection`: an
 ordered list of the simulator's registered cuts, the same ones a run-config's ``steps:`` use, applied to the events a
 point draws, and the events that survive them are the recoveries. A subclass whose rule is not a sequence of cuts
-overrides `SurveySampler.detect`. The noise-free scales do not depend on the rule, only on the window events are
-followed for, so a rule that needs observations beyond that window has to be given a longer one.
+overrides :meth:`SurveySampler.detect <uvex_transients.phase_space.sampling.core.SurveySampler.detect>`. The noise-free
+scales do not depend on the rule, only on the window events are followed for, so a rule that needs observations beyond
+that window has to be given a longer one.
 
 The recovery fraction of a point is conditional on the footprint that was sampled, which depends on the number of
 explosion-time bins. The noise-free volume-time :math:`\mathcal V T` is the expected number of events over the survey in
@@ -185,8 +188,9 @@ class SurveySettings:
     What every survey sampler decides about a recovery and its simulation, resolved against the configured defaults.
 
     This is the one place the defaults of these settings are applied and validated: a sampler, the run-config and the
-    dry run all go through `resolve` and `default`. The fields are the keys of the ``detection:`` (and its ``cuts``)
-    and ``simulation:`` sections of a run-config, and of the same sections of the package configuration.
+    dry run all go through :meth:`~uvex_transients.phase_space.sampling.core.SurveySettings.resolve` and `default`. The
+    fields are the keys of the ``detection:`` (and its ``cuts``) and ``simulation:`` sections of a run-config, and of
+    the same sections of the package configuration.
     """
 
     band: str
@@ -214,7 +218,8 @@ class SurveySettings:
     """str: HEALPix ordering of the sampling grid."""
 
     detection: tuple[dict, ...] | None = None
-    """tuple of dict or None: The cuts that define a recovery (see `check_detection`), or `None` for the default."""
+    """tuple of dict or None: The cuts that define a recovery (see
+    :func:`~uvex_transients.phase_space.sampling.core.check_detection`), or `None` for the default."""
 
     #: The shared section of the configuration each setting is a default of
     SECTIONS: ClassVar[dict[str, str]] = {
@@ -236,7 +241,8 @@ class SurveySettings:
         key : str
             One of ``SECTIONS``.
         kinds : sequence of str, optional
-            The kinds of the sampler, most specific first (see `Sampler.kinds`).
+            The kinds of the sampler, most specific first (see
+            :meth:`Sampler.kinds <uvex_transients.phase_space.sampling.base.Sampler.kinds>`).
 
         Returns
         -------
@@ -255,8 +261,10 @@ class SurveySettings:
         kinds : sequence of str, optional
             The kinds of the sampler, whose own sections of the configuration take precedence.
         **given
-            Any of the fields, and ``detection`` as a list of cuts. `nside` and `order` default to the package's
-            HEALPix resolution.
+            Any of the fields, and ``detection`` as a list of cuts.
+            :attr:`~uvex_transients.phase_space.sampling.core.SurveySettings.nside` and
+            :attr:`~uvex_transients.phase_space.sampling.core.SurveySettings.order` default to the package's HEALPix
+            resolution.
 
         Returns
         -------
@@ -343,7 +351,7 @@ class ParameterAxis:
         Returns
         -------
         ~astropy.units.Quantity
-            The value of the parameter, in `unit`.
+            The value of the parameter, in :attr:`~uvex_transients.phase_space.sampling.core.ParameterAxis.unit`.
         """
         return (10.0**coordinate if scale == "log10" else coordinate) * self.unit
 
@@ -355,16 +363,23 @@ class SurveySampler(Sampler):
     r"""
     Count the recoveries of a transient simulated against a survey: what every survey-backed sampler shares.
 
-    A subclass is built in its own ``__init__``, which calls ``super().__init__`` and then `_configure` once, with its
-    space, the redshift out to which the volume is tabulated and the settings it adds to the ones recorded here. It
-    supplies `make_transient`, `redshift_limit`, `_place` and `_log_window`. If its axes are parameters of the SED, it
-    lists them in ``parameter_axes``, a tuple of `ParameterAxis`, and `_place` calls `_fix_parameters` for them and only
-    sets the window and the redshift limit itself.
+    A subclass is built in its own ``__init__``, which calls ``super().__init__`` and then
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._configure` once, with its space, the redshift out
+    to which the volume is tabulated and the settings it adds to the ones recorded here. It supplies
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.make_transient`,
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.redshift_limit`,
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` and
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._log_window`. If its axes are parameters of the SED,
+    it lists them in ``parameter_axes``, a tuple of :class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`,
+    and :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` calls
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._fix_parameters` for them and only sets the window
+    and the redshift limit itself.
 
     Every setting that is `None` (the default) takes its default from the configuration, which is resolved once by
-    `SurveySettings`: ``config["phase_space.<kind>.<name>"]`` if the kind of the sampler (or a kind it is built on) has
-    the key, else ``config["phase_space.detection.<name>"]`` or ``config["phase_space.simulation.<name>"]``. A subclass
-    takes these as ``**survey`` and passes them on, so a new survey setting is added in this one place.
+    :class:`~uvex_transients.phase_space.sampling.core.SurveySettings`: ``config["phase_space.<kind>.<name>"]`` if the
+    kind of the sampler (or a kind it is built on) has the key, else ``config["phase_space.detection.<name>"]`` or
+    ``config["phase_space.simulation.<name>"]``. A subclass takes these as ``**survey`` and passes them on, so a new
+    survey setting is added in this one place.
 
     Parameters
     ----------
@@ -379,29 +394,34 @@ class SurveySampler(Sampler):
     n_visits : int, optional
         How many visits must reach it.
     exclude_first_visit_detections : bool, optional
-        Whether a detection that is only on a field's first visit is discarded; see `SurveySimulator.filter_by_snr`.
+        Whether a detection that is only on a field's first visit is discarded; see
+        :meth:`SurveySimulator.filter_by_snr <uvex_transients.simulation.core.SurveySimulator.filter_by_snr>`.
     detection : sequence of Mapping, optional
-        What counts as a recovery, as a list of the simulator's registered cuts (see `check_detection`). By default
-        one ``snr`` cut, which is the three settings above. A cut that takes `snr_threshold`, `n_visits`,
-        `exclude_first_visit_detections` or ``bands`` and is not given them gets the sampler's, with ``bands`` the
-        band of the map. A rule that is not a list of cuts is written by overriding `detect`.
+        What counts as a recovery, as a list of the simulator's registered cuts (see
+        :func:`~uvex_transients.phase_space.sampling.core.check_detection`). By default one ``snr`` cut, which is the
+        three settings above. A cut that takes `snr_threshold`, `n_visits`, `exclude_first_visit_detections` or
+        ``bands`` and is not given them gets the sampler's, with ``bands`` the band of the map. A rule that is not a
+        list of cuts is written by overriding :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.detect`.
     mag_limit : float, optional
         The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.
     time_bins : int, optional
-        Number of equal explosion-time bins spanning the survey; see `SurveySimulator.sample_N_events`.
+        Number of equal explosion-time bins spanning the survey; see
+        :meth:`SurveySimulator.sample_N_events <uvex_transients.simulation.core.SurveySimulator.sample_N_events>`.
     nside, order : optional
         HEALPix resolution of the sampling grid; the package defaults if omitted.
     cosmology : ~astropy.cosmology.Cosmology, optional
         Defaults to the configured cosmology.
     schedule_name : str, optional
         The registry name of `schedule` (see :func:`~uvex_transients.surveys.utils.get_schedule`), recorded in
-        `settings` so that `from_settings` can fetch the same schedule. Leave it out for a schedule that is not in the
-        registry.
+        :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings` so that
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` can fetch the same schedule.
+        Leave it out for a schedule that is not in the registry.
 
     Notes
     -----
     The tables a sampler interpolates (volume, exposure) are sized by ``config["phase_space.numerics"]``. They set the
-    precision of the scales, not what is measured, so they are not recorded in `settings`.
+    precision of the scales, not what is measured, so they are not recorded in
+    :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings`.
     """
 
     TRANSIENT_KEY: ClassVar[str] = "transient"
@@ -410,7 +430,8 @@ class SurveySampler(Sampler):
     yield_weight = "volume_time"
 
     parameter_axes: tuple[ParameterAxis, ...] = ()
-    """tuple of ParameterAxis: The axes that are parameters of the SED, which `parameters_at` uses to place a point."""
+    """tuple of ParameterAxis: The axes that are parameters of the SED, which
+    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.parameters_at` uses to place a point."""
 
     def __init__(
         self,
@@ -456,7 +477,10 @@ class SurveySampler(Sampler):
         self.n_visits = self.survey.n_visits
         self.exclude_first_visit_detections = self.survey.exclude_first_visit_detections
         self.detection = self.survey.detection
-        """tuple of dict or None: The cuts that define a recovery, or `None` for the default (see `detect`)."""
+        """
+        tuple of dict or None: The cuts that define a recovery, or `None` for the default (see
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.detect`).
+        """
         self.mag_limit = self.survey.mag_limit
         self.time_bins = self.survey.time_bins
         self.nside, self.order = self.survey.nside, self.survey.order
@@ -479,7 +503,8 @@ class SurveySampler(Sampler):
         Finish building a sampler: give it its space and settings, then build what the scales and the simulation need.
 
         A subclass calls this once, at the end of its ``__init__``, after the settings it records are resolved. It
-        takes the place of setting ``_space`` and ``_settings`` and calling `_build_scales` by hand.
+        takes the place of setting ``_space`` and ``_settings`` and calling
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._build_scales` by hand.
 
         Parameters
         ----------
@@ -489,7 +514,7 @@ class SurveySampler(Sampler):
             The redshift out to which the volume is tabulated, and beyond which no event is drawn.
         **settings
             What the subclass records in `settings` beyond the ones recorded here, as plain types. They are available to
-            `make_transient`, which this builds.
+            :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.make_transient`, which this builds.
         """
         self._space = space
         self._settings.update(settings)
@@ -542,7 +567,7 @@ class SurveySampler(Sampler):
         Returns
         -------
         ~uvex_transients.transients.base.ExtragalacticTransient
-            An instance that `_place` can move.
+            An instance that :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` can move.
         """
 
     @abstractmethod
@@ -553,7 +578,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
+            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape
+            ``(..., ndim)``.
 
         Returns
         -------
@@ -566,13 +592,16 @@ class SurveySampler(Sampler):
         """
         Move the transient to a point of the space.
 
-        This sets the parameters of the SED (`_fix_parameters` does it for the axes that are bound to a parameter), the
-        redshift limit of the transient and its ``duration_limit``, the window of observations that can see an event.
+        This sets the parameters of the SED
+        (:meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._fix_parameters` does it for the axes that are
+        bound to a parameter), the redshift limit of the transient and its ``duration_limit``, the window of
+        observations that can see an event.
 
         Parameters
         ----------
         x : numpy.ndarray
-            The point, in the coordinates of `space`, shape ``(ndim,)``.
+            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,
+            shape ``(ndim,)``.
         """
 
     @abstractmethod
@@ -603,7 +632,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            The point, in the coordinates of `space`, shape ``(ndim,)``.
+            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,
+            shape ``(ndim,)``.
 
         Returns
         -------
@@ -623,7 +653,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            The point, in the coordinates of `space`, shape ``(ndim,)``.
+            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,
+            shape ``(ndim,)``.
         """
         for name, value in self.parameters_at(x).items():
             self._transient.sed[name].fix(value)
@@ -759,10 +790,12 @@ class SurveySampler(Sampler):
     @property
     def settings(self) -> dict:
         """
-        dict: What `from_settings` needs to rebuild this sampler, as plain types that an ECSV header can hold.
+        dict: The arguments that rebuild this sampler, as plain types that an ECSV header can hold.
 
-        The mission and schedule are recorded by name. A mission given as an object, or a schedule given without a
-        ``schedule_name``, is recorded as `None` and has to be supplied again to `from_settings`.
+        They are what :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` takes. The mission
+        and schedule are recorded by name. A mission given as an object, or a schedule given without a
+        ``schedule_name``, is recorded as `None` and has to be supplied again to
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings`.
         """
         settings = dict(self._settings)
         if self.detection is not None:
@@ -778,14 +811,17 @@ class SurveySampler(Sampler):
         cosmology: Cosmology | None,
     ) -> tuple[dict, SurveySchedule, object, str | None]:
         """
-        Resolve what `from_settings` takes from outside the recorded settings: the schedule, mission and cosmology.
+        Resolve what a sampler takes from outside its recorded settings: the schedule, mission and cosmology.
+
+        This is the part of :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` that cannot
+        come from the file.
 
         Parameters
         ----------
         settings : Mapping
             The recorded settings.
         schedule, mission, cosmology : optional
-            As for `from_settings`.
+            As for :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings`.
 
         Returns
         -------
@@ -847,7 +883,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            The point, in the coordinates of `space`, shape ``(ndim,)``.
+            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,
+            shape ``(ndim,)``.
         n : int
             The number of events.
         seed : numpy.random.SeedSequence
@@ -936,7 +973,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
+            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape
+            ``(..., ndim)``.
 
         Returns
         -------
@@ -966,7 +1004,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
+            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape
+            ``(..., ndim)``.
 
         Returns
         -------
@@ -987,7 +1026,8 @@ class SurveySampler(Sampler):
         Parameters
         ----------
         x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
+            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape
+            ``(..., ndim)``.
 
         Returns
         -------
@@ -1002,12 +1042,14 @@ class SurveySampler(Sampler):
         Return the volume-time of the whole sky over the whole survey out to the redshift limit, in Mpc^3 yr.
 
         The number of events exploding during the survey anywhere on the sky, at one per Mpc^3 per yr. It is
-        `volume_time` divided by `coverage`.
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.volume_time` divided by
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.coverage`.
 
         Parameters
         ----------
         x : array-like
-            Points in the coordinates of `space`, shape ``(..., ndim)``.
+            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape
+            ``(..., ndim)``.
 
         Returns
         -------

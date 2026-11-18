@@ -1,9 +1,10 @@
 r"""
 A sampler with a known answer, for testing the machinery that sits on it.
 
-`LogisticSampler` succeeds with a probability that is a logistic function of the point, :math:`p(x)=\mathrm{expit}
-[\sum_i s_i (x_i - c_i)]`, so the success fraction of a map of it is known exactly. That is what lets the map, the
-acquisition and the campaign be tested against the truth without running a survey simulation.
+:class:`~uvex_transients.phase_space.sampling.logistic.LogisticSampler` succeeds with a probability that is a logistic
+function of the point, :math:`p(x)=\mathrm{expit} [\sum_i s_i (x_i - c_i)]`, so the success fraction of a map of it is
+known exactly. That is what lets the map, the acquisition and the campaign be tested against the truth without running a
+survey simulation.
 """
 
 from collections.abc import Mapping, Sequence

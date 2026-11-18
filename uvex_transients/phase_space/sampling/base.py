@@ -8,31 +8,36 @@ Products: the quantities of a map, each of which owns how it is made.
 
 A fitted map is of one thing, the success fraction :math:`f` over the space. Everything else a figure or a table shows
 is made from it and from the point: the fraction times a volume-time is an expected yield, the fraction times a rate on
-top of that is an expected count, and a redshift limit does not involve the fraction at all. A `Product` is one of those
-quantities. It is a callable that takes the points and the map"s `Estimate` of the success fraction there and returns
-the columns it creates, so it is free to combine them however the quantity needs. Nothing else has to know what a
-volume-time or a rate is.
+top of that is an expected count, and a redshift limit does not involve the fraction at all. A
+:class:`~uvex_transients.phase_space.sampling.base.Product` is one of those quantities. It is a callable that takes the
+points and the map"s :class:`~uvex_transients.phase_space.sampling.base.Estimate` of the success fraction there and
+returns the columns it creates, so it is free to combine them however the quantity needs. Nothing else has to know what
+a volume-time or a rate is.
 
 A sampler supplies its own products (:attr:`~uvex_transients.phase_space.sampling.base.Sampler.products`), which are
-built around whatever machinery of the sampler they need. `Scale` and `Weighted` cover the two common cases, a quantity
-of the point alone and the success fraction times one.
+built around whatever machinery of the sampler they need. :class:`~uvex_transients.phase_space.sampling.base.Scale` and
+:class:`~uvex_transients.phase_space.sampling.base.Weighted` cover the two common cases, a quantity of the point alone
+and the success fraction times one.
 
 The sampler: how many detections in n tries at a point of the space.
 
 A phase-space map asks one question of the world, again and again: at this point `x`, of `n` independent tries, how
-many succeed? A `Sampler` answers it, and nothing else. It does not decide how many tries to make (that is the
+many succeed? A :class:`~uvex_transients.phase_space.sampling.base.Sampler` answers it, and nothing else. It does not
+decide how many tries to make (that is the
 :class:`~uvex_transients.phase_space.sampling.base.StoppingRule`) and it does not know about the Gaussian process that
 models the answers (that is the map). What it does know is the physics of one kind of experiment:
 
-* `Sampler.space` is the :class:`~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and
-  their default ranges;
-* `Sampler.draw` makes `n` tries at a point and returns the number of successes;
-* `Sampler.products` are the quantities of its map beyond the success fraction (a redshift limit, a recovered
-  volume-time), each a :class:`~uvex_transients.phase_space.sampling.base.Product` that owns how it is made.
+* :attr:`Sampler.space <uvex_transients.phase_space.sampling.base.Sampler.space>` is the
+  :class:`~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and their default ranges;
+* :meth:`Sampler.draw <uvex_transients.phase_space.sampling.base.Sampler.draw>` makes `n` tries at a point and returns
+  the number of successes;
+* :attr:`Sampler.products <uvex_transients.phase_space.sampling.base.Sampler.products>` are the quantities of its map
+  beyond the success fraction (a redshift limit, a recovered volume-time), each a
+  :class:`~uvex_transients.phase_space.sampling.base.Product` that owns how it is made.
 
 Every sampler has a `kind`, a name under which it is registered, so that a file can record which sampler made it and
-`get_sampler` can find the class again without importing it by path. A subclass registers itself by naming its kind in
-the class statement,
+:func:`~uvex_transients.phase_space.sampling.base.get_sampler` can find the class again without importing it by path. A
+subclass registers itself by naming its kind in the class statement,
 
 .. code-block:: python
 
@@ -41,20 +46,26 @@ the class statement,
 and an abstract intermediate class leaves it out.
 
 Everything beyond those four members is an optional hook with a default, so that the code that consumes a sampler (the
-experiment, the stages that write and draw a map, the CLI) never has to ask what kind it is: `Sampler.rate_products`
-and `Sampler.table_meta` extend the table of the map, `Sampler.describe` titles its figure, `Sampler.draw_map` draws it
-and `Sampler.annotate_map` decorates it, `Sampler.HAS_OVERLAY` and `Sampler.measure_overlay` supply a population to
-shade on it, and `Sampler.from_run_config` builds the sampler from a run-config. A sampler that has something to say
-overrides the hook; one that does not inherits an answer that says nothing. The default figure is of a plane, so a map
-over more than two axes is not drawn.
+experiment, the stages that write and draw a map, the CLI) never has to ask what kind it is:
+:meth:`Sampler.rate_products <uvex_transients.phase_space.sampling.base.Sampler.rate_products>` and
+:attr:`Sampler.table_meta <uvex_transients.phase_space.sampling.base.Sampler.table_meta>` extend the table of the map,
+:meth:`Sampler.describe <uvex_transients.phase_space.sampling.base.Sampler.describe>` titles its figure,
+:meth:`Sampler.draw_map <uvex_transients.phase_space.sampling.base.Sampler.draw_map>` draws it and
+:meth:`Sampler.annotate_map <uvex_transients.phase_space.sampling.base.Sampler.annotate_map>` decorates it,
+:attr:`Sampler.HAS_OVERLAY <uvex_transients.phase_space.sampling.base.Sampler.HAS_OVERLAY>` and
+:meth:`Sampler.measure_overlay <uvex_transients.phase_space.sampling.base.Sampler.measure_overlay>` supply a population
+to shade on it, and :meth:`Sampler.from_run_config <uvex_transients.phase_space.sampling.base.Sampler.from_run_config>`
+builds the sampler from a run-config. A sampler that has something to say overrides the hook; one that does not inherits
+an answer that says nothing. The default figure is of a plane, so a map over more than two axes is not drawn.
 
 The stopping rule: how many tries a point gets.
 
 A sampler makes however many tries it is asked for. How many to ask for is a question of statistics, not of physics: a
 point where the success fraction is high needs few tries to pin it down, and one where it is small needs many, so a
-point is sampled in chunks until it has enough successes or has used its budget. `StoppingRule` is that rule, and it is
-a separate object because two parties need it: the campaign applies it, and the map"s acquisition predicts from it the
-noise of a point it has not measured yet.
+point is sampled in chunks until it has enough successes or has used its budget.
+:class:`~uvex_transients.phase_space.sampling.base.StoppingRule` is that rule, and it is a separate object because two
+parties need it: the campaign applies it, and the map"s acquisition predicts from it the noise of a point it has not
+measured yet.
 """
 
 import inspect
@@ -152,8 +163,9 @@ class Product(ABC):
     unit : str, optional
         The unit of the quantity.
     draw : bool, optional
-        Whether the default figure of the map has a panel for it. Off by default; a `Weighted` product, which is what a
-        map is for, is drawn unless it says otherwise. Any column can be drawn by asking for it by name.
+        Whether the default figure of the map has a panel for it. Off by default; a
+        :class:`~uvex_transients.phase_space.sampling.base.Weighted` product, which is what a map is for, is drawn
+        unless it says otherwise. Any column can be drawn by asking for it by name.
 
     Raises
     ------
@@ -208,8 +220,8 @@ class Scale(Product):
     r"""
     A quantity of the point alone, which does not involve the success fraction.
 
-    A redshift limit, a coverage or a volume-time is a `Scale`: it follows from the physics at the point, with no Monte
-    Carlo, and so has no interval.
+    A redshift limit, a coverage or a volume-time is a :class:`~uvex_transients.phase_space.sampling.base.Scale`: it
+    follows from the physics at the point, with no Monte Carlo, and so has no interval.
 
     Parameters
     ----------
@@ -218,7 +230,7 @@ class Scale(Product):
     function : callable
         ``function(x)`` takes points of shape ``(..., ndim)`` and returns the quantity, of shape ``(...)``.
     label, unit, draw : optional
-        As for `Product`.
+        As for :class:`~uvex_transients.phase_space.sampling.base.Product`.
     """
 
     def __init__(
@@ -268,9 +280,10 @@ class Weighted(Product):
         ``weight(x)`` takes points of shape ``(..., ndim)`` and returns the weight, of shape ``(...)``, which must
         not be negative.
     label, unit : str, optional
-        As for `Product`.
+        As for :class:`~uvex_transients.phase_space.sampling.base.Product`.
     draw : bool, optional
-        As for `Product`, but on by default: a quantity with an interval is what a figure of the map shows.
+        As for :class:`~uvex_transients.phase_space.sampling.base.Product`, but on by default: a quantity with an
+        interval is what a figure of the map shows.
     """
 
     def __init__(
@@ -403,17 +416,29 @@ class Sampler(ABC):
     r"""
     Answer "how many detections in n tries at a point?" for one kind of experiment.
 
-    A subclass supplies `space`, `draw`, `settings` and `from_settings`. Name a `kind` in the class statement to
-    register it; see the module documentation. Everything else is an optional hook, with a default that a sampler
-    overrides only if it has something to say, so that nothing that consumes a sampler has to ask what kind it is:
+    A subclass supplies :attr:`~uvex_transients.phase_space.sampling.base.Sampler.space`,
+    :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw`,
+    :attr:`~uvex_transients.phase_space.sampling.base.Sampler.settings` and
+    :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_settings`. Name a
+    :attr:`~uvex_transients.phase_space.sampling.base.Sampler.kind` in the class statement to register it; see the
+    module documentation. Everything else is an optional hook, with a default that a sampler overrides only if it has
+    something to say, so that nothing that consumes a sampler has to ask what kind it is:
 
-    * `products`, `rate_products` and `yield_weight`: the quantities of its map beyond the success fraction, and the one
-      that two maps are compared on;
-    * `table_meta`: what a figure or a comparison needs to know about the plane the axes are measured on;
-    * `describe`: what the map is, in a few words, for the title of its figure;
-    * `draw_map` and `annotate_map`: the figure of its map, and what is drawn on it;
-    * `HAS_OVERLAY` and `measure_overlay`: a population to shade on the figure, if there is one;
-    * `from_run_config`: how a run-config builds it.
+    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.products`,
+      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.rate_products` and
+      :attr:`~uvex_transients.phase_space.sampling.base.Sampler.yield_weight`: the quantities of its map beyond the
+      success fraction, and the one that two maps are compared on;
+    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.table_meta`: what a figure or a comparison needs to know
+      about the plane the axes are measured on;
+    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.describe`: what the map is, in a few words, for the
+      title of its figure;
+    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw_map` and
+      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.annotate_map`: the figure of its map, and what is drawn
+      on it;
+    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.HAS_OVERLAY` and
+      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`: a population to shade on the figure,
+      if there is one;
+    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_run_config`: how a run-config builds it.
 
     Raises
     ------
@@ -470,7 +495,8 @@ class Sampler(ABC):
         Parameters
         ----------
         x : array-like
-            The point, in the coordinates of `space`, shape ``(ndim,)``.
+            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.base.Sampler.space`, shape
+            ``(ndim,)``.
         n : int
             The number of tries.
         seed : numpy.random.SeedSequence
@@ -486,7 +512,11 @@ class Sampler(ABC):
     @property
     @abstractmethod
     def settings(self) -> dict:
-        """dict: What `from_settings` needs to rebuild this sampler, as plain types that an ECSV header can hold."""
+        """
+        dict: The arguments that rebuild this sampler, as plain types that an ECSV header can hold.
+
+        They are what :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_settings` takes.
+        """
 
     @classmethod
     @abstractmethod
@@ -533,8 +563,8 @@ class Sampler(ABC):
         Returns
         -------
         tuple of Product
-            The products, which are added to `products` when a map is made with a rate. Empty by default, for a sampler
-            that has no volume to apply a rate to.
+            The products, which are added to :attr:`~uvex_transients.phase_space.sampling.base.Sampler.products` when a
+            map is made with a rate. Empty by default, for a sampler that has no volume to apply a rate to.
         """
         return ()
 
@@ -585,9 +615,10 @@ class Sampler(ABC):
 
         It is a class method of the files of a map, so that a map can be drawn without rebuilding the sampler. The
         default is :func:`~uvex_transients.phase_space.plotting.plot_grid`, which draws a map over two axes with the
-        products it carries and decorates it with `annotate_map`. A map over any other number of axes is not drawn: the
-        figure is of a plane, so the default logs a warning and returns `None`. A sampler whose map has a figure of its
-        own overrides this, and is free to draw more axes in its own way.
+        products it carries and decorates it with
+        :meth:`~uvex_transients.phase_space.sampling.base.Sampler.annotate_map`. A map over any other number of axes is
+        not drawn: the figure is of a plane, so the default logs a warning and returns `None`. A sampler whose map has a
+        figure of its own overrides this, and is free to draw more axes in its own way.
 
         Parameters
         ----------
@@ -600,7 +631,8 @@ class Sampler(ABC):
         title : str
             The suptitle.
         overlay : astropy.table.Table, optional
-            The measurements of `measure_overlay` (``overlay.ecsv``), for a sampler that has them.
+            The measurements of :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`
+            (``overlay.ecsv``), for a sampler that has them.
         show_points : bool, optional
             Whether to mark the measured points.
         fields : sequence of str, optional
@@ -635,7 +667,8 @@ class Sampler(ABC):
         ax : matplotlib.axes.Axes
             The axes of a panel, in the plotted coordinates (the values of a logarithmic axis, not their logarithms).
         overlay : astropy.table.Table
-            The measurements of `measure_overlay` (``overlay.ecsv``).
+            The measurements of :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`
+            (``overlay.ecsv``).
 
         Returns
         -------
@@ -647,14 +680,15 @@ class Sampler(ABC):
 
     yield_weight: ClassVar[str | None] = None
     """
-    str or None: The name of the `Scale` product that turns the success fraction into the quantity two maps are
-    compared on (the volume-time, for a survey sampler: the recovered volume-time is its product with the fraction).
-    `None` compares the success fractions themselves. It is recorded in the table of the map, so a comparison reads it
-    from the files alone.
+    str or None: The name of the :class:`~uvex_transients.phase_space.sampling.base.Scale` product that turns the
+    success fraction into the quantity two maps are compared on (the volume-time, for a survey sampler: the recovered
+    volume-time is its product with the fraction). `None` compares the success fractions themselves. It is recorded in
+    the table of the map, so a comparison reads it from the files alone.
     """
 
     HAS_OVERLAY: ClassVar[bool] = False
-    """bool: Whether `measure_overlay` is implemented, for the callers that decide whether to ask for one."""
+    """bool: Whether :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay` is implemented, for the
+    callers that decide whether to ask for one."""
 
     def measure_overlay(self, n_draws: int | None = None, seed: int = 0) -> Table:
         """
@@ -672,7 +706,8 @@ class Sampler(ABC):
         Returns
         -------
         astropy.table.Table
-            The measurements, which `draw_map` takes as its ``overlay``.
+            The measurements, which :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw_map` takes as its
+            ``overlay``.
 
         Raises
         ------
@@ -850,8 +885,9 @@ class StoppingRule:
         """
         Predict how many tries a point of success fraction `p` will get.
 
-        Enough to expect `k_target` successes, bounded by one chunk below and `n_max` above. This is what the map's
-        acquisition uses to predict the noise of a point before it is measured.
+        Enough to expect :attr:`~uvex_transients.phase_space.sampling.base.StoppingRule.k_target` successes, bounded by
+        one chunk below and :attr:`~uvex_transients.phase_space.sampling.base.StoppingRule.n_max` above. This is what
+        the map's acquisition uses to predict the noise of a point before it is measured.
 
         Parameters
         ----------

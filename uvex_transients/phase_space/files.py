@@ -3,12 +3,14 @@ The files of a recovery map: where they are, which format a points file is in, a
 
 A map is a directory of files (see :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`). This module knows that
 layout and nothing else about a map: it reads and writes no experiment, so it imports neither the samplers nor
-scikit-learn, and a command that only inspects files (`describe`, `find_maps`) stays cheap.
+scikit-learn, and a command that only inspects files (:func:`~uvex_transients.phase_space.files.describe`,
+:func:`~uvex_transients.phase_space.files.find_maps`) stays cheap.
 
-The points file comes in two formats, the current one (`SCHEMA_VERSION`, which records a registered sampler kind and its
-settings) and the earlier canonical one, which recorded an evaluator. `flavor` tells them apart and
-`upgrade_legacy_header` turns the header of the earlier one into the current one, so that the files of a published
-release can still be read.
+The points file comes in two formats, the current one (:data:`~uvex_transients.phase_space.files.SCHEMA_VERSION`, which
+records a registered sampler kind and its settings) and the earlier canonical one, which recorded an evaluator.
+:func:`~uvex_transients.phase_space.files.flavor` tells them apart and
+:func:`~uvex_transients.phase_space.files.upgrade_legacy_header` turns the header of the earlier one into the current
+one, so that the files of a published release can still be read.
 """
 
 from collections.abc import Mapping, Sequence
@@ -143,7 +145,7 @@ def flavor(meta: Mapping) -> str:
     Returns
     -------
     str
-        `CURRENT` or `LEGACY`.
+        :data:`~uvex_transients.phase_space.files.CURRENT` or :data:`~uvex_transients.phase_space.files.LEGACY`.
 
     Raises
     ------

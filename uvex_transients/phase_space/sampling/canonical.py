@@ -1,7 +1,8 @@
 r"""
 The canonical sampler: a fast-rise, exponential-decay transient with a power-law spectrum.
 
-`CanonicalSampler` is the sampler of the canonical recovery map. A point of its space is the base-10 logarithm of
+:class:`~uvex_transients.phase_space.sampling.canonical.CanonicalSampler` is the sampler of the canonical recovery map.
+A point of its space is the base-10 logarithm of
 :math:`L_\mathrm{band}` in erg/s and of :math:`t_{1/2}` in days. :math:`L_\mathrm{band}` is the peak rest-frame
 luminosity emitted in the band, :math:`L_\nu\Delta\nu` for the equivalent bandwidth :math:`\Delta\nu` of the band
 with :math:`L_\nu` taken at its effective frequency, and :math:`t_{1/2}` is the rest-frame time from the peak until the
@@ -9,18 +10,19 @@ luminosity has fallen to half. Any other SED is placed on the same map by measur
 (:meth:`~uvex_transients.models.core.base.SpectralModel.peak_luminosity` and ``decline_time``). One sampler makes the
 map of one band.
 
-The transient that stands in for one point of the map is `_CanonicalTransient`. A recovery map is over a population's
-peak luminosity and half-decline time, so a point needs a transient with just those two free quantities: a FRED light
-curve with a power-law spectrum, whose shape, spectral index and band edges are fixed. `~_CanonicalTransient.set_point`
-places it at a luminosity and a half-decline time, and it is otherwise an ordinary
+The transient that stands in for one point of the map is
+:class:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient`. A recovery map is over a population's peak
+luminosity and half-decline time, so a point needs a transient with just those two free quantities: a FRED light curve
+with a power-law spectrum, whose shape, spectral index and band edges are fixed. `~_CanonicalTransient.set_point` places
+it at a luminosity and a half-decline time, and it is otherwise an ordinary
 :class:`~uvex_transients.transients.base.ExtragalacticTransient`, at a constant rate of one event per Mpc^3 per year, so
 the usual event sampling and SNR screening run on it unchanged. A decaying light curve has no end, so an event is
 followed until it has faded by `fade_mag` magnitudes, which sets the window of observations that can see it. The class
 name starts with an underscore and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and
 the checks that iterate over shipped classes.
 
-`RedshiftLimit` is the redshift out to which a power-law source of a given luminosity is brighter than a depth,
-tabulated once and inverted by interpolation.
+:class:`~uvex_transients.phase_space.sampling.canonical.RedshiftLimit` is the redshift out to which a power-law source
+of a given luminosity is brighter than a depth, tabulated once and inverted by interpolation.
 """
 
 from collections.abc import Mapping, Sequence
@@ -100,10 +102,13 @@ def fred_time_scales(rise_ratio: float, fade_mag: float) -> tuple[float, float]:
 
 class _FREDPowerLawSED(ComposedSpectralModel):
     """
-    A `FREDLightcurve` times a `PowerLawSpectrum`.
+    A FRED light curve times a power-law spectrum, as one spectral model.
 
-    `_CanonicalTransient` pins every parameter but the amplitude and the two timescales: the spectral index, the
-    reference frequency and the band edges. ``amplitude`` is the peak bolometric luminosity between the edges.
+    It is a :class:`~uvex_transients.models.lightcurves.generic.FREDLightcurve` times a
+    :class:`~uvex_transients.models.spectra.powerlaw.PowerLawSpectrum`.
+    :class:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient` pins every parameter but the amplitude
+    and the two timescales: the spectral index, the reference frequency and the band edges. ``amplitude`` is the peak
+    bolometric luminosity between the edges.
     """
 
     _LIGHTCURVE_CLASS = FREDLightcurve
@@ -117,8 +122,9 @@ class _CanonicalTransient(ExtragalacticTransient):
     r"""
     A FRED light curve with a power-law spectrum, at a constant comoving rate of one event per Mpc^3 per year.
 
-    `set_point` places it at a peak spectral luminosity and a half-decline time, and redshifts are drawn
-    volume-weighted out to the `redshift_limit` it sets.
+    :meth:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient.set_point` places it at a peak spectral
+    luminosity and a half-decline time, and redshifts are drawn volume-weighted out to the
+    :attr:`~uvex_transients.transients.base.ExtragalacticTransient.redshift_limit` it sets.
 
     Parameters
     ----------
@@ -128,8 +134,9 @@ class _CanonicalTransient(ExtragalacticTransient):
         The index :math:`\alpha` of :math:`L_\nu\\propto\nu^\alpha`, which sets the K-correction, a flux factor of
         :math:`(1+z)^{1+\alpha}`. If `None` (the default), uses ``config["phase_space.canonical.spectral_index"]``.
     reference_frequency : ~astropy.units.Quantity, optional
-        The frequency at which `set_point` takes the spectral luminosity. It fixes what a luminosity means and does
-        not change the spectrum. The default is 1e15 Hz.
+        The frequency at which :meth:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient.set_point`
+        takes the spectral luminosity. It fixes what a luminosity means and does not change the spectrum. The default is
+        1e15 Hz.
     rise_ratio : float, optional
         The ratio :math:`\tau_1/\tau_2` of the rise to the decay time. If `None` (the default), uses
         ``config["phase_space.canonical.rise_ratio"]``.
@@ -361,12 +368,16 @@ class RedshiftLimit:
 
     def is_clipped(self, log_luminosity: ArrayLike) -> NDArray[np.bool_]:
         """
-        Return whether the limit of each luminosity lies beyond the table, so that `__call__` clipped it.
+        Return whether the limit of each luminosity lies beyond the table, so that it was clipped.
+
+        Such a limit is one that :meth:`~uvex_transients.phase_space.sampling.canonical.RedshiftLimit.__call__` held at
+        the end of its table.
 
         Parameters
         ----------
         log_luminosity : array-like
-            The log10 luminosity, in the same units as for `__call__`.
+            The log10 luminosity, in the same units as for
+            :meth:`~uvex_transients.phase_space.sampling.canonical.RedshiftLimit.__call__`.
 
         Returns
         -------
@@ -385,7 +396,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
     Count the recoveries of a canonical transient at points of the luminosity-half-decline-time plane.
 
     The transient has a fast-rise, exponential-decay light curve and a power-law spectrum (see
-    `_CanonicalTransient`). A point is
+    :class:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient`). A point is
     ``x = (log10 L_band / (erg/s), log10 t_half / day)``. :math:`L_\mathrm{band}` is the peak rest-frame luminosity
     emitted in the band, :math:`L_\nu\Delta\nu` for the equivalent bandwidth :math:`\Delta\nu` of the band with
     :math:`L_\nu` taken at its effective frequency. One sampler makes the map of one band.
@@ -394,7 +405,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
     binding axes to parameters.
 
     Every argument that is `None` (the default) takes ``config["phase_space.canonical.<name>"]`` for the shape of the
-    transient, and what `SurveySettings` resolves for the rest.
+    transient, and what :class:`~uvex_transients.phase_space.sampling.core.SurveySettings` resolves for the rest.
 
     Parameters
     ----------
@@ -413,11 +424,15 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
     cosmology : ~astropy.cosmology.Cosmology, optional
         Defaults to the configured cosmology.
     schedule_name : str, optional
-        The registry name of `schedule`, recorded in `settings` so that `from_settings` can fetch the same schedule.
+        The registry name of `schedule`, recorded in
+        :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings` so that
+        :meth:`~uvex_transients.phase_space.sampling.canonical.CanonicalSampler.from_settings` can fetch the same
+        schedule.
     **survey
         What counts as a recovery and how a point is simulated: ``band`` (the one that recovers events and in which the
         luminosity is measured), ``snr_threshold``, ``n_visits``, ``exclude_first_visit_detections``, ``detection``,
-        ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See `SurveySampler` and
+        ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See
+        :class:`~uvex_transients.phase_space.sampling.core.SurveySampler` and
         :class:`~uvex_transients.phase_space.sampling.core.SurveySettings`.
     """
 
@@ -539,7 +554,8 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         title : str
             The suptitle.
         overlay : astropy.table.Table, optional
-            The measurements of `measure_overlay` (``overlay.ecsv``).
+            The measurements of :meth:`~uvex_transients.phase_space.sampling.canonical.CanonicalSampler.measure_overlay`
+            (``overlay.ecsv``).
         show_points : bool, optional
             Whether to mark the measured points.
         fields : sequence of str, optional
@@ -569,7 +585,8 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         ax : matplotlib.axes.Axes
             The axes of a panel, in the plotted coordinates.
         overlay : astropy.table.Table
-            The measurements of `measure_overlay`.
+            The measurements of
+            :meth:`~uvex_transients.phase_space.sampling.canonical.CanonicalSampler.measure_overlay`.
 
         Returns
         -------

@@ -18,7 +18,7 @@ __all__ = ["plot_grid"]
 # ============================================ #
 def _grid_panels(fields: dict, products: dict, selected: Sequence[str] | None) -> list[tuple]:
     """
-    Describe the panels of `plot_grid`.
+    Describe the panels of :func:`~uvex_transients.phase_space.plotting.grid.plot_grid`.
 
     Each is a tuple of the column drawn, its colour bar label, colour scale and colour map, and the levels of its
     contours.
@@ -69,9 +69,10 @@ def plot_grid(
 
     The axes, their labels and units, and whether each is logarithmic come from the ``space`` in the table's ``meta``
     (:meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` records it), so nothing here knows what the axes
-    are. The first axis is drawn vertically and the second horizontally, as in `plot_map`. A panel is made of the
-    success fraction ``f``, of every product that is drawn by default (one with ``draw`` set, such as a yield with an
-    interval, ``<name>``, ``<name>_lo`` and ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
+    are. The first axis is drawn vertically and the second horizontally, as in
+    :func:`~uvex_transients.phase_space.plotting.map.plot_map`. A panel is made of the success fraction ``f``, of every
+    product that is drawn by default (one with ``draw`` set, such as a yield with an interval, ``<name>``, ``<name>_lo``
+    and ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
 
     Parameters
     ----------

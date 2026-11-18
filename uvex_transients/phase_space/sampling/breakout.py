@@ -1,11 +1,12 @@
 r"""
 The shock breakout sampler: the survey's detection of a breakout over its peak luminosity and time scale.
 
-`BreakoutSampler` is the second scenario of the phase-space machinery, and the reason it is built the way it is. Its
-transient is the :class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`: a bolometric
-light curve that rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands
-from the breakout radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``,
-and both axes are parameters of the SED, so they are bound to it by name
+:class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` is the second scenario of the phase-space
+machinery, and the reason it is built the way it is. Its transient is the
+:class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`: a bolometric light curve that
+rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands from the breakout
+radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``, and both axes are
+parameters of the SED, so they are bound to it by name
 (:class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`) and no placing code is written.
 
 **What counts as a detection.** A breakout is detected if at least one exposure reaches the signal-to-noise threshold,
@@ -125,10 +126,10 @@ class _BreakoutTransient(ExtragalacticTransient):
     """
     A shock breakout with a blackbody photosphere, at a constant comoving rate of one event per Mpc^3 per year.
 
-    `BreakoutSampler` places it at a point by fixing the amplitude and the time scale of its SED. It is measured over
-    the start of each exposure, and an exposure only counts if it lies within the event. The class name starts with an
-    underscore and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and the checks that
-    iterate over shipped classes.
+    :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` places it at a point by fixing the amplitude
+    and the time scale of its SED. It is measured over the start of each exposure, and an exposure only counts if it
+    lies within the event. The class name starts with an underscore and the module is not one the CLI imports, which
+    keeps it out of ``full_run.yaml`` and the checks that iterate over shipped classes.
     """
 
     DEFAULT_MODEL = InverseGammaBlackbodySED
@@ -191,7 +192,9 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     cosmology : ~astropy.cosmology.Cosmology, optional
         Defaults to the configured cosmology.
     schedule_name : str, optional
-        The registry name of `schedule`, recorded in `settings` so that `from_settings` can fetch the same schedule.
+        The registry name of `schedule`, recorded in
+        :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings` so that
+        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` can fetch the same schedule.
     **survey
         What counts as a recovery and how a point is simulated: ``band``, ``snr_threshold``, ``n_visits``,
         ``exclude_first_visit_detections``, ``detection``, ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See
@@ -266,7 +269,8 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         Returns
         -------
         dict
-            Plain types, which `from_settings` hands back to the constructor. Empty here.
+            Plain types, which :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` hands back
+            to the constructor. Empty here.
         """
         return {}
 
@@ -303,7 +307,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         Returns
         -------
         _BreakoutTransient
-            An instance that `_place` can move.
+            An instance that :meth:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler._place` can move.
         """
         return _BreakoutTransient(cosmology=self.cosmology)
 
@@ -421,16 +425,18 @@ class BracketedBreakoutSampler(BreakoutSampler, kind="breakout_bracketed"):
     r"""
     Count the breakouts whose explosion the survey brackets to within the duration of the breakout.
 
-    The same measurement as `BreakoutSampler`, with a stricter detection. An event is recovered when its first
-    detection comes within :math:`g\,x_{1/2}\,t_0\,(1+z)` of its last non-detection, :math:`g` being `gap_factor` and
+    The same measurement as :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler`, with a stricter
+    detection. An event is recovered when its first detection comes within :math:`g\,x_{1/2}\,t_0\,(1+z)` of its last
+    non-detection, :math:`g` being `gap_factor` and
     :math:`z` the redshift of the *event*: the duration of the breakout in its own frame, stretched by its own time
     dilation. The last non-detection can be before the explosion. So that the survey knows when it happened to within
     that duration, an event with no non-detection that close to its first detection, which includes one whose first
     visit of a field is already a detection, is not recovered.
 
-    The window of a point (the one `BreakoutSampler` follows its events for) is that of its farthest event, and a
-    nearby event is shorter in its own frame. A cut that takes the one window of the point would give every event the
-    farthest one's, up to twice what a nearby event is due, so the gap is compared event by event.
+    The window of a point (the one :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` follows its
+    events for) is that of its farthest event, and a nearby event is shorter in its own frame. A cut that takes the one
+    window of the point would give every event the farthest one's, up to twice what a nearby event is due, so the gap is
+    compared event by event.
 
     Parameters
     ----------
@@ -441,7 +447,8 @@ class BracketedBreakoutSampler(BreakoutSampler, kind="breakout_bracketed"):
     gap_factor : float, optional
         The longest gap, in units of the event's own :math:`x_{1/2}\,t_0\,(1+z)`. The default is one.
     **kwargs
-        The arguments of `BreakoutSampler` except ``detection``, which this sampler defines itself.
+        The arguments of :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` except ``detection``,
+        which this sampler defines itself.
 
     Raises
     ------
