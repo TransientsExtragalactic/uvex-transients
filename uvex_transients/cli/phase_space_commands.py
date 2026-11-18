@@ -2,7 +2,7 @@
 The ``uvex-transients phase-space`` command group.
 
 A recovery map is a directory of files, and each command is one stage that reads some of them and writes others (see
-`uvex_transients.phase_space.stages`), so a stage can be run, repeated or changed without the ones before it:
+:mod:`uvex_transients.phase_space.stages`), so a stage can be run, repeated or changed without the ones before it:
 
 ``run CONFIG --out-dir DIR``
     Simulate the maps of a run-config and write only their ``points.ecsv``, the one expensive file. ``--workers``

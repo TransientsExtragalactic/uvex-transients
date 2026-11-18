@@ -1,9 +1,9 @@
 """
 The stages of a recovery map as operations on its directory.
 
-A map is a directory of files (see `~uvex_transients.phase_space.files` and
-`~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of them and writes others, so that a
-stage can be run, repeated or changed without the ones before it:
+A map is a directory of files (see :mod:`~uvex_transients.phase_space.files` and
+:data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of them and writes others, so that
+a stage can be run, repeated or changed without the ones before it:
 
 1. `run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop there), and then the products below. It is
    the only expensive stage, and the header of the points records everything needed to rebuild the experiment.
@@ -19,7 +19,7 @@ Up to four files are written to the directory of a map:
     Every measured point: its coordinates, ``k`` successes out of ``n`` tries, and what the sampler records of it. It
     is rewritten after every batch and read back by ``resume``.
 ``map.ecsv``
-    The fitted map on a grid (see `~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success
+    The fitted map on a grid (see :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success
     fraction with a 1 sigma interval (``_lo``, ``_hi``), and the quantities of the sampler.
 ``overlay.ecsv``
     For a sampler that has an overlay (the canonical one) and with ``overlay``, the measured peak luminosity and
@@ -133,9 +133,9 @@ def run_experiment(
 
     The points are saved after every batch, so a run that stops can be resumed, and the fitted map is written on a grid
     with the quantities of the sampler. The files are the ones the module's docstring lists: ``points.ecsv`` (see
-    `~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
-    `~uvex_transients.phase_space.experiment.Experiment.grid_table`), ``overlay.ecsv`` and ``map.png`` (see
-    `~uvex_transients.phase_space.stages.plot_files`, which needs a map over two axes).
+    :meth:`~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see
+    :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`), ``overlay.ecsv`` and ``map.png`` (see
+    :func:`~uvex_transients.phase_space.stages.plot_files`, which needs a map over two axes).
 
     Parameters
     ----------
@@ -171,8 +171,8 @@ def run_experiment(
         The title of the figure. By default one that says how many points and tries it took.
     products : bool, optional
         Whether to make the map and the figure after the sampling. If `False`, only ``points.ecsv`` is written, and the
-        rest can be made from it later with `~uvex_transients.phase_space.stages.fit_map` and
-        `~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
+        rest can be made from it later with :func:`~uvex_transients.phase_space.stages.fit_map` and
+        :func:`~uvex_transients.phase_space.stages.plot_files`. The default is `True`.
 
     Returns
     -------
@@ -284,7 +284,7 @@ def fit_map(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written, by their key in `~uvex_transients.utils.results.PHASE_SPACE_FILES`.
+        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.
 
     Raises
     ------
@@ -352,7 +352,7 @@ def write_map(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written, by their key in `~uvex_transients.utils.results.PHASE_SPACE_FILES`.
+        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.
 
     Raises
     ------
@@ -415,9 +415,10 @@ def plot_files(
     Draw the map of a directory from its ``map.ecsv`` and ``points.ecsv``, and write ``map.png``.
 
     The figure is the one the map's sampler draws (``draw_map``): for the canonical map
-    `~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of its overlay, and for any other
-    `~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only, and the class of the sampler but not
-    the survey.
+    :func:`~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of its overlay, and for any
+    other
+    :func:`~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only, and the class of the sampler but
+    not the survey.
 
     Parameters
     ----------
@@ -490,8 +491,8 @@ def compare_maps(
     """
     Difference the ``map.ecsv`` of two maps, and write ``difference.ecsv`` and ``difference.png``.
 
-    See `~uvex_transients.phase_space.analysis.compare.difference_map` for what is compared and refused. It reads only
-    the fitted maps, so it needs neither the schedule nor scikit-learn.
+    See :func:`~uvex_transients.phase_space.analysis.compare.difference_map` for what is compared and refused. It reads
+    only the fitted maps, so it needs neither the schedule nor scikit-learn.
 
     Parameters
     ----------

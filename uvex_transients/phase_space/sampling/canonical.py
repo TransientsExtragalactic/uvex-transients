@@ -6,18 +6,18 @@ The canonical sampler: a fast-rise, exponential-decay transient with a power-law
 luminosity emitted in the band, :math:`L_\nu\Delta\nu` for the equivalent bandwidth :math:`\Delta\nu` of the band
 with :math:`L_\nu` taken at its effective frequency, and :math:`t_{1/2}` is the rest-frame time from the peak until the
 luminosity has fallen to half. Any other SED is placed on the same map by measuring the same two quantities on it
-(`~uvex_transients.models.core.base.SpectralModel.peak_luminosity` and ``decline_time``). One sampler makes the map of
-one band.
+(:meth:`~uvex_transients.models.core.base.SpectralModel.peak_luminosity` and ``decline_time``). One sampler makes the
+map of one band.
 
 The transient that stands in for one point of the map is `_CanonicalTransient`. A recovery map is over a population's
 peak luminosity and half-decline time, so a point needs a transient with just those two free quantities: a FRED light
 curve with a power-law spectrum, whose shape, spectral index and band edges are fixed. `~_CanonicalTransient.set_point`
 places it at a luminosity and a half-decline time, and it is otherwise an ordinary
-`~uvex_transients.transients.base.ExtragalacticTransient`, at a constant rate of one event per Mpc^3 per year, so the
-usual event sampling and SNR screening run on it unchanged. A decaying light curve has no end, so an event is followed
-until it has faded by `fade_mag` magnitudes, which sets the window of observations that can see it. The class name
-starts with an underscore and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and the
-checks that iterate over shipped classes.
+:class:`~uvex_transients.transients.base.ExtragalacticTransient`, at a constant rate of one event per Mpc^3 per year, so
+the usual event sampling and SNR screening run on it unchanged. A decaying light curve has no end, so an event is
+followed until it has faded by `fade_mag` magnitudes, which sets the window of observations that can see it. The class
+name starts with an underscore and the module is not one the CLI imports, which keeps it out of ``full_run.yaml`` and
+the checks that iterate over shipped classes.
 
 `RedshiftLimit` is the redshift out to which a power-law source of a given luminosity is brighter than a depth,
 tabulated once and inverted by interpolation.
@@ -277,7 +277,7 @@ class RedshiftLimit:
     which the luminosity is quoted, which is accurate enough for a limit that only bounds where events are drawn.
 
     With a `bandwidth` the luminosity is the one in the band, :math:`L_\mathrm{band}=L_\nu(\nu_\mathrm{obs})\Delta\nu`
-    in erg/s (see `~uvex_transients.utils.phot_utils.equivalent_bandwidth`), the same table shifted by
+    in erg/s (see :func:`~uvex_transients.utils.phot_utils.equivalent_bandwidth`), the same table shifted by
     :math:`\log_{10}\Delta\nu`.
 
     Parameters
@@ -418,7 +418,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         What counts as a recovery and how a point is simulated: ``band`` (the one that recovers events and in which the
         luminosity is measured), ``snr_threshold``, ``n_visits``, ``exclude_first_visit_detections``, ``detection``,
         ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See `SurveySampler` and
-        `~uvex_transients.phase_space.sampling.core.SurveySettings`.
+        :class:`~uvex_transients.phase_space.sampling.core.SurveySettings`.
     """
 
     TRANSIENT_KEY = "canonical"
@@ -502,7 +502,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         -------
         astropy.table.Table
             One row per draw, in the axes of the map, with the class of each (see
-            `~uvex_transients.phase_space.analysis.overlay.stack_measurements`).
+            :func:`~uvex_transients.phase_space.analysis.overlay.stack_measurements`).
         """
         from uvex_transients.phase_space.analysis.overlay import measure_class, shipped_classes, stack_measurements
 
@@ -598,7 +598,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         absolute AB magnitude of a source of luminosity :math:`L_\mathrm{band}` is
         :math:`M = Z - 2.5\log_{10}L_\mathrm{band}`. Also the shape of the canonical transient the axes are measured
         on (``spectral_index``, ``rise_ratio``, ``fade_mag``), which
-        `~uvex_transients.phase_space.analysis.compare.difference_map` checks before it compares two maps.
+        :func:`~uvex_transients.phase_space.analysis.compare.difference_map` checks before it compares two maps.
         """
         bandwidth_hz = float(self.bandwidth.to_value(u.Hz))
         return {

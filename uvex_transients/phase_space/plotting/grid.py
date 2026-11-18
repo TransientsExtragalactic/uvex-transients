@@ -68,7 +68,7 @@ def plot_grid(
     Draw a two-axis map: the success fraction, its yields and its uncertainty, from the metadata of the table alone.
 
     The axes, their labels and units, and whether each is logarithmic come from the ``space`` in the table's ``meta``
-    (`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` records it), so nothing here knows what the axes
+    (:meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` records it), so nothing here knows what the axes
     are. The first axis is drawn vertically and the second horizontally, as in `plot_map`. A panel is made of the
     success fraction ``f``, of every product that is drawn by default (one with ``draw`` set, such as a yield with an
     interval, ``<name>``, ``<name>_lo`` and ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
@@ -76,7 +76,7 @@ def plot_grid(
     Parameters
     ----------
     grid : astropy.table.Table
-        The output of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` of a map over two axes.
+        The output of :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` of a map over two axes.
     points : astropy.table.Table, optional
         The measured points (``PhaseSpaceMap.table``), drawn when `show_points` is set.
     path : str or pathlib.Path, optional

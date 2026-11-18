@@ -1,8 +1,8 @@
 """
 Parsing and running of a phase-space run-config, for ``uvex-transients phase-space``.
 
-A phase-space run-config describes a survey and a list of maps (see `uvex_transients.phase_space`), and has nothing to
-do with the ``steps:`` pipeline of `RunConfig`, so it has its own loader. Its layout is::
+A phase-space run-config describes a survey and a list of maps (see :mod:`uvex_transients.phase_space`), and has nothing
+to do with the ``steps:`` pipeline of `RunConfig`, so it has its own loader. Its layout is::
 
     schedule:                   # as for `RunConfig`
       name: uvex_v0.6.0
@@ -59,8 +59,8 @@ not what one is, are shared by every map. To share a section on purpose, use a Y
 
 By default a detection is ``n_visits`` observations above ``snr_threshold``. Any other definition is a list of
 ``cuts:``, the cuts a run-config's ``steps:`` use (see
-`uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point draws, with
-the survivors counted as recovered. A cut that takes ``snr_threshold``, ``n_visits``,
+:meth:`uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point draws,
+with the survivors counted as recovered. A cut that takes ``snr_threshold``, ``n_visits``,
 ``exclude_first_visit_detections`` or ``bands`` and is not given them gets the map's::
 
     maps:
@@ -74,7 +74,7 @@ the survivors counted as recovered. A cut that takes ``snr_threshold``, ``n_visi
               params: {max_delay: 1.0}  # days
 
 A map is of the canonical transient unless it names another ``kind:`` of sampler (see
-`uvex_transients.phase_space.sampling.base.available_samplers`)::
+:func:`uvex_transients.phase_space.sampling.base.available_samplers`)::
 
     maps:
       - id: breakout_fuv
@@ -85,15 +85,15 @@ A map is of the canonical transient unless it names another ``kind:`` of sampler
         axes: {log_L0: [43.0, 46.0], log_t0: [3.0, 4.0]}
         grid_size: 40
 
-Each map is run as an `~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``, ``map.ecsv`` and
-``map.png``, and ``overlay.ecsv`` if its sampler has an overlay (the canonical one does).
+Each map is run as an :class:`~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``,
+``map.ecsv`` and ``map.png``, and ``overlay.ecsv`` if its sampler has an overlay (the canonical one does).
 
 The names of the sections of an earlier layout (``recovery:``, ``sampler:``, ``transient:`` and ``map:``) are refused
 with what replaces them.
 
 The run-config says what to simulate. What is done with the files afterwards (fitting, drawing, comparing) is the job of
 the other commands of ``uvex-transients phase-space``, which take the directories of maps and no run-config; see
-`uvex_transients.phase_space.stages`.
+:mod:`uvex_transients.phase_space.stages`.
 """
 
 import functools
@@ -166,7 +166,8 @@ class MapSpec:
     """str: Names the map's output directory."""
 
     kind: str = "canonical"
-    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.sampling.base.available_samplers`."""
+    """str: The kind of sampler of the map, one of
+    :func:`~uvex_transients.phase_space.sampling.base.available_samplers`."""
 
     detection: dict[str, Any] = field(default_factory=dict)
     """dict: What counts as a recovery (``band``, ``snr_threshold``, ``n_visits``, ``cuts``, ...)."""
@@ -489,7 +490,7 @@ def run_maps(
     specs : list of MapSpec
         The maps to make.
     overwrite, resume : bool, optional
-        As for `uvex_transients.phase_space.stages.run_experiment`.
+        As for :func:`uvex_transients.phase_space.stages.run_experiment`.
     progress : bool, optional
         Whether to show the progress bars of the simulation.
     workers : int, optional
@@ -497,12 +498,12 @@ def run_maps(
         it, since each point has its own seed. The default is 1.
     products : bool, optional
         Whether to fit and draw each map after sampling it. If `False`, only ``points.ecsv`` is written, and the rest
-        is made with `uvex_transients.phase_space.stages.fit_map` and `plot_files`.
+        is made with :func:`uvex_transients.phase_space.stages.fit_map` and `plot_files`.
 
     Returns
     -------
     dict of str to dict
-        For each map id, the files written (see `uvex_transients.phase_space.stages.run_experiment`).
+        For each map id, the files written (see :func:`uvex_transients.phase_space.stages.run_experiment`).
     """
     return {
         spec.id: _run_experiment_map(
@@ -533,7 +534,7 @@ def _run_experiment_map(
     """
     Make one map, of any kind of sampler, as an experiment.
 
-    The map is run with `~uvex_transients.phase_space.stages.run_experiment`.
+    The map is run with :func:`~uvex_transients.phase_space.stages.run_experiment`.
 
     Parameters
     ----------
@@ -544,7 +545,7 @@ def _run_experiment_map(
     spec : MapSpec
         The map, of a registered kind.
     overwrite, resume : bool
-        As for `uvex_transients.phase_space.stages.run_experiment`.
+        As for :func:`uvex_transients.phase_space.stages.run_experiment`.
     progress : bool
         Whether to show the progress bars of the simulation.
     workers : int, optional
@@ -555,7 +556,7 @@ def _run_experiment_map(
     Returns
     -------
     dict of str to pathlib.Path
-        The files written (see `uvex_transients.phase_space.stages.run_experiment`).
+        The files written (see :func:`uvex_transients.phase_space.stages.run_experiment`).
 
     Raises
     ------

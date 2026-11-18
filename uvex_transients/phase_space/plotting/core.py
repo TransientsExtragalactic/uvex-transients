@@ -1,9 +1,9 @@
 """
 What the figures of a recovery map share: contour labels, the shaded regions of an overlay, and axis labels.
 
-The figures themselves are in `~uvex_transients.phase_space.plotting.map` (the canonical map),
-`~uvex_transients.phase_space.plotting.difference` (the difference of two maps) and
-`~uvex_transients.phase_space.plotting.grid` (a map over any two axes).
+The figures themselves are in :mod:`~uvex_transients.phase_space.plotting.map` (the canonical map),
+:mod:`~uvex_transients.phase_space.plotting.difference` (the difference of two maps) and
+:mod:`~uvex_transients.phase_space.plotting.grid` (a map over any two axes).
 """
 
 import numpy as np
@@ -138,7 +138,7 @@ def draw_overlay(axes, overlay: Table, color):
     ----------
     axes : numpy.ndarray
         The axes to shade on, such as the four panels of
-        `~uvex_transients.phase_space.plotting.map.plot_map`.
+        :func:`~uvex_transients.phase_space.plotting.map.plot_map`.
     overlay : astropy.table.Table
         The measurements, with ``log_luminosity``, ``log_half_time`` and ``measured`` columns, and the class name in
         ``meta["class"]``.

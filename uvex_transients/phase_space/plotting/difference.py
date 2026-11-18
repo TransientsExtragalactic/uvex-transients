@@ -46,9 +46,9 @@ def plot_difference(
     Draw the difference of two recovery maps, in dex of the recovered yield (the volume-time, for a survey).
 
     The axes come from the ``space`` in the table's ``meta`` when it has one (as a table of
-    `~uvex_transients.phase_space.analysis.compare.difference_map` of two maps made with
-    `~uvex_transients.phase_space.experiment.Experiment.grid_table` does), so the figure does not know what they are,
-    and from the canonical luminosity and half-decline time otherwise.
+    :func:`~uvex_transients.phase_space.analysis.compare.difference_map` of two maps made with
+    :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table` does), so the figure does not know what they
+    are, and from the canonical luminosity and half-decline time otherwise.
 
     The colour is :math:`\Delta = \log_{10}(R_\mathrm{c}/R_\mathrm{b})`, positive where the comparison recovers more,
     with contours at fixed numbers of dex. Cells where :math:`|\Delta|` is less than two standard deviations are dotted,
@@ -58,7 +58,7 @@ def plot_difference(
     Parameters
     ----------
     difference : astropy.table.Table
-        The output of `~uvex_transients.phase_space.analysis.compare.difference_map`.
+        The output of :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
     path : str or pathlib.Path, optional
         Where to write the figure. If omitted, the figure is not saved.
     title : str, optional

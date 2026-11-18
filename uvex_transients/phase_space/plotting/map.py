@@ -96,22 +96,22 @@ def plot_map(
     Parameters
     ----------
     grid : astropy.table.Table
-        The output of `~uvex_transients.phase_space.experiment.Experiment.grid_table`.
+        The output of :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`.
     points : astropy.table.Table
-        The measured points (`~uvex_transients.phase_space.map.PhaseSpaceMap.table`).
+        The measured points (:attr:`~uvex_transients.phase_space.map.PhaseSpaceMap.table`).
     path : str or pathlib.Path, optional
         Where to write the figure. If omitted, the figure is not saved.
     title : str, optional
         A suptitle.
     overlays : sequence of astropy.table.Table, optional
         Measurements of populations to shade on the map, as returned by
-        `~uvex_transients.phase_space.analysis.overlay.measure_class`. Each is the smallest region holding 68% of its
-        draws, in its own colour, named in a legend.
+        :func:`~uvex_transients.phase_space.analysis.overlay.measure_class`. Each is the smallest region holding 68% of
+        its draws, in its own colour, named in a legend.
     show_points : bool, optional
         Whether to mark the simulated points, as circles that grow with the number of events simulated.
     reference_rate : ~astropy.units.Quantity, optional
         The rate the third panel is relative to, in events per volume per time. By default the local core-collapse
-        supernova rate, `~uvex_transients.utils.cosmology.core_collapse_rate_coefficient`.
+        supernova rate, :func:`~uvex_transients.utils.cosmology.core_collapse_rate_coefficient`.
     reference_label : str, optional
         What to call the reference rate in the colour bar.
 

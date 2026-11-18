@@ -1,4 +1,4 @@
-"""Figures of a recovery map, from the tables of `~uvex_transients.phase_space.experiment.Experiment`."""
+"""Figures of a recovery map, from the tables of :class:`~uvex_transients.phase_space.experiment.Experiment`."""
 
 from uvex_transients.phase_space.plotting.difference import plot_difference
 from uvex_transients.phase_space.plotting.grid import plot_grid

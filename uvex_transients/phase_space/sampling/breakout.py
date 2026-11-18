@@ -2,11 +2,11 @@ r"""
 The shock breakout sampler: the survey's detection of a breakout over its peak luminosity and time scale.
 
 `BreakoutSampler` is the second scenario of the phase-space machinery, and the reason it is built the way it is. Its
-transient is the `~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`: a bolometric light
-curve that rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands from
-the breakout radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``, and
-both axes are parameters of the SED, so they are bound to it by name
-(`~uvex_transients.phase_space.sampling.core.ParameterAxis`) and no placing code is written.
+transient is the :class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`: a bolometric
+light curve that rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands
+from the breakout radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``,
+and both axes are parameters of the SED, so they are bound to it by name
+(:class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`) and no placing code is written.
 
 **What counts as a detection.** A breakout is detected if at least one exposure reaches the signal-to-noise threshold,
 and only an exposure that lies within the event counts: an event is followed for the window out to the *bolometric*
@@ -71,8 +71,8 @@ def half_decline_time(p: float, q: float, x_break: float, smoothness: float) -> 
     Return the time of the peak and of the half-decline of the light curve, in units of its time scale :math:`t_0`.
 
     The light curve is that of
-    `~uvex_transients.models.lightcurves.generic.InverseGammaBrokenPowerLawLightcurve`. The half-decline is the time
-    after the peak at which the luminosity has fallen to half of its maximum.
+    :class:`~uvex_transients.models.lightcurves.generic.InverseGammaBrokenPowerLawLightcurve`. The half-decline is the
+    time after the peak at which the luminosity has fallen to half of its maximum.
 
     Parameters
     ----------
@@ -169,12 +169,12 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
 
     A point is ``x = (log10 L_0 / (erg/s), log10 t_0 / s)``: the peak bolometric luminosity :math:`L_0` and the time
     scale :math:`t_0` of the light curve, which peaks at about :math:`t_0`. The other parameters of the SED are fixed at
-    the defaults of `~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`. One sampler makes
-    the map of one band. See the module documentation for what counts as a detection.
+    the defaults of :class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`. One sampler
+    makes the map of one band. See the module documentation for what counts as a detection.
 
     Every argument that is `None` (the default) takes ``config["phase_space.breakout.<name>"]``, and what
-    `~uvex_transients.phase_space.sampling.core.SurveySettings` resolves for the survey settings, with the breakout's
-    own section first (a single exposure recovers it, and it needs many time bins).
+    :class:`~uvex_transients.phase_space.sampling.core.SurveySettings` resolves for the survey settings, with the
+    breakout's own section first (a single exposure recovers it, and it needs many time bins).
 
     Parameters
     ----------
@@ -195,7 +195,7 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     **survey
         What counts as a recovery and how a point is simulated: ``band``, ``snr_threshold``, ``n_visits``,
         ``exclude_first_visit_detections``, ``detection``, ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See
-        `~uvex_transients.phase_space.sampling.core.SurveySampler`.
+        :class:`~uvex_transients.phase_space.sampling.core.SurveySampler`.
 
     Raises
     ------
@@ -283,10 +283,11 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     @property
     def table_meta(self) -> dict:
         """
-        dict: What `~uvex_transients.phase_space.analysis.compare.difference_map` checks before it compares two maps.
+        dict: What a comparison of two maps checks before it differences them.
 
         The band, and the four shape parameters of the light curve that the axes are measured with: the maps of two
-        shapes are not maps of the same plane.
+        shapes are not maps of the same plane. See
+        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.
         """
         meta = {"band": self.band}
         meta.update(zip(("shape_p", "shape_q", "shape_x_break", "shape_smoothness"), self._fixed_shape()))

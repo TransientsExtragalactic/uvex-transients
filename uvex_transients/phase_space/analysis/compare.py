@@ -2,10 +2,10 @@ r"""
 Compare two recovery maps.
 
 `difference_map` takes the fitted maps of two runs, each the ``map.ecsv`` table of
-`~uvex_transients.phase_space.experiment.Experiment.grid_table`, and returns how much more (or less) one recovers than
-the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the factor
-by which the expected number of recoveries changes for a population at a given point, whatever its rate (for a rate
-constant in redshift). It does not depend on the number of explosion-time bins, as the recovery fraction :math:`f`
+:meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`, and returns how much more (or less) one recovers
+than the other at every point of the plane, in dex of the recovered volume-time :math:`f\,\mathcal V T`. That is the
+factor by which the expected number of recoveries changes for a population at a given point, whatever its rate (for a
+rate constant in redshift). It does not depend on the number of explosion-time bins, as the recovery fraction :math:`f`
 alone does. Nothing is simulated, so it needs neither the schedule nor scikit-learn.
 
 The axes can be any: a table that records its ``space`` (everything `Experiment.grid_table` makes) is differenced on the
@@ -162,7 +162,7 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
     Parameters
     ----------
     baseline, comparison : astropy.table.Table
-        The two maps, as made by `~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from
+        The two maps, as made by :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from
         ``map.ecsv``. They need the columns ``f``, ``f_lo`` and ``f_hi`` and the column their ``weight`` metadata
         names (the same for both), and must be on the same grid of the same axes. A map that records no weight is
         weighted by its ``volume_time`` column if it has one.

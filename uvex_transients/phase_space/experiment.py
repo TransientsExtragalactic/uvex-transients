@@ -1,11 +1,11 @@
 r"""
 The experiment: a sampler, a map, a stopping rule and a campaign, as one object that can be run and saved.
 
-A phase-space scenario is made of four things. A `~uvex_transients.phase_space.sampling.base.Sampler` answers "how many
-detections in n tries at a point", a `~uvex_transients.phase_space.sampling.base.StoppingRule` says how many tries a
-point gets, a `~uvex_transients.phase_space.map.PhaseSpaceMap` holds the points and models the success fraction, and
-`CampaignSettings` says how long to run. `Experiment` holds the four, so a new scenario is a new sampler and nothing
-else:
+A phase-space scenario is made of four things. A :class:`~uvex_transients.phase_space.sampling.base.Sampler` answers
+"how many detections in n tries at a point", a :class:`~uvex_transients.phase_space.sampling.base.StoppingRule` says how
+many tries a point gets, a :class:`~uvex_transients.phase_space.map.PhaseSpaceMap` holds the points and models the
+success fraction, and `CampaignSettings` says how long to run. `Experiment` holds the four, so a new scenario is a new
+sampler and nothing else:
 
 .. code-block:: python
 
@@ -19,7 +19,7 @@ else:
 
 **Files.** `Experiment.save` writes the points as an ECSV table whose header records everything needed to rebuild the
 experiment: the space, the settings of the model, the stopping rule, the campaign, and the sampler as its registered
-kind and settings (see `~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is
+kind and settings (see :func:`~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is
 stored.
 `Experiment.load` reads that, and also the files of the earlier format, which recorded a ``RecoveryEvaluator`` (a class
 that no longer exists); it rebuilds those as the canonical sampler.
@@ -322,7 +322,7 @@ class CampaignSettings:
             The root seed of the measurements.
         kinds : sequence of str, optional
             The kinds of the sampler the campaign is for, whose own sections of the configuration take precedence (see
-            `~uvex_transients.phase_space._config.default`).
+            :func:`~uvex_transients.phase_space._config.default`).
 
         Returns
         -------
@@ -391,7 +391,7 @@ class Experiment:
         bounds : array-like, optional
             The ranges to map, shape ``(ndim, 2)``. By default the ranges of the sampler's space.
         rule : ~uvex_transients.phase_space.sampling.base.StoppingRule, optional
-            By default `~uvex_transients.phase_space.sampling.base.StoppingRule.from_config` for the sampler.
+            By default :meth:`~uvex_transients.phase_space.sampling.base.StoppingRule.from_config` for the sampler.
         campaign : CampaignSettings, optional
             By default `CampaignSettings.from_config` with `seed`.
         seed : int, optional
@@ -497,10 +497,10 @@ class Experiment:
         Returns
         -------
         astropy.table.Table
-            The table of `~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`, whose ``meta`` also holds the
-            ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for
-            `~uvex_transients.phase_space.analysis.compare.difference_map` to check) and the ``n_max`` of the stopping
-            rule.
+            The table of :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`, whose ``meta`` also holds
+            the ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for
+            :func:`~uvex_transients.phase_space.analysis.compare.difference_map` to check) and the ``n_max`` of the
+            stopping rule.
         """
         size = configured(size, "grid_size")
         if products is None:

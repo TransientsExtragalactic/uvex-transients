@@ -3,19 +3,19 @@ Survey-backed samplers: the machinery shared by every sampler that simulates eve
 
 A `SurveySampler` answers "how many detections in n tries at a point?" by placing a transient at the point, drawing `n`
 events volume-weighted out to its redshift limit on the footprint the survey covers, and counting how many
-`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr` recovers. What differs between the kinds of map is only
-the transient, how a point of the space places it, and the redshift limit, so those are what a subclass supplies. The
-rest is here: the detection definition, the survey and its settings, the noise-free scales (the exposure, volume-time
-and coverage of a point) and the products made from them.
+:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr` recovers. What differs between the kinds of map
+is only the transient, how a point of the space places it, and the redshift limit, so those are what a subclass
+supplies. The rest is here: the detection definition, the survey and its settings, the noise-free scales (the exposure,
+volume-time and coverage of a point) and the products made from them.
 
 **Axes and parameters.** A point of the space is turned into the parameters of the transient's SED in one of two ways.
 An axis can be bound to a parameter by name with a `ParameterAxis`: the coordinate is then :math:`\log_{10}` of the
 parameter in a unit (or the parameter itself, on a linear axis), and the sampler fixes it with no physics code. Or an
 axis can be a derived quantity, such as a luminosity in a band, and the subclass places the point itself. The link is
-declared here, on the sampler, so that a `~uvex_transients.phase_space.space.Space` stays free of any model.
+declared here, on the sampler, so that a :class:`~uvex_transients.phase_space.space.Space` stays free of any model.
 
 **What counts as a detection.** By default a recovery is at least `n_visits` observations above `snr_threshold` in the
-band (`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`). Any other definition is a `detection`: an
+band (:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`). Any other definition is a `detection`: an
 ordered list of the simulator's registered cuts, the same ones a run-config's ``steps:`` use, applied to the events a
 point draws, and the events that survive them are the recoveries. A subclass whose rule is not a sequence of cuts
 overrides `SurveySampler.detect`. The noise-free scales do not depend on the rule, only on the window events are
@@ -26,8 +26,8 @@ explosion-time bins. The noise-free volume-time :math:`\mathcal V T` is the expe
 that footprint at one event per :math:`\mathrm{Mpc}^3\,\mathrm{yr}`. The product :math:`f\,\mathcal V T` does not depend
 on the binning, and is the expected number of recoveries at unit rate.
 
-The samplers built on it are in their own modules: `~uvex_transients.phase_space.sampling.canonical` (the canonical
-map) and `~uvex_transients.phase_space.sampling.breakout` (shock breakout).
+The samplers built on it are in their own modules: :mod:`~uvex_transients.phase_space.sampling.canonical` (the canonical
+map) and :mod:`~uvex_transients.phase_space.sampling.breakout` (shock breakout).
 """
 
 import inspect
@@ -87,8 +87,8 @@ def check_detection(detection: Sequence[Mapping] | None) -> tuple[dict, ...] | N
     Check a definition of a detection and return it as plain types.
 
     A definition is a list of cuts. Each entry is a mapping with the name of a cut registered on
-    `~uvex_transients.simulation.core.SurveySimulator` as ``cut``, and the arguments of that cut as ``params``, as in
-    the ``steps:`` of a run-config::
+    :class:`~uvex_transients.simulation.core.SurveySimulator` as ``cut``, and the arguments of that cut as ``params``,
+    as in the ``steps:`` of a run-config::
 
         [
             {"cut": "snr", "params": {"n_visits": 2}},
@@ -394,8 +394,9 @@ class SurveySampler(Sampler):
     cosmology : ~astropy.cosmology.Cosmology, optional
         Defaults to the configured cosmology.
     schedule_name : str, optional
-        The registry name of `schedule` (see `~uvex_transients.surveys.utils.get_schedule`), recorded in `settings` so
-        that `from_settings` can fetch the same schedule. Leave it out for a schedule that is not in the registry.
+        The registry name of `schedule` (see :func:`~uvex_transients.surveys.utils.get_schedule`), recorded in
+        `settings` so that `from_settings` can fetch the same schedule. Leave it out for a schedule that is not in the
+        registry.
 
     Notes
     -----
@@ -881,8 +882,8 @@ class SurveySampler(Sampler):
 
         Override it for a rule that is not a sequence of cuts. It is called once per draw, and has to return the
         rows of `catalog` that are recovered. The epochs of the events (each observation, with its time and its
-        measured SNR) are from `~uvex_transients.simulation.core.SurveySimulator.iter_epochs`, and a boolean mask over
-        the rows of the catalog is applied with ``dataclasses.replace(catalog, table=catalog.table[mask])``.
+        measured SNR) are from :meth:`~uvex_transients.simulation.core.SurveySimulator.iter_epochs`, and a boolean mask
+        over the rows of the catalog is applied with ``dataclasses.replace(catalog, table=catalog.table[mask])``.
 
         Parameters
         ----------

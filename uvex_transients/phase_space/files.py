@@ -1,9 +1,9 @@
 """
 The files of a recovery map: where they are, which format a points file is in, and what its header records.
 
-A map is a directory of files (see `~uvex_transients.utils.results.PHASE_SPACE_FILES`). This module knows that layout
-and nothing else about a map: it reads and writes no experiment, so it imports neither the samplers nor scikit-learn,
-and a command that only inspects files (`describe`, `find_maps`) stays cheap.
+A map is a directory of files (see :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`). This module knows that
+layout and nothing else about a map: it reads and writes no experiment, so it imports neither the samplers nor
+scikit-learn, and a command that only inspects files (`describe`, `find_maps`) stays cheap.
 
 The points file comes in two formats, the current one (`SCHEMA_VERSION`, which records a registered sampler kind and its
 settings) and the earlier canonical one, which recorded an evaluator. `flavor` tells them apart and
@@ -72,7 +72,7 @@ class MapInfo:
     """dict: The header in the current format (``space``, ``map``, ``rule``, ``campaign``, ``sampler``)."""
 
     files: tuple[str, ...]
-    """tuple of str: The keys of `~uvex_transients.utils.results.PHASE_SPACE_FILES` whose file is present."""
+    """tuple of str: The keys of :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES` whose file is present."""
 
     @property
     def settings(self) -> dict:
@@ -97,7 +97,7 @@ def map_paths(directory: str | Path) -> dict[str, Path]:
     Returns
     -------
     dict of str to pathlib.Path
-        The path of each file, by its key in `~uvex_transients.utils.results.PHASE_SPACE_FILES`, whether or not it
+        The path of each file, by its key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`, whether or not it
         exists.
     """
     directory = Path(directory)

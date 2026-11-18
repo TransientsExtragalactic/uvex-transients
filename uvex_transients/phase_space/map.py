@@ -2,17 +2,18 @@ r"""
 The map: the data and the model of a phase-space recovery map, and the hook that chooses the next points.
 
 A `PhaseSpaceMap` holds what has been measured so far, ``k`` successes of ``n`` tries at a set of points of a
-`~uvex_transients.phase_space.space.Space`, and models the success fraction over the whole space with a Gaussian
+:class:`~uvex_transients.phase_space.space.Space`, and models the success fraction over the whole space with a Gaussian
 process. It does one thing beyond that, which is to say where the next measurements should be (`PhaseSpaceMap.propose`).
 It knows nothing about transients, surveys or how a point is measured: a point comes in as coordinates and counts, and
 the quantities derived from the fraction (volume-times, efficiencies, redshift limits) are made by
-`~uvex_transients.phase_space.sampling.base.Product` objects that are handed the map's estimate. The loop that
-evaluates the points the map asks for is not here either; see `~uvex_transients.phase_space.experiment.run_campaign`.
+:class:`~uvex_transients.phase_space.sampling.base.Product` objects that are handed the map's estimate. The loop that
+evaluates the points the map asks for is not here either; see
+:func:`~uvex_transients.phase_space.experiment.run_campaign`.
 
 The model is a Gaussian process on the logit of the success fraction, :math:`y_i=\mathrm{logit}\,\hat p_i` with
 :math:`\hat p_i=(k_i+1/2)/(n_i+1)`, and a per-point noise variance :math:`1/[(n_i+1)\hat p_i(1-\hat p_i)]` from the
-delta method (see `~uvex_transients.utils.stat_utils.binomial_logit`). It works on the unit cube of the space, so any
-number of axes will do.
+delta method (see :func:`~uvex_transients.utils.stat_utils.binomial_logit`). It works on the unit cube of the space, so
+any number of axes will do.
 
 The next points maximize an acquisition that is a function of the posterior only, never of an unseen outcome:
 
@@ -322,7 +323,7 @@ class PhaseSpaceMap:
         """
         Estimate the success fraction, with an interval, at points of any leading shape.
 
-        This is what a `~uvex_transients.phase_space.sampling.base.Product` is given.
+        This is what a :class:`~uvex_transients.phase_space.sampling.base.Product` is given.
 
         Parameters
         ----------
@@ -413,7 +414,7 @@ class PhaseSpaceMap:
         Parameters
         ----------
         size : int or sequence of int
-            Points per axis; see `~uvex_transients.phase_space.space.Space.grid`.
+            Points per axis; see :meth:`~uvex_transients.phase_space.space.Space.grid`.
         products : sequence of Product, optional
             The derived quantities to make; see `evaluate`.
         bounds : array-like, optional
@@ -424,7 +425,7 @@ class PhaseSpaceMap:
         Returns
         -------
         astropy.table.Table
-            One row per grid point, in the order of `~uvex_transients.phase_space.space.Space.grid`, with the
+            One row per grid point, in the order of :meth:`~uvex_transients.phase_space.space.Space.grid`, with the
             coordinates, then the columns of `evaluate`. Its ``meta`` holds the ``space`` that was evaluated and the
             ``products`` (name, label, unit and whether the default figure draws it).
         """
@@ -486,7 +487,7 @@ class PhaseSpaceMap:
         expected_n : callable
             ``expected_n(p)`` gives how many tries a point of success fraction `p` is expected to get, which the
             acquisition needs to predict the noise of a point before it is measured. A
-            `~uvex_transients.phase_space.sampling.base.StoppingRule` supplies it.
+            :class:`~uvex_transients.phase_space.sampling.base.StoppingRule` supplies it.
 
         Returns
         -------

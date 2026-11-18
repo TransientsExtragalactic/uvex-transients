@@ -2,7 +2,7 @@ r"""
 The core of the sampling infrastructure: the sampler contract, its products and the stopping rule.
 
 This module knows nothing about surveys. The samplers that simulate one are in
-`~uvex_transients.phase_space.sampling.core` and `~uvex_transients.phase_space.sampling.breakout`.
+:mod:`~uvex_transients.phase_space.sampling.core` and :mod:`~uvex_transients.phase_space.sampling.breakout`.
 
 Products: the quantities of a map, each of which owns how it is made.
 
@@ -13,22 +13,22 @@ quantities. It is a callable that takes the points and the map"s `Estimate` of t
 the columns it creates, so it is free to combine them however the quantity needs. Nothing else has to know what a
 volume-time or a rate is.
 
-A sampler supplies its own products (`~uvex_transients.phase_space.sampling.base.Sampler.products`), which are built
-around whatever machinery of the sampler they need. `Scale` and `Weighted` cover the two common cases, a quantity of
-the point alone and the success fraction times one.
+A sampler supplies its own products (:attr:`~uvex_transients.phase_space.sampling.base.Sampler.products`), which are
+built around whatever machinery of the sampler they need. `Scale` and `Weighted` cover the two common cases, a quantity
+of the point alone and the success fraction times one.
 
 The sampler: how many detections in n tries at a point of the space.
 
 A phase-space map asks one question of the world, again and again: at this point `x`, of `n` independent tries, how
 many succeed? A `Sampler` answers it, and nothing else. It does not decide how many tries to make (that is the
-`~uvex_transients.phase_space.sampling.base.StoppingRule`) and it does not know about the Gaussian process that
+:class:`~uvex_transients.phase_space.sampling.base.StoppingRule`) and it does not know about the Gaussian process that
 models the answers (that is the map). What it does know is the physics of one kind of experiment:
 
-* `Sampler.space` is the `~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and their
-  default ranges;
+* `Sampler.space` is the :class:`~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and
+  their default ranges;
 * `Sampler.draw` makes `n` tries at a point and returns the number of successes;
 * `Sampler.products` are the quantities of its map beyond the success fraction (a redshift limit, a recovered
-  volume-time), each a `~uvex_transients.phase_space.sampling.base.Product` that owns how it is made.
+  volume-time), each a :class:`~uvex_transients.phase_space.sampling.base.Product` that owns how it is made.
 
 Every sampler has a `kind`, a name under which it is registered, so that a file can record which sampler made it and
 `get_sampler` can find the class again without importing it by path. A subclass registers itself by naming its kind in
@@ -445,7 +445,7 @@ class Sampler(ABC):
 
         A sampler built on another is also of the other's kind: the bracketed breakout is of ``breakout_bracketed`` and
         of ``breakout``. This is the order in which its configured defaults are looked up (see
-        `~uvex_transients.phase_space._config.default`).
+        :func:`~uvex_transients.phase_space._config.default`).
 
         Returns
         -------
@@ -584,10 +584,10 @@ class Sampler(ABC):
         Draw the fitted map of a sampler of this class and save the figure.
 
         It is a class method of the files of a map, so that a map can be drawn without rebuilding the sampler. The
-        default is `~uvex_transients.phase_space.plotting.plot_grid`, which draws a map over two axes with the products
-        it carries and decorates it with `annotate_map`. A map over any other number of axes is not drawn: the figure is
-        of a plane, so the default logs a warning and returns `None`. A sampler whose map has a figure of its own
-        overrides this, and is free to draw more axes in its own way.
+        default is :func:`~uvex_transients.phase_space.plotting.plot_grid`, which draws a map over two axes with the
+        products it carries and decorates it with `annotate_map`. A map over any other number of axes is not drawn: the
+        figure is of a plane, so the default logs a warning and returns `None`. A sampler whose map has a figure of its
+        own overrides this, and is free to draw more axes in its own way.
 
         Parameters
         ----------
@@ -803,7 +803,7 @@ class StoppingRule:
             As for the class. Any that is `None` (the default) is read from the configuration.
         kinds : sequence of str, optional
             The kinds of the sampler the rule is for, whose own sections of the configuration take precedence (see
-            `~uvex_transients.phase_space._config.default`).
+            :func:`~uvex_transients.phase_space._config.default`).
 
         Returns
         -------

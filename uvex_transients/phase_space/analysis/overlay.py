@@ -2,9 +2,9 @@
 Place the shipped transient classes on a recovery map, by measuring the two quantities the map is made of.
 
 A map is over the peak luminosity in a band and the rest-frame half-decline time of a canonical transient (see
-`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient`). `measure_class` draws parameters from a class's
-SED priors and measures the same two quantities on each draw, in the band of the map, which gives the region of the
-map the class occupies.
+:class:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient`). `measure_class` draws parameters from a
+class's SED priors and measures the same two quantities on each draw, in the band of the map, which gives the region of
+the map the class occupies.
 
 The overlay shows where a class sits, not how many of it the survey recovers: two events with the same peak and
 half-decline time can differ in rise, tail and colour evolution, which the map holds fixed. A class's yield at its
@@ -88,7 +88,7 @@ def measure_class(
         Number of grid points. If `None` (the default), uses ``config["phase_space.overlay.n_time"]``.
     rng : int or numpy.random.Generator, optional
         Random-number source for the draws, as for
-        `~uvex_transients.models.core.base.SpectralModel.sample_parameters`.
+        :meth:`~uvex_transients.models.core.base.SpectralModel.sample_parameters`.
 
     Returns
     -------

@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.981** total execution time for 29 files **from all galleries**:
+**02:09.178** total execution time for 31 files **from all galleries**:
 
 .. container::
 
@@ -32,8 +32,68 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_magnitude.py` (``galleries/simulating/plot_cut_peak_magnitude.py``)
+     - 00:12.579
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_flux.py` (``galleries/simulating/plot_cut_peak_flux.py``)
+     - 00:11.076
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_snr.py` (``galleries/simulating/plot_cut_snr.py``)
+     - 00:09.725
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py` (``galleries/surveys/plot_tde_rubin_overlap.py``)
+     - 00:09.195
+     - 0.0
    * - :ref:`sphx_glr_report_infant_sne_plot_infant_sne_yields.py` (``report_examples/infant_sne/plot_infant_sne_yields.py``)
-     - 00:00.981
+     - 00:09.062
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_baseline.py` (``galleries/simulating/plot_cut_baseline.py``)
+     - 00:08.300
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_time_to_first_detection.py` (``galleries/simulating/plot_cut_time_to_first_detection.py``)
+     - 00:07.735
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_limiting_magnitude.py` (``galleries/simulating/plot_cut_limiting_magnitude.py``)
+     - 00:07.387
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
+     - 00:07.222
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_action_photometry.py` (``galleries/simulating/plot_action_photometry.py``)
+     - 00:07.031
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_transient_type.py` (``galleries/simulating/plot_cut_transient_type.py``)
+     - 00:06.592
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_luminosity.py` (``galleries/simulating/plot_cut_peak_luminosity.py``)
+     - 00:06.001
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_redshift.py` (``galleries/simulating/plot_cut_redshift.py``)
+     - 00:05.823
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_query.py` (``galleries/simulating/plot_cut_query.py``)
+     - 00:05.632
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_sky_position.py` (``galleries/simulating/plot_cut_sky_position.py``)
+     - 00:05.310
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_region.py` (``galleries/simulating/plot_cut_region.py``)
+     - 00:05.300
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_event_detection_plot_footprint_overlap.py` (``report_examples/full_run/event_detection/plot_footprint_overlap.py``)
+     - 00:02.261
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
+     - 00:01.040
+     - 0.0
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
+     - 00:00.984
+     - 0.0
+   * - :ref:`sphx_glr_report_phase_space_plot_detection_maps.py` (``report_examples/phase_space/plot_detection_maps.py``)
+     - 00:00.501
+     - 0.0
+   * - :ref:`sphx_glr_report_phase_space_plot_class_efficiencies.py` (``report_examples/phase_space/plot_class_efficiencies.py``)
+     - 00:00.423
      - 0.0
    * - :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` (``galleries/custom_transients/plot_kilonova_detection_horizon.py``)
      - 00:00.000
@@ -41,58 +101,13 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_schedules_plot_cadence.py` (``galleries/schedules/plot_cadence.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_action_photometry.py` (``galleries/simulating/plot_action_photometry.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_baseline.py` (``galleries/simulating/plot_cut_baseline.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_limiting_magnitude.py` (``galleries/simulating/plot_cut_limiting_magnitude.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_flux.py` (``galleries/simulating/plot_cut_peak_flux.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_luminosity.py` (``galleries/simulating/plot_cut_peak_luminosity.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_peak_magnitude.py` (``galleries/simulating/plot_cut_peak_magnitude.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_query.py` (``galleries/simulating/plot_cut_query.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_redshift.py` (``galleries/simulating/plot_cut_redshift.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_region.py` (``galleries/simulating/plot_cut_region.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_sky_position.py` (``galleries/simulating/plot_cut_sky_position.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_snr.py` (``galleries/simulating/plot_cut_snr.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_time_to_first_detection.py` (``galleries/simulating/plot_cut_time_to_first_detection.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_cut_transient_type.py` (``galleries/simulating/plot_cut_transient_type.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_simulating_plot_shock_cooling_comparison.py` (``galleries/simulating/plot_shock_cooling_comparison.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_simulating_plot_tde_end_to_end.py` (``galleries/simulating/plot_tde_end_to_end.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_surveys_plot_ls4_footprints.py` (``galleries/surveys/plot_ls4_footprints.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_surveys_plot_lsst_footprints.py` (``galleries/surveys/plot_lsst_footprints.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_surveys_plot_tde_rubin_overlap.py` (``galleries/surveys/plot_tde_rubin_overlap.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_surveys_plot_uvex_footprints.py` (``galleries/surveys/plot_uvex_footprints.py``)
@@ -108,14 +123,5 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_report_full_run_event_detection_plot_detected_yields.py` (``report_examples/full_run/event_detection/plot_detected_yields.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_event_detection_plot_footprint_overlap.py` (``report_examples/full_run/event_detection/plot_footprint_overlap.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
      - 00:00.000
      - 0.0
