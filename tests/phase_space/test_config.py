@@ -19,41 +19,41 @@ NSIDE = 32
 
 # Every key of ``config["phase_space"]`` the code reads, with the type it is read as
 KEYS = {
-    "transient.spectral_index": float,
-    "transient.rise_ratio": float,
-    "transient.fade_mag": float,
+    "canonical.spectral_index": float,
+    "canonical.rise_ratio": float,
+    "canonical.fade_mag": float,
     "breakout.log_L0": list,
     "breakout.log_t0": list,
     "breakout.n_visits": int,
     "breakout.time_bins": int,
     "breakout.z_max": float,
     "breakout.table_points": int,
-    "recovery.mission": str,
-    "recovery.band": str,
-    "recovery.snr_threshold": float,
-    "recovery.n_visits": int,
-    "recovery.exclude_first_visit_detections": bool,
-    "recovery.mag_limit": float,
-    "recovery.time_bins": int,
-    "recovery.chunk_size": int,
-    "recovery.k_target": int,
-    "recovery.n_max": int,
+    "mission": str,
+    "detection.band": str,
+    "detection.snr_threshold": float,
+    "detection.n_visits": int,
+    "detection.exclude_first_visit_detections": bool,
+    "simulation.mag_limit": float,
+    "simulation.time_bins": int,
+    "stopping.chunk_size": int,
+    "stopping.k_target": int,
+    "stopping.n_max": int,
     "numerics.exposure_spacing": float,
     "numerics.z_table_min": float,
     "numerics.z_table_points": int,
     "numerics.volume_z_min": float,
     "numerics.volume_points": int,
-    "sampler.n_initial": int,
-    "sampler.batch_size": int,
-    "sampler.max_points": int,
-    "sampler.tolerance": float,
-    "sampler.acquisition": str,
-    "sampler.n_candidates": int,
-    "sampler.floor": float,
-    "sampler.n_restarts": int,
-    "map.log_luminosity": list,
-    "map.log_half_time": list,
-    "map.grid_size": int,
+    "campaign.n_initial": int,
+    "campaign.batch_size": int,
+    "campaign.max_points": int,
+    "campaign.tolerance": float,
+    "campaign.acquisition": str,
+    "campaign.n_candidates": int,
+    "campaign.floor": float,
+    "campaign.n_restarts": int,
+    "canonical.log_luminosity": list,
+    "canonical.log_half_time": list,
+    "grid_size": int,
     "overlay.n_draws": int,
     "overlay.n_time": int,
     "overlay.t_min": float,
@@ -105,11 +105,11 @@ def test_every_key_the_code_reads_is_in_the_configuration(key, kind):
 # ---------------------------------------------------------------------------- #
 def test_the_transient_takes_its_shape_from_the_configuration(configured):
     default = _CanonicalTransient()
-    assert default.spectral_index == config["phase_space.transient.spectral_index"]
-    assert default.rise_ratio == config["phase_space.transient.rise_ratio"]
-    assert default.fade_mag == config["phase_space.transient.fade_mag"]
+    assert default.spectral_index == config["phase_space.canonical.spectral_index"]
+    assert default.rise_ratio == config["phase_space.canonical.rise_ratio"]
+    assert default.fade_mag == config["phase_space.canonical.fade_mag"]
 
-    configured(transient__spectral_index=-0.5, transient__rise_ratio=0.3, transient__fade_mag=4.0)
+    configured(canonical__spectral_index=-0.5, canonical__rise_ratio=0.3, canonical__fade_mag=4.0)
     changed = _CanonicalTransient()
     assert (changed.spectral_index, changed.rise_ratio, changed.fade_mag) == (-0.5, 0.3, 4.0)
     # An argument is not overridden by the configuration
@@ -121,27 +121,22 @@ def test_the_transient_takes_its_shape_from_the_configuration(configured):
 # ---------------------------------------------------------------------------- #
 def test_a_sampler_given_nothing_takes_every_setting_from_the_configuration(schedule):
     settings = CanonicalSampler(schedule, nside=NSIDE, order="nested").settings
-    for key in (
-        "mission",
-        "band",
-        "snr_threshold",
-        "n_visits",
-        "exclude_first_visit_detections",
-        "mag_limit",
-        "time_bins",
-    ):
-        assert settings[key] == config[f"phase_space.recovery.{key}"], key
+    assert settings["mission"] == config["phase_space.mission"]
+    for key in ("band", "snr_threshold", "n_visits", "exclude_first_visit_detections"):
+        assert settings[key] == config[f"phase_space.detection.{key}"], key
+    for key in ("mag_limit", "time_bins"):
+        assert settings[key] == config[f"phase_space.simulation.{key}"], key
     for key in ("spectral_index", "rise_ratio", "fade_mag"):
-        assert settings[key] == config[f"phase_space.transient.{key}"], key
+        assert settings[key] == config[f"phase_space.canonical.{key}"], key
 
 
 def test_a_sampler_follows_a_changed_configuration_and_an_argument_overrides_it(schedule, configured):
     configured(
-        recovery__band="NUV",
-        recovery__snr_threshold=3.0,
-        recovery__n_visits=1,
-        recovery__exclude_first_visit_detections=False,
-        transient__spectral_index=-1.0,
+        detection__band="NUV",
+        detection__snr_threshold=3.0,
+        detection__n_visits=1,
+        detection__exclude_first_visit_detections=False,
+        canonical__spectral_index=-1.0,
     )
     sampler = CanonicalSampler(schedule, nside=NSIDE, order="nested")
     assert sampler.band == "NUV" and sampler.snr_threshold == 3.0 and sampler.n_visits == 1
@@ -155,9 +150,9 @@ def test_a_sampler_follows_a_changed_configuration_and_an_argument_overrides_it(
 def test_the_stopping_rule_takes_its_settings_from_the_configuration(configured):
     rule = StoppingRule.from_config()
     assert (rule.chunk_size, rule.k_target, rule.n_max) == tuple(
-        config[f"phase_space.recovery.{key}"] for key in ("chunk_size", "k_target", "n_max")
+        config[f"phase_space.stopping.{key}"] for key in ("chunk_size", "k_target", "n_max")
     )
-    configured(recovery__k_target=7, recovery__chunk_size=50, recovery__n_max=200)
+    configured(stopping__k_target=7, stopping__chunk_size=50, stopping__n_max=200)
     assert StoppingRule.from_config() == StoppingRule(chunk_size=50, k_target=7, n_max=200)
     assert StoppingRule.from_config(k_target=9).k_target == 9
 
@@ -171,7 +166,7 @@ def test_the_tables_are_sized_by_the_configuration(schedule, configured):
 
 def test_a_rebuilt_sampler_keeps_what_was_recorded_not_what_the_configuration_says_now(schedule, configured):
     recorded = CanonicalSampler(schedule, snr_threshold=4.0, nside=NSIDE, order="nested", schedule_name=None).settings
-    configured(recovery__snr_threshold=9.0, recovery__n_visits=3)
+    configured(detection__snr_threshold=9.0, detection__n_visits=3)
     rebuilt = CanonicalSampler.from_settings(recorded, schedule=schedule)
     assert rebuilt.snr_threshold == 4.0 and rebuilt.n_visits == recorded["n_visits"]
 
@@ -195,3 +190,39 @@ def test_the_overlay_takes_its_grid_and_draws_from_the_configuration(configured)
     assert len(from_config) == 7
     for column in ("log_luminosity", "log_half_time"):
         np.testing.assert_array_equal(from_config[column], explicit[column])
+
+
+# ---------------------------------------------------------------------------- #
+# The defaults of a kind                                                       #
+# ---------------------------------------------------------------------------- #
+def test_a_kind_takes_its_own_section_before_the_shared_one_and_a_parent_kind_before_the_shared_one(configured):
+    from uvex_transients.phase_space._config import default
+    from uvex_transients.phase_space.sampling import BracketedBreakoutSampler, BreakoutSampler, SurveySettings
+
+    assert CanonicalSampler.kinds() == ("canonical",)
+    assert BracketedBreakoutSampler.kinds() == ("breakout_bracketed", "breakout")
+
+    # The breakout has its own n_visits, so the shared one does not reach it or the kind built on it
+    assert default("detection", "n_visits", BreakoutSampler.kinds()) == config["phase_space.breakout.n_visits"]
+    assert (
+        SurveySettings.default("n_visits", BracketedBreakoutSampler.kinds()) == config["phase_space.breakout.n_visits"]
+    )
+    assert SurveySettings.default("n_visits", CanonicalSampler.kinds()) == config["phase_space.detection.n_visits"]
+
+    # The most specific kind wins
+    configured(breakout_bracketed__n_visits=3)
+    assert SurveySettings.default("n_visits", BracketedBreakoutSampler.kinds()) == 3
+    assert SurveySettings.default("n_visits", BreakoutSampler.kinds()) == config["phase_space.breakout.n_visits"]
+
+
+def test_the_survey_settings_are_resolved_in_one_place_and_refuse_what_they_do_not_know():
+    from uvex_transients.phase_space.sampling import SurveySettings
+
+    settings = SurveySettings.resolve(("canonical",), band="NUV", n_visits=3, nside=NSIDE, order="nested")
+    assert (settings.band, settings.n_visits, settings.nside, settings.order) == ("NUV", 3, NSIDE, "nested")
+    assert settings.snr_threshold == config["phase_space.detection.snr_threshold"] and settings.detection is None
+    assert set(settings.as_dict()) == {*SurveySettings.SECTIONS, "nside", "order"}
+    with pytest.raises(TypeError, match="bogus"):
+        SurveySettings.resolve(bogus=1)
+    with pytest.raises(ValueError, match="cut"):
+        SurveySettings.resolve(detection=[{"cut": "no_such_cut"}])

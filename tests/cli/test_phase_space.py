@@ -17,14 +17,17 @@ schedule:
 mission: uvex_fast
 seed: 3
 overlay: {{n_draws: 20}}
-recovery: {{snr_threshold: 5.0, n_visits: 1, mag_limit: 24.0, time_bins: 3, chunk_size: 40, k_target: 2, n_max: 80, nside: 32, order: nested}}
-sampler: {{n_initial: 4, batch_size: 2, max_points: 4}}
-map: {{log_luminosity: [43.5, 45.0], log_half_time: [1.5, 2.5], grid_size: 5}}
+detection: {{snr_threshold: 5.0, n_visits: 1}}
+simulation: {{mag_limit: 24.0, time_bins: 3, nside: 32, order: nested}}
+stopping: {{chunk_size: 40, k_target: 2, n_max: 80}}
+campaign: {{n_initial: 4, batch_size: 2, max_points: 4}}
+axes: {{log_luminosity: [43.5, 45.0], log_half_time: [1.5, 2.5]}}
+grid_size: 5
 maps:
   - id: fuv_test
-    recovery: {{band: FUV}}
+    detection: {{band: FUV}}
   - id: nuv_test
-    recovery: {{band: NUV, snr_threshold: 3.0}}
+    detection: {{band: NUV, snr_threshold: 3.0}}
 """
 
 
@@ -54,50 +57,50 @@ def test_the_shipped_run_config_parses_and_asks_for_the_agreed_detection_maps():
     assert [spec.id for spec in parsed.maps] == ["fuv_detection", "nuv_detection"]
     assert [spec.band for spec in parsed.maps] == ["FUV", "NUV"]
     for spec in parsed.maps:
-        assert spec.recovery["snr_threshold"] == 5.0 and spec.recovery["n_visits"] == 2
-        assert spec.recovery["mag_limit"] == 25.0
+        assert spec.detection["snr_threshold"] == 5.0 and spec.detection["n_visits"] == 2
+        assert spec.simulation["mag_limit"] == 25.0
     assert parsed.overlay and parsed.schedule_name == config["schedules.default_schedule"]
 
 
 def test_a_map_overrides_the_shared_settings_key_by_key():
     parsed = _parse(
         """
-recovery: {snr_threshold: 5.0, n_visits: 2}
+detection: {snr_threshold: 5.0, n_visits: 2}
 maps:
   - id: a
-    recovery: {band: FUV}
+    detection: {band: FUV}
   - id: b
-    recovery: {band: NUV, n_visits: 1}
+    detection: {band: NUV, n_visits: 1}
 """
     )
     a, b = parsed.maps
-    assert a.recovery == {"snr_threshold": 5.0, "n_visits": 2, "band": "FUV"}
-    assert b.recovery == {"snr_threshold": 5.0, "n_visits": 1, "band": "NUV"}
-    assert a.axis_bounds is None and a.grid_size is None
+    assert a.detection == {"snr_threshold": 5.0, "n_visits": 2, "band": "FUV"}
+    assert b.detection == {"snr_threshold": 5.0, "n_visits": 1, "band": "NUV"}
+    assert a.axes is None and a.grid_size is None
 
 
-def test_the_map_section_sets_the_bounds_and_the_grid():
-    parsed = _parse("map: {log_luminosity: [40, 42], grid_size: 9}\nmaps: [{id: a}]")
+def test_the_axes_section_sets_the_ranges_and_grid_size_the_resolution():
+    parsed = _parse("axes: {log_luminosity: [40, 42]}\ngrid_size: 9\nmaps: [{id: a}]")
     (spec,) = parsed.maps
     assert spec.grid_size == 9
     # The axis that is not given has no bounds of its own, so it keeps the sampler's configured range
-    assert spec.axis_bounds == {"log_luminosity": (40, 42)}
+    assert spec.axes == {"log_luminosity": (40, 42)}
 
 
 def test_every_problem_is_reported_at_once():
     with pytest.raises(ValueError) as error:
         _parse(
             """
-recovery: {snr: 5.0}
+detection: {snr: 5.0}
 maps:
   - id: ok
   - id: ok
   - id: ../bad
-  - recovery: {bogus: 1}
+  - detection: {bogus: 1}
 """
         )
     message = str(error.value)
-    assert "unknown 'recovery:' key(s) ['snr']" in message
+    assert "unknown key(s) ['snr']" in message and "'detection:'" in message
     assert "the id is used twice" in message
     assert "'../bad'" in message and "None" in message
 
@@ -136,8 +139,8 @@ def test_dry_run_reports_each_map_and_writes_nothing(config_path, tmp_path):
     out = tmp_path / "out"
     result = CliRunner().invoke(cli, ["phase-space", str(config_path), "--out-dir", str(out), "--dry-run"])
     assert result.exit_code == 0, result.output
-    assert "fuv_test: FUV, SNR >= 5 on 1 visit(s), 24 AB" in result.output
-    assert "nuv_test: NUV, SNR >= 3 on 1 visit(s), 24 AB" in result.output
+    assert "fuv_test: FUV: SNR >= 5 on 1 visit(s), 24 AB" in result.output
+    assert "nuv_test: NUV: SNR >= 3 on 1 visit(s), 24 AB" in result.output
     assert not out.exists()
 
 
@@ -203,9 +206,11 @@ def test_an_existing_map_is_refused_unless_overwrite_or_resume(config_path, tmp_
 BREAKOUT_MAP = """
   - id: breakout_test
     kind: breakout
-    recovery: {band: FUV, mag_limit: 25.0}
+    detection: {band: FUV}
+    simulation: {mag_limit: 25.0}
     settings: {z_max: 8.0, table_points: 9}
-    map: {bounds: {log_L0: [45.0, 46.5], log_t0: [3.0, 4.5]}, grid_size: 5}
+    axes: {log_L0: [45.0, 46.5], log_t0: [3.0, 4.5]}
+    grid_size: 5
 """
 
 
@@ -219,17 +224,16 @@ def breakout_config_path(config_path):
 def test_a_map_is_canonical_unless_it_names_a_kind(config_path):
     parsed = PhaseSpaceConfig.from_yaml(config_path)
     assert {spec.kind for spec in parsed.maps} == {"canonical"}
-    # The canonical axes are given by their own keys, which are the shorthand for ``bounds:``
     assert all(spec.settings == {} for spec in parsed.maps)
-    assert all(set(spec.axis_bounds or {}) <= {"log_luminosity", "log_half_time"} for spec in parsed.maps)
+    assert all(set(spec.axes or {}) <= {"log_luminosity", "log_half_time"} for spec in parsed.maps)
 
 
-def test_a_map_of_another_kind_has_its_settings_and_axis_bounds(breakout_config_path):
+def test_a_map_of_another_kind_has_its_settings_and_axes(breakout_config_path):
     spec = PhaseSpaceConfig.from_yaml(breakout_config_path).select(["breakout_test"])[0]
     assert spec.kind == "breakout"
     assert spec.settings == {"z_max": 8.0, "table_points": 9}
-    assert spec.axis_bounds == {"log_L0": (45.0, 46.5), "log_t0": (3.0, 4.5)}
-    assert spec.grid_size == 5 and spec.recovery["band"] == "FUV"
+    assert spec.axes == {"log_L0": (45.0, 46.5), "log_t0": (3.0, 4.5)}
+    assert spec.grid_size == 5 and spec.detection["band"] == "FUV"
 
 
 def test_a_kind_can_be_given_at_the_top_level_and_overridden_by_a_map():
@@ -242,14 +246,26 @@ def test_an_unknown_kind_is_reported_with_the_known_ones():
         _parse("maps:\n  - id: a\n    kind: nothing\n")
 
 
-def test_the_transient_section_is_only_for_the_canonical_kind():
-    with pytest.raises(ValueError, match="transient.*canonical"):
-        _parse("maps:\n  - id: a\n    kind: breakout\n    transient: {rise_ratio: 0.2}\n")
+@pytest.mark.parametrize(
+    "old, replacement",
+    [
+        ("recovery: {band: FUV}", "detection"),
+        ("sampler: {max_points: 4}", "campaign"),
+        ("transient: {rise_ratio: 0.2}", "settings"),
+        ("map: {grid_size: 5}", "axes"),
+    ],
+)
+def test_the_section_names_of_the_earlier_layout_are_refused_with_what_replaced_them(old, replacement):
+    for text in (f"{old}\nmaps: [{{id: a}}]", f"maps:\n  - id: a\n    {old}\n"):
+        with pytest.raises(ValueError, match=rf"was renamed.*{replacement}"):
+            _parse(text)
 
 
-def test_axis_bounds_have_to_map_names_to_pairs():
-    with pytest.raises(ValueError, match="bounds"):
-        _parse("maps:\n  - id: a\n    kind: breakout\n    map: {bounds: [1, 2]}\n")
+def test_the_axes_have_to_map_names_to_pairs():
+    with pytest.raises(ValueError, match="axes"):
+        _parse("maps:\n  - id: a\n    kind: breakout\n    axes: {log_L0: 1}\n")
+    with pytest.raises(ValueError, match="axes"):
+        _parse("maps:\n  - id: a\n    kind: breakout\n    axes: [1, 2]\n")
 
 
 def test_settings_are_free_form_and_the_dry_run_names_the_kind(breakout_config_path, tmp_path):
@@ -295,46 +311,45 @@ def test_a_setting_the_sampler_does_not_take_and_an_axis_it_does_not_have_are_er
 # ---------------------------------------------------------------------------- #
 # Which maps the shared sections apply to                                      #
 # ---------------------------------------------------------------------------- #
-def test_the_shared_sections_that_define_a_detection_are_the_defaults_of_the_top_level_kind_only():
+def test_the_sections_that_define_a_map_are_the_defaults_of_the_top_level_kind_only():
     parsed = _parse(
-        "recovery: {n_visits: 2, band: NUV}\nmap: {grid_size: 9}\nsampler: {max_points: 7}\n"
+        "detection: {n_visits: 2, band: NUV}\naxes: {log_luminosity: [40, 42]}\n"
+        "campaign: {max_points: 7}\ngrid_size: 9\n"
         "maps:\n  - id: a\n  - id: b\n    kind: breakout\n"
     )
     canonical, breakout = parsed.maps
-    assert canonical.recovery == {"n_visits": 2, "band": "NUV"} and canonical.grid_size == 9
-    # What a visit count or a grid means is the sampler's own, so a canonical default does not reach another kind
-    assert breakout.recovery == {} and breakout.grid_size is None
-    # How points are placed is the same for every kind
-    assert canonical.sampler == breakout.sampler == {"max_points": 7}
+    assert canonical.detection == {"n_visits": 2, "band": "NUV"} and canonical.axes == {"log_luminosity": (40, 42)}
+    # What a visit count or the name of an axis means is the sampler's own, so a canonical default does not reach
+    # another kind
+    assert breakout.detection == {} and breakout.axes is None
+    # How points are placed and how finely the map is drawn are the same for every kind
+    assert canonical.campaign == breakout.campaign == {"max_points": 7}
+    assert canonical.grid_size == breakout.grid_size == 9
 
 
 def test_a_top_level_kind_gives_its_shared_sections_to_that_kind():
-    parsed = _parse("kind: breakout\nrecovery: {n_visits: 1}\nmaps:\n  - id: a\n  - id: b\n    kind: canonical\n")
+    parsed = _parse("kind: breakout\ndetection: {n_visits: 1}\nmaps:\n  - id: a\n  - id: b\n    kind: canonical\n")
     breakout, canonical = parsed.maps
-    assert breakout.kind == "breakout" and breakout.recovery == {"n_visits": 1}
-    assert canonical.kind == "canonical" and canonical.recovery == {}
+    assert breakout.kind == "breakout" and breakout.detection == {"n_visits": 1}
+    assert canonical.kind == "canonical" and canonical.detection == {}
 
 
 def test_a_section_can_be_shared_across_kinds_on_purpose_with_a_yaml_anchor():
     parsed = _parse(
-        "recovery: &detection {mag_limit: 24.0}\n"
-        "maps:\n  - id: a\n  - id: b\n    kind: breakout\n    recovery: {<<: *detection, band: NUV}\n"
+        "simulation: &simulation {mag_limit: 24.0}\n"
+        "maps:\n  - id: a\n  - id: b\n    kind: breakout\n    simulation: {<<: *simulation}\n"
+        "    detection: {band: NUV}\n"
     )
-    assert parsed.maps[1].recovery == {"mag_limit": 24.0, "band": "NUV"}
-
-
-def test_the_canonical_axes_are_an_error_for_another_kind():
-    with pytest.raises(ValueError, match="canonical axes"):
-        _parse("maps:\n  - id: a\n    kind: breakout\n    map: {log_luminosity: [40, 45]}\n")
+    assert parsed.maps[1].simulation == {"mag_limit": 24.0} and parsed.maps[1].detection == {"band": "NUV"}
 
 
 def test_the_dry_run_reports_the_default_of_the_kind_not_the_canonical_one(tmp_path):
     path = tmp_path / "kinds.yaml"
     path.write_text(
-        "schedule: {name: uvex_v0.6.0}\nmission: uvex_fast\nrecovery: {n_visits: 2}\n"
-        "maps:\n  - id: canon\n    recovery: {band: FUV}\n  - id: sbo\n    kind: breakout\n    recovery: {band: FUV}\n"
+        "schedule: {name: uvex_v0.6.0}\nmission: uvex_fast\ndetection: {n_visits: 2}\n"
+        "maps:\n  - id: canon\n    detection: {band: FUV}\n  - id: sbo\n    kind: breakout\n    detection: {band: FUV}\n"
     )
     result = CliRunner().invoke(cli, ["phase-space", str(path), "--out-dir", str(tmp_path / "o"), "--dry-run"])
     assert result.exit_code == 0, result.output
-    assert "canon: FUV, SNR >= 5 on 2 visit(s)" in result.output
-    assert "sbo [breakout]: FUV, SNR >= 5 on 1 visit(s)" in result.output
+    assert "canon: FUV: SNR >= 5 on 2 visit(s)" in result.output
+    assert "sbo [breakout]: FUV: SNR >= 5 on 1 visit(s)" in result.output

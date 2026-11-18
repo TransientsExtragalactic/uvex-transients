@@ -24,11 +24,13 @@ tabulated once and inverted by interpolation.
 """
 
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Union
 
 import numpy as np
 from astropy import units as u
 from astropy.cosmology import Cosmology
+from astropy.table import Table
 from astropy.units import Quantity
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import brentq
@@ -124,16 +126,16 @@ class _CanonicalTransient(ExtragalacticTransient):
         Defaults to the configured cosmology.
     spectral_index : float, optional
         The index :math:`\alpha` of :math:`L_\nu\\propto\nu^\alpha`, which sets the K-correction, a flux factor of
-        :math:`(1+z)^{1+\alpha}`. If `None` (the default), uses ``config["phase_space.transient.spectral_index"]``.
+        :math:`(1+z)^{1+\alpha}`. If `None` (the default), uses ``config["phase_space.canonical.spectral_index"]``.
     reference_frequency : ~astropy.units.Quantity, optional
         The frequency at which `set_point` takes the spectral luminosity. It fixes what a luminosity means and does
         not change the spectrum. The default is 1e15 Hz.
     rise_ratio : float, optional
         The ratio :math:`\tau_1/\tau_2` of the rise to the decay time. If `None` (the default), uses
-        ``config["phase_space.transient.rise_ratio"]``.
+        ``config["phase_space.canonical.rise_ratio"]``.
     fade_mag : float, optional
         How far below its peak, in magnitudes, an event is followed. If `None` (the default), uses
-        ``config["phase_space.transient.fade_mag"]``.
+        ``config["phase_space.canonical.fade_mag"]``.
     """
 
     DEFAULT_MODEL = _FREDPowerLawSED
@@ -153,11 +155,11 @@ class _CanonicalTransient(ExtragalacticTransient):
 
         # Anything not given comes from the configuration
         if spectral_index is None:
-            spectral_index = config["phase_space.transient.spectral_index"]
+            spectral_index = config["phase_space.canonical.spectral_index"]
         if rise_ratio is None:
-            rise_ratio = config["phase_space.transient.rise_ratio"]
+            rise_ratio = config["phase_space.canonical.rise_ratio"]
         if fade_mag is None:
-            fade_mag = config["phase_space.transient.fade_mag"]
+            fade_mag = config["phase_space.canonical.fade_mag"]
         if reference_frequency is None:
             reference_frequency = _REFERENCE_FREQUENCY
         if rise_ratio <= 0.0 or fade_mag <= 0.0:
@@ -391,8 +393,8 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
     Both axes are derived quantities, not parameters of the SED, so this sampler places a point itself instead of
     binding axes to parameters.
 
-    Every argument that is `None` (the default) takes ``config["phase_space.recovery.<name>"]``, or
-    ``config["phase_space.transient.<name>"]`` for the shape of the transient.
+    Every argument that is `None` (the default) takes ``config["phase_space.canonical.<name>"]`` for the shape of the
+    transient, and what `SurveySettings` resolves for the rest.
 
     Parameters
     ----------
@@ -400,8 +402,6 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         The survey to recover events against.
     mission : str or m4opt.missions.Mission, optional
         The mission (detector and background), or the name of one.
-    band : str, optional
-        The detector band that recovers events and in which the luminosity is measured.
     spectral_index : float, optional
         The index :math:`\alpha` of the spectrum, :math:`L_\nu\propto\nu^\alpha`, which sets the K-correction
         :math:`(1+z)^{1+\alpha}`. A spectrum rising steeply to the blue (about 3) has no redshift limit and raises
@@ -410,26 +410,15 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         The ratio of the rise to the decay time of the light curve.
     fade_mag : float, optional
         How far below its peak, in magnitudes, an event is followed by the survey.
-    snr_threshold : float, optional
-        The signal-to-noise a visit must reach.
-    n_visits : int, optional
-        How many visits must reach it.
-    exclude_first_visit_detections : bool, optional
-        Whether a detection that is only on a field's first visit is discarded; see `SurveySimulator.filter_by_snr`.
-    detection : sequence of Mapping, optional
-        What counts as a recovery, as a list of the simulator's registered cuts; see `SurveySampler` and
-        `~uvex_transients.phase_space.sampling.core.check_detection`. By default one ``snr`` cut made of the three
-        settings above.
-    mag_limit : float, optional
-        The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.
-    time_bins : int, optional
-        Number of equal explosion-time bins spanning the survey; see `SurveySimulator.sample_N_events`.
-    nside, order : optional
-        HEALPix resolution of the sampling grid; the package defaults if omitted.
     cosmology : ~astropy.cosmology.Cosmology, optional
         Defaults to the configured cosmology.
     schedule_name : str, optional
         The registry name of `schedule`, recorded in `settings` so that `from_settings` can fetch the same schedule.
+    **survey
+        What counts as a recovery and how a point is simulated: ``band`` (the one that recovers events and in which the
+        luminosity is measured), ``snr_threshold``, ``n_visits``, ``exclude_first_visit_detections``, ``detection``,
+        ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See `SurveySampler` and
+        `~uvex_transients.phase_space.sampling.core.SurveySettings`.
     """
 
     TRANSIENT_KEY = "canonical"
@@ -439,37 +428,15 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         schedule: SurveySchedule,
         mission=None,
         *,
-        band: str | None = None,
         spectral_index: float | None = None,
         rise_ratio: float | None = None,
         fade_mag: float | None = None,
-        snr_threshold: float | None = None,
-        n_visits: int | None = None,
-        exclude_first_visit_detections: bool | None = None,
-        detection: Sequence[Mapping] | None = None,
-        mag_limit: float | None = None,
-        time_bins: int | None = None,
-        nside: int | None = None,
-        order: str | None = None,
         cosmology: Cosmology | None = None,
         schedule_name: str | None = None,
+        **survey,
     ):
-        super().__init__(
-            schedule,
-            mission,
-            band=band,
-            snr_threshold=snr_threshold,
-            n_visits=n_visits,
-            exclude_first_visit_detections=exclude_first_visit_detections,
-            detection=detection,
-            mag_limit=mag_limit,
-            time_bins=time_bins,
-            nside=nside,
-            order=order,
-            cosmology=cosmology,
-            schedule_name=schedule_name,
-        )
-        self.spectral_index = float(configured(spectral_index, "transient.spectral_index"))
+        super().__init__(schedule, mission, cosmology=cosmology, schedule_name=schedule_name, **survey)
+        self.spectral_index = float(configured(spectral_index, "canonical.spectral_index"))
 
         # The scale of the luminosity axis: the luminosity in the band, from the spectral one at the band's
         # effective frequency
@@ -477,22 +444,11 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
         self.reference_frequency = effective_frequency(bandpass)
         self.bandwidth = equivalent_bandwidth(bandpass, self.spectral_index, self.reference_frequency)
 
-        # What `from_settings` needs to rebuild this sampler, as plain types an ECSV header can hold
-        self._settings = {
-            "schedule_name": schedule_name,
-            "mission": self._mission_name,
-            "band": self.band,
+        # The shape of the transient is recorded beside what the survey sampler records
+        shape = {
             "spectral_index": self.spectral_index,
-            "rise_ratio": float(configured(rise_ratio, "transient.rise_ratio")),
-            "fade_mag": float(configured(fade_mag, "transient.fade_mag")),
-            "snr_threshold": self.snr_threshold,
-            "n_visits": self.n_visits,
-            "exclude_first_visit_detections": self.exclude_first_visit_detections,
-            "mag_limit": self.mag_limit,
-            "time_bins": self.time_bins,
-            "nside": int(self.nside),
-            "order": str(self.order),
-            "cosmology": str(self.cosmology.name),
+            "rise_ratio": float(configured(rise_ratio, "canonical.rise_ratio")),
+            "fade_mag": float(configured(fade_mag, "canonical.fade_mag")),
         }
 
         # The redshift limit comes from the depth alone. Its table ends where the band leaves the spectrum, which the
@@ -508,23 +464,127 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
             spectral_index=self.spectral_index,
         )
 
-        self._space = Space(
+        space = Space(
             [
                 Axis(
                     "log_luminosity",
-                    *config["phase_space.map.log_luminosity"],
+                    *config["phase_space.canonical.log_luminosity"],
                     label=rf"$L_\mathrm{{{self.band}}}$",
                     unit="erg/s",
                 ),
                 Axis(
                     "log_half_time",
-                    *config["phase_space.map.log_half_time"],
+                    *config["phase_space.canonical.log_half_time"],
                     label=r"rest-frame half-decline time $t_{1/2}$",
                     unit="day",
                 ),
             ]
         )
-        self._build_scales(redshift_edge)
+        self._configure(space, redshift_edge, **shape)
+
+    # -------------------------------------- #
+    # The figure and its overlay             #
+    # -------------------------------------- #
+    HAS_OVERLAY = True
+
+    def measure_overlay(self, n_draws: int | None = None, seed: int = 0) -> Table:
+        """
+        Measure the shipped transient classes in the band of the map, to shade on its figure.
+
+        Parameters
+        ----------
+        n_draws : int, optional
+            SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
+        seed : int, optional
+            The seed of the draws.
+
+        Returns
+        -------
+        astropy.table.Table
+            One row per draw, in the axes of the map, with the class of each (see
+            `~uvex_transients.phase_space.analysis.overlay.stack_measurements`).
+        """
+        from uvex_transients.phase_space.analysis.overlay import measure_class, shipped_classes, stack_measurements
+
+        bandpass = self.mission.detector.bandpasses[self.band]
+        return stack_measurements(
+            [measure_class(cls, bandpass, n_draws=n_draws, rng=seed) for cls in shipped_classes().values()]
+        )
+
+    @classmethod
+    def draw_map(
+        cls,
+        grid: Table,
+        points: Table,
+        path: str | Path,
+        title: str,
+        *,
+        overlay: Table | None = None,
+        show_points: bool = False,
+        fields: Sequence[str] | None = None,
+    ):
+        """
+        Draw the canonical map, with its four panels and the shipped classes shaded if there is an overlay.
+
+        With `fields` the panels are the ones asked for, drawn by the default figure.
+
+        Parameters
+        ----------
+        grid : astropy.table.Table
+            The fitted map (``map.ecsv``).
+        points : astropy.table.Table
+            The measured points (``points.ecsv``).
+        path : str or pathlib.Path
+            Where to save the figure.
+        title : str
+            The suptitle.
+        overlay : astropy.table.Table, optional
+            The measurements of `measure_overlay` (``overlay.ecsv``).
+        show_points : bool, optional
+            Whether to mark the measured points.
+        fields : sequence of str, optional
+            The columns to draw, one panel each, in place of the four of the canonical figure.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            The figure, which the caller closes.
+        """
+        if fields is not None:
+            return super().draw_map(grid, points, path, title, overlay=overlay, show_points=show_points, fields=fields)
+
+        from uvex_transients.phase_space.analysis.overlay import split_measurements
+        from uvex_transients.phase_space.plotting import plot_map
+
+        overlays = None if overlay is None else split_measurements(overlay)
+        return plot_map(grid, points, path, title, overlays=overlays, show_points=show_points)
+
+    @classmethod
+    def annotate_map(cls, ax, overlay: Table):
+        """
+        Shade the region of the map that each shipped class occupies, each in its own colour.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+            The axes of a panel, in the plotted coordinates.
+        overlay : astropy.table.Table
+            The measurements of `measure_overlay`.
+
+        Returns
+        -------
+        list of matplotlib.patches.Patch
+            A legend handle for each class that has a measured draw.
+        """
+        from uvex_transients.phase_space.analysis.overlay import split_measurements
+        from uvex_transients.phase_space.plotting.core import OVERLAY_COLORS, draw_overlay
+
+        handles = []
+        for k, measurement in enumerate(split_measurements(overlay)):
+            handle = draw_overlay(np.array([ax]), measurement, OVERLAY_COLORS[k % len(OVERLAY_COLORS)])
+            if handle is not None:
+                handles.append(handle)
+        return handles
 
     # -------------------------------------- #
     # Recording and rebuilding               #
@@ -599,7 +659,7 @@ class CanonicalSampler(SurveySampler, kind="canonical"):
 
     def make_transient(self) -> _CanonicalTransient:
         """
-        Return a transient of this evaluator's spectrum, whose luminosities are taken at `reference_frequency`.
+        Return a transient of this sampler's spectrum, whose luminosities are taken at `reference_frequency`.
 
         Returns
         -------

@@ -26,8 +26,9 @@ def _grid_panels(fields: dict, products: dict, selected: Sequence[str] | None) -
     from matplotlib.colors import LogNorm
 
     if selected is None:
-        # The success fraction, every yield (a product with an interval), and the uncertainty
-        yields = [name for name in products if f"{name}_lo" in fields]
+        # The success fraction, every product that is drawn by default, and the uncertainty. A table from before the
+        # products recorded it has the ones that carry an interval
+        yields = [name for name, product in products.items() if product.get("draw", f"{name}_lo" in fields)]
         selected = ["f", *yields, "sigma_log"]
 
     panels = []
@@ -69,8 +70,8 @@ def plot_grid(
     The axes, their labels and units, and whether each is logarithmic come from the ``space`` in the table's ``meta``
     (`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table` records it), so nothing here knows what the axes
     are. The first axis is drawn vertically and the second horizontally, as in `plot_map`. A panel is made of the
-    success fraction ``f``, of every product that carries an interval (a yield, ``<name>``, ``<name>_lo``,
-    ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
+    success fraction ``f``, of every product that is drawn by default (one with ``draw`` set, such as a yield with an
+    interval, ``<name>``, ``<name>_lo`` and ``<name>_hi``), and of ``sigma_log``, unless `fields` says otherwise.
 
     Parameters
     ----------
@@ -88,7 +89,8 @@ def plot_grid(
         Whether to mark the measured points, as circles that grow with the number of tries.
     annotate : callable, optional
         ``annotate(ax)``, called on every panel to draw anything else, such as the region a class of transients
-        occupies. The coordinates are the plotted ones (the values of a logarithmic axis, not their logarithms).
+        occupies. The coordinates are the plotted ones (the values of a logarithmic axis, not their logarithms). If it
+        returns legend handles, the figure has a legend of the ones it returned for the first panel.
 
     Returns
     -------
@@ -148,6 +150,7 @@ def plot_grid(
         constrained_layout=True,
         squeeze=False,
     )
+    handles = []
     for ax, (name, label, norm, cmap, levels) in zip(axes.ravel(), panels):
         values = np.clip(fields_by_name[name], 1e-12, None) if norm is not None else fields_by_name[name]
         mesh = ax.pcolormesh(x, y, values, norm=norm, cmap=cmap, shading="auto")
@@ -172,7 +175,9 @@ def plot_grid(
         if levels:
             label_once(ax, ax.contour(x, y, fields_by_name[name], levels=levels, colors="white", linewidths=1), "%g")
         if annotate is not None:
-            annotate(ax)
+            drawn = annotate(ax)
+            if drawn and not handles:
+                handles = list(drawn)
 
     for ax in axes.ravel()[len(panels) :]:
         ax.set_visible(False)
@@ -183,6 +188,8 @@ def plot_grid(
     axes[0, 0].set_xlim(x.min(), x.max())
     axes[0, 0].set_ylim(y.min(), y.max())
 
+    if handles:
+        fig.legend(handles=handles, loc="outside lower center", ncol=min(6, len(handles)), fontsize=9, frameon=False)
     if title:
         fig.suptitle(title)
     if path is not None:

@@ -13,7 +13,12 @@ from uvex_transients.phase_space.sampling.base import (
 )
 from uvex_transients.phase_space.sampling.breakout import BracketedBreakoutSampler, BreakoutSampler
 from uvex_transients.phase_space.sampling.canonical import CanonicalSampler, RedshiftLimit
-from uvex_transients.phase_space.sampling.core import ParameterAxis, SurveySampler, check_detection
+from uvex_transients.phase_space.sampling.core import (
+    ParameterAxis,
+    SurveySampler,
+    SurveySettings,
+    check_detection,
+)
 from uvex_transients.phase_space.sampling.logistic import LogisticSampler
 
 __all__ = [
@@ -30,6 +35,7 @@ __all__ = [
     "Scale",
     "StoppingRule",
     "SurveySampler",
+    "SurveySettings",
     "Weighted",
     "available_samplers",
     "check_detection",

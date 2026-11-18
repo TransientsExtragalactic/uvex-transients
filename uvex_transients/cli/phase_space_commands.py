@@ -309,7 +309,8 @@ def run_command(**options) -> None:
 @click.option(
     "--overlay/--no-overlay",
     default=None,
-    help="Measure the shipped classes for overlay.ecsv (the canonical map only). The default is what --config says.",
+    help="Measure the shipped classes for overlay.ecsv (for a sampler that has one, the canonical). "
+    "The default is what --config says.",
 )
 @click.option("--overlay-draws", type=click.IntRange(min=1), default=None, help="SED draws per class of the overlay.")
 @OVERWRITE_OPTION
@@ -339,13 +340,15 @@ def fit_command(
     rate : float or None
         The volumetric rate, in Gpc^-3 yr^-1.
     overlay : bool or None
-        Whether to measure the classes. `None` takes the run-config's, and then does it only for the canonical map.
+        Whether to measure the classes. `None` takes the run-config's, and then does it only for a map whose sampler
+        has an overlay.
     overlay_draws : int or None
         SED draws per class.
     overwrite : bool
         Whether to replace files that exist.
     """
     from uvex_transients.phase_space.files import describe, find_maps
+    from uvex_transients.phase_space.sampling import get_sampler
     from uvex_transients.phase_space.stages import fit_map
 
     directories = _guard(find_maps, paths)
@@ -364,8 +367,9 @@ def fit_command(
 
     for directory in directories:
         info = _guard(describe, directory)
-        # An overlay that came from the run-config is for the canonical maps; one asked for outright is for this map
-        make_overlay = asked and (overlay is True or info.kind == "canonical")
+        # An overlay that came from the run-config is for the maps whose sampler has one; one asked for outright is for
+        # this map, and refused if it cannot have one
+        make_overlay = asked and (overlay is True or get_sampler(info.kind).HAS_OVERLAY)
         written = _guard(
             fit_map,
             directory,
@@ -397,8 +401,19 @@ def fit_command(
     help="Shade the classes of overlay.ecsv, if the map has one.",
     show_default=True,
 )
+@click.option(
+    "--field",
+    "fields",
+    multiple=True,
+    help="A column of map.ecsv to draw, one panel each (repeat it). The default is the figure of the map's sampler.",
+)
 def plot_command(
-    paths: tuple[Path, ...], out_path: Path | None, title: str | None, show_points: bool, overlay: bool
+    paths: tuple[Path, ...],
+    out_path: Path | None,
+    title: str | None,
+    show_points: bool,
+    overlay: bool,
+    fields: tuple[str, ...],
 ) -> None:
     """
     Draw the map of each DIR from its ``map.ecsv`` and ``points.ecsv``, and write ``map.png``.
@@ -418,6 +433,8 @@ def plot_command(
         Whether to mark the measured points.
     overlay : bool
         Whether to shade the classes.
+    fields : tuple of str
+        The columns to draw, or none for the figure of the map's sampler.
     """
     from uvex_transients.phase_space.files import find_maps
     from uvex_transients.phase_space.stages import plot_files
@@ -426,8 +443,16 @@ def plot_command(
     if out_path is not None and len(directories) != 1:
         raise click.ClickException(f"--out is for one map, and {len(directories)} were given.")
     for directory in directories:
-        figure = _guard(plot_files, directory, path=out_path, title=title, show_points=show_points, overlay=overlay)
-        click.echo(f"plot {directory}: {figure}")
+        figure = _guard(
+            plot_files,
+            directory,
+            path=out_path,
+            title=title,
+            show_points=show_points,
+            overlay=overlay,
+            fields=list(fields) or None,
+        )
+        click.echo(f"plot {directory}: {figure if figure is not None else 'no figure (the map is not over two axes)'}")
 
 
 @phase_space_group.command("compare")

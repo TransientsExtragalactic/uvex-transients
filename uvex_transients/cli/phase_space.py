@@ -1,67 +1,95 @@
 """
 Parsing and running of a phase-space run-config, for ``uvex-transients phase-space``.
 
-A phase-space run-config describes a survey and a list of recovery maps (see
-`uvex_transients.phase_space`), and has nothing to do with the ``steps:`` pipeline of `RunConfig`, so it has its own
-loader. Its layout is::
+A phase-space run-config describes a survey and a list of maps (see `uvex_transients.phase_space`), and has nothing to
+do with the ``steps:`` pipeline of `RunConfig`, so it has its own loader. Its layout is::
 
     schedule:                   # as for `RunConfig`
       name: uvex_v0.6.0
     mission: uvex_fast
     seed: 0
-    overlay: true               # shade the shipped transient classes on every map (or ``{n_draws: 1000}``)
+    overlay: true               # shade the shipped transient classes on every map that can (or ``{n_draws: 1000}``)
 
-    recovery:                   # shared by every map; each key is overridden by the same key of a map
+    detection:                  # shared by every map; each key is overridden by the same key of a map
       snr_threshold: 5.0
       n_visits: 2
+    simulation:
       mag_limit: 25.0
 
     maps:
       - id: fuv_detection       # names the output directory
-        recovery: {band: FUV}
+        detection: {band: FUV}
       - id: nuv_detection
-        recovery: {band: NUV}
+        detection: {band: NUV}
 
-Besides ``recovery:``, the shared sections ``transient:``, ``sampler:`` and ``map:`` may be given at the top level and
-in a map. Every key that is left out takes its value from ``config["phase_space"]``.
+A map is made of what a sampler needs to measure a point and what the campaign does with the measurements, and each
+has a section, named for what it decides:
 
-The shared sections ``transient:``, ``recovery:``, ``map:`` and ``settings:`` are the defaults of the maps of the
-top-level ``kind:`` (the canonical one unless it is given) and of no other kind, since what they set (how many visits
-make a detection, how finely time is binned, the names of the axes) means something different for each sampler, and a
-canonical default that leaked into a breakout map would silently change its definition of a detection. A map of another
-kind takes its defaults from the package configuration (``phase_space.<kind>``, then ``phase_space.recovery``) and its
-own sections. ``sampler:``, which sets how points are placed and not what one is, is shared by every map. To share a
-section on purpose, use a YAML anchor (``recovery: &detection {...}`` and ``recovery: {<<: *detection}``).
+``detection:``
+    What counts as a recovery: ``band``, ``snr_threshold``, ``n_visits``, ``exclude_first_visit_detections``, and
+    ``cuts``, a list of the simulator's cuts for any other definition (below).
+``simulation:``
+    How a point is simulated: ``mag_limit`` (the depth that sets the redshift limit), ``time_bins``, ``nside`` and
+    ``order``.
+``stopping:``
+    How many tries a point gets: ``chunk_size``, ``k_target`` and ``n_max``.
+``settings:``
+    The arguments of the sampler that belong to no section above: the shape of the canonical transient
+    (``spectral_index``, ``rise_ratio``, ``fade_mag``), the ``z_max`` of a breakout. What a sampler takes is in
+    ``uvex-transients phase-space kinds``.
+``axes:``
+    The ranges of the axes of the map, by name: ``{log_luminosity: [36.5, 45.0]}``.
+``campaign:``
+    How the campaign spends its points: ``n_initial``, ``batch_size``, ``max_points``, ``tolerance`` and
+    ``acquisition``.
+``grid_size:``
+    Points per axis of the fitted map.
 
-By default a detection is ``n_visits`` observations above ``snr_threshold``. Any other definition is a ``detection:``
-in ``recovery:``, a list of the cuts a run-config's ``steps:`` use (see
+Every key that is left out takes its value from ``config["phase_space"]``.
+
+``detection:``, ``simulation:``, ``stopping:``, ``settings:`` and ``axes:`` given at the top level are the defaults of
+the maps of the top-level ``kind:`` (the canonical one unless it is given) and of no other kind, since what they set
+(how many visits make a detection, how finely time is binned, the names of the axes) means something different for each
+sampler, and a canonical default that leaked into a breakout map would silently change its definition of a detection.
+A map of another kind takes its defaults from the package configuration (the section named for its kind, then the
+section of the same name as the run-config's: ``phase_space.detection``, ``phase_space.simulation`` and so on) and its
+own sections. ``campaign:`` and ``grid_size:``, which set how points are placed and
+not what one is, are shared by every map. To share a section on purpose, use a YAML anchor (``detection: &detection
+{...}`` and ``detection: {<<: *detection}``).
+
+By default a detection is ``n_visits`` observations above ``snr_threshold``. Any other definition is a list of
+``cuts:``, the cuts a run-config's ``steps:`` use (see
 `uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point draws, with
 the survivors counted as recovered. A cut that takes ``snr_threshold``, ``n_visits``,
 ``exclude_first_visit_detections`` or ``bands`` and is not given them gets the map's::
 
     maps:
       - id: fuv_bracketed
-        recovery:
+        detection:
           band: FUV
-          detection:
+          cuts:
             - cut: snr
               params: {n_visits: 2}
             - cut: time_since_last_nondetection
               params: {max_delay: 1.0}  # days
 
 A map is of the canonical transient unless it names another ``kind:`` of sampler (see
-`uvex_transients.phase_space.sampling.base.available_samplers`), and then ``settings:`` holds the arguments of that
-sampler that are not detection settings, and ``map: {bounds: {<axis>: [lo, hi]}}`` the ranges of its axes by name::
+`uvex_transients.phase_space.sampling.base.available_samplers`)::
 
     maps:
       - id: breakout_fuv
         kind: breakout
-        recovery: {band: FUV, mag_limit: 25.0}
+        detection: {band: FUV}
+        simulation: {mag_limit: 25.0}
         settings: {z_max: 8.0}
-        map: {bounds: {log_L0: [43.0, 46.0], log_t0: [1.0, 4.0]}, grid_size: 40}
+        axes: {log_L0: [43.0, 46.0], log_t0: [3.0, 4.0]}
+        grid_size: 40
 
-Such a map is run as an `~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``,
-``map.ecsv`` and ``map.png`` (no overlay, which belongs to the canonical transient).
+Each map is run as an `~uvex_transients.phase_space.experiment.Experiment`, and writes ``points.ecsv``, ``map.ecsv`` and
+``map.png``, and ``overlay.ecsv`` if its sampler has an overlay (the canonical one does).
+
+The names of the sections of an earlier layout (``recovery:``, ``sampler:``, ``transient:`` and ``map:``) are refused
+with what replaces them.
 
 The run-config says what to simulate. What is done with the files afterwards (fitting, drawing, comparing) is the job of
 the other commands of ``uvex-transients phase-space``, which take the directories of maps and no run-config; see
@@ -87,85 +115,98 @@ from .yaml_tags import get_run_yaml
 
 __all__ = ["MapSpec", "PhaseSpaceConfig", "dry_run_report", "run_maps"]
 
-#: The keys each section may hold. Anything else is an error, so that a misspelt setting never goes unnoticed.
+#: The keys each section may hold. Anything else is an error, so that a misspelt setting never goes unnoticed. `None`
+#: is a section whose keys belong to the sampler, which says what it does not take when it is built.
 SECTIONS = {
-    "transient": ("spectral_index", "rise_ratio", "fade_mag"),
-    "recovery": (
-        "band",
-        "snr_threshold",
-        "n_visits",
-        "exclude_first_visit_detections",
-        "detection",
-        "mag_limit",
-        "time_bins",
-        "chunk_size",
-        "k_target",
-        "n_max",
-        "nside",
-        "order",
-    ),
-    "sampler": ("n_initial", "batch_size", "max_points", "tolerance", "acquisition"),
-    "map": ("log_luminosity", "log_half_time", "bounds", "grid_size"),
-    # The arguments of a sampler of another kind, which only that sampler knows
+    "detection": ("band", "snr_threshold", "n_visits", "exclude_first_visit_detections", "cuts"),
+    "simulation": ("mag_limit", "time_bins", "nside", "order"),
+    "stopping": ("chunk_size", "k_target", "n_max"),
+    "campaign": ("n_initial", "batch_size", "max_points", "tolerance", "acquisition"),
     "settings": None,
+    "axes": None,
 }
 
-#: The settings of a recovery that a sampler of another kind takes, and the ones that belong to the stopping rule.
-_SURVEY_KEYS = (
-    "band",
-    "snr_threshold",
-    "n_visits",
-    "exclude_first_visit_detections",
-    "detection",
-    "mag_limit",
-    "time_bins",
-    "nside",
-    "order",
-)
-_RULE_KEYS = ("chunk_size", "k_target", "n_max")
+#: The sections that are the defaults of the top-level kind only. ``campaign:`` is shared by all.
+_KIND_SPECIFIC = ("detection", "simulation", "stopping", "settings", "axes")
 
-#: The shared sections that are the defaults of the top-level kind only. The others (``sampler:``) are shared by all.
-_KIND_SPECIFIC = ("transient", "recovery", "map", "settings")
+#: The names of an earlier layout, and what replaced them.
+_RENAMED = {
+    "recovery": (
+        "it is split into 'detection:' (band, snr_threshold, n_visits, exclude_first_visit_detections, and its "
+        "'detection:' list as 'cuts:'), 'simulation:' (mag_limit, time_bins, nside, order) and 'stopping:' "
+        "(chunk_size, k_target, n_max)"
+    ),
+    "sampler": "it is now 'campaign:'",
+    "transient": "its keys are now in 'settings:'",
+    "map": "the ranges of the axes are now 'axes:' (by name) and 'grid_size:' is now a key of its own",
+}
 
-_TOP_LEVEL = frozenset({"schedule", "mission", "seed", "overlay", "rate", "maps", "kind", *SECTIONS})
-_MAP_KEYS = frozenset({"id", "kind", *SECTIONS})
+_TOP_LEVEL = frozenset({"schedule", "mission", "seed", "overlay", "rate", "maps", "kind", "grid_size", *SECTIONS})
+_MAP_KEYS = frozenset({"id", "kind", "grid_size", *SECTIONS})
 
 # An id names a directory, and is later a path inside the release archive
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
 
 
+def _unknown_keys(keys, allowed, where: str) -> str | None:
+    """Return the message about the keys of `where` not in `allowed`, or `None`, naming any that were renamed."""
+    unknown = sorted(set(keys) - set(allowed))
+    if not unknown:
+        return None
+    message = f"{where}: unknown key(s) {unknown}; allowed: {sorted(allowed)}."
+    renamed = [f"'{key}:' was renamed ({_RENAMED[key]})" for key in unknown if key in _RENAMED]
+    return message + (" " + "; ".join(renamed) + "." if renamed else "")
+
+
 @dataclass(frozen=True)
 class MapSpec:
-    """One map of a run: an id and the settings of each section, with the shared ones already merged in."""
+    """One map of a run: an id, a kind and the settings of each section, with the shared ones already merged in."""
 
     id: str
     """str: Names the map's output directory."""
 
-    transient: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of the canonical sampler that shape its transient (``spectral_index``, ``rise_ratio``, ...)."""
+    kind: str = "canonical"
+    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.sampling.base.available_samplers`."""
 
-    recovery: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments that define a recovery (``band``, the detection and the sampling)."""
+    detection: dict[str, Any] = field(default_factory=dict)
+    """dict: What counts as a recovery (``band``, ``snr_threshold``, ``n_visits``, ``cuts``, ...)."""
 
-    sampler: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of the campaign and the map (``n_initial``, ``batch_size``, ``max_points``, ...)."""
+    simulation: dict[str, Any] = field(default_factory=dict)
+    """dict: How a point is simulated (``mag_limit``, ``time_bins``, ``nside``, ``order``)."""
+
+    stopping: dict[str, Any] = field(default_factory=dict)
+    """dict: How many tries a point gets (``chunk_size``, ``k_target``, ``n_max``)."""
+
+    campaign: dict[str, Any] = field(default_factory=dict)
+    """dict: How the campaign spends its points (``n_initial``, ``batch_size``, ``max_points``, ...)."""
+
+    settings: dict[str, Any] = field(default_factory=dict)
+    """dict: The arguments of the sampler that belong to no other section."""
+
+    axes: dict[str, tuple[float, float]] | None = None
+    """dict or None: The ranges of the axes of the map, by the name of the axis, or `None` for the sampler's own."""
 
     grid_size: int | None = None
     """int or None: Points per axis of the fitted map, or `None` for the configured size."""
 
-    kind: str = "canonical"
-    """str: The kind of sampler of the map, one of `~uvex_transients.phase_space.sampling.base.available_samplers`."""
-
-    settings: dict[str, Any] = field(default_factory=dict)
-    """dict: Arguments of a sampler of another kind than the canonical one, beyond its detection settings."""
-
-    axis_bounds: dict[str, tuple[float, float]] | None = None
-    """dict or None: The ranges of the axes of the map, by the name of the axis, or `None` for the sampler's own."""
-
     @property
     def band(self) -> str:
         """str: The band of the map, which is the one setting the configuration also holds a default for."""
-        return str(self.recovery.get("band", config["phase_space.recovery.band"]))
+        from uvex_transients.phase_space.sampling import SurveySettings, get_sampler
+
+        return str(self.detection.get("band", SurveySettings.default("band", get_sampler(self.kind).kinds())))
+
+    @property
+    def sampler_options(self) -> dict[str, Any]:
+        """
+        dict: The arguments the sampler is built with: the detection, simulation and ``settings:`` sections, merged.
+
+        The ``cuts:`` of the detection are the sampler's ``detection`` argument.
+        """
+        options = {**self.detection, **self.simulation, **self.settings}
+        if "cuts" in options:
+            options["detection"] = options.pop("cuts")
+        return options
 
 
 def _merge(shared: Mapping, own: Mapping, section: str, where: str, errors: list[str]) -> dict:
@@ -178,9 +219,9 @@ def _merge(shared: Mapping, own: Mapping, section: str, where: str, errors: list
         if SECTIONS[section] is None:
             merged.update(source)
             continue
-        unknown = sorted(set(source) - set(SECTIONS[section]))
-        if unknown:
-            errors.append(f"{label}: unknown '{section}:' key(s) {unknown}; allowed: {list(SECTIONS[section])}.")
+        problem = _unknown_keys(source, SECTIONS[section], f"{label}: '{section}:'")
+        if problem:
+            errors.append(problem)
         merged.update({key: value for key, value in source.items() if key in SECTIONS[section]})
     return merged
 
@@ -192,6 +233,8 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
     if not isinstance(entries, list) or not entries:
         raise ValueError("The run-config needs a non-empty 'maps:' list.")
 
+    from uvex_transients.phase_space.sampling import available_samplers, check_detection
+
     top_kind = str(raw.get("kind", "canonical"))
     specs, seen = [], set()
     for index, entry in enumerate(entries):
@@ -199,9 +242,9 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
         if not isinstance(entry, Mapping):
             errors.append(f"{where}: must be a mapping, got {type(entry).__name__}.")
             continue
-        unknown = sorted(set(entry) - _MAP_KEYS)
-        if unknown:
-            errors.append(f"{where}: unknown key(s) {unknown}; allowed: {sorted(_MAP_KEYS)}.")
+        problem = _unknown_keys(entry, _MAP_KEYS, where)
+        if problem:
+            errors.append(problem)
 
         # The id names a directory in the output, and a member path in the release archive
         map_id = entry.get("id")
@@ -214,8 +257,6 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
         seen.add(map_id)
 
         kind = str(entry.get("kind", top_kind))
-        from uvex_transients.phase_space.sampling import available_samplers, check_detection
-
         if kind not in available_samplers():
             errors.append(f"{where}: unknown kind {kind!r}; the registered kinds are {list(available_samplers())}.")
         sections = {
@@ -228,38 +269,30 @@ def _parse_maps(raw: Mapping) -> list[MapSpec]:
             )
             for name in SECTIONS
         }
-        if "detection" in sections["recovery"]:
+        if "cuts" in sections["detection"]:
             try:
-                check_detection(sections["recovery"]["detection"])
+                check_detection(sections["detection"]["cuts"])
             except ValueError as error:
-                errors.append(f"{where}: 'recovery: detection:' is invalid: {error}")
-        if kind != "canonical" and sections["transient"]:
-            errors.append(f"{where}: 'transient:' is for the canonical transient; give a {kind!r} map its 'settings:'.")
-        if kind != "canonical" and {"log_luminosity", "log_half_time"} & set(sections["map"]):
-            errors.append(
-                f"{where}: 'map: log_luminosity/log_half_time' are the canonical axes; "
-                f"give a {kind!r} map 'map: bounds:'."
-            )
-        axis_bounds = sections["map"].pop("bounds", None)
-        if axis_bounds is not None and not (
-            isinstance(axis_bounds, Mapping) and all(len(pair) == 2 for pair in axis_bounds.values())
+                errors.append(f"{where}: 'detection: cuts:' is invalid: {error}")
+
+        axes = sections["axes"]
+        if axes and not all(
+            isinstance(pair, (list, tuple)) and len(pair) == 2 and all(isinstance(v, (int, float)) for v in pair)
+            for pair in axes.values()
         ):
-            errors.append(f"{where}: 'map: bounds:' must map each axis name to [lo, hi].")
-            axis_bounds = None
-        # The canonical axes can be given by their own keys, which are shorthand for ``bounds:``
-        canonical = {key: pair for key, pair in sections["map"].items() if key in ("log_luminosity", "log_half_time")}
-        if canonical:
-            axis_bounds = {**canonical, **(axis_bounds or {})}
+            errors.append(f"{where}: 'axes:' must map each axis name to [lo, hi].")
+            axes = {}
         specs.append(
             MapSpec(
                 id=map_id,
-                transient=sections["transient"],
-                recovery=sections["recovery"],
-                sampler=sections["sampler"],
-                grid_size=sections["map"].get("grid_size"),
                 kind=kind,
+                detection=sections["detection"],
+                simulation=sections["simulation"],
+                stopping=sections["stopping"],
+                campaign=sections["campaign"],
                 settings=sections["settings"],
-                axis_bounds={name: tuple(pair) for name, pair in axis_bounds.items()} if axis_bounds else None,
+                axes={name: (float(pair[0]), float(pair[1])) for name, pair in axes.items()} if axes else None,
+                grid_size=entry.get("grid_size", raw.get("grid_size")),
             )
         )
 
@@ -290,9 +323,9 @@ class PhaseSpaceConfig:
         self.source = source
 
         # Everything that can be checked without loading a schedule is checked now
-        unknown = sorted(set(raw) - _TOP_LEVEL)
-        if unknown:
-            raise ValueError(f"Unknown top-level key(s) {unknown}; allowed: {sorted(_TOP_LEVEL)}.")
+        problem = _unknown_keys(raw, _TOP_LEVEL, "The run-config")
+        if problem:
+            raise ValueError(problem)
         self.maps = _parse_maps(raw)
         self.seed = int(raw.get("seed", 0))
 
@@ -335,8 +368,8 @@ class PhaseSpaceConfig:
 
     @property
     def mission_name(self) -> str:
-        """str: The name of the mission, ``config["phase_space.recovery.mission"]`` unless the file gives one."""
-        return str(self._raw.get("mission", config["phase_space.recovery.mission"]))
+        """str: The name of the mission, ``config["phase_space.mission"]`` unless the file gives one."""
+        return str(self._raw.get("mission", config["phase_space.mission"]))
 
     @property
     def schedule(self) -> SurveySchedule:
@@ -380,33 +413,6 @@ class PhaseSpaceConfig:
         return [spec for spec in self.maps if spec.id in ids]
 
 
-def _default(kind: str, key: str):
-    """
-    Return the configured default of a detection setting for a kind of map.
-
-    A sampler of another kind reads ``config["phase_space.<kind>.<key>"]`` before
-    ``config["phase_space.recovery.<key>"]``, which is what the breakout sampler does.
-
-    Parameters
-    ----------
-    kind : str
-        The kind of the map.
-    key : str
-        The setting.
-
-    Returns
-    -------
-    object
-        The default.
-    """
-    if kind != "canonical":
-        try:
-            return config[f"phase_space.{kind}.{key}"]
-        except KeyError:
-            pass
-    return config[f"phase_space.recovery.{key}"]
-
-
 def dry_run_report(
     phase_space_config: PhaseSpaceConfig, out_dir: Path, specs: list[MapSpec], overwrite: bool, resume: bool
 ) -> tuple[list[str], bool]:
@@ -431,15 +437,16 @@ def dry_run_report(
     ok : bool
         Whether the run would proceed: false if a band is not one of the mission's or a map would hit existing output.
     """
-    from uvex_transients.phase_space.stages import describe_detection
+    from uvex_transients.phase_space.sampling import SurveySettings, get_sampler
 
     source = f" (config: {phase_space_config.source})" if phase_space_config.source else ""
     bands = list(phase_space_config.mission.detector.bandpasses)
     lines = [f"dry run: phase-space{source}: {len(specs)} map(s) -> {out_dir}"]
     ok = True
     for spec in specs:
-        recovery = {key: _default(spec.kind, key) for key in ("snr_threshold", "n_visits", "mag_limit")}
-        recovery.update(spec.recovery)
+        kinds = get_sampler(spec.kind).kinds()
+        settings = {key: SurveySettings.default(key, kinds) for key in ("snr_threshold", "n_visits", "mag_limit")}
+        settings.update({"band": spec.band, **spec.sampler_options})
         problems = []
         if spec.band not in bands:
             problems.append(f"band {spec.band!r} is not one of the mission's {bands}")
@@ -448,8 +455,12 @@ def dry_run_report(
             problems.append(f"{existing} already exist (pass --overwrite or --resume)")
         ok &= not problems
         kind = "" if spec.kind == "canonical" else f" [{spec.kind}]"
+        try:
+            what = get_sampler(spec.kind).describe(settings)
+        except KeyError:  # a sampler that describes itself with a setting the run-config leaves to its default
+            what = spec.band
         lines.append(
-            f"  {spec.id}{kind}: {spec.band}, {describe_detection(recovery)}, {recovery['mag_limit']:g} AB"
+            f"  {spec.id}{kind}: {what}, {settings['mag_limit']:g} AB"
             + "".join(f"\n    ERROR: {problem}" for problem in problems)
         )
     return lines, ok
@@ -549,43 +560,33 @@ def _run_experiment_map(
     Raises
     ------
     ValueError
-        If the bounds name an axis that the sampler does not have, or the sampler does not take a setting.
+        If the ``axes:`` name an axis that the sampler does not have, or the sampler does not take a setting.
     """
     from uvex_transients.phase_space.experiment import CampaignSettings, Experiment
     from uvex_transients.phase_space.sampling import StoppingRule, get_sampler
     from uvex_transients.phase_space.stages import run_experiment
 
-    sampler_class = get_sampler(spec.kind)
-    detection = {key: value for key, value in spec.recovery.items() if key in _SURVEY_KEYS}
-    try:
-        sampler = sampler_class(
-            phase_space_config.schedule,
-            phase_space_config.mission_name,
-            schedule_name=phase_space_config.schedule_name,
-            **detection,
-            **spec.transient,
-            **spec.settings,
-        )
-    except TypeError as error:
-        raise ValueError(f"Map {spec.id!r}: the {spec.kind!r} sampler does not take these settings: {error}") from error
+    sampler = get_sampler(spec.kind).from_run_config(phase_space_config, **spec.sampler_options)
 
     bounds = None
-    if spec.axis_bounds is not None:
-        unknown = sorted(set(spec.axis_bounds) - set(sampler.space.names))
+    if spec.axes is not None:
+        unknown = sorted(set(spec.axes) - set(sampler.space.names))
         if unknown:
             raise ValueError(f"Map {spec.id!r}: no axis {unknown}; the axes are {list(sampler.space.names)}.")
-        bounds = [spec.axis_bounds.get(axis.name, axis.bounds) for axis in sampler.space]
+        bounds = [spec.axes.get(axis.name, axis.bounds) for axis in sampler.space]
 
     campaign_keys = ("n_initial", "batch_size", "max_points", "tolerance")
     experiment = Experiment.create(
         sampler,
         bounds=bounds,
-        rule=StoppingRule.from_config(**{key: spec.recovery[key] for key in _RULE_KEYS if key in spec.recovery}),
+        rule=StoppingRule.from_config(kinds=sampler.kinds(), **spec.stopping),
         campaign=CampaignSettings.from_config(
-            seed=phase_space_config.seed, **{key: spec.sampler[key] for key in campaign_keys if key in spec.sampler}
+            kinds=sampler.kinds(),
+            seed=phase_space_config.seed,
+            **{key: spec.campaign[key] for key in campaign_keys if key in spec.campaign},
         ),
         seed=phase_space_config.seed,
-        **{key: spec.sampler[key] for key in ("acquisition",) if key in spec.sampler},
+        **{key: spec.campaign[key] for key in ("acquisition",) if key in spec.campaign},
     )
     run = functools.partial(
         run_experiment,
@@ -593,7 +594,7 @@ def _run_experiment_map(
         out_dir / spec.id,
         grid_size=spec.grid_size,
         rate=phase_space_config.rate,
-        overlay=phase_space_config.overlay and spec.kind == "canonical",
+        overlay=phase_space_config.overlay and sampler.HAS_OVERLAY,
         overlay_draws=phase_space_config.overlay_draws,
         resume=resume,
         overwrite=overwrite,

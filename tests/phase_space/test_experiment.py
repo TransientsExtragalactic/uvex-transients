@@ -56,8 +56,8 @@ def test_campaign_tolerance_may_not_be_negative():
 
 def test_campaign_settings_take_what_is_not_given_from_the_configuration():
     settings = CampaignSettings.from_config(max_points=33, seed=4)
-    assert settings.n_initial == config["phase_space.sampler.n_initial"]
-    assert settings.tolerance == config["phase_space.sampler.tolerance"]
+    assert settings.n_initial == config["phase_space.campaign.n_initial"]
+    assert settings.tolerance == config["phase_space.campaign.tolerance"]
     assert (settings.max_points, settings.seed) == (33, 4)
 
 
@@ -79,7 +79,7 @@ def test_an_experiment_can_map_a_smaller_rectangle_and_keeps_the_labels(sampler)
 
 def test_an_experiment_takes_the_rule_and_the_campaign_from_the_configuration_if_not_given(sampler):
     experiment = Experiment.create(sampler, seed=7)
-    assert experiment.rule.k_target == config["phase_space.recovery.k_target"]
+    assert experiment.rule.k_target == config["phase_space.stopping.k_target"]
     assert experiment.campaign.seed == 7
 
 
@@ -124,7 +124,7 @@ def test_the_grid_table_has_the_fraction_and_the_products_of_the_sampler(experim
 
 def test_the_grid_size_defaults_to_the_configuration(experiment):
     experiment.run()
-    n = config["phase_space.map.grid_size"]
+    n = config["phase_space.grid_size"]
     assert len(experiment.grid_table()) == n * n
 
 

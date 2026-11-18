@@ -49,7 +49,7 @@ from astropy.table import Table
 from astropy.units import Quantity
 from numpy.typing import ArrayLike, NDArray
 
-from uvex_transients.phase_space._config import configured
+from uvex_transients.phase_space._config import configured, default
 from uvex_transients.phase_space.files import LEGACY, SCHEMA_VERSION, flavor, upgrade_legacy_header
 from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling.base import Outcome, Product, Sampler, StoppingRule, get_sampler
@@ -169,21 +169,17 @@ def run_campaign(
     phase_map: PhaseSpaceMap,
     sampler: Sampler,
     rule: StoppingRule,
+    campaign: "CampaignSettings | None" = None,
     *,
-    n_initial: int | None = None,
-    batch_size: int | None = None,
-    max_points: int | None = None,
-    tolerance: float | None = None,
-    seed: int | np.random.SeedSequence | None = None,
     map_fn: Callable = map,
     callback: Callable[[PhaseSpaceMap], None] | None = None,
 ) -> PhaseSpaceMap:
     r"""
     Measure points of a map until its budget is spent or it is converged.
 
-    The initial design is measured first if the map has fewer than `n_initial` points. Each round then fits the model,
-    asks the map for the next batch, and stops without spending the batch if the uncertainty is already below
-    `tolerance`. Every argument that is `None` (the default) takes ``config["phase_space.sampler.<name>"]``.
+    The initial design is measured first if the map has fewer than ``campaign.n_initial`` points. Each round then fits
+    the model, asks the map for the next batch, and stops without spending the batch if the uncertainty is already
+    below ``campaign.tolerance``.
 
     Parameters
     ----------
@@ -193,18 +189,10 @@ def run_campaign(
         What measures a point. Its space has to be the map's.
     rule : ~uvex_transients.phase_space.sampling.base.StoppingRule
         How many tries a point gets. The map uses it to predict the noise of a point it has not measured.
-    n_initial : int, optional
-        Size of the scrambled Sobol design measured before the first fit.
-    batch_size : int, optional
-        Points chosen per round.
-    max_points : int, optional
-        Stop once the map has this many points.
-    tolerance : float, optional
-        Stop once the largest posterior standard deviation of :math:`\ln(p+\epsilon)` over the candidates falls below
-        this, a relative uncertainty on the success fraction.
-    seed : int or numpy.random.SeedSequence, optional
-        The root seed of the measurements; see `point_seed`. This is separate from the seed of the map, which is that of
-        its designs and its model.
+    campaign : CampaignSettings, optional
+        How long to run, how many points to place per round, and the root seed of the measurements (see `point_seed`;
+        this is separate from the seed of the map, which is that of its designs and its model). By default
+        `CampaignSettings.from_config` for the kinds of the sampler.
     map_fn : callable, optional
         ``map_fn(function, tasks)`` returning the results in order; replace it to measure a batch in parallel. The
         default is the builtin `map`. Because each point carries its own seed, the order does not matter.
@@ -219,21 +207,21 @@ def run_campaign(
     Raises
     ------
     ValueError
-        If the sampler's space is not the map's, or a count is not a positive integer.
+        If the sampler's space is not the map's.
     """
-    n_initial = configured(n_initial, "sampler.n_initial")
-    batch_size = configured(batch_size, "sampler.batch_size")
-    max_points = configured(max_points, "sampler.max_points")
-    tolerance = float(configured(tolerance, "sampler.tolerance"))
-    for label, value in (("n_initial", n_initial), ("batch_size", batch_size), ("max_points", max_points)):
-        if int(value) != value or value < 1:
-            raise ValueError(f"`{label}` must be a positive integer, got {value!r}.")
+    if campaign is None:
+        campaign = CampaignSettings.from_config(kinds=sampler.kinds())
     if sampler.space.names != phase_map.space.names:
         raise ValueError(
             f"The sampler is over {list(sampler.space.names)} but the map is over {list(phase_map.space.names)}."
         )
-    n_initial, batch_size, max_points = int(n_initial), int(batch_size), int(max_points)
-    root = np.random.SeedSequence(seed) if not isinstance(seed, np.random.SeedSequence) else seed
+    n_initial, batch_size, max_points, tolerance = (
+        campaign.n_initial,
+        campaign.batch_size,
+        campaign.max_points,
+        campaign.tolerance,
+    )
+    root = np.random.SeedSequence(campaign.seed)
 
     def measure(points: Sequence) -> None:
         """
@@ -321,9 +309,10 @@ class CampaignSettings:
         max_points: int | None = None,
         tolerance: float | None = None,
         seed: int = 0,
+        kinds: Sequence[str] = (),
     ) -> "CampaignSettings":
         """
-        Build the settings, taking what is not given from ``config["phase_space.sampler"]``.
+        Build the settings, taking what is not given from ``config["phase_space.campaign"]``.
 
         Parameters
         ----------
@@ -331,17 +320,18 @@ class CampaignSettings:
             As for the class. Any that is `None` (the default) is read from the configuration.
         seed : int, optional
             The root seed of the measurements.
+        kinds : sequence of str, optional
+            The kinds of the sampler the campaign is for, whose own sections of the configuration take precedence (see
+            `~uvex_transients.phase_space._config.default`).
 
         Returns
         -------
         CampaignSettings
             The settings.
         """
+        given = {"n_initial": n_initial, "batch_size": batch_size, "max_points": max_points, "tolerance": tolerance}
         return cls(
-            n_initial=configured(n_initial, "sampler.n_initial"),
-            batch_size=configured(batch_size, "sampler.batch_size"),
-            max_points=configured(max_points, "sampler.max_points"),
-            tolerance=configured(tolerance, "sampler.tolerance"),
+            **{name: default("campaign", name, kinds) if value is None else value for name, value in given.items()},
             seed=seed,
         )
 
@@ -401,7 +391,7 @@ class Experiment:
         bounds : array-like, optional
             The ranges to map, shape ``(ndim, 2)``. By default the ranges of the sampler's space.
         rule : ~uvex_transients.phase_space.sampling.base.StoppingRule, optional
-            By default `~uvex_transients.phase_space.sampling.base.StoppingRule.from_config`.
+            By default `~uvex_transients.phase_space.sampling.base.StoppingRule.from_config` for the sampler.
         campaign : CampaignSettings, optional
             By default `CampaignSettings.from_config` with `seed`.
         seed : int, optional
@@ -418,8 +408,8 @@ class Experiment:
         return cls(
             sampler,
             PhaseSpaceMap(space, seed=seed, **map_settings),
-            StoppingRule.from_config() if rule is None else rule,
-            CampaignSettings.from_config(seed=seed) if campaign is None else campaign,
+            StoppingRule.from_config(kinds=sampler.kinds()) if rule is None else rule,
+            CampaignSettings.from_config(seed=seed, kinds=sampler.kinds()) if campaign is None else campaign,
         )
 
     # -------------------------------------- #
@@ -441,18 +431,7 @@ class Experiment:
         Experiment
             This experiment, so that ``experiment.run().grid_table()`` works.
         """
-        run_campaign(
-            self.phase_map,
-            self.sampler,
-            self.rule,
-            n_initial=self.campaign.n_initial,
-            batch_size=self.campaign.batch_size,
-            max_points=self.campaign.max_points,
-            tolerance=self.campaign.tolerance,
-            seed=self.campaign.seed,
-            map_fn=map_fn,
-            callback=callback,
-        )
+        run_campaign(self.phase_map, self.sampler, self.rule, self.campaign, map_fn=map_fn, callback=callback)
         return self
 
     def resume_from(self, path: str | Path) -> "Experiment":
@@ -503,14 +482,15 @@ class Experiment:
         Parameters
         ----------
         size : int or sequence of int, optional
-            Points per axis. By default ``config["phase_space.map.grid_size"]``.
+            Points per axis. By default ``config["phase_space.grid_size"]``.
         bounds : array-like, optional
             The rectangle to evaluate, which can differ from the ranges of the map.
         products : sequence of Product, optional
             What to make besides the success fraction. By default the ``products`` of the sampler, and with a `rate`
-            its ``rate_products``, if it has them.
+            its ``rate_products``.
         rate : ~astropy.units.Quantity, optional
-            A volumetric rate, which adds the expected number of recoveries if the sampler can make it.
+            A volumetric rate, which adds the sampler's ``rate_products`` (the expected number of recoveries, for a
+            survey sampler).
         n_sigma : float, optional
             Half-width of the interval, in posterior standard deviations of the logit.
 
@@ -522,16 +502,18 @@ class Experiment:
             `~uvex_transients.phase_space.analysis.compare.difference_map` to check) and the ``n_max`` of the stopping
             rule.
         """
-        size = configured(size, "map.grid_size")
+        size = configured(size, "grid_size")
         if products is None:
             products = list(self.sampler.products)
-            if rate is not None and hasattr(self.sampler, "rate_products"):
+            if rate is not None:
                 products += list(self.sampler.rate_products(rate))
         table = self.phase_map.grid_table(size, products, bounds=bounds, n_sigma=n_sigma)
 
         # What `difference_map` checks before it compares two maps, and the resolution it takes its floor from
         table.meta["sampler"] = self.sampler.kind
-        table.meta.update(getattr(self.sampler, "table_meta", {}))
+        table.meta.update(self.sampler.table_meta)
+        if self.sampler.yield_weight in table.colnames:
+            table.meta["weight"] = self.sampler.yield_weight
         table.meta["n_max"] = self.rule.n_max
         return table
 

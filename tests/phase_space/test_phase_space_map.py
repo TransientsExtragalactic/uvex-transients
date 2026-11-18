@@ -175,7 +175,7 @@ def test_a_grid_table_has_the_coordinates_the_columns_and_the_space(space):
         table["true_probability"], sampler.probability(np.column_stack([table["a"], table["b"]]))
     )
     assert Space.from_dict(table.meta["space"]) == space
-    assert table.meta["products"] == [{"name": "true_probability", "label": r"true $p$", "unit": ""}]
+    assert table.meta["products"] == [{"name": "true_probability", "label": r"true $p$", "unit": "", "draw": False}]
 
 
 def test_a_grid_table_can_cover_a_smaller_rectangle(space):

@@ -80,7 +80,7 @@ def test_the_space_has_the_two_canonical_axes_with_the_configured_ranges(sampler
     space = sampler.space
     assert space.names == ("log_luminosity", "log_half_time")
     np.testing.assert_array_equal(
-        space.bounds, [config["phase_space.map.log_luminosity"], config["phase_space.map.log_half_time"]]
+        space.bounds, [config["phase_space.canonical.log_luminosity"], config["phase_space.canonical.log_half_time"]]
     )
     assert [axis.unit for axis in space] == ["erg/s", "day"]
     assert all(axis.scale == "log10" for axis in space)

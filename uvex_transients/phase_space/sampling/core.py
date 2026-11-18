@@ -44,8 +44,9 @@ from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import cumulative_trapezoid
 
 from uvex_transients.missions import get_mission
-from uvex_transients.phase_space._config import configured
+from uvex_transients.phase_space._config import configured, default
 from uvex_transients.phase_space.sampling.base import Product, Sampler, Scale, Weighted
+from uvex_transients.phase_space.space import Space
 from uvex_transients.simulation.core import SurveySimulator
 from uvex_transients.simulation.event_catalog import EventCatalog
 from uvex_transients.surveys.base import SurveySchedule
@@ -53,7 +54,7 @@ from uvex_transients.surveys.utils import get_schedule
 from uvex_transients.utils import config, logger, resolve_healpix_resolution
 from uvex_transients.utils.cosmology import get_cosmology
 
-__all__ = ["ParameterAxis", "SurveySampler", "check_detection"]
+__all__ = ["ParameterAxis", "SurveySampler", "SurveySettings", "check_detection", "describe_detection"]
 
 
 # ============================================ #
@@ -149,6 +150,156 @@ def check_detection(detection: Sequence[Mapping] | None) -> tuple[dict, ...] | N
     return tuple(steps)
 
 
+def describe_detection(settings: Mapping) -> str:
+    """
+    Describe what a map counts as a detection, in a few words.
+
+    Parameters
+    ----------
+    settings : Mapping
+        The settings of a survey-backed sampler, with ``snr_threshold`` and ``n_visits`` and, if it was given a
+        definition of a detection, ``detection``.
+
+    Returns
+    -------
+    str
+        For the default, the threshold and the number of visits. For a list of cuts, the threshold and the cuts, in
+        order, each with the arguments it was given.
+    """
+    steps = settings.get("detection")
+    if not steps:
+        return f"SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s)"
+    parts = []
+    for step in steps:
+        params = ", ".join(f"{key}={value}" for key, value in step.get("params", {}).items())
+        parts.append(f"{step['cut']}({params})" if params else step["cut"])
+    return f"SNR >= {settings['snr_threshold']:g}: " + " + ".join(parts)
+
+
+# ============================================ #
+# Survey settings                              #
+# ============================================ #
+@dataclass(frozen=True)
+class SurveySettings:
+    """
+    What every survey sampler decides about a recovery and its simulation, resolved against the configured defaults.
+
+    This is the one place the defaults of these settings are applied and validated: a sampler, the run-config and the
+    dry run all go through `resolve` and `default`. The fields are the keys of the ``detection:`` (and its ``cuts``)
+    and ``simulation:`` sections of a run-config, and of the same sections of the package configuration.
+    """
+
+    band: str
+    """str: The detector band that recovers the events and defines the luminosity."""
+
+    snr_threshold: float
+    """float: The signal-to-noise a visit must reach."""
+
+    n_visits: int
+    """int: How many visits must reach it."""
+
+    exclude_first_visit_detections: bool
+    """bool: Whether a detection that is only on a field's first visit is discarded."""
+
+    mag_limit: float
+    """float: The AB depth that sets the redshift limit of a point."""
+
+    time_bins: int
+    """int: Number of equal explosion-time bins spanning the survey."""
+
+    nside: int
+    """int: HEALPix resolution of the sampling grid."""
+
+    order: str
+    """str: HEALPix ordering of the sampling grid."""
+
+    detection: tuple[dict, ...] | None = None
+    """tuple of dict or None: The cuts that define a recovery (see `check_detection`), or `None` for the default."""
+
+    #: The shared section of the configuration each setting is a default of
+    SECTIONS: ClassVar[dict[str, str]] = {
+        "band": "detection",
+        "snr_threshold": "detection",
+        "n_visits": "detection",
+        "exclude_first_visit_detections": "detection",
+        "mag_limit": "simulation",
+        "time_bins": "simulation",
+    }
+
+    @classmethod
+    def default(cls, key: str, kinds: Sequence[str] = ()):
+        """
+        Return the configured default of one of the settings for a kind of sampler.
+
+        Parameters
+        ----------
+        key : str
+            One of ``SECTIONS``.
+        kinds : sequence of str, optional
+            The kinds of the sampler, most specific first (see `Sampler.kinds`).
+
+        Returns
+        -------
+        object
+            The value in the section of the first kind that has the key, else in the shared section.
+        """
+        return default(cls.SECTIONS[key], key, kinds)
+
+    @classmethod
+    def resolve(cls, kinds: Sequence[str] = (), **given) -> "SurveySettings":
+        """
+        Build the settings, taking every one that is not given (or is `None`) from the configuration.
+
+        Parameters
+        ----------
+        kinds : sequence of str, optional
+            The kinds of the sampler, whose own sections of the configuration take precedence.
+        **given
+            Any of the fields, and ``detection`` as a list of cuts. `nside` and `order` default to the package's
+            HEALPix resolution.
+
+        Returns
+        -------
+        SurveySettings
+            The settings, as plain types.
+
+        Raises
+        ------
+        TypeError
+            If a keyword is not one of the settings.
+        ValueError
+            If ``detection`` is not a valid list of cuts.
+        """
+        unknown = sorted(set(given) - set(cls.SECTIONS) - {"nside", "order", "detection"})
+        if unknown:
+            raise TypeError(f"Unknown survey setting(s) {unknown}.")
+        values = {name: given.get(name) for name in cls.SECTIONS}
+        values = {name: cls.default(name, kinds) if value is None else value for name, value in values.items()}
+        nside, order = resolve_healpix_resolution(given.get("nside"), given.get("order"))
+        return cls(
+            band=str(values["band"]),
+            snr_threshold=float(values["snr_threshold"]),
+            n_visits=int(values["n_visits"]),
+            exclude_first_visit_detections=bool(values["exclude_first_visit_detections"]),
+            mag_limit=float(values["mag_limit"]),
+            time_bins=int(values["time_bins"]),
+            nside=int(nside),
+            order=str(order),
+            detection=check_detection(given.get("detection")),
+        )
+
+    def as_dict(self) -> dict:
+        """
+        Return the settings a map records, as plain types.
+
+        Returns
+        -------
+        dict
+            Every field but ``detection``, which a sampler records only when it was given one.
+        """
+        return {name: getattr(self, name) for name in (*self.SECTIONS, "nside", "order")}
+
+
 # ============================================ #
 # Parameter axes                               #
 # ============================================ #
@@ -204,12 +355,16 @@ class SurveySampler(Sampler):
     r"""
     Count the recoveries of a transient simulated against a survey: what every survey-backed sampler shares.
 
-    A subclass is built in its own ``__init__``, which calls ``super().__init__``, sets ``_space`` and ``_settings``,
-    and calls `_build_scales`. It supplies `make_transient`, `redshift_limit`, `_place` and `_log_window`. If its axes
-    are parameters of the SED, it lists them in ``parameter_axes``, a tuple of `ParameterAxis`, and `_place` calls
-    `_fix_parameters` for them and only sets the window and the redshift limit itself.
+    A subclass is built in its own ``__init__``, which calls ``super().__init__`` and then `_configure` once, with its
+    space, the redshift out to which the volume is tabulated and the settings it adds to the ones recorded here. It
+    supplies `make_transient`, `redshift_limit`, `_place` and `_log_window`. If its axes are parameters of the SED, it
+    lists them in ``parameter_axes``, a tuple of `ParameterAxis`, and `_place` calls `_fix_parameters` for them and only
+    sets the window and the redshift limit itself.
 
-    Every argument that is `None` (the default) takes ``config["phase_space.recovery.<name>"]``.
+    Every setting that is `None` (the default) takes its default from the configuration, which is resolved once by
+    `SurveySettings`: ``config["phase_space.<kind>.<name>"]`` if the kind of the sampler (or a kind it is built on) has
+    the key, else ``config["phase_space.detection.<name>"]`` or ``config["phase_space.simulation.<name>"]``. A subclass
+    takes these as ``**survey`` and passes them on, so a new survey setting is added in this one place.
 
     Parameters
     ----------
@@ -251,6 +406,8 @@ class SurveySampler(Sampler):
     TRANSIENT_KEY: ClassVar[str] = "transient"
     """str: The name the one transient goes by in the simulator."""
 
+    yield_weight = "volume_time"
+
     parameter_axes: tuple[ParameterAxis, ...] = ()
     """tuple of ParameterAxis: The axes that are parameters of the SED, which `parameters_at` uses to place a point."""
 
@@ -271,29 +428,71 @@ class SurveySampler(Sampler):
         cosmology: Cosmology | None = None,
         schedule_name: str | None = None,
     ):
-        mission = configured(mission, "recovery.mission")
+        mission = configured(mission, "mission")
         self.schedule = schedule
         self.mission = get_mission(mission) if isinstance(mission, str) else mission
-        self.band = str(configured(band, "recovery.band"))
-        if self.band not in self.mission.detector.bandpasses:
-            raise ValueError(f"Unknown band {self.band!r}; the detector has {list(self.mission.detector.bandpasses)}.")
-
-        self.snr_threshold = float(configured(snr_threshold, "recovery.snr_threshold"))
-        self.n_visits = int(configured(n_visits, "recovery.n_visits"))
-        self.exclude_first_visit_detections = bool(
-            configured(exclude_first_visit_detections, "recovery.exclude_first_visit_detections")
+        self.survey = SurveySettings.resolve(
+            self.kinds(),
+            band=band,
+            snr_threshold=snr_threshold,
+            n_visits=n_visits,
+            exclude_first_visit_detections=exclude_first_visit_detections,
+            detection=detection,
+            mag_limit=mag_limit,
+            time_bins=time_bins,
+            nside=nside,
+            order=order,
         )
-        self.detection = check_detection(detection)
+        """SurveySettings: What counts as a recovery and how a point is simulated, with the defaults applied."""
+        if self.survey.band not in self.mission.detector.bandpasses:
+            raise ValueError(
+                f"Unknown band {self.survey.band!r}; the detector has {list(self.mission.detector.bandpasses)}."
+            )
+
+        # The settings are attributes too, which is how the sampler and its subclasses read them
+        self.band = self.survey.band
+        self.snr_threshold = self.survey.snr_threshold
+        self.n_visits = self.survey.n_visits
+        self.exclude_first_visit_detections = self.survey.exclude_first_visit_detections
+        self.detection = self.survey.detection
         """tuple of dict or None: The cuts that define a recovery, or `None` for the default (see `detect`)."""
-        self.mag_limit = float(configured(mag_limit, "recovery.mag_limit"))
-        self.time_bins = int(configured(time_bins, "recovery.time_bins"))
-        self.nside, self.order = resolve_healpix_resolution(nside, order)
+        self.mag_limit = self.survey.mag_limit
+        self.time_bins = self.survey.time_bins
+        self.nside, self.order = self.survey.nside, self.survey.order
         self.cosmology = get_cosmology(cosmology)
         self._exposure_spacing = float(config["phase_space.numerics.exposure_spacing"])
 
-        # What a subclass records in `settings`, as plain types that an ECSV header can hold
+        # What `settings` records, as plain types that an ECSV header can hold. A subclass adds its own in `_configure`
         self._mission_name = mission if isinstance(mission, str) else None
         self._schedule_name = schedule_name
+        self._settings: dict = {
+            "schedule_name": schedule_name,
+            "mission": self._mission_name,
+            **self.survey.as_dict(),
+            "cosmology": str(self.cosmology.name),
+        }
+        self._space: Space | None = None
+
+    def _configure(self, space: Space, redshift_edge: float, **settings) -> None:
+        """
+        Finish building a sampler: give it its space and settings, then build what the scales and the simulation need.
+
+        A subclass calls this once, at the end of its ``__init__``, after the settings it records are resolved. It
+        takes the place of setting ``_space`` and ``_settings`` and calling `_build_scales` by hand.
+
+        Parameters
+        ----------
+        space : ~uvex_transients.phase_space.space.Space
+            The axes of the sampler, with their default ranges.
+        redshift_edge : float
+            The redshift out to which the volume is tabulated, and beyond which no event is drawn.
+        **settings
+            What the subclass records in `settings` beyond the ones recorded here, as plain types. They are available to
+            `make_transient`, which this builds.
+        """
+        self._space = space
+        self._settings.update(settings)
+        self._build_scales(redshift_edge)
 
     def _build_scales(self, redshift_edge: float) -> None:
         """
@@ -507,9 +706,53 @@ class SurveySampler(Sampler):
         settings.update(overrides)
         return cls(schedule, mission, cosmology=cosmology, schedule_name=schedule_name, **settings)
 
+    @classmethod
+    def from_run_config(cls, run, **options) -> "SurveySampler":
+        """
+        Build a sampler from the arguments of a map in a run-config, for the survey and mission the run-config names.
+
+        Parameters
+        ----------
+        run : object
+            The parsed run-config, with ``schedule``, ``mission_name`` and ``schedule_name``.
+        **options
+            The arguments of the sampler: the detection, simulation and ``settings:`` sections of the map, merged.
+
+        Returns
+        -------
+        SurveySampler
+            The sampler.
+
+        Raises
+        ------
+        ValueError
+            If the sampler does not take one of the `options`.
+        """
+        cls._check_options(None, None, schedule_name=None, **options)
+        return cls(run.schedule, run.mission_name, schedule_name=run.schedule_name, **options)
+
+    @classmethod
+    def describe(cls, settings: Mapping) -> str:
+        """
+        Describe the map of a survey sampler: its band and what it counts as a detection.
+
+        Parameters
+        ----------
+        settings : Mapping
+            The `settings` of a sampler of this class.
+
+        Returns
+        -------
+        str
+            For example ``"FUV: SNR >= 5 on 2 visit(s)"``.
+        """
+        return f"{settings['band']}: {describe_detection(settings)}"
+
     @property
     def space(self):
         """~uvex_transients.phase_space.space.Space: The axes of the sampler, with their default ranges."""
+        if self._space is None:
+            raise RuntimeError(f"{type(self).__name__} has no space yet: its __init__ has to call `_configure`.")
         return self._space
 
     @property

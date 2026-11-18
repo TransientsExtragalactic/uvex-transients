@@ -40,6 +40,14 @@ the class statement,
 
 and an abstract intermediate class leaves it out.
 
+Everything beyond those four members is an optional hook with a default, so that the code that consumes a sampler (the
+experiment, the stages that write and draw a map, the CLI) never has to ask what kind it is: `Sampler.rate_products`
+and `Sampler.table_meta` extend the table of the map, `Sampler.describe` titles its figure, `Sampler.draw_map` draws it
+and `Sampler.annotate_map` decorates it, `Sampler.HAS_OVERLAY` and `Sampler.measure_overlay` supply a population to
+shade on it, and `Sampler.from_run_config` builds the sampler from a run-config. A sampler that has something to say
+overrides the hook; one that does not inherits an answer that says nothing. The default figure is of a plane, so a map
+over more than two axes is not drawn.
+
 The stopping rule: how many tries a point gets.
 
 A sampler makes however many tries it is asked for. How many to ask for is a question of statistics, not of physics: a
@@ -49,16 +57,21 @@ a separate object because two parties need it: the campaign applies it, and the 
 noise of a point it has not measured yet.
 """
 
+import inspect
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
+from astropy.table import Table
+from astropy.units import Quantity
 from numpy.typing import ArrayLike, NDArray
 
+from uvex_transients.phase_space._config import default
 from uvex_transients.phase_space.space import Space
-from uvex_transients.utils import config
+from uvex_transients.utils import logger
 
 __all__ = [
     "Estimate",
@@ -138,6 +151,9 @@ class Product(ABC):
         What a figure calls the quantity, in mathtext if it has symbols.
     unit : str, optional
         The unit of the quantity.
+    draw : bool, optional
+        Whether the default figure of the map has a panel for it. Off by default; a `Weighted` product, which is what a
+        map is for, is drawn unless it says otherwise. Any column can be drawn by asking for it by name.
 
     Raises
     ------
@@ -145,9 +161,11 @@ class Product(ABC):
         If `name` is not an identifier.
     """
 
-    def __init__(self, name: str, label: str = "", unit: str = ""):
+    def __init__(self, name: str, label: str = "", unit: str = "", draw: bool = False):
         if not isinstance(name, str) or not name.isidentifier():
             raise ValueError(f"The name of a product must be a valid identifier, got {name!r}.")
+        self.draw = bool(draw)
+        """bool: Whether the default figure has a panel for the quantity."""
         self.name = name
         """str: The name of the product, and of its main column."""
         self.label = label
@@ -199,12 +217,19 @@ class Scale(Product):
         The name of the product, and of its one column.
     function : callable
         ``function(x)`` takes points of shape ``(..., ndim)`` and returns the quantity, of shape ``(...)``.
-    label, unit : str, optional
+    label, unit, draw : optional
         As for `Product`.
     """
 
-    def __init__(self, name: str, function: Callable[[NDArray], ArrayLike], label: str = "", unit: str = ""):
-        super().__init__(name, label, unit)
+    def __init__(
+        self,
+        name: str,
+        function: Callable[[NDArray], ArrayLike],
+        label: str = "",
+        unit: str = "",
+        draw: bool = False,
+    ):
+        super().__init__(name, label, unit, draw)
         self._function = function
 
     def __call__(self, x: ArrayLike, estimate: Estimate) -> dict[str, NDArray[np.float64]]:
@@ -244,10 +269,19 @@ class Weighted(Product):
         not be negative.
     label, unit : str, optional
         As for `Product`.
+    draw : bool, optional
+        As for `Product`, but on by default: a quantity with an interval is what a figure of the map shows.
     """
 
-    def __init__(self, name: str, weight: Callable[[NDArray], ArrayLike], label: str = "", unit: str = ""):
-        super().__init__(name, label, unit)
+    def __init__(
+        self,
+        name: str,
+        weight: Callable[[NDArray], ArrayLike],
+        label: str = "",
+        unit: str = "",
+        draw: bool = True,
+    ):
+        super().__init__(name, label, unit, draw)
         self._weight = weight
 
     def __call__(self, x: ArrayLike, estimate: Estimate) -> dict[str, NDArray[np.float64]]:
@@ -369,8 +403,17 @@ class Sampler(ABC):
     r"""
     Answer "how many detections in n tries at a point?" for one kind of experiment.
 
-    A subclass supplies `space`, `draw`, `settings` and `from_settings`, and `products` if its map has quantities beyond
-    the success fraction. Name a `kind` in the class statement to register it; see the module documentation.
+    A subclass supplies `space`, `draw`, `settings` and `from_settings`. Name a `kind` in the class statement to
+    register it; see the module documentation. Everything else is an optional hook, with a default that a sampler
+    overrides only if it has something to say, so that nothing that consumes a sampler has to ask what kind it is:
+
+    * `products`, `rate_products` and `yield_weight`: the quantities of its map beyond the success fraction, and the one
+      that two maps are compared on;
+    * `table_meta`: what a figure or a comparison needs to know about the plane the axes are measured on;
+    * `describe`: what the map is, in a few words, for the title of its figure;
+    * `draw_map` and `annotate_map`: the figure of its map, and what is drawn on it;
+    * `HAS_OVERLAY` and `measure_overlay`: a population to shade on the figure, if there is one;
+    * `from_run_config`: how a run-config builds it.
 
     Raises
     ------
@@ -394,6 +437,22 @@ class Sampler(ABC):
             raise TypeError(f"A sampler of kind {kind!r} is already registered: {_REGISTRY[kind].__name__}.")
         cls.kind = kind
         _REGISTRY[kind] = cls
+
+    @classmethod
+    def kinds(cls) -> tuple[str, ...]:
+        """
+        Return the registered kinds this class is, the most specific first.
+
+        A sampler built on another is also of the other's kind: the bracketed breakout is of ``breakout_bracketed`` and
+        of ``breakout``. This is the order in which its configured defaults are looked up (see
+        `~uvex_transients.phase_space._config.default`).
+
+        Returns
+        -------
+        tuple of str
+            The kinds of the class and of its registered parents, `()` for an unregistered class.
+        """
+        return tuple(klass.kind for klass in cls.__mro__ if vars(klass).get("kind"))
 
     # -------------------------------------- #
     # What a subclass supplies               #
@@ -462,6 +521,234 @@ class Sampler(ABC):
         """
         return ()
 
+    def rate_products(self, rate: Quantity) -> tuple[Product, ...]:
+        """
+        Return the quantities of a map that need a volumetric rate, such as the expected number of recoveries.
+
+        Parameters
+        ----------
+        rate : ~astropy.units.Quantity
+            The comoving volumetric rate, with units of inverse volume per time.
+
+        Returns
+        -------
+        tuple of Product
+            The products, which are added to `products` when a map is made with a rate. Empty by default, for a sampler
+            that has no volume to apply a rate to.
+        """
+        return ()
+
+    @property
+    def table_meta(self) -> dict:
+        """
+        dict: What a figure of the map needs to label its axes, and what a comparison checks before it differences two.
+
+        These are entries of the ``meta`` of the fitted map's table, for plain types: the band, the shape of the
+        transient that the axes are measured on. Two maps are only comparable if their entries agree. Empty by default.
+        """
+        return {}
+
+    @classmethod
+    def describe(cls, settings: Mapping) -> str:
+        """
+        Describe the map of a sampler in a few words, for the title of its figure.
+
+        It is a class method of the `settings` that a file records, so that a map can be titled from its files alone,
+        without rebuilding the sampler (which can need a survey schedule).
+
+        Parameters
+        ----------
+        settings : Mapping
+            The `settings` of a sampler of this class.
+
+        Returns
+        -------
+        str
+            What the map is. By default the kind.
+        """
+        return cls.kind or cls.__name__
+
+    @classmethod
+    def draw_map(
+        cls,
+        grid: Table,
+        points: Table,
+        path: str | Path,
+        title: str,
+        *,
+        overlay: Table | None = None,
+        show_points: bool = False,
+        fields: Sequence[str] | None = None,
+    ):
+        """
+        Draw the fitted map of a sampler of this class and save the figure.
+
+        It is a class method of the files of a map, so that a map can be drawn without rebuilding the sampler. The
+        default is `~uvex_transients.phase_space.plotting.plot_grid`, which draws a map over two axes with the products
+        it carries and decorates it with `annotate_map`. A map over any other number of axes is not drawn: the figure is
+        of a plane, so the default logs a warning and returns `None`. A sampler whose map has a figure of its own
+        overrides this, and is free to draw more axes in its own way.
+
+        Parameters
+        ----------
+        grid : astropy.table.Table
+            The fitted map (``map.ecsv``).
+        points : astropy.table.Table
+            The measured points (``points.ecsv``).
+        path : str or pathlib.Path
+            Where to save the figure.
+        title : str
+            The suptitle.
+        overlay : astropy.table.Table, optional
+            The measurements of `measure_overlay` (``overlay.ecsv``), for a sampler that has them.
+        show_points : bool, optional
+            Whether to mark the measured points.
+        fields : sequence of str, optional
+            The columns of the map to draw, one panel each (any column, including a quantity that carries no
+            interval). By default the success fraction, every quantity with an interval, and the uncertainty.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            The figure, which the caller closes, or `None` if the map is not drawn.
+        """
+        from uvex_transients.phase_space.plotting import plot_grid
+
+        ndim = len(grid.meta["space"]["axes"]) if "space" in grid.meta else 2
+        if ndim != 2:
+            logger.warning("The map is over %d axes and a figure is of two, so none is drawn.", ndim)
+            return None
+
+        annotate = None if overlay is None else lambda ax: cls.annotate_map(ax, overlay)
+        return plot_grid(grid, points, path, title, fields=fields, show_points=show_points, annotate=annotate)
+
+    @classmethod
+    def annotate_map(cls, ax, overlay: Table) -> Sequence | None:
+        """
+        Draw the overlay of a sampler on the axes of a figure of its map.
+
+        This is how a map of a sampler with an overlay is decorated in every figure that has one (the map and the
+        difference of two maps), so that no figure has to know what the overlay is.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+            The axes of a panel, in the plotted coordinates (the values of a logarithmic axis, not their logarithms).
+        overlay : astropy.table.Table
+            The measurements of `measure_overlay` (``overlay.ecsv``).
+
+        Returns
+        -------
+        sequence of matplotlib.artist.Artist or None
+            Legend handles for what was drawn, if it is to be named in the legend. `None` by default, which draws
+            nothing.
+        """
+        return None
+
+    yield_weight: ClassVar[str | None] = None
+    """
+    str or None: The name of the `Scale` product that turns the success fraction into the quantity two maps are
+    compared on (the volume-time, for a survey sampler: the recovered volume-time is its product with the fraction).
+    `None` compares the success fractions themselves. It is recorded in the table of the map, so a comparison reads it
+    from the files alone.
+    """
+
+    HAS_OVERLAY: ClassVar[bool] = False
+    """bool: Whether `measure_overlay` is implemented, for the callers that decide whether to ask for one."""
+
+    def measure_overlay(self, n_draws: int | None = None, seed: int = 0) -> Table:
+        """
+        Measure a population in the plane of the map, to be shaded on its figure.
+
+        Only a sampler with ``HAS_OVERLAY`` set implements this.
+
+        Parameters
+        ----------
+        n_draws : int, optional
+            How many draws of each member of the population. By default the configured number.
+        seed : int, optional
+            The seed of the draws.
+
+        Returns
+        -------
+        astropy.table.Table
+            The measurements, which `draw_map` takes as its ``overlay``.
+
+        Raises
+        ------
+        NotImplementedError
+            If this class has no overlay.
+        """
+        raise NotImplementedError(f"A sampler of kind {self.kind!r} has no overlay.")
+
+    @classmethod
+    def from_run_config(cls, run: Any, **options) -> "Sampler":
+        """
+        Build a sampler from the arguments of a map in a run-config.
+
+        A sampler that needs more than its own arguments (the survey, say) takes it from `run`.
+
+        Parameters
+        ----------
+        run : object
+            The parsed run-config, with the attributes ``schedule`` (the resolved survey schedule), ``mission_name`` and
+            ``schedule_name``, which it resolves only when they are read.
+        **options
+            The arguments of the sampler: the detection, simulation and ``settings:`` sections of the map, merged.
+
+        Returns
+        -------
+        Sampler
+            The sampler. By default ``cls(**options)``.
+
+        Raises
+        ------
+        ValueError
+            If the sampler does not take one of the `options`.
+        """
+        cls._check_options(**options)
+        return cls(**options)
+
+    @classmethod
+    def _check_options(cls, *positional, **options) -> None:
+        """
+        Check that the constructor takes `options`, before it is called.
+
+        This catches an unknown or missing argument without wrapping the constructor in a handler that would also
+        report a ``TypeError`` raised inside it as a mistake in the settings.
+
+        Parameters
+        ----------
+        *positional
+            Placeholders for the positional arguments the caller will pass.
+        **options
+            The keyword arguments the caller will pass.
+
+        Raises
+        ------
+        ValueError
+            If the arguments do not fit the signature of the constructor.
+        """
+        signature = inspect.signature(cls)
+        try:
+            signature.bind(*positional, **options)
+        except TypeError as error:
+            raise ValueError(f"The {cls.kind!r} sampler does not take these settings: {error}") from error
+
+        # A constructor that forwards ``**kwargs`` to its parent accepts anything, so check the names of the parents'
+        if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in signature.parameters.values()):
+            named = (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+            accepted = {
+                name
+                for klass in cls.__mro__
+                if "__init__" in vars(klass)
+                for name, parameter in inspect.signature(vars(klass)["__init__"]).parameters.items()
+                if parameter.kind in named
+            }
+            unknown = sorted(set(options) - accepted)
+            if unknown:
+                raise ValueError(f"The {cls.kind!r} sampler does not take the setting(s) {unknown}.")
+
 
 # ============================================ #
 # The stopping rule                            #
@@ -505,14 +792,18 @@ class StoppingRule:
         chunk_size: int | None = None,
         k_target: int | None = None,
         n_max: int | None = None,
+        kinds: Sequence[str] = (),
     ) -> "StoppingRule":
         """
-        Build the rule, taking what is not given from ``config["phase_space.recovery"]``.
+        Build the rule, taking what is not given from ``config["phase_space.stopping"]``.
 
         Parameters
         ----------
         chunk_size, k_target, n_max : int, optional
             As for the class. Any that is `None` (the default) is read from the configuration.
+        kinds : sequence of str, optional
+            The kinds of the sampler the rule is for, whose own sections of the configuration take precedence (see
+            `~uvex_transients.phase_space._config.default`).
 
         Returns
         -------
@@ -521,10 +812,7 @@ class StoppingRule:
         """
         given = {"chunk_size": chunk_size, "k_target": k_target, "n_max": n_max}
         return cls(
-            **{
-                name: config[f"phase_space.recovery.{name}"] if value is None else value
-                for name, value in given.items()
-            }
+            **{name: default("stopping", name, kinds) if value is None else value for name, value in given.items()}
         )
 
     def run(self, sampler: Sampler, x: ArrayLike, seed: np.random.SeedSequence) -> Outcome:

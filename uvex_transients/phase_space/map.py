@@ -76,7 +76,7 @@ class PhaseSpaceMap:
     r"""
     The measured points of a map and the Gaussian process model of the success fraction over their space.
 
-    Every argument that is `None` (the default) takes ``config["phase_space.sampler.<name>"]``.
+    Every argument that is `None` (the default) takes ``config["phase_space.campaign.<name>"]``.
 
     Parameters
     ----------
@@ -117,10 +117,10 @@ class PhaseSpaceMap:
         seed: int | np.random.SeedSequence | None = None,
         table: Table | None = None,
     ):
-        acquisition = configured(acquisition, "sampler.acquisition")
-        n_candidates = configured(n_candidates, "sampler.n_candidates")
-        floor = configured(floor, "sampler.floor")
-        n_restarts = configured(n_restarts, "sampler.n_restarts")
+        acquisition = configured(acquisition, "campaign.acquisition")
+        n_candidates = configured(n_candidates, "campaign.n_candidates")
+        floor = configured(floor, "campaign.floor")
+        n_restarts = configured(n_restarts, "campaign.n_restarts")
 
         # Validate everything before anything is stored
         if acquisition not in _ACQUISITIONS:
@@ -426,7 +426,7 @@ class PhaseSpaceMap:
         astropy.table.Table
             One row per grid point, in the order of `~uvex_transients.phase_space.space.Space.grid`, with the
             coordinates, then the columns of `evaluate`. Its ``meta`` holds the ``space`` that was evaluated and the
-            ``products`` (name, label and unit).
+            ``products`` (name, label, unit and whether the default figure draws it).
         """
         grid_space = self._space if bounds is None else self._space.with_bounds(bounds)
         points = self._space.grid(size, bounds)
@@ -438,7 +438,7 @@ class PhaseSpaceMap:
         for name, values in columns.items():
             table[name] = values
         table.meta["space"] = grid_space.to_dict()
-        table.meta["products"] = [{"name": p.name, "label": p.label, "unit": p.unit} for p in products]
+        table.meta["products"] = [{"name": p.name, "label": p.label, "unit": p.unit, "draw": p.draw} for p in products]
         return table
 
     # -------------------------------------- #

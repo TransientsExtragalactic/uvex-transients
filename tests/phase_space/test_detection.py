@@ -7,7 +7,8 @@ import pytest
 
 from uvex_transients.cli.phase_space import PhaseSpaceConfig
 from uvex_transients.phase_space.sampling import CanonicalSampler, check_detection
-from uvex_transients.phase_space.stages import describe_detection, map_title
+from uvex_transients.phase_space.sampling.core import describe_detection
+from uvex_transients.phase_space.stages import map_title
 from uvex_transients.simulation.core import SurveySimulator
 
 NSIDE = 32
@@ -214,22 +215,24 @@ def test_a_definition_is_described_by_its_cuts():
 # ---------------------------------------------------------------------------- #
 # The run-config                                                               #
 # ---------------------------------------------------------------------------- #
-def _config(recovery, kind="canonical"):
+def _config(detection, kind="canonical"):
     return PhaseSpaceConfig(
-        {"schedule": {"name": "uvex_v0.6.0"}, "maps": [{"id": "m", "kind": kind, "recovery": recovery}]}
+        {"schedule": {"name": "uvex_v0.6.0"}, "maps": [{"id": "m", "kind": kind, "detection": detection}]}
     )
 
 
 def test_a_run_config_can_define_a_detection_for_a_map():
-    spec = _config({"band": "FUV", "detection": [SNR, BRACKET]}).maps[0]
-    assert spec.recovery["detection"] == [SNR, BRACKET]
+    spec = _config({"band": "FUV", "cuts": [SNR, BRACKET]}).maps[0]
+    assert spec.detection["cuts"] == [SNR, BRACKET]
+    # The sampler takes them as its `detection`
+    assert spec.sampler_options["detection"] == [SNR, BRACKET] and "cuts" not in spec.sampler_options
 
 
 def test_a_run_config_with_a_bad_detection_says_which_map_and_what_is_wrong():
-    with pytest.raises(ValueError, match=r"map 'm'.*recovery: detection:.*max_dely"):
-        _config({"detection": [{"cut": "time_since_last_nondetection", "params": {"max_dely": 1.0}}]})
+    with pytest.raises(ValueError, match=r"map 'm'.*detection: cuts:.*max_dely"):
+        _config({"cuts": [{"cut": "time_since_last_nondetection", "params": {"max_dely": 1.0}}]})
 
 
 def test_a_breakout_map_takes_a_detection_too():
-    spec = _config({"band": "FUV", "detection": [{"cut": "snr", "params": {"n_visits": 2}}]}, kind="breakout").maps[0]
-    assert spec.recovery["detection"] == [{"cut": "snr", "params": {"n_visits": 2}}]
+    spec = _config({"band": "FUV", "cuts": [{"cut": "snr", "params": {"n_visits": 2}}]}, kind="breakout").maps[0]
+    assert spec.detection["cuts"] == [{"cut": "snr", "params": {"n_visits": 2}}]

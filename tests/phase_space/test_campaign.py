@@ -5,7 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import pytest
 
-from uvex_transients.phase_space.experiment import point_seed, run_campaign
+from uvex_transients.phase_space.experiment import CampaignSettings, point_seed
+from uvex_transients.phase_space.experiment import run_campaign as _run_campaign
 from uvex_transients.phase_space.map import PhaseSpaceMap
 from uvex_transients.phase_space.sampling import LogisticSampler, StoppingRule
 from uvex_transients.phase_space.space import Axis, Space
@@ -24,6 +25,12 @@ def space():
 @pytest.fixture
 def sampler(space):
     return LogisticSampler(space, center=[0.5, 0.0], slope=[8.0, 4.0])
+
+
+def run_campaign(phase_map, sampler, rule, *, seed=0, map_fn=map, callback=None, **settings):
+    """Run the campaign of the settings given, with the rest of them from the configuration."""
+    campaign = CampaignSettings.from_config(seed=seed, **settings)
+    return _run_campaign(phase_map, sampler, rule, campaign, map_fn=map_fn, callback=callback)
 
 
 def new_map(space, seed=0):

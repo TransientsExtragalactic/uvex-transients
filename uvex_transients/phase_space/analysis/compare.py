@@ -35,8 +35,12 @@ COMPARED_META = (
     "shape_smoothness",
 )
 
-#: The columns of a map that `difference_map` reads, besides its two coordinates.
-_REQUIRED = ("f", "f_lo", "f_hi", "volume_time")
+#: The columns of a map that `difference_map` always reads, besides its coordinates and its weight.
+_REQUIRED = ("f", "f_lo", "f_hi")
+
+#: The weight of a map from before the sampler declared it: every such map was of a survey, whose yield is its
+#: volume-time.
+_LEGACY_WEIGHT = "volume_time"
 
 #: Smallest recovery fraction taken to be non-zero, so that the logarithm of an underflowed interval is finite.
 _TINY = 1e-300
@@ -50,6 +54,18 @@ def _resolution(table: Table) -> float:
     """Return the smallest recovery fraction a map can resolve, one recovery in the most events a point simulates."""
     n_max = table.meta.get("n_max")
     return 1.0 / float(n_max) if n_max else _DEFAULT_RESOLUTION
+
+
+def _weight(table: Table) -> str | None:
+    """
+    Return the name of the column that multiplies the success fraction into the quantity compared, or `None`.
+
+    It is what the sampler of the map declared (``yield_weight``), recorded in the ``weight`` of its metadata. A map
+    that does not record one is of the volume-time if it has that column, as the maps of a release do.
+    """
+    if "weight" in table.meta:
+        return str(table.meta["weight"]) or None
+    return _LEGACY_WEIGHT if _LEGACY_WEIGHT in table.colnames else None
 
 
 def _coordinates(table: Table) -> tuple[str, ...]:
@@ -68,8 +84,14 @@ def _check_grids(baseline: Table, comparison: Table) -> tuple[str, ...]:
     ValueError
         If a column is missing, or the coordinates differ in name, number of points or value.
     """
+    weight = _weight(baseline)
+    if _weight(comparison) != weight:
+        raise ValueError(
+            f"The maps are of different quantities: the baseline is weighted by {weight!r} and the comparison by "
+            f"{_weight(comparison)!r}."
+        )
     for label, table in (("baseline", baseline), ("comparison", comparison)):
-        missing = [name for name in _REQUIRED if name not in table.colnames]
+        missing = [name for name in (*_REQUIRED, *([weight] if weight else [])) if name not in table.colnames]
         if len(table.colnames) < 2 or missing:
             raise ValueError(f"The {label} map is missing the column(s) {missing or 'of its coordinates'}.")
 
@@ -114,19 +136,21 @@ def _check_meta(baseline: Table, comparison: Table) -> None:
 
 
 def _log_half_width(table: Table) -> np.ndarray:
-    """Return half the width of the 1 sigma interval of the recovered volume-time of a map, in dex."""
+    """Return half the width of the 1 sigma interval of the recovered yield of a map, in dex."""
     lo, hi = (np.log10(np.clip(np.asarray(table[name], dtype=np.float64), _TINY, None)) for name in ("f_lo", "f_hi"))
     return 0.5 * (hi - lo)
 
 
 def difference_map(baseline: Table, comparison: Table, *, floor: float | None = None, check_meta: bool = True) -> Table:
     r"""
-    Difference two recovery maps, in dex of the recovered volume-time.
+    Difference two recovery maps, in dex of the recovered yield.
 
     At every point of the plane the difference is :math:`\Delta = \log_{10}(R_\mathrm{c} / R_\mathrm{b})`, with
-    :math:`R = f\,\mathcal V T` the recovered volume-time of the comparison and the baseline map. It is positive
-    where the comparison recovers more. The maps are fitted independently, so the uncertainties of the two combine in
-    quadrature, each taken from the half-width of the 1 sigma interval of the map.
+    :math:`R = f\,w` the recovered yield of the comparison and the baseline map: the success fraction times the weight
+    :math:`w` that the sampler of the maps declares (``yield_weight``, the volume-time :math:`\mathcal V T` for a
+    survey sampler, so that :math:`R` is the recovered volume-time; a sampler with none compares the fractions). It is
+    positive where the comparison recovers more. The maps are fitted independently, so the uncertainties of the two
+    combine in quadrature, each taken from the half-width of the 1 sigma interval of the map.
 
     A point of a map cannot tell a recovery fraction much below one recovery in its ``n_max`` events from none at all,
     so a map resolves :math:`f` only down to about :math:`1/n_\mathrm{max}`. That is a limit of the measurement, not of
@@ -139,8 +163,9 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
     ----------
     baseline, comparison : astropy.table.Table
         The two maps, as made by `~uvex_transients.phase_space.experiment.Experiment.grid_table`, or read from
-        ``map.ecsv``. They need the columns ``f``, ``f_lo``, ``f_hi`` and ``volume_time``, and must be on the same grid
-        of the same axes.
+        ``map.ecsv``. They need the columns ``f``, ``f_lo`` and ``f_hi`` and the column their ``weight`` metadata
+        names (the same for both), and must be on the same grid of the same axes. A map that records no weight is
+        weighted by its ``volume_time`` column if it has one.
     floor : float, optional
         The recovery fraction below which a map is taken not to have recovered anything. If `None` (the default), the
         coarser of the resolutions of the two maps, :math:`1/n_\mathrm{max}` from the ``n_max`` that each records. A map
@@ -177,6 +202,7 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
         If a map lacks a column, the maps are not on the same grid, or (with `check_meta`) they measure different axes.
     """
     names = _check_grids(baseline, comparison)
+    weight = _weight(baseline)
     if check_meta:
         _check_meta(baseline, comparison)
 
@@ -188,7 +214,7 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
 
     with np.errstate(divide="ignore", invalid="ignore"):
         log_b, log_c = (
-            np.log10(np.maximum(f, floor) * np.asarray(table["volume_time"], dtype=np.float64))
+            np.log10(np.maximum(f, floor) * (np.asarray(table[weight], dtype=np.float64) if weight else 1.0))
             for f, table in ((f_b, baseline), (f_c, comparison))
         )
         delta = log_c - log_b
@@ -215,6 +241,7 @@ def difference_map(baseline: Table, comparison: Table, *, floor: float | None = 
         if key in baseline.meta:
             table.meta[key] = baseline.meta[key]
     table.meta["floor"] = float(floor)
+    table.meta["weight"] = weight or ""
     for label, source in (("baseline", baseline), ("comparison", comparison)):
         table.meta.update({f"{label}_{key}": value for key, value in source.meta.items()})
     return table

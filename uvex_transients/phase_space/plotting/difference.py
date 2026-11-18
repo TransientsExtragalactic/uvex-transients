@@ -43,7 +43,7 @@ def plot_difference(
     annotate: Callable | None = None,
 ):
     r"""
-    Draw the difference of two recovery maps, in dex of the recovered volume-time.
+    Draw the difference of two recovery maps, in dex of the recovered yield (the volume-time, for a survey).
 
     The axes come from the ``space`` in the table's ``meta`` when it has one (as a table of
     `~uvex_transients.phase_space.analysis.compare.difference_map` of two maps made with
@@ -67,7 +67,8 @@ def plot_difference(
         Measurements of populations to shade, as in `plot_map`. They are of the canonical axes, so a map over others
         takes `annotate` instead.
     annotate : callable, optional
-        ``annotate(ax)``, called on the axes to draw anything else, as in `plot_grid`.
+        ``annotate(ax)``, called on the axes to draw anything else, as in `plot_grid`. The legend handles it returns
+        are added to the legend of the figure.
 
     Returns
     -------
@@ -121,7 +122,11 @@ def plot_difference(
     fig, ax = plt.subplots(figsize=_DIFFERENCE_FIGSIZE, constrained_layout=True)
     ax.set_facecolor("0.88")
     mesh = ax.pcolormesh(duration, luminosity, delta, norm=Normalize(-reach, reach), cmap="RdBu", shading="auto")
-    fig.colorbar(mesh, ax=ax, label=r"$\log_{10}$(comparison / baseline) recovered volume-time [dex]")
+    weight = difference.meta.get("weight", "volume_time")
+    what = {"volume_time": "recovered volume-time", "": "recovery fraction"}.get(
+        weight, f"recovery fraction x {weight}"
+    )
+    fig.colorbar(mesh, ax=ax, label=rf"$\log_{{10}}$(comparison / baseline) {what} [dex]")
     if x_log:
         ax.set_xscale("log")
     if y_log:
@@ -148,6 +153,8 @@ def plot_difference(
     for k, overlay in enumerate(overlays or []):
         if (handle := draw_overlay(np.array([ax]), overlay, OVERLAY_COLORS[k % len(OVERLAY_COLORS)])) is not None:
             handles.append(handle)
+    if annotate is not None:
+        handles.extend(annotate(ax) or [])
     if handles:
         fig.legend(handles=handles, loc="outside lower center", ncol=min(4, len(handles)), fontsize=9, frameon=False)
 
@@ -157,8 +164,6 @@ def plot_difference(
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    if annotate is not None:
-        annotate(ax)
 
     # Magnitude is linear in log L, so a twin axis with the limits of the luminosity axis converted lines up exactly
     zero_point = difference.meta.get("absolute_magnitude_zero_point")

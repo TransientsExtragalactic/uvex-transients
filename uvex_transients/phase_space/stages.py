@@ -7,9 +7,9 @@ stage can be run, repeated or changed without the ones before it:
 
 1. `run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop there), and then the products below. It is
    the only expensive stage, and the header of the points records everything needed to rebuild the experiment.
-2. `fit_map` makes ``map.ecsv`` (and, for the canonical map, ``overlay.ecsv``) from the points; `write_map` does the
-   same for an experiment that is already in memory. They rebuild the sampler, so they need the survey schedule and
-   scikit-learn.
+2. `fit_map` makes ``map.ecsv`` (and ``overlay.ecsv``, for a sampler that has an overlay) from the points; `write_map`
+   does the same for an experiment that is already in memory. They rebuild the sampler, so they need the survey
+   schedule and scikit-learn.
 3. `plot_files` makes ``map.png`` from the files alone, and so needs neither.
 4. `compare_maps` differences the ``map.ecsv`` of two maps, again from the files alone.
 
@@ -22,8 +22,8 @@ Up to four files are written to the directory of a map:
     The fitted map on a grid (see `~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success
     fraction with a 1 sigma interval (``_lo``, ``_hi``), and the quantities of the sampler.
 ``overlay.ecsv``
-    For the canonical map only, and with ``overlay``, the measured peak luminosity and half-decline time of draws from
-    every shipped transient class, in the band of the map.
+    For a sampler that has an overlay (the canonical one) and with ``overlay``, the measured peak luminosity and
+    half-decline time of draws from every shipped transient class, in the band of the map.
 ``map.png``
     The figure of the map.
 
@@ -33,7 +33,7 @@ Running a map needs the optional ``phase_space`` extra.
 
 import contextlib
 import time
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -41,7 +41,7 @@ from astropy.units import Quantity
 from tqdm import tqdm
 
 from uvex_transients.phase_space.files import describe, map_paths, read_table
-from uvex_transients.phase_space.space import Space
+from uvex_transients.phase_space.sampling.base import get_sampler
 from uvex_transients.utils import logger
 from uvex_transients.utils.results import PHASE_SPACE_FILES
 
@@ -52,7 +52,6 @@ if TYPE_CHECKING:
 __all__ = [
     "DIFFERENCE_FILES",
     "compare_maps",
-    "describe_detection",
     "fit_map",
     "map_title",
     "plot_files",
@@ -62,9 +61,6 @@ __all__ = [
 
 #: The files `compare_maps` writes, by key.
 DIFFERENCE_FILES = {"difference": "difference.ecsv", "figure": "difference.png"}
-
-#: The axes of the canonical map, which the overlay of the shipped classes is measured on.
-_CANONICAL_NAMES = ("log_luminosity", "log_half_time")
 
 
 #: The progress bar constructor, kept so that `_quiet_progress` can put it back.
@@ -148,16 +144,16 @@ def run_experiment(
     out_dir : str or pathlib.Path
         Directory for the files, created if needed.
     grid_size : int, optional
-        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.map.grid_size"]``.
+        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.grid_size"]``.
     rate : ~astropy.units.Quantity, optional
         A volumetric rate; adds ``expected_recoveries`` to the map for a sampler that can make it.
     overlay : bool, optional
-        Whether to measure the shipped transient classes in the band of the map and shade them on the figure. Only the
-        canonical map has an overlay.
+        Whether to measure the shipped transient classes in the band of the map and shade them on the figure. Only a
+        sampler with ``HAS_OVERLAY`` (the canonical one) can.
     overlay_draws : int, optional
         SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
     plot : bool, optional
-        Whether to draw the figure. The default is `True`.
+        Whether to draw the figure. The default is `True`. A map over more than two axes has no figure.
     show_points : bool, optional
         Whether to mark the measured points on the figure.
     resume : bool, optional
@@ -237,7 +233,9 @@ def run_experiment(
             int(points["n"].sum()),
             minutes=elapsed / 60,
         )
-        written["figure"] = plot_files(out_dir, title=title, show_points=show_points, overlay=overlay)
+        figure = plot_files(out_dir, title=title, show_points=show_points, overlay=overlay)
+        if figure is not None:
+            written["figure"] = figure
 
     logger.info("Ran %s in %.1f min with %d points.", experiment.sampler.kind, elapsed / 60, len(points))
     return written
@@ -266,12 +264,12 @@ def fit_map(
     directory : str or pathlib.Path
         The directory of the map.
     grid_size : int, optional
-        Points per axis of the fitted map. By default ``config["phase_space.map.grid_size"]``.
+        Points per axis of the fitted map. By default ``config["phase_space.grid_size"]``.
     rate : ~astropy.units.Quantity, optional
         A volumetric rate; adds ``expected_recoveries`` to the map.
     overlay : bool, optional
-        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only the
-        canonical map has an overlay.
+        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only a sampler
+        with ``HAS_OVERLAY`` (the canonical one) can.
     overlay_draws : int, optional
         SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
     seed : int, optional
@@ -295,7 +293,7 @@ def fit_map(
     FileExistsError
         If a file to write exists and `overwrite` is not set.
     ValueError
-        If an overlay is asked for a map that is not over the canonical axes, or the points file is not a map's.
+        If an overlay is asked for a map whose sampler has none, or the points file is not a map's.
     ImportError
         If scikit-learn is not installed.
     """
@@ -305,8 +303,8 @@ def fit_map(
     existing = [paths[key].name for key in targets if paths[key].exists()]
     if existing and not overwrite:
         raise FileExistsError(f"{directory} already holds {existing}; pass overwrite to replace them.")
-    if overlay and info.kind != "canonical":
-        raise ValueError(f"Only the canonical map has an overlay, and this one is of kind {info.kind!r}.")
+    if overlay and not get_sampler(info.kind).HAS_OVERLAY:
+        raise ValueError(f"A map of kind {info.kind!r} has no overlay.")
 
     from uvex_transients.phase_space.experiment import Experiment
 
@@ -340,12 +338,12 @@ def write_map(
     directory : str or pathlib.Path
         The directory of the map, created if needed.
     grid_size : int, optional
-        Points per axis of the fitted map. By default ``config["phase_space.map.grid_size"]``.
+        Points per axis of the fitted map. By default ``config["phase_space.grid_size"]``.
     rate : ~astropy.units.Quantity, optional
         A volumetric rate; adds ``expected_recoveries`` to the map.
     overlay : bool, optional
-        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only the
-        canonical map has an overlay.
+        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only a sampler
+        with ``HAS_OVERLAY`` (the canonical one) can.
     overlay_draws : int, optional
         SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.
     seed : int, optional
@@ -359,11 +357,11 @@ def write_map(
     Raises
     ------
     ValueError
-        If an overlay is asked for a map that is not the canonical one.
+        If an overlay is asked for a map whose sampler has none.
     """
     sampler = experiment.sampler
-    if overlay and sampler.kind != "canonical":
-        raise ValueError(f"Only the canonical map has an overlay, and this one is of kind {sampler.kind!r}.")
+    if overlay and not sampler.HAS_OVERLAY:
+        raise ValueError(f"A map of kind {sampler.kind!r} has no overlay.")
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     paths = map_paths(directory)
@@ -373,40 +371,10 @@ def write_map(
     written = {"map": paths["map"]}
 
     if overlay:
-        from uvex_transients.phase_space.analysis.overlay import measure_class, shipped_classes, stack_measurements
-
-        bandpass = sampler.mission.detector.bandpasses[sampler.band]
         seed = experiment.campaign.seed if seed is None else int(seed)
-        measured = [measure_class(cls, bandpass, n_draws=overlay_draws, rng=seed) for cls in shipped_classes().values()]
-        stack_measurements(measured).write(paths["overlay"], format="ascii.ecsv", overwrite=True)
+        sampler.measure_overlay(overlay_draws, seed).write(paths["overlay"], format="ascii.ecsv", overwrite=True)
         written["overlay"] = paths["overlay"]
     return written
-
-
-def describe_detection(settings: Mapping) -> str:
-    """
-    Describe what a map counts as a detection, in a few words.
-
-    Parameters
-    ----------
-    settings : Mapping
-        The settings of a survey-backed sampler, with ``snr_threshold`` and ``n_visits`` and, if it was given a
-        definition of a detection, ``detection``.
-
-    Returns
-    -------
-    str
-        For the default, the threshold and the number of visits. For a list of cuts, the threshold and the cuts, in
-        order, each with the arguments it was given.
-    """
-    steps = settings.get("detection")
-    if not steps:
-        return f"SNR >= {settings['snr_threshold']:g} on {settings['n_visits']} visit(s)"
-    parts = []
-    for step in steps:
-        params = ", ".join(f"{key}={value}" for key, value in step.get("params", {}).items())
-        parts.append(f"{step['cut']}({params})" if params else step["cut"])
-    return f"SNR >= {settings['snr_threshold']:g}: " + " + ".join(parts)
 
 
 def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: float | None = None) -> str:
@@ -418,7 +386,7 @@ def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: f
     kind : str
         The kind of the sampler.
     settings : dict
-        The settings the sampler records, which for the canonical one say what a detection is.
+        The settings the sampler records, which its ``describe`` turns into what the map is.
     n_points, n_tries : int
         The number of points measured and of tries made.
     minutes : float, optional
@@ -430,9 +398,7 @@ def map_title(kind: str, settings: dict, n_points: int, n_tries: int, minutes: f
         The title.
     """
     took = "" if minutes is None else f", {minutes:.1f} min"
-    if kind == "canonical":
-        return f"{settings['band']}: {describe_detection(settings)}, {n_points} points, {n_tries:,} events{took}"
-    return f"{kind}: {n_points} points, {n_tries:,} tries{took}"
+    return f"{get_sampler(kind).describe(settings)}, {n_points} points, {n_tries:,} tries{took}"
 
 
 def plot_files(
@@ -443,12 +409,15 @@ def plot_files(
     show_points: bool = False,
     overlay: bool = True,
     overwrite: bool = True,
-) -> Path:
+    fields: Sequence[str] | None = None,
+) -> Path | None:
     """
     Draw the map of a directory from its ``map.ecsv`` and ``points.ecsv``, and write ``map.png``.
 
-    The canonical map is drawn with `~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of
-    its overlay, and any other with `~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only.
+    The figure is the one the map's sampler draws (``draw_map``): for the canonical map
+    `~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of its overlay, and for any other
+    `~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only, and the class of the sampler but not
+    the survey.
 
     Parameters
     ----------
@@ -465,11 +434,14 @@ def plot_files(
     overwrite : bool, optional
         Replace the figure if it exists. The default is `True`, since a figure is cheap and the point of drawing it
         again is usually to change it.
+    fields : sequence of str, optional
+        The columns of ``map.ecsv`` to draw, one panel each. By default the figure the map's sampler draws.
 
     Returns
     -------
-    pathlib.Path
-        The figure.
+    pathlib.Path or None
+        The figure, or `None` if the map's sampler does not draw one (the default figure is of two axes, so a map over
+        more is not drawn).
 
     Raises
     ------
@@ -479,8 +451,6 @@ def plot_files(
         If the figure exists and `overwrite` is not set.
     """
     import matplotlib.pyplot as plt
-
-    from uvex_transients.phase_space.plotting import plot_grid, plot_map
 
     info = describe(directory)
     paths = map_paths(directory)
@@ -493,15 +463,14 @@ def plot_files(
     if title is None:
         title = map_title(info.kind, info.settings, info.n_points, info.n_tries)
 
-    if info.kind == "canonical":
-        overlays = None
-        if overlay and paths["overlay"].exists():
-            from uvex_transients.phase_space.analysis.overlay import split_measurements
-
-            overlays = split_measurements(read_table(paths["overlay"], "shading the classes"))
-        figure = plot_map(grid, points, figure_path, title, overlays=overlays, show_points=show_points)
-    else:
-        figure = plot_grid(grid, points, figure_path, title, show_points=show_points)
+    overlay_table = None
+    if overlay and paths["overlay"].exists():
+        overlay_table = read_table(paths["overlay"], "shading the classes")
+    figure = get_sampler(info.kind).draw_map(
+        grid, points, figure_path, title, overlay=overlay_table, show_points=show_points, fields=fields
+    )
+    if figure is None:
+        return None
     plt.close(figure)
     return figure_path
 
@@ -535,10 +504,10 @@ def compare_maps(
     check_meta : bool, optional
         Whether to refuse maps that do not measure the same axes; see `difference_map`.
     plot : bool, optional
-        Whether to draw the figure. The default is `True`.
+        Whether to draw the figure. The default is `True`. Maps over more than two axes have no figure.
     overlay : bool, optional
-        Whether to shade the shipped classes of the baseline's ``overlay.ecsv``, if it has one and the axes are
-        canonical.
+        Whether to shade the baseline's ``overlay.ecsv`` as its sampler draws it (``annotate_map``), if it has one
+        (only a map of a sampler with an overlay does).
     title : str, optional
         The title of the figure. By default one that names the two directories.
     overwrite : bool, optional
@@ -578,16 +547,19 @@ def compare_maps(
     difference.write(targets["difference"], format="ascii.ecsv", overwrite=True)
     written = {"difference": targets["difference"]}
 
-    if plot:
-        overlays = None
+    ndim = len(difference.meta["space"]["axes"]) if "space" in difference.meta else 2
+    if plot and ndim != 2:
+        logger.warning("The maps are over %d axes and a figure is of two, so none is drawn.", ndim)
+    elif plot:
+        # What is shaded on the figure is up to the sampler of the baseline, which is the one that made the overlay
+        annotate = None
         overlay_path = map_paths(baseline)["overlay"]
-        names = Space.from_dict(difference.meta["space"]).names if "space" in difference.meta else _CANONICAL_NAMES
-        if overlay and overlay_path.exists() and names == _CANONICAL_NAMES:
-            from uvex_transients.phase_space.analysis.overlay import split_measurements
-
-            overlays = split_measurements(read_table(overlay_path, "shading the classes"))
+        if overlay and overlay_path.exists():
+            sampler_class = get_sampler(describe(baseline).kind)
+            measurements = read_table(overlay_path, "shading the classes")
+            annotate = lambda ax: sampler_class.annotate_map(ax, measurements)  # noqa: E731
         title = title or f"{Path(comparison).name} relative to {Path(baseline).name}"
-        figure = plot_difference(difference, targets["figure"], title, overlays=overlays)
+        figure = plot_difference(difference, targets["figure"], title, annotate=annotate)
         plt.close(figure)
         written["figure"] = targets["figure"]
     return written

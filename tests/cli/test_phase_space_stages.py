@@ -85,9 +85,9 @@ def fitted(run_config, staged):
 #: A map whose detection is a first detection that the survey brackets to within a day, not a number of visits.
 BRACKET_MAP = """
   - id: bracket_test
-    recovery:
+    detection:
       band: FUV
-      detection:
+      cuts:
         - cut: snr
         - cut: time_since_last_nondetection
           params: {max_delay: 1.0}

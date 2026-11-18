@@ -28,7 +28,6 @@ luminosity and the time scale together, so the limit is a function of both and i
 the same band weights the detection horizon uses.
 """
 
-from collections.abc import Mapping, Sequence
 from typing import Union
 
 import numpy as np
@@ -173,8 +172,9 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
     the defaults of `~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`. One sampler makes
     the map of one band. See the module documentation for what counts as a detection.
 
-    Every argument that is `None` (the default) takes ``config["phase_space.sampling.breakout.<name>"]`` or
-    ``config["phase_space.recovery.<name>"]``.
+    Every argument that is `None` (the default) takes ``config["phase_space.breakout.<name>"]``, and what
+    `~uvex_transients.phase_space.sampling.core.SurveySettings` resolves for the survey settings, with the breakout's
+    own section first (a single exposure recovers it, and it needs many time bins).
 
     Parameters
     ----------
@@ -182,27 +182,8 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         The survey to recover events against.
     mission : str or m4opt.missions.Mission, optional
         The mission (detector and background), or the name of one.
-    band : str, optional
-        The detector band that recovers events.
     log_L0, log_t0 : sequence of float, optional
         The ranges ``(lo, hi)`` of the axes, which are also what the redshift limit is tabulated over.
-    snr_threshold : float, optional
-        The signal-to-noise an exposure must reach.
-    n_visits : int, optional
-        How many exposures must reach it. One, by default, since only the first exposures count.
-    exclude_first_visit_detections : bool, optional
-        Whether a detection that is only on a field's first visit is discarded; see `SurveySimulator.filter_by_snr`.
-    detection : sequence of Mapping, optional
-        What counts as a recovery, as a list of the simulator's registered cuts; see `SurveySampler` and
-        `~uvex_transients.phase_space.sampling.core.check_detection`. By default one ``snr`` cut made of the three
-        settings above.
-    mag_limit : float, optional
-        The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.
-    time_bins : int, optional
-        Number of equal explosion-time bins spanning the survey; see `SurveySimulator.sample_N_events`. Many, since a
-        breakout is short compared to a bin.
-    nside, order : optional
-        HEALPix resolution of the sampling grid; the package defaults if omitted.
     z_max : float, optional
         The redshift the limit is tabulated to, and beyond which no event is drawn.
     table_points : int, optional
@@ -211,6 +192,10 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         Defaults to the configured cosmology.
     schedule_name : str, optional
         The registry name of `schedule`, recorded in `settings` so that `from_settings` can fetch the same schedule.
+    **survey
+        What counts as a recovery and how a point is simulated: ``band``, ``snr_threshold``, ``n_visits``,
+        ``exclude_first_visit_detections``, ``detection``, ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See
+        `~uvex_transients.phase_space.sampling.core.SurveySampler`.
 
     Raises
     ------
@@ -226,43 +211,21 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
         schedule: SurveySchedule,
         mission=None,
         *,
-        band: str | None = None,
         log_L0=None,
         log_t0=None,
-        snr_threshold: float | None = None,
-        n_visits: int | None = None,
-        exclude_first_visit_detections: bool | None = None,
-        detection: Sequence[Mapping] | None = None,
-        mag_limit: float | None = None,
-        time_bins: int | None = None,
-        nside: int | None = None,
-        order: str | None = None,
         z_max: float | None = None,
         table_points: int | None = None,
         cosmology: Cosmology | None = None,
         schedule_name: str | None = None,
+        **survey,
     ):
-        super().__init__(
-            schedule,
-            mission,
-            band=band,
-            snr_threshold=snr_threshold,
-            n_visits=configured(n_visits, "breakout.n_visits"),
-            exclude_first_visit_detections=exclude_first_visit_detections,
-            detection=detection,
-            mag_limit=mag_limit,
-            time_bins=configured(time_bins, "breakout.time_bins"),
-            nside=nside,
-            order=order,
-            cosmology=cosmology,
-            schedule_name=schedule_name,
-        )
+        super().__init__(schedule, mission, cosmology=cosmology, schedule_name=schedule_name, **survey)
         log_L0 = [float(v) for v in configured(log_L0, "breakout.log_L0")]
         log_t0 = [float(v) for v in configured(log_t0, "breakout.log_t0")]
         self.z_max = float(configured(z_max, "breakout.z_max"))
         self.table_points = int(configured(table_points, "breakout.table_points"))
 
-        self._space = Space(
+        space = Space(
             [
                 Axis("log_L0", *log_L0, label=r"peak luminosity $L_0$", unit="erg/s"),
                 Axis("log_t0", *log_t0, label=r"time scale $t_0$", unit="s"),
@@ -272,23 +235,6 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
             ParameterAxis("log_L0", "amplitude", u.erg / u.s),
             ParameterAxis("log_t0", "t_scale", u.s),
         )
-        self._settings = {
-            "schedule_name": schedule_name,
-            "mission": self._mission_name,
-            "band": self.band,
-            "log_L0": log_L0,
-            "log_t0": log_t0,
-            "snr_threshold": self.snr_threshold,
-            "n_visits": self.n_visits,
-            "exclude_first_visit_detections": self.exclude_first_visit_detections,
-            "mag_limit": self.mag_limit,
-            "time_bins": self.time_bins,
-            "nside": int(self.nside),
-            "order": str(self.order),
-            "z_max": self.z_max,
-            "table_points": self.table_points,
-            "cosmology": str(self.cosmology.name),
-        }
 
         # The window is a constant of the shape of the light curve, so the shape has to be fixed
         self.x_peak, self.x_half = half_decline_time(*self._fixed_shape())
@@ -303,7 +249,26 @@ class BreakoutSampler(SurveySampler, kind="breakout"):
             )
         self._log_redshift_table = None
         self._clipped_warning = False
-        self._build_scales(self.z_max)
+        self._configure(
+            space,
+            self.z_max,
+            log_L0=log_L0,
+            log_t0=log_t0,
+            z_max=self.z_max,
+            table_points=self.table_points,
+            **self._kind_settings(),
+        )
+
+    def _kind_settings(self) -> dict:
+        """
+        Return the settings that a subclass records beyond the ones of this class.
+
+        Returns
+        -------
+        dict
+            Plain types, which `from_settings` hands back to the constructor. Empty here.
+        """
+        return {}
 
     def _fixed_shape(self) -> tuple[float, float, float, float]:
         """Return the shape parameters of the light curve, ``(p, q, x_break, smoothness)``, which have to be fixed."""
@@ -488,10 +453,40 @@ class BracketedBreakoutSampler(BreakoutSampler, kind="breakout_bracketed"):
             raise ValueError("A bracketed breakout defines its own detection; leave `detection` out.")
         if not gap_factor > 0:
             raise ValueError(f"`gap_factor` must be positive, got {gap_factor!r}.")
-        super().__init__(schedule, mission, **kwargs)
         self.gap_factor = float(gap_factor)
-        self._settings["gap_factor"] = self.gap_factor
         self._point = None
+        super().__init__(schedule, mission, **kwargs)
+
+    def _kind_settings(self) -> dict:
+        """
+        Return the gap factor, which is recorded so that the sampler can be rebuilt.
+
+        Returns
+        -------
+        dict
+            ``{"gap_factor": ...}``.
+        """
+        return {"gap_factor": self.gap_factor}
+
+    @classmethod
+    def describe(cls, settings) -> str:
+        """
+        Describe the map: its band, the threshold and the gap the explosion has to be bracketed to.
+
+        Parameters
+        ----------
+        settings : Mapping
+            The `settings` of a sampler of this class.
+
+        Returns
+        -------
+        str
+            For example ``"FUV: SNR >= 5, explosion bracketed within 1 x its window"``.
+        """
+        return (
+            f"{settings['band']}: SNR >= {settings['snr_threshold']:g}, "
+            f"explosion bracketed within {settings['gap_factor']:g} x its window"
+        )
 
     def _place(self, x: NDArray[np.float64]) -> None:
         """

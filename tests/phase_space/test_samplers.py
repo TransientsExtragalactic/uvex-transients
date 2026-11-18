@@ -157,9 +157,9 @@ def test_the_expected_tries_are_enough_for_the_target_within_the_limits():
 
 def test_a_rule_takes_what_is_not_given_from_the_configuration():
     rule = StoppingRule.from_config()
-    assert rule.chunk_size == config["phase_space.recovery.chunk_size"]
-    assert rule.k_target == config["phase_space.recovery.k_target"]
-    assert rule.n_max == config["phase_space.recovery.n_max"]
+    assert rule.chunk_size == config["phase_space.stopping.chunk_size"]
+    assert rule.k_target == config["phase_space.stopping.k_target"]
+    assert rule.n_max == config["phase_space.stopping.n_max"]
 
     explicit = StoppingRule.from_config(k_target=7)
     assert explicit.k_target == 7 and explicit.chunk_size == rule.chunk_size
