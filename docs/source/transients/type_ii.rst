@@ -109,7 +109,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
       suppression): the UV blueward of :math:`\nu_\mathrm{break}` falls as :math:`\nu^{-\beta}`, and the shape
       is divided by its integral at each epoch, so that :math:`L_\mathrm{bol}(t)` is unchanged and the flux
       removed from the UV is returned redward of the break. ``break_frequency`` (:math:`0.75\times10^{15}`
-      Hz) and ``beta`` (5) are fixed at the Type Ia values.
+      Hz) and ``beta`` (5) are fixed at the original Type Ia calibration, which Type Ia has since replaced.
 
       The temperature is a compromise between the UV and the optical data, and not a fit to the optical
       temperatures. ``T_floor``, ``t_T`` and ``k_T`` were fit against the Swift/UVOT UVW1 light curves of

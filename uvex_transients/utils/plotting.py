@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING
 
 import astropy.units as u
 import numpy as np
+from matplotlib import rcParams
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, to_rgba
 from matplotlib.figure import Figure
@@ -69,6 +70,7 @@ __all__ = [
     "plot_rate_bars",
     "plot_detection_horizon",
     "plot_luminosity_function",
+    "plot_archived_luminosity_function",
     "plot_swift_uv_calibration",
 ]
 
@@ -1041,6 +1043,97 @@ def plot_luminosity_function(
         ax.set_yscale("log")
         ax.set_xlabel(f"Peak {band + '-band ' if band else ''}luminosity [erg s$^{{-1}}$]")
         ax.set_ylabel(r"d$N$/d$L$ per event [(erg s$^{-1}$)$^{-1}$]")
+    if label is not None:
+        ax.legend(frameon=False)
+    return fig, ax
+
+
+def plot_archived_luminosity_function(
+    table,
+    transient_type: str,
+    source: str | None = None,
+    *,
+    band: str = "V",
+    label: str | None = None,
+    color: str | None = None,
+    ax: Axes | None = None,
+) -> tuple[Figure, Axes]:
+    r"""
+    Overplot an archived, observed luminosity function on a model's magnitude function, as points.
+
+    The archived rates have an overall normalization that is not ours (see
+    `~uvex_transients.utils.luminosity_function_archive.LuminosityFunctionArchive`), so they are compared by shape.
+    The curve is normalized to unit area over the range it covers, taking each point to be the density in a bin
+    centred on it that reaches to the midpoints between neighbouring points, and then multiplied by the fraction of the
+    model's events that fall in that same range. It therefore has the model's normalization, per event, and
+    where the two shapes agree the points lie on the model's curve. The model's events outside the range
+    of the archived curve (the faint end, usually) are the reason the area of the points is less than 1.
+
+    Parameters
+    ----------
+    table : ~astropy.table.QTable
+        The model's luminosity function, as drawn by `plot_luminosity_function`, which must be of magnitudes
+        (``meta["quantity"] == "magnitude"``).
+    transient_type : str
+        The archive's name for the type, such as ``"supernovae/Ia"``.
+    source : str, optional
+        The source of the archived curve, such as ``"ASAS-SN"``. May be left out if the type has only one.
+    band : str, optional
+        The band of both curves, such as ``"V"``.
+    label : str, optional
+        Legend label of the points. If given, the legend of the axes is redrawn to include it. Defaults to the
+        label the archive has for the curve.
+    color : str, optional
+        Color of the points. Defaults to the style's text color, so that they stand apart from the model's curves.
+    ax : matplotlib.axes.Axes, optional
+        The axes to draw onto, usually the one `plot_luminosity_function` returned. A new figure if `None`.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The resolved figure.
+    ax : matplotlib.axes.Axes
+        The axes the points were drawn onto.
+
+    Raises
+    ------
+    ValueError
+        If `table` is not a function of magnitude, or the model has no events in the range of the archived curve.
+    """
+    if table.meta.get("quantity") != "magnitude":
+        raise ValueError("An archived luminosity function is a function of magnitude; `table` must be too.")
+
+    from .luminosity_function_archive import LuminosityFunctionArchive
+
+    archived = LuminosityFunctionArchive().table(transient_type, source, band)
+    centers = np.asarray(archived["M"].value, dtype=float)
+    density = np.asarray(archived["dNdM"].value, dtype=float)
+    midpoints = 0.5 * (centers[1:] + centers[:-1])
+    edges = np.concatenate([[2 * centers[0] - midpoints[0]], midpoints, [2 * centers[-1] - midpoints[-1]]])
+    widths = np.diff(edges)
+    shape = density / np.sum(density * widths)
+
+    # The fraction of the model's events inside the range of the archived curve, from each bin's overlap with it.
+    lo, hi = np.asarray(table["lo"].value, dtype=float), np.asarray(table["hi"].value, dtype=float)
+    overlap = np.clip(np.minimum(hi, edges[-1]) - np.maximum(lo, edges[0]), 0.0, None)
+    inside = float(np.sum(np.asarray(table["pdf"].value) * overlap))
+    if inside <= 0:
+        raise ValueError("The model has no events in the magnitude range of the archived luminosity function.")
+
+    set_plot_style()
+    fig, ax = resolve_fig_axes(None, ax)
+    label = archived.meta.get("label") if label is None else label
+    ax.plot(
+        centers,
+        inside * shape,
+        "o",
+        color=color or rcParams["text.color"],
+        ms=5,
+        mec=rcParams["axes.facecolor"],
+        mew=1.2,
+        label=label,
+        zorder=5,
+    )
     if label is not None:
         ax.legend(frameon=False)
     return fig, ax

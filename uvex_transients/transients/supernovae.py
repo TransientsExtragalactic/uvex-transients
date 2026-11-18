@@ -394,8 +394,9 @@ class TypeIaSNe(ExtragalacticTransient):
     Type Ia (thermonuclear) supernova population.
 
     Modeled with `TypeIaSED` (an Arnett-style radioactive-decay diffusion light curve with a
-    floored-photosphere blackbody photosphere, its priors fit to the ZTF SNe Ia sample of
-    Sarin et al. 2026). Unlike the `_CoreCollapseSNe` subtypes above, SNe Ia are thermonuclear
+    floored-photosphere blackbody photosphere and host-galaxy dust; its priors follow the ZTF SNe Ia sample of
+    Sarin et al. 2026, apart from the nickel mass and the dust, which are tuned to the ASAS-SN luminosity
+    function). Unlike the `_CoreCollapseSNe` subtypes above, SNe Ia are thermonuclear
     rather than core-collapse events, so this class does not share their machinery: the rate is
     the cosmic star formation history convolved with the Maoz & Graur (2017) power-law delay-time
     distribution (`supernovae_Ia_rate`), not a fixed fraction of the core-collapse rate. The delay
@@ -418,7 +419,7 @@ class TypeIaSNe(ExtragalacticTransient):
     DEFAULT_DURATION = 365 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.33
+    DEFAULT_Z_LIM = 0.24
 
     RATE_CI = _TYPE_IA_RATE_CI
 

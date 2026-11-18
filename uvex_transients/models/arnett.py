@@ -1091,8 +1091,9 @@ class LineBlanketedArnettDecaySED(ArnettDecaySED):
     :math:`L_\mathrm{bol}(t)` is unchanged and the flux removed from the UV is returned redward of the break.
 
     Subclasses set the physical priors in :attr:`_DEFAULT_PARAMETERS` and tune ``break_frequency`` and ``beta``
-    per transient class. The defaults here are the :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED`
-    values.
+    per transient class. The defaults here are the original calibration of
+    :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` (:math:`0.75\times10^{15}` Hz and 5), which that class
+    has since replaced with its own (see its notes); the other classes still use these.
 
     .. rubric:: Parameters
 
