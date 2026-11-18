@@ -281,14 +281,8 @@ and have not been recalibrated.
       set against these two bands. Because the line blanketing leaves :math:`L_\mathrm{bol}(t)` unchanged, it moves flux between
       the UV and the optical, and the UV light curves are where it shows.
 
-      The two parameters were set by a coarse grid search, with the other priors above fixed, so that the median
-      peak :math:`\nu L_\nu` of the model in UVW1 and in UVW2, and the median UVW1 to UVW2 colour of the same
-      events, match the Swift supernovae (peaks of the observed points, for events with at least five detections
-      in the band). The colour does not depend on how bright the sample was selected, but the level does, and the
-      Swift supernovae are a brighter and narrower sample than the ASAS-SN-like population of the model.
-      Blanketing also moves the V band, so ``M_Ni`` was tuned again after it (see above), and the two were
-      iterated once. The result, from 3000 draws at :math:`z=0.01` against the Swift data (log10 of the peak
-      :math:`\nu L_\nu` in erg/s, median):
+      Median peak :math:`\nu L_\nu` (log10, erg/s) of 3000 model draws at :math:`z=0.01` against the Swift
+      supernovae:
 
       .. list-table::
          :header-rows: 1
@@ -315,9 +309,10 @@ and have not been recalibrated.
 
       The first three rows were fit. The UVM2 rows were not, and are not matched: the model is too bright in UVM2 by
       about 0.35 dex, and no choice of the break and :math:`\beta` fixes that, so it is a limit of a single smooth
-      suppression above one break frequency. The model is also broader than the data (the 16th to 84th percentile
-      of the UVW1 peak spans 0.9 dex against 0.5 dex). The UVOT bands do not reach the UVEX FUV band, so the
-      calibration there is an extrapolation.
+      suppression above one break frequency. The colour does not depend on how bright the sample was selected but
+      the level does, and the Swift supernovae are a brighter sample than the model's. The model is also broader
+      than the data (the 16th to 84th percentile of the UVW1 peak spans 0.9 dex against 0.5 dex). The UVOT bands
+      do not reach the UVEX FUV band, so the calibration there is an extrapolation.
 
       .. plot::
          :include-source: false
