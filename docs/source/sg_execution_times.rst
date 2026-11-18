@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.543** total execution time for 31 files **from all galleries**:
+**00:01.443** total execution time for 31 files **from all galleries**:
 
 .. container::
 
@@ -33,7 +33,7 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
-     - 00:01.543
+     - 00:01.443
      - 0.0
    * - :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` (``galleries/custom_transients/plot_kilonova_detection_horizon.py``)
      - 00:00.000

@@ -248,7 +248,8 @@ full scale; the others each target one science case.
 .. raw:: html
 
     <p align="center">
-      <img src="../_static/uvex_logo_dark.png" width="400" alt="uvex_logo">
+      <img src="../_static/UVEX_HorizLogo_White.png" width="400" alt="uvex_logo" class="only-light">
+      <img src="../_static/UVEX_HorizLogo_Black.png" width="400" alt="uvex_logo" class="only-dark">
     </p>
 
 .. _report_page:
