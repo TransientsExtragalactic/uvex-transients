@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.phase_space.sampling.core &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/phase_space/sampling/core';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.3alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/UVEX_HorizIcon_Black.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/UVEX_HorizIcon_White.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/UVEX_HorizIcon_Black.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.phase_space.sampling.core</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.phase_space.sampling.core</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">Survey-backed samplers: the machinery shared by every sampler that simulates events against a survey schedule.</span>
+
+<span class="sd">A :class:`~uvex_transients.phase_space.sampling.core.SurveySampler` answers "how many detections in n tries at a point?"</span>
+<span class="sd">by placing a transient at the point, drawing `n` events volume-weighted out to its redshift limit on the footprint the</span>
+<span class="sd">survey covers, and counting how many</span>
+<span class="sd">:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr` recovers. What differs between the kinds of map</span>
+<span class="sd">is only the transient, how a point of the space places it, and the redshift limit, so those are what a subclass</span>
+<span class="sd">supplies. The rest is here: the detection definition, the survey and its settings, the noise-free scales (the exposure,</span>
+<span class="sd">volume-time and coverage of a point) and the products made from them.</span>
+
+<span class="sd">**Axes and parameters.** A point of the space is turned into the parameters of the transient's SED in one of two ways.</span>
+<span class="sd">An axis can be bound to a parameter by name with a :class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`:</span>
+<span class="sd">the coordinate is then :math:`\log_{10}` of the parameter in a unit (or the parameter itself, on a linear axis), and the</span>
+<span class="sd">sampler fixes it with no physics code. Or an axis can be a derived quantity, such as a luminosity in a band, and the</span>
+<span class="sd">subclass places the point itself. The link is declared here, on the sampler, so that a</span>
+<span class="sd">:class:`~uvex_transients.phase_space.space.Space` stays free of any model.</span>
+
+<span class="sd">**What counts as a detection.** By default a recovery is at least `n_visits` observations above `snr_threshold` in the</span>
+<span class="sd">band (:meth:`~uvex_transients.simulation.core.SurveySimulator.filter_by_snr`). Any other definition is a `detection`: an</span>
+<span class="sd">ordered list of the simulator's registered cuts, the same ones a run-config's ``steps:`` use, applied to the events a</span>
+<span class="sd">point draws, and the events that survive them are the recoveries. A subclass whose rule is not a sequence of cuts</span>
+<span class="sd">overrides :meth:`SurveySampler.detect &lt;uvex_transients.phase_space.sampling.core.SurveySampler.detect&gt;`. The noise-free</span>
+<span class="sd">scales do not depend on the rule, only on the window events are followed for, so a rule that needs observations beyond</span>
+<span class="sd">that window has to be given a longer one.</span>
+
+<span class="sd">The recovery fraction of a point is conditional on the footprint that was sampled, which depends on the number of</span>
+<span class="sd">explosion-time bins. The noise-free volume-time :math:`\mathcal V T` is the expected number of events over the survey in</span>
+<span class="sd">that footprint at one event per :math:`\mathrm{Mpc}^3\,\mathrm{yr}`. The product :math:`f\,\mathcal V T` does not depend</span>
+<span class="sd">on the binning, and is the expected number of recoveries at unit rate.</span>
+
+<span class="sd">The samplers built on it are in their own modules: :mod:`~uvex_transients.phase_space.sampling.canonical` (the canonical</span>
+<span class="sd">map) and :mod:`~uvex_transients.phase_space.sampling.breakout` (shock breakout).</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cosmology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">cumulative_trapezoid</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_mission</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space._config</span><span class="w"> </span><span class="kn">import</span> <span class="n">configured</span><span class="p">,</span> <span class="n">default</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.sampling.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Product</span><span class="p">,</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">Scale</span><span class="p">,</span> <span class="n">Weighted</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.space</span><span class="w"> </span><span class="kn">import</span> <span class="n">Space</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.simulation.event_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCatalog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_schedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">resolve_healpix_resolution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cosmology</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ParameterAxis"</span><span class="p">,</span> <span class="s2">"SurveySampler"</span><span class="p">,</span> <span class="s2">"SurveySettings"</span><span class="p">,</span> <span class="s2">"check_detection"</span><span class="p">,</span> <span class="s2">"describe_detection"</span><span class="p">]</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># What counts as a detection                   #</span>
+<span class="c1"># ============================================ #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_cut_parameters</span><span class="p">(</span><span class="n">function</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return the names of the parameters of a cut, after the simulator, the catalog and the mission."""</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)[</span><span class="mi">3</span><span class="p">:]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plain</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return `value` as plain types (numbers, strings, booleans, `None`, lists and mappings of them) or raise."""</span>
+    <span class="c1"># Subclasses of the builtin types (a value read from YAML, say) are converted, since a header cannot hold them</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">kind</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">kind</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_plain</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">):</span> <span class="n">_plain</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> is not a plain value (number, string, boolean, list or mapping)."</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_detection">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.check_detection.html#uvex_transients.phase_space.sampling.core.check_detection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_detection</span><span class="p">(</span><span class="n">detection</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Check a definition of a detection and return it as plain types.</span>
+
+<span class="sd">    A definition is a list of cuts. Each entry is a mapping with the name of a cut registered on</span>
+<span class="sd">    :class:`~uvex_transients.simulation.core.SurveySimulator` as ``cut``, and the arguments of that cut as ``params``,</span>
+<span class="sd">    as in the ``steps:`` of a run-config::</span>
+
+<span class="sd">        [</span>
+<span class="sd">            {"cut": "snr", "params": {"n_visits": 2}},</span>
+<span class="sd">            {</span>
+<span class="sd">                "cut": "time_since_last_nondetection",</span>
+<span class="sd">                "params": {"max_delay": 1.0},</span>
+<span class="sd">            },</span>
+<span class="sd">        ]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    detection : sequence of Mapping or None</span>
+<span class="sd">        The entries, applied in order, or `None` for the sampler's default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of dict or None</span>
+<span class="sd">        The entries as plain dicts (``params`` left out when empty), or `None`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `detection` is empty or not a list of mappings, an entry has a key other than ``cut`` and ``params``, a cut</span>
+<span class="sd">        is not registered, or a cut does not take one of its ``params``.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">detection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">detection</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">detection</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`detection` must be a list of cuts, each with a 'cut' name, got </span><span class="si">{</span><span class="n">detection</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">detection</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"`detection` needs at least one cut; leave it out for the default."</span><span class="p">)</span>
+
+    <span class="n">steps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detection</span><span class="p">):</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"detection[</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">]"</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"cut"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">step</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: an entry is a mapping with a 'cut' name and optional 'params', got </span><span class="si">{</span><span class="n">step</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"cut"</span><span class="p">,</span> <span class="s2">"params"</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unknown key(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; an entry has 'cut' and optionally 'params'."</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">"cut"</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">get_cut</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: 'params' must be a mapping, got </span><span class="si">{</span><span class="n">params</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">accepted</span> <span class="o">=</span> <span class="n">_cut_parameters</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">accepted</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: the cut </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> takes no parameter(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">; it takes </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">accepted</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"cut"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="p">({</span><span class="s2">"params"</span><span class="p">:</span> <span class="n">_plain</span><span class="p">(</span><span class="n">params</span><span class="p">)}</span> <span class="k">if</span> <span class="n">params</span> <span class="k">else</span> <span class="p">{})}</span>
+        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+        <span class="n">steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="describe_detection">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.describe_detection.html#uvex_transients.phase_space.sampling.core.describe_detection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">describe_detection</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Describe what a map counts as a detection, in a few words.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    settings : Mapping</span>
+<span class="sd">        The settings of a survey-backed sampler, with ``snr_threshold`` and ``n_visits`` and, if it was given a</span>
+<span class="sd">        definition of a detection, ``detection``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        For the default, the threshold and the number of visits. For a list of cuts, the threshold and the cuts, in</span>
+<span class="sd">        order, each with the arguments it was given.</span>
+<span class="sd">    """</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detection"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">steps</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"SNR &gt;= </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'snr_threshold'</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'n_visits'</span><span class="p">]</span><span class="si">}</span><span class="s2"> visit(s)"</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">step</span><span class="p">[</span><span class="s1">'cut'</span><span class="p">]</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="n">params</span> <span class="k">else</span> <span class="n">step</span><span class="p">[</span><span class="s2">"cut"</span><span class="p">])</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"SNR &gt;= </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'snr_threshold'</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">: "</span> <span class="o">+</span> <span class="s2">" + "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Survey settings                              #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="SurveySettings">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySettings.html#uvex_transients.phase_space.sampling.core.SurveySettings">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SurveySettings</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    What every survey sampler decides about a recovery and its simulation, resolved against the configured defaults.</span>
+
+<span class="sd">    This is the one place the defaults of these settings are applied and validated: a sampler, the run-config and the</span>
+<span class="sd">    dry run all go through :meth:`~uvex_transients.phase_space.sampling.core.SurveySettings.resolve` and `default`. The</span>
+<span class="sd">    fields are the keys of the ``detection:`` (and its ``cuts``) and ``simulation:`` sections of a run-config, and of</span>
+<span class="sd">    the same sections of the package configuration.</span>
+<span class="sd">    """</span>
+
+    <span class="n">band</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""str: The detector band that recovers the events and defines the luminosity."""</span>
+
+    <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">"""float: The signal-to-noise a visit must reach."""</span>
+
+    <span class="n">n_visits</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: How many visits must reach it."""</span>
+
+    <span class="n">exclude_first_visit_detections</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="w">    </span><span class="sd">"""bool: Whether a detection that is only on a field's first visit is discarded."""</span>
+
+    <span class="n">mag_limit</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">"""float: The AB depth that sets the redshift limit of a point."""</span>
+
+    <span class="n">time_bins</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Number of equal explosion-time bins spanning the survey."""</span>
+
+    <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: HEALPix resolution of the sampling grid."""</span>
+
+    <span class="n">order</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""str: HEALPix ordering of the sampling grid."""</span>
+
+    <span class="n">detection</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""tuple of dict or None: The cuts that define a recovery (see</span>
+<span class="sd">    :func:`~uvex_transients.phase_space.sampling.core.check_detection`), or `None` for the default."""</span>
+
+    <span class="c1">#: The shared section of the configuration each setting is a default of</span>
+    <span class="n">SECTIONS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"band"</span><span class="p">:</span> <span class="s2">"detection"</span><span class="p">,</span>
+        <span class="s2">"snr_threshold"</span><span class="p">:</span> <span class="s2">"detection"</span><span class="p">,</span>
+        <span class="s2">"n_visits"</span><span class="p">:</span> <span class="s2">"detection"</span><span class="p">,</span>
+        <span class="s2">"exclude_first_visit_detections"</span><span class="p">:</span> <span class="s2">"detection"</span><span class="p">,</span>
+        <span class="s2">"mag_limit"</span><span class="p">:</span> <span class="s2">"simulation"</span><span class="p">,</span>
+        <span class="s2">"time_bins"</span><span class="p">:</span> <span class="s2">"simulation"</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="SurveySettings.default">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySettings.default.html#uvex_transients.phase_space.sampling.core.SurveySettings.default">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kinds</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">()):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the configured default of one of the settings for a kind of sampler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            One of ``SECTIONS``.</span>
+<span class="sd">        kinds : sequence of str, optional</span>
+<span class="sd">            The kinds of the sampler, most specific first (see</span>
+<span class="sd">            :meth:`Sampler.kinds &lt;uvex_transients.phase_space.sampling.base.Sampler.kinds&gt;`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            The value in the section of the first kind that has the key, else in the shared section.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">default</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">kinds</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySettings.resolve">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySettings.resolve.html#uvex_transients.phase_space.sampling.core.SurveySettings.resolve">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">kinds</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span> <span class="o">**</span><span class="n">given</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SurveySettings"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the settings, taking every one that is not given (or is `None`) from the configuration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kinds : sequence of str, optional</span>
+<span class="sd">            The kinds of the sampler, whose own sections of the configuration take precedence.</span>
+<span class="sd">        **given</span>
+<span class="sd">            Any of the fields, and ``detection`` as a list of cuts.</span>
+<span class="sd">            :attr:`~uvex_transients.phase_space.sampling.core.SurveySettings.nside` and</span>
+<span class="sd">            :attr:`~uvex_transients.phase_space.sampling.core.SurveySettings.order` default to the package's HEALPix</span>
+<span class="sd">            resolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SurveySettings</span>
+<span class="sd">            The settings, as plain types.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If a keyword is not one of the settings.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If ``detection`` is not a valid list of cuts.</span>
+<span class="sd">        """</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">given</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"nside"</span><span class="p">,</span> <span class="s2">"order"</span><span class="p">,</span> <span class="s2">"detection"</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown survey setting(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">given</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">}</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kinds</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">nside</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">resolve_healpix_resolution</span><span class="p">(</span><span class="n">given</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nside"</span><span class="p">),</span> <span class="n">given</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"order"</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">band</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"band"</span><span class="p">]),</span>
+            <span class="n">snr_threshold</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"snr_threshold"</span><span class="p">]),</span>
+            <span class="n">n_visits</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"n_visits"</span><span class="p">]),</span>
+            <span class="n">exclude_first_visit_detections</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"exclude_first_visit_detections"</span><span class="p">]),</span>
+            <span class="n">mag_limit</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"mag_limit"</span><span class="p">]),</span>
+            <span class="n">time_bins</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s2">"time_bins"</span><span class="p">]),</span>
+            <span class="n">nside</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">nside</span><span class="p">),</span>
+            <span class="n">order</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">order</span><span class="p">),</span>
+            <span class="n">detection</span><span class="o">=</span><span class="n">check_detection</span><span class="p">(</span><span class="n">given</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detection"</span><span class="p">)),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySettings.as_dict">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySettings.as_dict.html#uvex_transients.phase_space.sampling.core.SurveySettings.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the settings a map records, as plain types.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Every field but ``detection``, which a sampler records only when it was given one.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">SECTIONS</span><span class="p">,</span> <span class="s2">"nside"</span><span class="p">,</span> <span class="s2">"order"</span><span class="p">)}</span></div>
+</div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Parameter axes                               #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="ParameterAxis">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.ParameterAxis.html#uvex_transients.phase_space.sampling.core.ParameterAxis">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParameterAxis</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    The link from one axis of a sampler's space to one parameter of its transient's SED.</span>
+
+<span class="sd">    The coordinate on a ``"log10"`` axis is :math:`\log_{10}(\mathrm{value}/\mathrm{unit})`, and on a ``"linear"`` axis</span>
+<span class="sd">    it is :math:`\mathrm{value}/\mathrm{unit}`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `unit` is not a unit.</span>
+<span class="sd">    """</span>
+
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""str: The name of the axis, one of the names of the sampler's space."""</span>
+
+    <span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""str: The name of the parameter on the SED of the transient, for example ``"amplitude"``."""</span>
+
+    <span class="n">unit</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">UnitBase</span>
+<span class="w">    </span><span class="sd">"""~astropy.units.UnitBase: The unit the coordinate is measured in. It has to be compatible with the parameter."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ParameterAxis.value">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.ParameterAxis.value.html#uvex_transients.phase_space.sampling.core.ParameterAxis.value">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the parameter value that a coordinate stands for.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinate : float</span>
+<span class="sd">            The coordinate on the axis.</span>
+<span class="sd">        scale : {"log10", "linear"}</span>
+<span class="sd">            The scale of the axis, which is how the coordinate is read.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The value of the parameter, in :attr:`~uvex_transients.phase_space.sampling.core.ParameterAxis.unit`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">**</span><span class="n">coordinate</span> <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">"log10"</span> <span class="k">else</span> <span class="n">coordinate</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span></div>
+</div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Survey sampler                               #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="SurveySampler">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.html#uvex_transients.phase_space.sampling.core.SurveySampler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SurveySampler</span><span class="p">(</span><span class="n">Sampler</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Count the recoveries of a transient simulated against a survey: what every survey-backed sampler shares.</span>
+
+<span class="sd">    A subclass is built in its own ``__init__``, which calls ``super().__init__`` and then</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._configure` once, with its space, the redshift out</span>
+<span class="sd">    to which the volume is tabulated and the settings it adds to the ones recorded here. It supplies</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.make_transient`,</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.redshift_limit`,</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` and</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._log_window`. If its axes are parameters of the SED,</span>
+<span class="sd">    it lists them in ``parameter_axes``, a tuple of :class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`,</span>
+<span class="sd">    and :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` calls</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._fix_parameters` for them and only sets the window</span>
+<span class="sd">    and the redshift limit itself.</span>
+
+<span class="sd">    Every setting that is `None` (the default) takes its default from the configuration, which is resolved once by</span>
+<span class="sd">    :class:`~uvex_transients.phase_space.sampling.core.SurveySettings`: ``config["phase_space.&lt;kind&gt;.&lt;name&gt;"]`` if the</span>
+<span class="sd">    kind of the sampler (or a kind it is built on) has the key, else ``config["phase_space.detection.&lt;name&gt;"]`` or</span>
+<span class="sd">    ``config["phase_space.simulation.&lt;name&gt;"]``. A subclass takes these as ``**survey`` and passes them on, so a new</span>
+<span class="sd">    survey setting is added in this one place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">        The survey to recover events against.</span>
+<span class="sd">    mission : str or m4opt.missions.Mission, optional</span>
+<span class="sd">        The mission (detector and background), or the name of one.</span>
+<span class="sd">    band : str, optional</span>
+<span class="sd">        The detector band that recovers events.</span>
+<span class="sd">    snr_threshold : float, optional</span>
+<span class="sd">        The signal-to-noise a visit must reach.</span>
+<span class="sd">    n_visits : int, optional</span>
+<span class="sd">        How many visits must reach it.</span>
+<span class="sd">    exclude_first_visit_detections : bool, optional</span>
+<span class="sd">        Whether a detection that is only on a field's first visit is discarded; see</span>
+<span class="sd">        :meth:`SurveySimulator.filter_by_snr &lt;uvex_transients.simulation.core.SurveySimulator.filter_by_snr&gt;`.</span>
+<span class="sd">    detection : sequence of Mapping, optional</span>
+<span class="sd">        What counts as a recovery, as a list of the simulator's registered cuts (see</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.sampling.core.check_detection`). By default one ``snr`` cut, which is the</span>
+<span class="sd">        three settings above. A cut that takes `snr_threshold`, `n_visits`, `exclude_first_visit_detections` or</span>
+<span class="sd">        ``bands`` and is not given them gets the sampler's, with ``bands`` the band of the map. A rule that is not a</span>
+<span class="sd">        list of cuts is written by overriding :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.detect`.</span>
+<span class="sd">    mag_limit : float, optional</span>
+<span class="sd">        The AB depth that sets the redshift limit of a point. Only events brighter than it are drawn.</span>
+<span class="sd">    time_bins : int, optional</span>
+<span class="sd">        Number of equal explosion-time bins spanning the survey; see</span>
+<span class="sd">        :meth:`SurveySimulator.sample_N_events &lt;uvex_transients.simulation.core.SurveySimulator.sample_N_events&gt;`.</span>
+<span class="sd">    nside, order : optional</span>
+<span class="sd">        HEALPix resolution of the sampling grid; the package defaults if omitted.</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        Defaults to the configured cosmology.</span>
+<span class="sd">    schedule_name : str, optional</span>
+<span class="sd">        The registry name of `schedule` (see :func:`~uvex_transients.surveys.utils.get_schedule`), recorded in</span>
+<span class="sd">        :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings` so that</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` can fetch the same schedule.</span>
+<span class="sd">        Leave it out for a schedule that is not in the registry.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The tables a sampler interpolates (volume, exposure) are sized by ``config["phase_space.numerics"]``. They set the</span>
+<span class="sd">    precision of the scales, not what is measured, so they are not recorded in</span>
+<span class="sd">    :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">TRANSIENT_KEY</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"transient"</span>
+<span class="w">    </span><span class="sd">"""str: The name the one transient goes by in the simulator."""</span>
+
+    <span class="n">yield_weight</span> <span class="o">=</span> <span class="s2">"volume_time"</span>
+
+    <span class="n">parameter_axes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ParameterAxis</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+<span class="w">    </span><span class="sd">"""tuple of ParameterAxis: The axes that are parameters of the SED, which</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.parameters_at` uses to place a point."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span><span class="p">,</span>
+        <span class="n">mission</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">band</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_visits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_first_visit_detections</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">detection</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mag_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">time_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schedule_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">mission</span> <span class="o">=</span> <span class="n">configured</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="s2">"mission"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mission</span> <span class="o">=</span> <span class="n">get_mission</span><span class="p">(</span><span class="n">mission</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">mission</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">survey</span> <span class="o">=</span> <span class="n">SurveySettings</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kinds</span><span class="p">(),</span>
+            <span class="n">band</span><span class="o">=</span><span class="n">band</span><span class="p">,</span>
+            <span class="n">snr_threshold</span><span class="o">=</span><span class="n">snr_threshold</span><span class="p">,</span>
+            <span class="n">n_visits</span><span class="o">=</span><span class="n">n_visits</span><span class="p">,</span>
+            <span class="n">exclude_first_visit_detections</span><span class="o">=</span><span class="n">exclude_first_visit_detections</span><span class="p">,</span>
+            <span class="n">detection</span><span class="o">=</span><span class="n">detection</span><span class="p">,</span>
+            <span class="n">mag_limit</span><span class="o">=</span><span class="n">mag_limit</span><span class="p">,</span>
+            <span class="n">time_bins</span><span class="o">=</span><span class="n">time_bins</span><span class="p">,</span>
+            <span class="n">nside</span><span class="o">=</span><span class="n">nside</span><span class="p">,</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="w">        </span><span class="sd">"""SurveySettings: What counts as a recovery and how a point is simulated, with the defaults applied."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">band</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mission</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Unknown band </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">band</span><span class="si">!r}</span><span class="s2">; the detector has </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mission</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+
+        <span class="c1"># The settings are attributes too, which is how the sampler and its subclasses read them</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">band</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">band</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">snr_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_visits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">n_visits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_first_visit_detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">exclude_first_visit_detections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">detection</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        tuple of dict or None: The cuts that define a recovery, or `None` for the default (see</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.detect`).</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mag_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">mag_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">time_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span> <span class="o">=</span> <span class="n">get_cosmology</span><span class="p">(</span><span class="n">cosmology</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_spacing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">"phase_space.numerics.exposure_spacing"</span><span class="p">])</span>
+
+        <span class="c1"># What `settings` records, as plain types that an ECSV header can hold. A subclass adds its own in `_configure`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mission_name</span> <span class="o">=</span> <span class="n">mission</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mission</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schedule_name</span> <span class="o">=</span> <span class="n">schedule_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"schedule_name"</span><span class="p">:</span> <span class="n">schedule_name</span><span class="p">,</span>
+            <span class="s2">"mission"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mission_name</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">survey</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
+            <span class="s2">"cosmology"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_space</span><span class="p">:</span> <span class="n">Space</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">Space</span><span class="p">,</span> <span class="n">redshift_edge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Finish building a sampler: give it its space and settings, then build what the scales and the simulation need.</span>
+
+<span class="sd">        A subclass calls this once, at the end of its ``__init__``, after the settings it records are resolved. It</span>
+<span class="sd">        takes the place of setting ``_space`` and ``_settings`` and calling</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._build_scales` by hand.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        space : ~uvex_transients.phase_space.space.Space</span>
+<span class="sd">            The axes of the sampler, with their default ranges.</span>
+<span class="sd">        redshift_edge : float</span>
+<span class="sd">            The redshift out to which the volume is tabulated, and beyond which no event is drawn.</span>
+<span class="sd">        **settings</span>
+<span class="sd">            What the subclass records in `settings` beyond the ones recorded here, as plain types. They are available to</span>
+<span class="sd">            :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.make_transient`, which this builds.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_space</span> <span class="o">=</span> <span class="n">space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_scales</span><span class="p">(</span><span class="n">redshift_edge</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift_edge</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build what the noise-free scales and the simulation need, once a subclass has set ``_space`` and its limit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        redshift_edge : float</span>
+<span class="sd">            The redshift out to which the volume is tabulated, and beyond which no event is drawn.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift_edge</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">redshift_edge</span><span class="p">)</span>
+
+        <span class="c1"># The rate-weighted comoving volume per steradian out to z, at one event per Mpc^3 per yr</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">[</span><span class="mf">0.0</span><span class="p">],</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span>
+                    <span class="n">config</span><span class="p">[</span><span class="s2">"phase_space.numerics.volume_z_min"</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">redshift_edge</span><span class="p">,</span>
+                    <span class="n">config</span><span class="p">[</span><span class="s2">"phase_space.numerics.volume_points"</span><span class="p">],</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">dv_dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="o">.</span><span class="n">differential_comoving_volume</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z_grid</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span> <span class="o">=</span> <span class="n">cumulative_trapezoid</span><span class="p">(</span><span class="n">dv_dz</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z</span><span class="p">),</span> <span class="n">z</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># The window the explosion times are drawn from, over which the all-sky normalizations are taken</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_survey_years</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">))</span>
+
+        <span class="c1"># The instance that is moved from point to point, and a second one only for tabulating exposures</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_transient</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_probe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_transient</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_nodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warned_clipped</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_parameter_axes</span><span class="p">()</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># What a subclass supplies               #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="SurveySampler.make_transient">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.make_transient.html#uvex_transients.phase_space.sampling.core.SurveySampler.make_transient">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_transient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a new transient of this sampler, not yet placed at a point of the space.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~uvex_transients.transients.base.ExtragalacticTransient</span>
+<span class="sd">            An instance that :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._place` can move.</span>
+<span class="sd">        """</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.redshift_limit">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.redshift_limit.html#uvex_transients.phase_space.sampling.core.SurveySampler.redshift_limit">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the redshift out to which events are drawn at points of the space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape</span>
+<span class="sd">            ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The redshift limit of each point, of shape ``(...)``.</span>
+<span class="sd">        """</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Move the transient to a point of the space.</span>
+
+<span class="sd">        This sets the parameters of the SED</span>
+<span class="sd">        (:meth:`~uvex_transients.phase_space.sampling.core.SurveySampler._fix_parameters` does it for the axes that are</span>
+<span class="sd">        bound to a parameter), the redshift limit of the transient and its ``duration_limit``, the window of</span>
+<span class="sd">        observations that can see an event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : numpy.ndarray</span>
+<span class="sd">            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,</span>
+<span class="sd">            shape ``(ndim,)``.</span>
+<span class="sd">        """</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the log10 of the window, in days, that an event is followed for, for the farthest events of points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : array-like</span>
+<span class="sd">            The redshift limit of each point.</span>
+<span class="sd">        x : numpy.ndarray</span>
+<span class="sd">            The points, shape ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`\log_{10}` of the window in days, in the observer frame, of the shape of `z`.</span>
+<span class="sd">        """</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Axes and parameters                    #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="SurveySampler.parameters_at">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.parameters_at.html#uvex_transients.phase_space.sampling.core.SurveySampler.parameters_at">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parameters_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the SED parameters that a point of the space sets, from the axes bound to a parameter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,</span>
+<span class="sd">            shape ``(ndim,)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to ~astropy.units.Quantity</span>
+<span class="sd">            The value of each bound parameter at the point.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="p">:</span> <span class="n">binding</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="p">)]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="p">[</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_axes</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fix_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Fix the bound parameters of the transient's SED at a point, leaving every other parameter to its prior.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,</span>
+<span class="sd">            shape ``(ndim,)``.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters_at</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_parameter_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Check that every bound axis and parameter exists, and that the units agree.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a binding names an axis that is not in the space, a parameter that is not on the SED, or a unit that does</span>
+<span class="sd">            not match the parameter's, or two bindings name the same axis or parameter.</span>
+<span class="sd">        """</span>
+        <span class="n">seen_axes</span><span class="p">,</span> <span class="n">seen_parameters</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_axes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">binding</span><span class="o">.</span><span class="n">axis</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Parameter axis </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="si">!r}</span><span class="s2"> is not an axis of the space </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">binding</span><span class="o">.</span><span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Parameter axis </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="si">!r}</span><span class="s2"> is bound to </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="si">!r}</span><span class="s2">, which is not a parameter "</span>
+                    <span class="sa">f</span><span class="s2">"of the SED; it has </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">binding</span><span class="o">.</span><span class="n">axis</span> <span class="ow">in</span> <span class="n">seen_axes</span> <span class="ow">or</span> <span class="n">binding</span><span class="o">.</span><span class="n">parameter</span> <span class="ow">in</span> <span class="n">seen_parameters</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Parameter axis </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="si">!r}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="si">!r}</span><span class="s2"> repeats an axis or a parameter."</span>
+                <span class="p">)</span>
+            <span class="n">seen_axes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span>
+            <span class="n">seen_parameters</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="p">)</span>
+
+            <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">sed</span><span class="p">[</span><span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span>
+            <span class="n">parameter_unit</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">dimensionless_unscaled</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">binding</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">parameter_unit</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Parameter axis </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">axis</span><span class="si">!r}</span><span class="s2"> is in </span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">unit</span><span class="si">}</span><span class="s2">, which is not a unit of "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">binding</span><span class="o">.</span><span class="n">parameter</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">parameter_unit</span><span class="si">}</span><span class="s2">)."</span>
+                <span class="p">)</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Description                            #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="SurveySampler.from_settings">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.from_settings.html#uvex_transients.phase_space.sampling.core.SurveySampler.from_settings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_settings</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mission</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">overrides</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SurveySampler"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Rebuild a sampler from the `settings` of another one.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The `settings` of the sampler to rebuild.</span>
+<span class="sd">        schedule : ~uvex_transients.surveys.base.SurveySchedule, optional</span>
+<span class="sd">            The schedule. Needed unless `settings` names one in the registry.</span>
+<span class="sd">        mission : str or m4opt.missions.Mission, optional</span>
+<span class="sd">            The mission. Needed unless `settings` names one.</span>
+<span class="sd">        cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">            By default the configured one, with a warning if its name is not the recorded one.</span>
+<span class="sd">        **overrides</span>
+<span class="sd">            Any other constructor argument, replacing the recorded value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SurveySampler</span>
+<span class="sd">            A sampler that makes the same measurement, and so reproduces the scales of the recorded one.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no schedule or no mission can be found.</span>
+<span class="sd">        """</span>
+        <span class="n">settings</span><span class="p">,</span> <span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">schedule_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_rebuild_arguments</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">cosmology</span><span class="p">)</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">schedule_name</span><span class="o">=</span><span class="n">schedule_name</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.from_run_config">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.from_run_config.html#uvex_transients.phase_space.sampling.core.SurveySampler.from_run_config">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_run_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SurveySampler"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build a sampler from the arguments of a map in a run-config, for the survey and mission the run-config names.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        run : object</span>
+<span class="sd">            The parsed run-config, with ``schedule``, ``mission_name`` and ``schedule_name``.</span>
+<span class="sd">        **options</span>
+<span class="sd">            The arguments of the sampler: the detection, simulation and ``settings:`` sections of the map, merged.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SurveySampler</span>
+<span class="sd">            The sampler.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the sampler does not take one of the `options`.</span>
+<span class="sd">        """</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_check_options</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">schedule_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span> <span class="n">run</span><span class="o">.</span><span class="n">mission_name</span><span class="p">,</span> <span class="n">schedule_name</span><span class="o">=</span><span class="n">run</span><span class="o">.</span><span class="n">schedule_name</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.describe">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.describe.html#uvex_transients.phase_space.sampling.core.SurveySampler.describe">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Describe the map of a survey sampler: its band and what it counts as a detection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The `settings` of a sampler of this class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            For example ``"FUV: SNR &gt;= 5 on 2 visit(s)"``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'band'</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">describe_detection</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""~uvex_transients.phase_space.space.Space: The axes of the sampler, with their default ranges."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_space</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has no space yet: its __init__ has to call `_configure`."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_space</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        dict: The arguments that rebuild this sampler, as plain types that an ECSV header can hold.</span>
+
+<span class="sd">        They are what :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` takes. The mission</span>
+<span class="sd">        and schedule are recorded by name. A mission given as an object, or a schedule given without a</span>
+<span class="sd">        ``schedule_name``, is recorded as `None` and has to be supplied again to</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings`.</span>
+<span class="sd">        """</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">"detection"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detection</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">settings</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_arguments</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mission</span><span class="p">,</span>
+        <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">SurveySchedule</span><span class="p">,</span> <span class="nb">object</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Resolve what a sampler takes from outside its recorded settings: the schedule, mission and cosmology.</span>
+
+<span class="sd">        This is the part of :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` that cannot</span>
+<span class="sd">        come from the file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The recorded settings.</span>
+<span class="sd">        schedule, mission, cosmology : optional</span>
+<span class="sd">            As for :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            The settings without the entries that are resolved here.</span>
+<span class="sd">        schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">            The schedule, fetched by name if it was not given.</span>
+<span class="sd">        mission : str or m4opt.missions.Mission</span>
+<span class="sd">            The mission, from the argument or the settings.</span>
+<span class="sd">        schedule_name : str or None</span>
+<span class="sd">            The recorded registry name of the schedule.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no schedule or no mission can be found.</span>
+<span class="sd">        """</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="n">recorded_cosmology</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"cosmology"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">schedule_name</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"schedule_name"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">recorded_mission</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"mission"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># The schedule and the mission are the two things a file can only name</span>
+        <span class="k">if</span> <span class="n">schedule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">schedule_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The settings name no schedule; pass `schedule`."</span><span class="p">)</span>
+            <span class="n">schedule</span> <span class="o">=</span> <span class="n">get_schedule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">schedule_name</span><span class="p">)</span>
+        <span class="n">mission</span> <span class="o">=</span> <span class="n">mission</span> <span class="k">if</span> <span class="n">mission</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">recorded_mission</span>
+        <span class="k">if</span> <span class="n">mission</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The settings name no mission; pass `mission`."</span><span class="p">)</span>
+
+        <span class="c1"># A different cosmology rescales every volume, so say so instead of quietly rebuilding a different map</span>
+        <span class="k">if</span> <span class="n">cosmology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_cosmology</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">recorded_cosmology</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">recorded_cosmology</span> <span class="o">!=</span> <span class="n">current</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">"The map was made with the </span><span class="si">%s</span><span class="s2"> cosmology but the configured one is </span><span class="si">%s</span><span class="s2">; pass `cosmology` to match."</span><span class="p">,</span>
+                    <span class="n">recorded_cosmology</span><span class="p">,</span>
+                    <span class="n">current</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="p">,</span> <span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">schedule_name</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Return `x` as floats, after checking that its last axis runs over the axes of the space."""</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Points of this space have </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> coordinates, got an array of shape </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># The tries                              #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="SurveySampler.draw">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.draw.html#uvex_transients.phase_space.sampling.core.SurveySampler.draw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Simulate `n` events at a point and return how many the survey recovers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`,</span>
+<span class="sd">            shape ``(ndim,)``.</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The number of events.</span>
+<span class="sd">        seed : numpy.random.SeedSequence</span>
+<span class="sd">            The source of the randomness of the simulation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of events recovered, between 0 and `n`.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the simulation does not return `n` events, which would make the count mean something else.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">simulator</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TRANSIENT_KEY</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="p">},</span> <span class="n">simulation_seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">catalog</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">sample_N_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Asked the simulator for </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> events and got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">catalog</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.detect">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.detect.html#uvex_transients.phase_space.sampling.core.SurveySampler.detect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">:</span> <span class="n">SurveySimulator</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the events of a catalog that count as recovered.</span>
+
+<span class="sd">        This is what a recovery is. It applies each cut of `detection` in turn to the events that survived the one</span>
+<span class="sd">        before, and with no `detection` it is the one ``snr`` cut, so that an event is recovered when at least</span>
+<span class="sd">        `n_visits` of its observations reach `snr_threshold` in the band. A cut is given the sampler's `snr_threshold`,</span>
+<span class="sd">        `n_visits`, `exclude_first_visit_detections` and ``bands`` (the band of the map) for each of those it takes and</span>
+<span class="sd">        its entry leaves out.</span>
+
+<span class="sd">        Override it for a rule that is not a sequence of cuts. It is called once per draw, and has to return the</span>
+<span class="sd">        rows of `catalog` that are recovered. The epochs of the events (each observation, with its time and its</span>
+<span class="sd">        measured SNR) are from :meth:`~uvex_transients.simulation.core.SurveySimulator.iter_epochs`, and a boolean mask</span>
+<span class="sd">        over the rows of the catalog is applied with ``dataclasses.replace(catalog, table=catalog.table[mask])``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        simulator : ~uvex_transients.simulation.core.SurveySimulator</span>
+<span class="sd">            The simulator that made `catalog`, which the cuts and the epochs of the events are taken from.</span>
+<span class="sd">        catalog : ~uvex_transients.simulation.event_catalog.EventCatalog</span>
+<span class="sd">            The `n` events drawn at a point.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~uvex_transients.simulation.event_catalog.EventCatalog</span>
+<span class="sd">            The events of `catalog` that are recovered.</span>
+<span class="sd">        """</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"snr_threshold"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span><span class="p">,</span>
+            <span class="s2">"bands"</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">band</span><span class="p">],</span>
+            <span class="s2">"n_visits"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_visits</span><span class="p">,</span>
+            <span class="s2">"exclude_first_visit_detections"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude_first_visit_detections</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detection</span> <span class="ow">or</span> <span class="p">({</span><span class="s2">"cut"</span><span class="p">:</span> <span class="s2">"snr"</span><span class="p">},):</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="o">.</span><span class="n">get_cut</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">"cut"</span><span class="p">])</span>
+            <span class="n">accepted</span> <span class="o">=</span> <span class="n">_cut_parameters</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">accepted</span><span class="p">}</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"params"</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">catalog</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">simulator</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">catalog</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Absolute scale                         #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_exposure_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_window</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return the effective exposure of the survey, in sr yr, for a window of length 10**log_window days."""</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">log_window</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_nodes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_probe</span><span class="o">.</span><span class="n">duration_limit</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="n">key</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+            <span class="n">simulator</span> <span class="o">=</span> <span class="n">SurveySimulator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">TRANSIENT_KEY</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_probe</span><span class="p">})</span>
+            <span class="n">catalog</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">compute_effective_exposure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_bins</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_nodes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">total_effective_exposure</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">TRANSIENT_KEY</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_nodes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the redshift limit and the footprint exposure of points of the space.</span>
+
+<span class="sd">        The exposure depends on a point only through the window length over which an event is followed, so it is</span>
+<span class="sd">        tabulated on a grid of that length and interpolated.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape</span>
+<span class="sd">            ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        redshift_limit, exposure : numpy.ndarray</span>
+<span class="sd">            The redshift limit of each point, and the effective exposure of the survey for it in sr yr.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">log_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_window</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Tabulate the exposure on nodes that bracket the windows asked for</span>
+        <span class="n">spacing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure_spacing</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">log_window</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)</span> <span class="o">*</span> <span class="n">spacing</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">log_window</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">spacing</span><span class="p">)</span> <span class="o">*</span> <span class="n">spacing</span> <span class="o">+</span> <span class="n">spacing</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">spacing</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">exposure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">log_window</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_exposure_at</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">exposure</span>
+
+<div class="viewcode-block" id="SurveySampler.volume_time">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.volume_time.html#uvex_transients.phase_space.sampling.core.SurveySampler.volume_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">volume_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the effective volume-time :math:`\mathcal V T` of points of the space, in Mpc^3 yr.</span>
+
+<span class="sd">        The expected number of events over the survey, inside the footprint and out to the redshift limit, at one</span>
+<span class="sd">        event per Mpc^3 per yr. It involves no Monte Carlo: the exposure comes from the schedule. Multiply by a rate</span>
+<span class="sd">        and by the recovery fraction for the expected number of recoveries.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape</span>
+<span class="sd">            ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`\mathcal V T`, of shape ``(...)``.</span>
+<span class="sd">        """</span>
+        <span class="n">z</span><span class="p">,</span> <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exposure</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.coverage">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.coverage.html#uvex_transients.phase_space.sampling.core.SurveySampler.coverage">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coverage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the fraction of the sky and survey window that the sampled footprint covers, for points of the space.</span>
+
+<span class="sd">        The effective exposure over that of the whole sky for the whole survey, :math:`\mathcal E/(4\pi\,T)`. It is the</span>
+<span class="sd">        ratio of the events in the sampled footprint to all events exploding during the survey, so multiplying the</span>
+<span class="sd">        recovery fraction :math:`f` by it gives the efficiency.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape</span>
+<span class="sd">            ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The coverage, between 0 and 1, of shape ``(...)``.</span>
+<span class="sd">        """</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exposure</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_years</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.all_sky_volume_time">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.all_sky_volume_time.html#uvex_transients.phase_space.sampling.core.SurveySampler.all_sky_volume_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_sky_volume_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the volume-time of the whole sky over the whole survey out to the redshift limit, in Mpc^3 yr.</span>
+
+<span class="sd">        The number of events exploding during the survey anywhere on the sky, at one per Mpc^3 per yr. It is</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.volume_time` divided by</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.coverage`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.space`, shape</span>
+<span class="sd">            ``(..., ndim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The all-sky volume-time, of shape ``(...)``.</span>
+<span class="sd">        """</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_survey_years</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SurveySampler.rate_products">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.core.SurveySampler.rate_products.html#uvex_transients.phase_space.sampling.core.SurveySampler.rate_products">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_products</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Product</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the products that need a volumetric rate: the expected number of recoveries over the survey.</span>
+
+<span class="sd">        This is the recovered volume-time times a rate that is constant in redshift, for a population of the luminosity</span>
+<span class="sd">        and duration of the point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rate : ~astropy.units.Quantity</span>
+<span class="sd">            The comoving volumetric rate, with units of inverse volume per time, for example ``10 / u.Gpc**3 / u.yr``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of Product</span>
+<span class="sd">            ``expected_recoveries``, with its interval.</span>
+<span class="sd">        """</span>
+        <span class="n">per_mpc3_yr</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Weighted</span><span class="p">(</span>
+                <span class="s2">"expected_recoveries"</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">per_mpc3_yr</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_time</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">"expected recoveries"</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">products</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Product</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tuple of Product: The quantities of a map of this sampler beyond the success fraction.</span>
+
+<span class="sd">        The redshift limit, coverage, volume-time and all-sky volume-time of each point, and the efficiency (the</span>
+<span class="sd">        success fraction times the coverage) and the recovered volume-time (the fraction times the volume-time).</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Scale</span><span class="p">(</span><span class="s2">"z_limit"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"$z_\mathrm</span><span class="si">{lim}</span><span class="s2">$"</span><span class="p">),</span>
+            <span class="n">Scale</span><span class="p">(</span><span class="s2">"coverage"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"coverage"</span><span class="p">),</span>
+            <span class="n">Scale</span><span class="p">(</span><span class="s2">"volume_time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_time</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"$\mathcal</span><span class="si">{V}</span><span class="s2">T$"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"Mpc3 yr"</span><span class="p">),</span>
+            <span class="n">Scale</span><span class="p">(</span><span class="s2">"all_sky_volume_time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_sky_volume_time</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"all-sky $\mathcal</span><span class="si">{V}</span><span class="s2">T$"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"Mpc3 yr"</span><span class="p">),</span>
+            <span class="n">Weighted</span><span class="p">(</span><span class="s2">"efficiency"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"efficiency $\eta$"</span><span class="p">),</span>
+            <span class="n">Weighted</span><span class="p">(</span><span class="s2">"recovered_volume_time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_time</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"$f\,\mathcal</span><span class="si">{V}</span><span class="s2">T$"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"Mpc3 yr"</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

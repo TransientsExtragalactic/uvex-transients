@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.phase_space.experiment &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/phase_space/experiment';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.3alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/UVEX_HorizIcon_Black.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/UVEX_HorizIcon_White.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/UVEX_HorizIcon_Black.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.phase_space.experiment</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.phase_space.experiment</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">The experiment: a sampler, a map, a stopping rule and a campaign, as one object that can be run and saved.</span>
+
+<span class="sd">A phase-space scenario is made of four things. A :class:`~uvex_transients.phase_space.sampling.base.Sampler` answers</span>
+<span class="sd">"how many detections in n tries at a point", a :class:`~uvex_transients.phase_space.sampling.base.StoppingRule` says how</span>
+<span class="sd">many tries a point gets, a :class:`~uvex_transients.phase_space.map.PhaseSpaceMap` holds the points and models the</span>
+<span class="sd">success fraction, and :class:`~uvex_transients.phase_space.experiment.CampaignSettings` says how long to run.</span>
+<span class="sd">:class:`~uvex_transients.phase_space.experiment.Experiment` holds the four, so a new scenario is a new sampler and</span>
+<span class="sd">nothing else:</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    experiment = Experiment.create(</span>
+<span class="sd">        MySampler(...),</span>
+<span class="sd">        bounds=[(41.0, 45.0), (0.0, 3.0)],</span>
+<span class="sd">    )</span>
+<span class="sd">    experiment.run()</span>
+<span class="sd">    experiment.save("points.ecsv")</span>
+<span class="sd">    table = experiment.grid_table(60)</span>
+
+<span class="sd">**Files.** :meth:`Experiment.save &lt;uvex_transients.phase_space.experiment.Experiment.save&gt;` writes the points as an ECSV</span>
+<span class="sd">table whose header records everything needed to rebuild the experiment: the space, the settings of the model, the</span>
+<span class="sd">stopping rule, the campaign, and the sampler as its registered kind and settings (see</span>
+<span class="sd">:func:`~uvex_transients.phase_space.sampling.base.get_sampler`), so that no Python import path is stored.</span>
+<span class="sd">:meth:`Experiment.load &lt;uvex_transients.phase_space.experiment.Experiment.load&gt;` reads that, and also the files of the</span>
+<span class="sd">earlier format, which recorded a ``RecoveryEvaluator`` (a class that no longer exists); it rebuilds those as the</span>
+<span class="sd">canonical sampler.</span>
+
+<span class="sd">**The campaign.** :func:`~uvex_transients.phase_space.experiment.run_campaign` is the loop that joins a map, a sampler</span>
+<span class="sd">and a stopping rule. The map says where to measure next, the sampler measures a point, and the rule says how many tries</span>
+<span class="sd">a point gets, so the loop measures an initial space-filling design, then repeats: ask the map for a batch of points,</span>
+<span class="sd">measure them and add the counts, until the budget is spent or the map is good enough. It is short on purpose, and</span>
+<span class="sd">everything it needs to be extended (a different sampler, a different rule, another acquisition) is in the three objects</span>
+<span class="sd">it is given.</span>
+
+<span class="sd">**Seeds.** The randomness of the measurement of a point is the seed of the point,</span>
+<span class="sd">:func:`~uvex_transients.phase_space.experiment.point_seed`: a child of the campaign's root seed that is identified by</span>
+<span class="sd">the *index* of the point in the map, not by when it happened to be measured. A point is measured the same way whatever</span>
+<span class="sd">the order a batch is evaluated in, and so whether it is evaluated in a loop, on a thread pool or on a cluster</span>
+<span class="sd">(:func:`~uvex_transients.phase_space.experiment.fork_map`), and resuming a campaign from its saved points continues the</span>
+<span class="sd">same sequence of seeds.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space._config</span><span class="w"> </span><span class="kn">import</span> <span class="n">configured</span><span class="p">,</span> <span class="n">default</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.files</span><span class="w"> </span><span class="kn">import</span> <span class="n">LEGACY</span><span class="p">,</span> <span class="n">SCHEMA_VERSION</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">upgrade_legacy_header</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.map</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseSpaceMap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.sampling.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Outcome</span><span class="p">,</span> <span class="n">Product</span><span class="p">,</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">StoppingRule</span><span class="p">,</span> <span class="n">get_sampler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.space</span><span class="w"> </span><span class="kn">import</span> <span class="n">Space</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CampaignSettings"</span><span class="p">,</span> <span class="s2">"Experiment"</span><span class="p">,</span> <span class="s2">"fork_map"</span><span class="p">,</span> <span class="s2">"point_seed"</span><span class="p">,</span> <span class="s2">"run_campaign"</span><span class="p">]</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># The campaign loop                            #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="point_seed">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.point_seed.html#uvex_transients.phase_space.experiment.point_seed">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">point_seed</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the seed of the point with a given index in a campaign.</span>
+
+<span class="sd">    It is a pure function of the root seed and the index, so the same point always gets the same seed, and it does not</span>
+<span class="sd">    advance `root`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root : numpy.random.SeedSequence</span>
+<span class="sd">        The root seed of the campaign.</span>
+<span class="sd">    index : int</span>
+<span class="sd">        The index of the point in the map, from 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.random.SeedSequence</span>
+<span class="sd">        The seed of that point, independent of the seeds of all the others.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">entropy</span><span class="o">=</span><span class="n">root</span><span class="o">.</span><span class="n">entropy</span><span class="p">,</span> <span class="n">spawn_key</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">root</span><span class="o">.</span><span class="n">spawn_key</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)))</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_measure</span><span class="p">(</span><span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Outcome</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Measure one point: apply the rule to the sampler there, with the seed of the point."""</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">seed</span> <span class="o">=</span> <span class="n">task</span>
+    <span class="k">return</span> <span class="n">rule</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+
+<span class="c1">#: What the forked workers of `fork_map` measure with, set before they are forked and so inherited by them.</span>
+<span class="n">_FORKED</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_forked_measure</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Outcome</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Measure one point in a forked worker, with the sampler and rule it inherited."""</span>
+    <span class="k">return</span> <span class="n">_measure</span><span class="p">(</span><span class="n">_FORKED</span><span class="p">[</span><span class="s2">"sampler"</span><span class="p">],</span> <span class="n">_FORKED</span><span class="p">[</span><span class="s2">"rule"</span><span class="p">],</span> <span class="n">task</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="fork_map">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.fork_map.html#uvex_transients.phase_space.experiment.fork_map">[docs]</a>
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fork_map</span><span class="p">(</span><span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span><span class="p">,</span> <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Provide a ``map_fn`` that measures the points of a batch in forked worker processes.</span>
+
+<span class="sd">    A survey-backed sampler cannot be pickled (its schedule holds a satellite orbit), so an ordinary process pool cannot</span>
+<span class="sd">    be sent one. The workers of this pool are forked instead, and inherit the sampler as it is when the pool is made,</span>
+<span class="sd">    so anything it has computed by then (a table of redshift limits, say) is shared and not repeated. Each point</span>
+<span class="sd">    carries its own seed, so a result does not depend on which worker measured it, or on how many there are.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        with fork_map(</span>
+<span class="sd">            experiment.sampler,</span>
+<span class="sd">            experiment.rule,</span>
+<span class="sd">            processes=8,</span>
+<span class="sd">        ) as map_fn:</span>
+<span class="sd">            experiment.run(map_fn=map_fn)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampler : ~uvex_transients.phase_space.sampling.base.Sampler</span>
+<span class="sd">        What measures a point. It is not changed by the workers.</span>
+<span class="sd">    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule</span>
+<span class="sd">        How many tries a point gets.</span>
+<span class="sd">    processes : int, optional</span>
+<span class="sd">        The number of worker processes. By default the number of CPUs.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    callable</span>
+<span class="sd">        ``map_fn(function, tasks)``, for the ``map_fn`` of :func:`~uvex_transients.phase_space.experiment.run_campaign`,</span>
+<span class="sd">        :meth:`Experiment.run &lt;uvex_transients.phase_space.experiment.Experiment.run&gt;` or</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.stages.run_experiment`. It measures the tasks and ignores `function`, which</span>
+<span class="sd">        it could not send to the workers.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the platform cannot fork.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="s2">"fork"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">get_all_start_methods</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"fork_map needs a platform that can fork processes."</span><span class="p">)</span>
+    <span class="n">_FORKED</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sampler</span><span class="o">=</span><span class="n">sampler</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="n">rule</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s2">"fork"</span><span class="p">)</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="k">lambda</span> <span class="n">function</span><span class="p">,</span> <span class="n">tasks</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_forked_measure</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">_FORKED</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_measure_points</span><span class="p">(</span>
+    <span class="n">phase_map</span><span class="p">:</span> <span class="n">PhaseSpaceMap</span><span class="p">,</span>
+    <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span>
+    <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">,</span>
+    <span class="n">map_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Measure points and add their counts to the map, in order, each with the seed of its index."""</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">point</span><span class="p">,</span> <span class="n">point_seed</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">first</span> <span class="o">+</span> <span class="n">offset</span><span class="p">))</span> <span class="k">for</span> <span class="n">offset</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">)]</span>
+    <span class="n">outcomes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">map_fn</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_measure</span><span class="p">,</span> <span class="n">sampler</span><span class="p">,</span> <span class="n">rule</span><span class="p">),</span> <span class="n">tasks</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">point</span><span class="p">,</span> <span class="n">outcome</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">):</span>
+        <span class="n">phase_map</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">outcome</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">outcome</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">outcome</span><span class="o">.</span><span class="n">extras</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="run_campaign">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.run_campaign.html#uvex_transients.phase_space.experiment.run_campaign">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_campaign</span><span class="p">(</span>
+    <span class="n">phase_map</span><span class="p">:</span> <span class="n">PhaseSpaceMap</span><span class="p">,</span>
+    <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span>
+    <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span><span class="p">,</span>
+    <span class="n">campaign</span><span class="p">:</span> <span class="s2">"CampaignSettings | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">map_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">map</span><span class="p">,</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PhaseSpaceMap</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhaseSpaceMap</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Measure points of a map until its budget is spent or it is converged.</span>
+
+<span class="sd">    The initial design is measured first if the map has fewer than ``campaign.n_initial`` points. Each round then fits</span>
+<span class="sd">    the model, asks the map for the next batch, and stops without spending the batch if the uncertainty is already</span>
+<span class="sd">    below ``campaign.tolerance``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    phase_map : ~uvex_transients.phase_space.map.PhaseSpaceMap</span>
+<span class="sd">        The map, which is added to. It can already hold points, in which case the campaign continues from them.</span>
+<span class="sd">    sampler : ~uvex_transients.phase_space.sampling.base.Sampler</span>
+<span class="sd">        What measures a point. Its space has to be the map's.</span>
+<span class="sd">    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule</span>
+<span class="sd">        How many tries a point gets. The map uses it to predict the noise of a point it has not measured.</span>
+<span class="sd">    campaign : CampaignSettings, optional</span>
+<span class="sd">        How long to run, how many points to place per round, and the root seed of the measurements (see</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.experiment.point_seed`; this is separate from the seed of the map, which is</span>
+<span class="sd">        that of its designs and its model). By default</span>
+<span class="sd">        :meth:`CampaignSettings.from_config &lt;uvex_transients.phase_space.experiment.CampaignSettings.from_config&gt;` for</span>
+<span class="sd">        the kinds of the sampler.</span>
+<span class="sd">    map_fn : callable, optional</span>
+<span class="sd">        ``map_fn(function, tasks)`` returning the results in order; replace it to measure a batch in parallel. The</span>
+<span class="sd">        default is the builtin `map`. Because each point carries its own seed, the order does not matter.</span>
+<span class="sd">    callback : callable, optional</span>
+<span class="sd">        Called with the map after the initial design and after every batch, for example to save a checkpoint.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ~uvex_transients.phase_space.map.PhaseSpaceMap</span>
+<span class="sd">        The map that was passed in, now holding the new points and fitted.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the sampler's space is not the map's.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">campaign</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">campaign</span> <span class="o">=</span> <span class="n">CampaignSettings</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">kinds</span><span class="o">=</span><span class="n">sampler</span><span class="o">.</span><span class="n">kinds</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span> <span class="o">!=</span> <span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The sampler is over </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> but the map is over </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="n">n_initial</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">max_points</span><span class="p">,</span> <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">campaign</span><span class="o">.</span><span class="n">n_initial</span><span class="p">,</span>
+        <span class="n">campaign</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">campaign</span><span class="o">.</span><span class="n">max_points</span><span class="p">,</span>
+        <span class="n">campaign</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">campaign</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">measure</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Measure a batch of points and add them to the map, then call the callback.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : sequence</span>
+<span class="sd">            The points, in the coordinates of the map's space.</span>
+<span class="sd">        """</span>
+        <span class="n">_measure_points</span><span class="p">(</span><span class="n">phase_map</span><span class="p">,</span> <span class="n">sampler</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">map_fn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callback</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_initial</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Campaign: measuring an initial design of </span><span class="si">%d</span><span class="s2"> points."</span><span class="p">,</span> <span class="n">n_initial</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">))</span>
+        <span class="n">measure</span><span class="p">(</span><span class="n">phase_map</span><span class="o">.</span><span class="n">initial_design</span><span class="p">(</span><span class="n">n_initial</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)))</span>
+
+    <span class="c1"># Rounds of propose, measure and refit, until the budget is spent or the map is good enough</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_points</span><span class="p">:</span>
+        <span class="n">n_new</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">max_points</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">))</span>
+        <span class="n">points</span><span class="p">,</span> <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">phase_map</span><span class="o">.</span><span class="n">propose</span><span class="p">(</span><span class="n">n_new</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">expected_n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uncertainty</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Campaign: converged (</span><span class="si">%.3f</span><span class="s2"> &lt; </span><span class="si">%.3f</span><span class="s2">)."</span><span class="p">,</span> <span class="n">uncertainty</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Campaign: </span><span class="si">%d</span><span class="s2"> points, uncertainty </span><span class="si">%.3f</span><span class="s2"> (tolerance </span><span class="si">%.3f</span><span class="s2">); measuring </span><span class="si">%d</span><span class="s2"> more."</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">phase_map</span><span class="p">),</span>
+            <span class="n">uncertainty</span><span class="p">,</span>
+            <span class="n">tolerance</span><span class="p">,</span>
+            <span class="n">n_new</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">measure</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+    <span class="n">phase_map</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">phase_map</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Campaign settings                            #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="CampaignSettings">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.CampaignSettings.html#uvex_transients.phase_space.experiment.CampaignSettings">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CampaignSettings</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    How long a campaign runs and how it spends its points.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If a count is not a positive integer, or the tolerance is negative.</span>
+<span class="sd">    """</span>
+
+    <span class="n">n_initial</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Size of the space-filling design measured before the first fit."""</span>
+
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Points chosen per round."""</span>
+
+    <span class="n">max_points</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Stop once the map has this many points."""</span>
+
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""float: Stop once the largest posterior standard deviation of :math:`\ln(p+\epsilon)` falls below this."""</span>
+
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="w">    </span><span class="sd">"""int: The root seed of the measurements of the points; see</span>
+<span class="sd">    :func:`~uvex_transients.phase_space.experiment.point_seed`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"n_initial"</span><span class="p">,</span> <span class="s2">"batch_size"</span><span class="p">,</span> <span class="s2">"max_points"</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` must be a positive integer, got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`tolerance` must not be negative, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"tolerance"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"seed"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CampaignSettings.from_config">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.CampaignSettings.from_config.html#uvex_transients.phase_space.experiment.CampaignSettings.from_config">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_config</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">n_initial</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">kinds</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CampaignSettings"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the settings, taking what is not given from ``config["phase_space.campaign"]``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_initial, batch_size, max_points, tolerance : optional</span>
+<span class="sd">            As for the class. Any that is `None` (the default) is read from the configuration.</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            The root seed of the measurements.</span>
+<span class="sd">        kinds : sequence of str, optional</span>
+<span class="sd">            The kinds of the sampler the campaign is for, whose own sections of the configuration take precedence (see</span>
+<span class="sd">            :func:`~uvex_transients.phase_space._config.default`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CampaignSettings</span>
+<span class="sd">            The settings.</span>
+<span class="sd">        """</span>
+        <span class="n">given</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n_initial"</span><span class="p">:</span> <span class="n">n_initial</span><span class="p">,</span> <span class="s2">"batch_size"</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="s2">"max_points"</span><span class="p">:</span> <span class="n">max_points</span><span class="p">,</span> <span class="s2">"tolerance"</span><span class="p">:</span> <span class="n">tolerance</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">default</span><span class="p">(</span><span class="s2">"campaign"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kinds</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">given</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Experiment                                   #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="Experiment">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.html#uvex_transients.phase_space.experiment.Experiment">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Experiment</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A sampler, the map of its success fraction, the stopping rule for its points, and a campaign.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampler : ~uvex_transients.phase_space.sampling.base.Sampler</span>
+<span class="sd">        What measures a point.</span>
+<span class="sd">    phase_map : ~uvex_transients.phase_space.map.PhaseSpaceMap</span>
+<span class="sd">        The map, over the space of the sampler (with the ranges to be mapped).</span>
+<span class="sd">    rule : ~uvex_transients.phase_space.sampling.base.StoppingRule</span>
+<span class="sd">        How many tries a point gets.</span>
+<span class="sd">    campaign : CampaignSettings</span>
+<span class="sd">        How long to run.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the map is not over the axes of the sampler.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">phase_map</span><span class="p">:</span> <span class="n">PhaseSpaceMap</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span><span class="p">,</span> <span class="n">campaign</span><span class="p">:</span> <span class="n">CampaignSettings</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span> <span class="o">!=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The map is over </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> but the sampler is over </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span> <span class="o">=</span> <span class="n">phase_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">campaign</span> <span class="o">=</span> <span class="n">campaign</span>
+
+<div class="viewcode-block" id="Experiment.create">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.create.html#uvex_transients.phase_space.experiment.Experiment.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rule</span><span class="p">:</span> <span class="n">StoppingRule</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">campaign</span><span class="p">:</span> <span class="n">CampaignSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">map_settings</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Experiment"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create an experiment of a sampler, with an empty map.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sampler : ~uvex_transients.phase_space.sampling.base.Sampler</span>
+<span class="sd">            What measures a point.</span>
+<span class="sd">        bounds : array-like, optional</span>
+<span class="sd">            The ranges to map, shape ``(ndim, 2)``. By default the ranges of the sampler's space.</span>
+<span class="sd">        rule : ~uvex_transients.phase_space.sampling.base.StoppingRule, optional</span>
+<span class="sd">            By default :meth:`~uvex_transients.phase_space.sampling.base.StoppingRule.from_config` for the sampler.</span>
+<span class="sd">        campaign : CampaignSettings, optional</span>
+<span class="sd">            By default</span>
+<span class="sd">            :meth:`CampaignSettings.from_config &lt;uvex_transients.phase_space.experiment.CampaignSettings.from_config&gt;`</span>
+<span class="sd">            with `seed`.</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            The root seed of the measurements, and the seed of the map.</span>
+<span class="sd">        **map_settings</span>
+<span class="sd">            Settings of the map (``acquisition``, ``n_candidates``, ``floor``, ``n_restarts``, ``kernel``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Experiment</span>
+<span class="sd">            The experiment, not yet run.</span>
+<span class="sd">        """</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span> <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">with_bounds</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">sampler</span><span class="p">,</span>
+            <span class="n">PhaseSpaceMap</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">map_settings</span><span class="p">),</span>
+            <span class="n">StoppingRule</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">kinds</span><span class="o">=</span><span class="n">sampler</span><span class="o">.</span><span class="n">kinds</span><span class="p">())</span> <span class="k">if</span> <span class="n">rule</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rule</span><span class="p">,</span>
+            <span class="n">CampaignSettings</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">kinds</span><span class="o">=</span><span class="n">sampler</span><span class="o">.</span><span class="n">kinds</span><span class="p">())</span> <span class="k">if</span> <span class="n">campaign</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">campaign</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Running                                #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="Experiment.run">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.run.html#uvex_transients.phase_space.experiment.Experiment.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">map_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">map</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PhaseSpaceMap</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Experiment"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Run the campaign, adding points to the map until its budget is spent or it is converged.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        map_fn : callable, optional</span>
+<span class="sd">            ``map_fn(function, tasks)`` returning the results in order, to measure a batch in parallel.</span>
+<span class="sd">        callback : callable, optional</span>
+<span class="sd">            Called with the map after the initial design and after every batch, for example to save a checkpoint.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Experiment</span>
+<span class="sd">            This experiment, so that ``experiment.run().grid_table()`` works.</span>
+<span class="sd">        """</span>
+        <span class="n">run_campaign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">campaign</span><span class="p">,</span> <span class="n">map_fn</span><span class="o">=</span><span class="n">map_fn</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Experiment.resume_from">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.resume_from.html#uvex_transients.phase_space.experiment.Experiment.resume_from">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resume_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Experiment"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Take the points of a file as the points of this experiment's map, to continue from them.</span>
+
+<span class="sd">        The sampler, rule and campaign of this experiment are kept; only the measured points come from the file, which</span>
+<span class="sd">        can be of either format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            An ECSV file of points over the same axes as this experiment's map.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Experiment</span>
+<span class="sd">            This experiment.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the file is over other axes.</span>
+<span class="sd">        """</span>
+        <span class="n">stored</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">)</span><span class="o">.</span><span class="n">phase_map</span>
+        <span class="k">if</span> <span class="n">stored</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is over </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">stored</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> but this experiment is over "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span> <span class="o">=</span> <span class="n">PhaseSpaceMap</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">stored</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">campaign</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">settings</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Experiment.grid_table">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.grid_table.html#uvex_transients.phase_space.experiment.Experiment.grid_table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">grid_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">bounds</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">products</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Product</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Evaluate the map on a regular grid, with the quantities of the sampler, as one table.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : int or sequence of int, optional</span>
+<span class="sd">            Points per axis. By default ``config["phase_space.grid_size"]``.</span>
+<span class="sd">        bounds : array-like, optional</span>
+<span class="sd">            The rectangle to evaluate, which can differ from the ranges of the map.</span>
+<span class="sd">        products : sequence of Product, optional</span>
+<span class="sd">            What to make besides the success fraction. By default the ``products`` of the sampler, and with a `rate`</span>
+<span class="sd">            its ``rate_products``.</span>
+<span class="sd">        rate : ~astropy.units.Quantity, optional</span>
+<span class="sd">            A volumetric rate, which adds the sampler's ``rate_products`` (the expected number of recoveries, for a</span>
+<span class="sd">            survey sampler).</span>
+<span class="sd">        n_sigma : float, optional</span>
+<span class="sd">            Half-width of the interval, in posterior standard deviations of the logit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.Table</span>
+<span class="sd">            The table of :meth:`~uvex_transients.phase_space.map.PhaseSpaceMap.grid_table`, whose ``meta`` also holds</span>
+<span class="sd">            the ``sampler`` kind, whatever the sampler records in its ``table_meta`` (for a figure's labels and for</span>
+<span class="sd">            :func:`~uvex_transients.phase_space.analysis.compare.difference_map` to check) and the ``n_max`` of the</span>
+<span class="sd">            stopping rule.</span>
+<span class="sd">        """</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">configured</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="s2">"grid_size"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">products</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">products</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">products</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">rate_products</span><span class="p">(</span><span class="n">rate</span><span class="p">))</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">grid_table</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">products</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="n">n_sigma</span><span class="p">)</span>
+
+        <span class="c1"># What `difference_map` checks before it compares two maps, and the resolution it takes its floor from</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"sampler"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">table_meta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">yield_weight</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">colnames</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"weight"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">yield_weight</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"n_max"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">n_max</span>
+        <span class="k">return</span> <span class="n">table</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Files                                  #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""dict: What a points file records to rebuild this experiment, as plain types an ECSV header can hold."""</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"schema_version"</span><span class="p">:</span> <span class="n">SCHEMA_VERSION</span><span class="p">,</span>
+            <span class="s2">"space"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">"map"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span>
+            <span class="s2">"rule"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rule</span><span class="p">),</span>
+            <span class="s2">"campaign"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">campaign</span><span class="p">),</span>
+            <span class="s2">"sampler"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"kind"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="s2">"settings"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">settings</span><span class="p">},</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Experiment.table">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.table.html#uvex_transients.phase_space.experiment.Experiment.table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the points as a table whose header records the experiment.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.Table</span>
+<span class="sd">            One row per measured point, with the header of</span>
+<span class="sd">            :attr:`~uvex_transients.phase_space.experiment.Experiment.header` as its ``meta``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the sampler has no registered kind, so a file could not rebuild it.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has no registered kind, so a file could not rebuild it; "</span>
+                <span class="s2">"name one in the class statement, `class X(Sampler, kind='x')`."</span>
+            <span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">table</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span></div>
+
+
+<div class="viewcode-block" id="Experiment.save">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.save.html#uvex_transients.phase_space.experiment.Experiment.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Write the points, with the header that rebuilds the experiment, as an ECSV file, replacing any existing one.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            The destination.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"ascii.ecsv"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Experiment.load">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.experiment.Experiment.load.html#uvex_transients.phase_space.experiment.Experiment.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Experiment"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Rebuild an experiment from a points file of either format.</span>
+
+<span class="sd">        The file is one written by :meth:`~uvex_transients.phase_space.experiment.Experiment.save`, or by the earlier</span>
+<span class="sd">        format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            An ECSV file of points.</span>
+<span class="sd">        sampler : ~uvex_transients.phase_space.sampling.base.Sampler, optional</span>
+<span class="sd">            A sampler to use instead of rebuilding the one the file records, for example one whose survey schedule is</span>
+<span class="sd">            not in the registry.</span>
+<span class="sd">        **context</span>
+<span class="sd">            What the file could not record, passed to the sampler's ``from_settings``, such as ``schedule``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Experiment</span>
+<span class="sd">            The experiment, holding the stored points. The model is fitted on first use.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the file records no sampler that can be rebuilt and none is given.</span>
+<span class="sd">        """</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"ascii.ecsv"</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">flavor</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span> <span class="o">==</span> <span class="n">LEGACY</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">upgrade_legacy_header</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sampler"</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">sampler</span> <span class="o">=</span> <span class="n">get_sampler</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">])</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"settings"</span><span class="p">],</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="n">Space</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">"space"</span><span class="p">])</span>
+
+        <span class="c1"># The earlier format recorded only the names and ranges, so the labels and units come from the sampler</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">space</span><span class="p">:</span>
+            <span class="n">known</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="p">[</span><span class="n">axis</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">axis</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">names</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">known</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">axis</span><span class="o">.</span><span class="n">label</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">axis</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">known</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">known</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="n">Space</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+
+        <span class="n">campaign</span> <span class="o">=</span> <span class="n">CampaignSettings</span><span class="p">(</span><span class="o">**</span><span class="n">meta</span><span class="p">[</span><span class="s2">"campaign"</span><span class="p">])</span>
+        <span class="n">phase_map</span> <span class="o">=</span> <span class="n">PhaseSpaceMap</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">campaign</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"map"</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">phase_map</span><span class="p">,</span> <span class="n">StoppingRule</span><span class="p">(</span><span class="o">**</span><span class="n">meta</span><span class="p">[</span><span class="s2">"rule"</span><span class="p">]),</span> <span class="n">campaign</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
