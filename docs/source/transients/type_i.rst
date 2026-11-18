@@ -72,7 +72,7 @@ the others.
              :math:`\pm1\sigma` endpoints, rather than assumed analytically -- see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.33`
+           - :math:`z = 0.22`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -124,12 +124,32 @@ the others.
       (:math:`0.75\times10^{15}` Hz, about 4000 Å) and ``beta`` (5) are fixed; they are the UV calibration of this
       model, set against the Swift/UVOT UVW1 and UVW2 light curves shown below.
 
-      The remaining priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and
-      ``M_ej`` are the population-level Gaussians from that paper's hierarchical Arnett-model fit
-      (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;
-      :math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`),
+      The remaining priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF), except for
+      ``M_Ni``: ``M_ej`` is the population-level Gaussian from that paper's hierarchical Arnett-model fit
+      (:math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`),
       ``kappa_gamma`` is fixed at the value adopted by :footcite:t:`scalzo2014`, and ``kappa`` is
       uniform over that paper's marginalization range.
+
+      The ``M_Ni`` prior is tuned, not taken from that paper. Its Gaussian
+      (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`) gives peak V-band
+      magnitudes about 0.3 mag too bright, and too broad, compared with the ASAS-SN luminosity function of SNe Ia,
+      even with host dust. The prior here is a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.4\,M_\odot` and
+      :math:`\sigma_\mathrm{Ni}=0.2\,M_\odot`, chosen together with the mean of the :math:`A_V` prior below by trial
+      and error (about 50 combinations compared by the total variation distance between the binned distributions),
+      not by a fit. The peak V-band magnitude constrains only the combination of the two, so other pairs fit equally
+      well and neither is measured by this comparison. The luminosity function below shows the result.
+
+      The SED is also reddened by dust in the host galaxy, with the Gordon et al. (2023) law
+      (:attr:`~uvex_transients.models.host_dust.HostDustMixin.DUST_LAW`). The V-band attenuation :math:`A_V` is
+      exponentially distributed with a mean of 0.4 mag, and :math:`R_V` is normal, :math:`2.70\pm0.25`, truncated
+      to the 2.3 to 5.6 range of the law. The width of the :math:`R_V` prior is that of the uncertainty on its
+      population mean, which is smaller than the 95% upper limit of 0.61 on the scatter of the population. The two
+      are independent. The dust is part of the model rather than a correction applied to it: the dust that shaped
+      the light of any one event is unknown, so the SED describes the luminosity we observe and infer. In
+      particular :math:`L_\mathrm{bol}(t)` is the integral of the *attenuated* :math:`L_\nu`, below the intrinsic
+      Arnett luminosity by the fraction the dust absorbs (``A_V=0`` recovers the dust-free SED). Foreground dust of
+      the Milky Way is separate (the ``ebv`` argument of the photometry methods). Of the classes on this page only
+      Type Ia carries host dust so far.
 
       .. dropdown:: Parameter priors
 
@@ -143,8 +163,9 @@ the others.
               - Notes / Source
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(0.64, :math:`\sigma`\=0.42; bounds :math:`[0.05, 3.0]\,M_\odot`)
-              - :footcite:t:`sarin2026`.
+              - TruncatedNormal(0.4, :math:`\sigma`\=0.2; bounds :math:`[0.05, 3.0]\,M_\odot`)
+              - Tuned to the ASAS-SN luminosity function (see above); :footcite:t:`sarin2026` has
+                0.64, :math:`\sigma`\=0.42.
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
               - TruncatedNormal(1.26, :math:`\sigma`\=0.33; bounds :math:`[0.05, 3.0]\,M_\odot`)
@@ -176,6 +197,15 @@ the others.
               - Fixed, 5
               - Power-law index :math:`\nu^{-\beta}` of the suppression above the break. Calibrated
                 against Swift/UVOT UVW1 and UVW2.
+            * - ``A_V``
+              - :math:`A_V`
+              - Exponential(mean 0.4 mag)
+              - V-band attenuation by dust in the host galaxy; the reddening law is G23.
+            * - ``R_V``
+              - :math:`R_V`
+              - TruncatedNormal(2.70, :math:`\sigma`\=0.25; bounds :math:`[2.3, 5.6]`)
+              - Total-to-selective ratio of the host dust. The mean and its uncertainty are measured; the
+                scatter of the population is only bounded (:math:`\sigma<0.61`, 95%).
 
       .. rubric:: Simulated Light Curves
 
@@ -275,13 +305,21 @@ the others.
       .. rubric:: Luminosity Function
 
       The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
-      priors above. Each draw's rest-frame band light curve is measured at its brightest point. The curve
+      priors above. Each draw's rest-frame band light curve is measured at its brightest point, with the host
+      dust included. The curve
       is normalized per event, so it integrates to 1 over :math:`M_V`: multiply it by the rate to get a
       volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
       bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
       :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
       Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
       magnitude of the SED itself.
+
+      The points are the luminosity function of SNe Ia of ASAS-SN, which the ``M_Ni`` and :math:`A_V` priors were
+      tuned to (so this is a check of that tuning, not an independent test). Its rate has a normalization that is
+      not ours, so only its shape is compared: the points are scaled to unit area over the magnitudes they cover
+      and then by the fraction of the model's events in that range. Where the shapes agree, the points lie on the
+      model's curve. The model has too few events at the faint end (:math:`M_V\gtrsim-17.5`), where the ASAS-SN
+      curve has a tail of subluminous events that a single Gaussian in ``M_Ni`` does not reproduce.
 
       .. plot::
          :include-source: false
@@ -290,11 +328,12 @@ the others.
 
          from uvex_transients.transients.supernovae import TypeIaSNe
          from uvex_transients.utils.filter_utils import get_bandpass
-         from uvex_transients.utils.plotting import plot_luminosity_function
+         from uvex_transients.utils.plotting import plot_archived_luminosity_function, plot_luminosity_function
 
          v_band = get_bandpass("Generic/Johnson.V")
          lf = TypeIaSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
-         plot_luminosity_function(lf, band="V")
+         fig, ax = plot_luminosity_function(lf, band="V", label="Model")
+         plot_archived_luminosity_function(lf, "supernovae/Ia", "ASAS-SN", ax=ax)
          plt.show()
 
       .. rubric:: Observability Summary
@@ -306,7 +345,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.33`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.22`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -337,7 +376,7 @@ the others.
 
       The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
       that any event above the :math:`m<24.5` limit is detectable, and that the population is
-      isotropic and homogeneous in comoving volume out to :math:`z=0.33`:
+      isotropic and homogeneous in comoving volume out to :math:`z=0.22`:
 
       .. plot::
          :include-source: false

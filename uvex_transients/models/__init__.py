@@ -3,6 +3,7 @@
 __all__ = [
     "arnett",
     "core",
+    "host_dust",
     "kilonovae",
     "lfbots",
     "lightcurves",
@@ -23,6 +24,12 @@ from . import arnett
 from .arnett import *
 
 __all__.extend(arnett.__all__)
+
+# Imports from the host_dust submodule.
+from . import host_dust
+from .host_dust import *
+
+__all__.extend(host_dust.__all__)
 
 # Imports from the spectra submodule.
 from . import spectra

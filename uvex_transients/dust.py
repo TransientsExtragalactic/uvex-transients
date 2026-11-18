@@ -18,6 +18,7 @@ from functools import cache, partial
 from typing import Protocol, Union, runtime_checkable
 
 import numpy as np
+from astropy import constants as const
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.units import Quantity
@@ -272,6 +273,96 @@ def log_attenuation(
     result = -0.4 * np.log(10.0) * Av[..., np.newaxis] * axav
 
     return result if nu.shape else result[..., 0]
+
+
+# =========================================================================== #
+# HOST-GALAXY (A_V, R_V) ATTENUATION                                          #
+# =========================================================================== #
+_HOST_TABLE_SIZE = 20001
+"""int: Number of wavenumber samples in the tabulated reddening-law coefficients of `_affine_coefficients`."""
+
+_CM_PER_MICRON = 1e-4
+_C_CGS = const.c.cgs.value
+
+
+@cache
+def _affine_coefficients(name: str) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    r"""
+    Tabulate a reddening law as :math:`A(x)/A(V) = c_0(x) + c_1(x)/R_V` on a uniform wavenumber grid.
+
+    The Cardelli-family laws (CCM89, O'Donnell94, and G23 used here) are exactly affine in :math:`1/R_V` at every
+    wavenumber :math:`x`, so two evaluations at the ends of the law's valid :math:`R_V` range fix the whole
+    :math:`R_V` dependence. Tabulating the two coefficients once is what lets `host_log_attenuation_cgs` take a
+    different :math:`R_V` for every draw, which a law object (one fixed :math:`R_V` each) cannot.
+
+    Parameters
+    ----------
+    name : str
+        A registered law, see `get_dust_law`. It must be affine in :math:`1/R_V`.
+
+    Returns
+    -------
+    x : numpy.ndarray
+        Wavenumber grid, in 1/micron, over the law's native range.
+    c0, c1 : numpy.ndarray
+        The coefficients on ``x``.
+    """
+    law_class = _DUST_LAWS[name]
+    rv_lo, rv_hi = law_class.Rv_range
+    lo, hi = law_class().x_range
+    x = np.linspace(lo, hi, _HOST_TABLE_SIZE)
+    f_lo = np.asarray(law_class(Rv=rv_lo)(x / u.micron), dtype=np.float64)
+    f_hi = np.asarray(law_class(Rv=rv_hi)(x / u.micron), dtype=np.float64)
+    c1 = (f_lo - f_hi) / (1.0 / rv_lo - 1.0 / rv_hi)
+    c0 = f_lo - c1 / rv_lo
+    return x, c0, c1
+
+
+def host_log_attenuation_cgs(
+    nu: NDArray[np.float64],
+    A_V: float | NDArray[np.float64],
+    R_V: float | NDArray[np.float64],
+    dust_law: str | None = None,
+) -> NDArray[np.float64]:
+    r"""
+    Natural log of the host-galaxy attenuation for a given :math:`(A_V, R_V)`, :math:`\ln(10^{-0.4\,A(\nu)})`.
+
+    The counterpart of `log_attenuation` for dust that is part of an SED rather than along the line of sight:
+    the dust is described by its V-band attenuation :math:`A_V` and its total-to-selective ratio :math:`R_V`
+    (so :math:`E(B-V) = A_V/R_V`), either of which can be an array. ``nu`` is the *rest-frame* frequency, in
+    plain cgs numbers like the ``_eval`` methods of the SED models that call this.
+
+    The law's native wavelength range is not an error here. Outside it the attenuation curve is held at its
+    value at the nearest edge (the extreme UV blueward of 912 Angstrom and the far infrared redward of 32
+    microns), rather than ``NaN`` as `log_attenuation` returns, so that integrating over all frequencies stays
+    finite. The curve is read from a table of the law's coefficients (see `_affine_coefficients`) rather than
+    re-evaluated, which makes this cheap on large arrays.
+
+    Parameters
+    ----------
+    nu : numpy.ndarray
+        Rest-frame frequency, in Hz, any shape.
+    A_V : float or numpy.ndarray
+        V-band attenuation, in magnitudes, broadcastable against ``nu``.
+    R_V : float or numpy.ndarray
+        Total-to-selective extinction ratio, broadcastable against ``nu``. It must lie in the law's valid range
+        (2.3 to 5.6 for G23); this is not checked here.
+    dust_law : str, optional
+        Passed through to `get_dust_law`'s registry; ``None`` uses the configured default.
+
+    Returns
+    -------
+    numpy.ndarray
+        :math:`\ln` of the attenuation, with the shape that ``nu``, ``A_V`` and ``R_V`` broadcast to.
+    """
+    name = (dust_law or config["physics.default_dust_law"]).lower()
+    if name not in _DUST_LAWS:
+        raise KeyError(f"Unknown dust law {name!r}; known laws are {sorted(_DUST_LAWS)}.")
+    x_grid, c0, c1 = _affine_coefficients(name)
+
+    x = np.asarray(nu, dtype=np.float64) / _C_CGS * _CM_PER_MICRON
+    axav = np.interp(x, x_grid, c0) + np.interp(x, x_grid, c1) / np.asarray(R_V, dtype=np.float64)
+    return -0.4 * np.log(10.0) * np.asarray(A_V, dtype=np.float64) * axav
 
 
 def attenuation_callable(
