@@ -36,7 +36,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -51,7 +51,7 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/simulation/core';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
@@ -485,6 +485,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.time</span><span class="w"> </span><span class="kn">import</span> <span class="n">Time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.fov</span><span class="w"> </span><span class="kn">import</span> <span class="n">contains</span> <span class="k">as</span> <span class="n">fov_contains</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">m4opt.missions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mission</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Regions</span><span class="p">,</span> <span class="n">SkyRegion</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.contrib.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_redirect_tqdm</span>
@@ -2307,6 +2308,38 @@
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_CUT_REGISTRY</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="SurveySimulator.get_cut">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.get_cut.html#uvex_transients.simulation.core.SurveySimulator.get_cut">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cut</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the function of a registered cut, without running it.</span>
+
+<span class="sd">        A caller that applies cuts many times (such as a sampler that counts detections) uses this instead of</span>
+<span class="sd">        `run_cut`, which logs every call, and can read the parameters a cut takes from the signature of the result.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            One of `available_cuts`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The cut, to be called as ``cut(simulator, catalog, mission, **params)``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `name` is not a registered cut.</span>
+<span class="sd">        """</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">method_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_CUT_REGISTRY</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown cut </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="SurveySimulator.run_cut">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.simulation.core.SurveySimulator.run_cut.html#uvex_transients.simulation.core.SurveySimulator.run_cut">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventCatalog</span><span class="p">:</span>
@@ -2335,12 +2368,9 @@
 <span class="sd">        EventCatalog</span>
 <span class="sd">            The filtered catalog.</span>
 <span class="sd">        """</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">method_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CUT_REGISTRY</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown cut </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; available: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">available_cuts</span><span class="p">()</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cut</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running cut </span><span class="si">%r</span><span class="s2"> on </span><span class="si">%d</span><span class="s2"> events."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">))</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Cut </span><span class="si">%r</span><span class="s2"> kept </span><span class="si">%d</span><span class="s2"> of </span><span class="si">%d</span><span class="s2"> events."</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
@@ -3416,8 +3446,8 @@
         <span class="n">catalog</span><span class="p">:</span> <span class="n">EventCatalog</span><span class="p">,</span>
         <span class="n">mission</span><span class="p">:</span> <span class="n">Mission</span><span class="p">,</span>
         <span class="n">snr_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">min_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">lookback</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">keep_if_no_nondetection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">bands</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3445,16 +3475,22 @@
 <span class="sd">            Forwarded to `iter_epochs`.</span>
 <span class="sd">        snr_threshold : float</span>
 <span class="sd">            Same definition as `filter_by_snr`.</span>
-<span class="sd">        min_delay : float, optional</span>
+<span class="sd">        min_delay : float or array-like, optional</span>
 <span class="sd">            Minimum time (days) from the last non-detection to the first detection.</span>
-<span class="sd">            `None` (the default) leaves the lower end unconstrained.</span>
-<span class="sd">        max_delay : float, optional</span>
+<span class="sd">            `None` (the default) leaves the lower end unconstrained. An array has one value</span>
+<span class="sd">            for each row of `catalog`, in its order, for a limit that differs between events.</span>
+<span class="sd">        max_delay : float or array-like, optional</span>
 <span class="sd">            Maximum time (days) from the last non-detection to the first detection, e.g.</span>
 <span class="sd">            to require the explosion be bracketed to within a few days. `None` (the</span>
-<span class="sd">            default) leaves the upper end unconstrained.</span>
+<span class="sd">            default) leaves the upper end unconstrained. An array has one value for each</span>
+<span class="sd">            row of `catalog`, in its order, for a limit that differs between events, such as</span>
+<span class="sd">            one that scales with the redshift of each.</span>
 <span class="sd">        lookback : float, optional</span>
 <span class="sd">            Days before each explosion to search for a non-detection. `None` (the default)</span>
-<span class="sd">            searches back to the start of the schedule. Smaller values cost less.</span>
+<span class="sd">            searches back to the start of the schedule. Smaller values cost less. It is one</span>
+<span class="sd">            number for the whole catalog, so with a `max_delay` that differs between events</span>
+<span class="sd">            give it the largest of them (a non-detection before the explosion by more than</span>
+<span class="sd">            an event's own `max_delay` could not bracket it in any case).</span>
 <span class="sd">        keep_if_no_nondetection : bool, optional</span>
 <span class="sd">            What to do with an event that has a detection but no earlier non-detection</span>
 <span class="sd">            within the lookback, so no delay can be measured: its first observation was</span>
@@ -3473,7 +3509,8 @@
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If both `min_delay` and `max_delay` are `None`.</span>
+<span class="sd">            If both `min_delay` and `max_delay` are `None`, or one is an array that does not have a value for</span>
+<span class="sd">            each row of `catalog`.</span>
 
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -3493,6 +3530,20 @@
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of 'min_delay'/'max_delay' must be given."</span><span class="p">)</span>
+
+        <span class="c1"># A limit is one number or one per event, which is broadcast to one per row so that the loop below indexes it</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"min_delay"</span><span class="p">,</span> <span class="n">min_delay</span><span class="p">),</span> <span class="p">(</span><span class="s2">"max_delay"</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">limit</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">limit</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' is a number or one value for each of the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> events, "</span>
+                        <span class="sa">f</span><span class="s2">"got an array of shape </span><span class="si">{</span><span class="n">limit</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+                    <span class="p">)</span>
+                <span class="n">limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">),))</span>
+            <span class="n">limits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+        <span class="n">min_delay</span><span class="p">,</span> <span class="n">max_delay</span> <span class="o">=</span> <span class="n">limits</span>
 
         <span class="n">gaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduce_events</span><span class="p">(</span>
             <span class="n">catalog</span><span class="p">,</span>
@@ -3514,9 +3565,9 @@
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">gap</span><span class="p">):</span>
                 <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">keep_if_no_nondetection</span>
                 <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&lt;</span> <span class="n">min_delay</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">min_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&lt;</span> <span class="n">min_delay</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                 <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&gt;</span> <span class="n">max_delay</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">max_delay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gap</span> <span class="o">&gt;</span> <span class="n">max_delay</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                 <span class="k">continue</span>
             <span class="n">keep</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 

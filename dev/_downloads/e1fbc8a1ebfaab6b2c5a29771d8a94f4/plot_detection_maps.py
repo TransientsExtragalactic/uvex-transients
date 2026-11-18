@@ -16,7 +16,7 @@ simulation: the figure is made from the fitted map and the simulated points.
 import matplotlib.pyplot as plt
 from astropy.table import Table
 
-from uvex_transients.phase_space.overlay import split_measurements
+from uvex_transients.phase_space.analysis.overlay import split_measurements
 from uvex_transients.phase_space.plotting import plot_map
 from uvex_transients.utils import get_phase_space_map
 from uvex_transients.utils.plotting import set_plot_style

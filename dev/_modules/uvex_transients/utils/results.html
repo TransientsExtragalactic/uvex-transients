@@ -36,7 +36,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -51,7 +51,7 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/utils/results';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
@@ -515,7 +515,7 @@
 <span class="n">PHASE_SPACE_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"points"</span><span class="p">:</span> <span class="s2">"points.ecsv"</span><span class="p">,</span> <span class="s2">"map"</span><span class="p">:</span> <span class="s2">"map.ecsv"</span><span class="p">,</span> <span class="s2">"overlay"</span><span class="p">:</span> <span class="s2">"overlay.ecsv"</span><span class="p">,</span> <span class="s2">"figure"</span><span class="p">:</span> <span class="s2">"map.png"</span><span class="p">}</span>
 <span class="sd">"""dict of str to str: The files of one phase-space map, by short name.</span>
 
-<span class="sd">``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.map_table`),</span>
+<span class="sd">``map`` is the fitted recovery map on a grid (`~uvex_transients.phase_space.experiment.Experiment.grid_table`),</span>
 <span class="sd">``points`` the simulated points it was fitted to, ``overlay`` the measured shipped transient classes, and ``figure`` the</span>
 <span class="sd">four-panel image.</span>
 <span class="sd">"""</span>
@@ -1090,8 +1090,8 @@
 
 <span class="sd">    The maps are the ones ``configs/phase_space.yaml`` defines, attached to each release as one ``phase_space.zip``;</span>
 <span class="sd">    only the requested files of the requested map are downloaded from it. They are read with</span>
-<span class="sd">    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into a sampler that can evaluate the map</span>
-<span class="sd">    anywhere with `~uvex_transients.phase_space.sampler.PhaseSpaceSampler.load`.</span>
+<span class="sd">    ``astropy.table.Table.read(path, format="ascii.ecsv")``, or rebuilt into an experiment that can evaluate the map</span>
+<span class="sd">    anywhere with `~uvex_transients.phase_space.experiment.Experiment.load`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

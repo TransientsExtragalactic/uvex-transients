@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.phase_space.sampling.breakout &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/phase_space/sampling/breakout';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/trex_logo.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/uvex_logo_dark.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/uvex_logo.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.phase_space.sampling.breakout</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.phase_space.sampling.breakout</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">The shock breakout sampler: the survey's detection of a breakout over its peak luminosity and time scale.</span>
+
+<span class="sd">:class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` is the second scenario of the phase-space</span>
+<span class="sd">machinery, and the reason it is built the way it is. Its transient is the</span>
+<span class="sd">:class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`: a bolometric light curve that</span>
+<span class="sd">rises, peaks and declines on a time scale :math:`t_0`, with a blackbody on a photosphere that expands from the breakout</span>
+<span class="sd">radius, so that the colour evolves. A point of its space is ``(log10 L_0 / (erg/s), log10 t_0 / s)``, and both axes are</span>
+<span class="sd">parameters of the SED, so they are bound to it by name</span>
+<span class="sd">(:class:`~uvex_transients.phase_space.sampling.core.ParameterAxis`) and no placing code is written.</span>
+
+<span class="sd">**What counts as a detection.** A breakout is detected if at least one exposure reaches the signal-to-noise threshold,</span>
+<span class="sd">and only an exposure that lies within the event counts: an event is followed for the window out to the *bolometric*</span>
+<span class="sd">half-decline of its light curve, :math:`x_{1/2}\,t_0` after breakout with :math:`x_{1/2}` a constant of the fixed shape</span>
+<span class="sd">(about 3.6), stretched by time dilation, and an exposure that starts after the explosion and ends by the end of the</span>
+<span class="sd">window is a measurement of it. An exposure that runs past the window would be seeing the cooling emission that</span>
+<span class="sd">follows, not the breakout, so it does not count.</span>
+
+<span class="sd">**The range of time scales.** Only an event that lasts longer than a dwell is mapped, so the time scale :math:`t_0`</span>
+<span class="sd">has to be at least one dwell (900 s), and a lower bound below it is refused. A shorter event is a different question</span>
+<span class="sd">(the exposure then averages over a pulse and over the emission that follows it), and the survey sees it only by</span>
+<span class="sd">chance, so it is not mapped here. The upper end reaches the long breakouts of dense circumstellar material (CSM), days</span>
+<span class="sd">long, whose window of several time scales spans weeks. The source is measured at the start of each exposure, which is</span>
+<span class="sd">accurate when it changes little over a dwell, that is for a time scale that is not much shorter than one.</span>
+
+<span class="sd">**The redshift limit.** Events are drawn out to the redshift at which the *instantaneous* band magnitude at the</span>
+<span class="sd">brightest point of the window reaches the depth, a bound that no exposure beats. The temperature depends on the</span>
+<span class="sd">luminosity and the time scale together, so the limit is a function of both and is tabulated over the axes, once, with</span>
+<span class="sd">the same band weights the detection horizon uses.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cosmology</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGridInterpolator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">brentq</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.detection_horizon</span><span class="w"> </span><span class="kn">import</span> <span class="n">peak_band_magnitudes</span><span class="p">,</span> <span class="n">resolve_bandpasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConstantPrior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.lightcurves.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">InverseGammaBrokenPowerLawLightcurve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.shock_cooling</span><span class="w"> </span><span class="kn">import</span> <span class="n">InverseGammaBlackbodySED</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space._config</span><span class="w"> </span><span class="kn">import</span> <span class="n">configured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.sampling.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParameterAxis</span><span class="p">,</span> <span class="n">SurveySampler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.space</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axis</span><span class="p">,</span> <span class="n">Space</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.surveys.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SurveySchedule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.transients.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtragalacticTransient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_cosmological_distances</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"BracketedBreakoutSampler"</span><span class="p">,</span> <span class="s2">"BreakoutSampler"</span><span class="p">,</span> <span class="s2">"half_decline_time"</span><span class="p">]</span>
+
+<span class="n">_SECONDS_PER_DAY</span> <span class="o">=</span> <span class="mf">86400.0</span>
+
+<span class="c1">#: The smallest redshift of the table of the redshift limit.</span>
+<span class="n">_Z_MIN</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="c1">#: Points of the redshift grid, and of the grid of times in the window, that the limit is evaluated on.</span>
+<span class="n">_N_REDSHIFT</span> <span class="o">=</span> <span class="mi">96</span>
+<span class="n">_N_TIME</span> <span class="o">=</span> <span class="mi">96</span>
+<span class="c1">#: The earliest time in the window, in units of the time scale. The light curve vanishes well before it.</span>
+<span class="n">_X_MIN</span> <span class="o">=</span> <span class="mf">1e-2</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># The window                                   #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="half_decline_time">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.half_decline_time.html#uvex_transients.phase_space.sampling.breakout.half_decline_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">half_decline_time</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_break</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">smoothness</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Return the time of the peak and of the half-decline of the light curve, in units of its time scale :math:`t_0`.</span>
+
+<span class="sd">    The light curve is that of</span>
+<span class="sd">    :class:`~uvex_transients.models.lightcurves.generic.InverseGammaBrokenPowerLawLightcurve`. The half-decline is the</span>
+<span class="sd">    time after the peak at which the luminosity has fallen to half of its maximum.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p, q, x_break, smoothness : float</span>
+<span class="sd">        The shape parameters of the light curve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x_peak : float</span>
+<span class="sd">        The time of the peak since breakout, in units of :math:`t_0`.</span>
+<span class="sd">    x_half : float</span>
+<span class="sd">        The time of the half-decline since breakout, in units of :math:`t_0`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the light curve never falls to half of its peak.</span>
+<span class="sd">    """</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">q</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">x_break</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">smoothness</span><span class="p">)</span>
+    <span class="n">log_peak</span><span class="p">,</span> <span class="n">log_shape_peak</span> <span class="o">=</span> <span class="n">InverseGammaBrokenPowerLawLightcurve</span><span class="o">.</span><span class="n">_peak</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">excess</span><span class="p">(</span><span class="n">log_x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return how far the log of the light curve is above half its peak.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        log_x : float</span>
+<span class="sd">            The natural log of the time since breakout, in units of :math:`t_0`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Positive before the half-decline and negative after it.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">InverseGammaBrokenPowerLawLightcurve</span><span class="o">.</span><span class="n">_log_shape</span><span class="p">(</span><span class="n">log_x</span><span class="p">,</span> <span class="o">*</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_shape_peak</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+
+    <span class="n">upper</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">log_peak</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span>
+    <span class="k">while</span> <span class="n">excess</span><span class="p">(</span><span class="n">upper</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">upper</span> <span class="o">+=</span> <span class="mf">2.0</span>
+        <span class="k">if</span> <span class="n">upper</span> <span class="o">&gt;</span> <span class="mf">60.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The light curve never falls to half of its peak, so it has no half-decline time."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_peak</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">brentq</span><span class="p">(</span><span class="n">excess</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">log_peak</span><span class="p">),</span> <span class="n">upper</span><span class="p">)))</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># The transient                                #</span>
+<span class="c1"># ============================================ #</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_BreakoutTransient</span><span class="p">(</span><span class="n">ExtragalacticTransient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A shock breakout with a blackbody photosphere, at a constant comoving rate of one event per Mpc^3 per year.</span>
+
+<span class="sd">    :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` places it at a point by fixing the amplitude</span>
+<span class="sd">    and the time scale of its SED. It is measured over the start of each exposure, and an exposure only counts if it</span>
+<span class="sd">    lies within the event. The class name starts with an underscore and the module is not one the CLI imports, which</span>
+<span class="sd">    keeps it out of ``full_run.yaml`` and the checks that iterate over shipped classes.</span>
+<span class="sd">    """</span>
+
+    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">InverseGammaBlackbodySED</span>
+    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">HAS_STORED_HORIZON_CURVE</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""~astropy.units.Quantity: One event per cubic megaparsec per year, so counts are volume-times."""</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span><span class="o">**-</span><span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the constant rate shape, ones the shape of `z`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : float or numpy.ndarray</span>
+<span class="sd">            Redshift(s).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or numpy.ndarray</span>
+<span class="sd">            Ones, the same shape as `z`.</span>
+<span class="sd">        """</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">shape</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># The sampler                                  #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="BreakoutSampler">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BreakoutSampler.html#uvex_transients.phase_space.sampling.breakout.BreakoutSampler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BreakoutSampler</span><span class="p">(</span><span class="n">SurveySampler</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"breakout"</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Count the detections of a shock breakout at points of the peak-luminosity and time-scale plane.</span>
+
+<span class="sd">    A point is ``x = (log10 L_0 / (erg/s), log10 t_0 / s)``: the peak bolometric luminosity :math:`L_0` and the time</span>
+<span class="sd">    scale :math:`t_0` of the light curve, which peaks at about :math:`t_0`. The other parameters of the SED are fixed at</span>
+<span class="sd">    the defaults of :class:`~uvex_transients.models.shock_cooling.inverse_gamma.InverseGammaBlackbodySED`. One sampler</span>
+<span class="sd">    makes the map of one band. See the module documentation for what counts as a detection.</span>
+
+<span class="sd">    Every argument that is `None` (the default) takes ``config["phase_space.breakout.&lt;name&gt;"]``, and what</span>
+<span class="sd">    :class:`~uvex_transients.phase_space.sampling.core.SurveySettings` resolves for the survey settings, with the</span>
+<span class="sd">    breakout's own section first (a single exposure recovers it, and it needs many time bins).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">        The survey to recover events against.</span>
+<span class="sd">    mission : str or m4opt.missions.Mission, optional</span>
+<span class="sd">        The mission (detector and background), or the name of one.</span>
+<span class="sd">    log_L0, log_t0 : sequence of float, optional</span>
+<span class="sd">        The ranges ``(lo, hi)`` of the axes, which are also what the redshift limit is tabulated over.</span>
+<span class="sd">    z_max : float, optional</span>
+<span class="sd">        The redshift the limit is tabulated to, and beyond which no event is drawn.</span>
+<span class="sd">    table_points : int, optional</span>
+<span class="sd">        Points per axis of the table of the redshift limit.</span>
+<span class="sd">    cosmology : ~astropy.cosmology.Cosmology, optional</span>
+<span class="sd">        Defaults to the configured cosmology.</span>
+<span class="sd">    schedule_name : str, optional</span>
+<span class="sd">        The registry name of `schedule`, recorded in</span>
+<span class="sd">        :attr:`~uvex_transients.phase_space.sampling.core.SurveySampler.settings` so that</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` can fetch the same schedule.</span>
+<span class="sd">    **survey</span>
+<span class="sd">        What counts as a recovery and how a point is simulated: ``band``, ``snr_threshold``, ``n_visits``,</span>
+<span class="sd">        ``exclude_first_visit_detections``, ``detection``, ``mag_limit``, ``time_bins``, ``nside`` and ``order``. See</span>
+<span class="sd">        :class:`~uvex_transients.phase_space.sampling.core.SurveySampler`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the shape parameters of the SED are not fixed, which the window of the detection assumes, or if the lower</span>
+<span class="sd">        bound of ``log_t0`` is a time scale shorter than a dwell.</span>
+<span class="sd">    """</span>
+
+    <span class="n">TRANSIENT_KEY</span> <span class="o">=</span> <span class="s2">"breakout"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span><span class="p">,</span>
+        <span class="n">mission</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">log_L0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">log_t0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">z_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">table_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cosmology</span><span class="p">:</span> <span class="n">Cosmology</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schedule_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">survey</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="n">cosmology</span><span class="p">,</span> <span class="n">schedule_name</span><span class="o">=</span><span class="n">schedule_name</span><span class="p">,</span> <span class="o">**</span><span class="n">survey</span><span class="p">)</span>
+        <span class="n">log_L0</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">configured</span><span class="p">(</span><span class="n">log_L0</span><span class="p">,</span> <span class="s2">"breakout.log_L0"</span><span class="p">)]</span>
+        <span class="n">log_t0</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">configured</span><span class="p">(</span><span class="n">log_t0</span><span class="p">,</span> <span class="s2">"breakout.log_t0"</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">configured</span><span class="p">(</span><span class="n">z_max</span><span class="p">,</span> <span class="s2">"breakout.z_max"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">configured</span><span class="p">(</span><span class="n">table_points</span><span class="p">,</span> <span class="s2">"breakout.table_points"</span><span class="p">))</span>
+
+        <span class="n">space</span> <span class="o">=</span> <span class="n">Space</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">Axis</span><span class="p">(</span><span class="s2">"log_L0"</span><span class="p">,</span> <span class="o">*</span><span class="n">log_L0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"peak luminosity $L_0$"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"erg/s"</span><span class="p">),</span>
+                <span class="n">Axis</span><span class="p">(</span><span class="s2">"log_t0"</span><span class="p">,</span> <span class="o">*</span><span class="n">log_t0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">"time scale $t_0$"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"s"</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_axes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ParameterAxis</span><span class="p">(</span><span class="s2">"log_L0"</span><span class="p">,</span> <span class="s2">"amplitude"</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">),</span>
+            <span class="n">ParameterAxis</span><span class="p">(</span><span class="s2">"log_t0"</span><span class="p">,</span> <span class="s2">"t_scale"</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The window is a constant of the shape of the light curve, so the shape has to be fixed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_peak</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_half</span> <span class="o">=</span> <span class="n">half_decline_time</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_shape</span><span class="p">())</span>
+
+        <span class="c1"># Only an event that lasts longer than a dwell is mapped: its time scale has to be at least a dwell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dwell</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">observe_rows</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+        <span class="n">shortest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dwell</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">log_t0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">shortest</span> <span class="o">-</span> <span class="mf">1e-9</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The lower bound of log_t0 is </span><span class="si">{</span><span class="n">log_t0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">, a time scale shorter than the dwell of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dwell</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">. "</span>
+                <span class="sa">f</span><span class="s2">"Only events longer than a dwell are mapped: use log_t0 &gt;= </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">shortest</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">100</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_redshift_table</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clipped_warning</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure</span><span class="p">(</span>
+            <span class="n">space</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">,</span>
+            <span class="n">log_L0</span><span class="o">=</span><span class="n">log_L0</span><span class="p">,</span>
+            <span class="n">log_t0</span><span class="o">=</span><span class="n">log_t0</span><span class="p">,</span>
+            <span class="n">z_max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">,</span>
+            <span class="n">table_points</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_points</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kind_settings</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_kind_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the settings that a subclass records beyond the ones of this class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Plain types, which :meth:`~uvex_transients.phase_space.sampling.core.SurveySampler.from_settings` hands back</span>
+<span class="sd">            to the constructor. Empty here.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fixed_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Return the shape parameters of the light curve, ``(p, q, x_break, smoothness)``, which have to be fixed."""</span>
+        <span class="n">sed</span> <span class="o">=</span> <span class="n">InverseGammaBlackbodySED</span><span class="p">()</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"p"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">,</span> <span class="s2">"x_break"</span><span class="p">,</span> <span class="s2">"smoothness"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="n">ConstantPrior</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The breakout window assumes a fixed shape, but </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is drawn from a prior."</span><span class="p">)</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">to_cgs_value</span><span class="p">(</span><span class="n">sed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">table_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        dict: What a comparison of two maps checks before it differences them.</span>
+
+<span class="sd">        The band, and the four shape parameters of the light curve that the axes are measured with: the maps of two</span>
+<span class="sd">        shapes are not maps of the same plane. See</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.</span>
+<span class="sd">        """</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"band"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">band</span><span class="p">}</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">((</span><span class="s2">"shape_p"</span><span class="p">,</span> <span class="s2">"shape_q"</span><span class="p">,</span> <span class="s2">"shape_x_break"</span><span class="p">,</span> <span class="s2">"shape_smoothness"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_shape</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">meta</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># The transient                          #</span>
+    <span class="c1"># -------------------------------------- #</span>
+<div class="viewcode-block" id="BreakoutSampler.make_transient">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BreakoutSampler.make_transient.html#uvex_transients.phase_space.sampling.breakout.BreakoutSampler.make_transient">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_transient</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_BreakoutTransient</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a new breakout, not yet placed at a point of the space.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        _BreakoutTransient</span>
+<span class="sd">            An instance that :meth:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler._place` can move.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_BreakoutTransient</span><span class="p">(</span><span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Move the transient to ``(log10 L_0 / (erg/s), log10 t_0 / s)``.</span>
+
+<span class="sd">        The amplitude and the time scale are fixed, the redshift limit is the point's, and an event is followed for the</span>
+<span class="sd">        window out to the half-decline of its light curve, stretched by time dilation at the farthest event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : numpy.ndarray</span>
+<span class="sd">            The point, shape ``(2,)``.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fix_parameters</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z_limit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift_limit</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">z_limit</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clipped_warning</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clipped_warning</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">"The redshift limit of log10 L_0 = </span><span class="si">%.2f</span><span class="s2">, log10 t_0 = </span><span class="si">%.2f</span><span class="s2"> reaches z_max = </span><span class="si">%g</span><span class="s2">, so it is clipped and its "</span>
+                <span class="s2">"recovered volume-time is a lower bound. Every brighter point is clipped too."</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">redshift_limit</span> <span class="o">=</span> <span class="n">z_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">duration_limit</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z_limit</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_half</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Return the log10 of the window in days: the half-decline time, stretched by time dilation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : array-like</span>
+<span class="sd">            The redshift limit of each point.</span>
+<span class="sd">        x : numpy.ndarray</span>
+<span class="sd">            The points, shape ``(..., 2)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`\log_{10}` of the window in days, of the shape of `z`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_half</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">_SECONDS_PER_DAY</span><span class="p">)</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># The redshift limit                     #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_redshift_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tabulate the redshift limit over the axes.</span>
+
+<span class="sd">        At each point of a grid in ``(log L_0, log t_0)`` the instantaneous band magnitude of the SED is found at every</span>
+<span class="sd">        redshift of a grid, at the brightest time of the window (from the start out to the half-decline, at the</span>
+<span class="sd">        redshift). The limit is the redshift at which that reaches the depth. The SED is evaluated once for each point</span>
+<span class="sd">        and every redshift is then a change of band weights, which is why the table is cheap.</span>
+<span class="sd">        """</span>
+        <span class="n">sed</span> <span class="o">=</span> <span class="n">InverseGammaBlackbodySED</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">band_grids</span> <span class="o">=</span> <span class="n">resolve_bandpasses</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">band</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mission</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">bandpasses</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">band</span><span class="p">]})</span>
+        <span class="n">z_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">_Z_MIN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">,</span> <span class="n">_N_REDSHIFT</span><span class="p">)</span>
+        <span class="n">luminosity_distance</span> <span class="o">=</span> <span class="n">resolve_cosmological_distances</span><span class="p">(</span><span class="n">redshift</span><span class="o">=</span><span class="n">z_grid</span><span class="p">,</span> <span class="n">cosmology</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosmology</span><span class="p">)[</span>
+            <span class="s2">"luminosity_distance"</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">x_window</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">_X_MIN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_half</span><span class="p">,</span> <span class="n">_N_TIME</span><span class="p">)</span>
+
+        <span class="p">(</span><span class="n">lo_l</span><span class="p">,</span> <span class="n">hi_l</span><span class="p">),</span> <span class="p">(</span><span class="n">lo_t</span><span class="p">,</span> <span class="n">hi_t</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_space</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="n">log_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo_l</span><span class="p">,</span> <span class="n">hi_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_points</span><span class="p">)</span>
+        <span class="n">log_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo_t</span><span class="p">,</span> <span class="n">hi_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_points</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sed</span><span class="o">.</span><span class="n">sample_parameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">log_l</span><span class="p">),</span> <span class="n">rng</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">log_l</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">log_t</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">log_t0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">log_t</span><span class="p">):</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="n">log_t0</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">constants</span><span class="p">,</span> <span class="s2">"amplitude"</span><span class="p">:</span> <span class="mf">10.0</span><span class="o">**</span><span class="n">log_l</span><span class="p">,</span> <span class="s2">"t_scale"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">log_l</span><span class="p">),</span> <span class="n">t0</span><span class="p">)}</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">peak_band_magnitudes</span><span class="p">(</span>
+                <span class="n">sed</span><span class="o">.</span><span class="n">_eval</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">z_grid</span><span class="p">,</span> <span class="n">luminosity_distance</span><span class="p">,</span> <span class="n">band_grids</span><span class="p">,</span> <span class="n">x_window</span> <span class="o">*</span> <span class="n">t0</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">log_l</span><span class="p">)):</span>
+                <span class="c1"># Fainter with distance, up to the wobble of the K-correction, which a limit does not follow</span>
+                <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">peak</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">table</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mag_limit</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">z_grid</span><span class="p">))</span>
+
+        <span class="c1"># Where even the nearest redshift is too faint, or the farthest too bright, `interp` holds the end</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_redshift_table</span> <span class="o">=</span> <span class="n">RegularGridInterpolator</span><span class="p">((</span><span class="n">log_l</span><span class="p">,</span> <span class="n">log_t</span><span class="p">),</span> <span class="n">table</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"linear"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_table_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">log_l</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">log_l</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">log_t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">log_t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]])</span>
+
+<div class="viewcode-block" id="BreakoutSampler.redshift_limit">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BreakoutSampler.redshift_limit.html#uvex_transients.phase_space.sampling.breakout.BreakoutSampler.redshift_limit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redshift_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the redshift out to which events are drawn at points of the space.</span>
+
+<span class="sd">        It is the redshift at which the instantaneous band magnitude, at the brightest time of the window, reaches the</span>
+<span class="sd">        depth, from a table over the axes that is built on first use. A point outside the axes' ranges takes the limit</span>
+<span class="sd">        of the nearest point inside.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points ``(log10 L_0, log10 t_0)``, shape ``(..., 2)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The redshift limit of each point, of shape ``(...)``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_redshift_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_redshift_table</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_redshift_table</span><span class="p">(</span><span class="n">clipped</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BracketedBreakoutSampler">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler.html#uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BracketedBreakoutSampler</span><span class="p">(</span><span class="n">BreakoutSampler</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"breakout_bracketed"</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Count the breakouts whose explosion the survey brackets to within the duration of the breakout.</span>
+
+<span class="sd">    The same measurement as :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler`, with a stricter</span>
+<span class="sd">    detection. An event is recovered when its first detection comes within :math:`g\,x_{1/2}\,t_0\,(1+z)` of its last</span>
+<span class="sd">    non-detection, :math:`g` being `gap_factor` and</span>
+<span class="sd">    :math:`z` the redshift of the *event*: the duration of the breakout in its own frame, stretched by its own time</span>
+<span class="sd">    dilation. The last non-detection can be before the explosion. So that the survey knows when it happened to within</span>
+<span class="sd">    that duration, an event with no non-detection that close to its first detection, which includes one whose first</span>
+<span class="sd">    visit of a field is already a detection, is not recovered.</span>
+
+<span class="sd">    The window of a point (the one :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` follows its</span>
+<span class="sd">    events for) is that of its farthest event, and a nearby event is shorter in its own frame. A cut that takes the one</span>
+<span class="sd">    window of the point would give every event the farthest one's, up to twice what a nearby event is due, so the gap is</span>
+<span class="sd">    compared event by event.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule</span>
+<span class="sd">        The survey to recover events against.</span>
+<span class="sd">    mission : str or m4opt.missions.Mission, optional</span>
+<span class="sd">        The mission (detector and background), or the name of one.</span>
+<span class="sd">    gap_factor : float, optional</span>
+<span class="sd">        The longest gap, in units of the event's own :math:`x_{1/2}\,t_0\,(1+z)`. The default is one.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        The arguments of :class:`~uvex_transients.phase_space.sampling.breakout.BreakoutSampler` except ``detection``,</span>
+<span class="sd">        which this sampler defines itself.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `gap_factor` is not positive, or a ``detection`` is given.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schedule</span><span class="p">:</span> <span class="n">SurveySchedule</span><span class="p">,</span> <span class="n">mission</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">gap_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"detection"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"A bracketed breakout defines its own detection; leave `detection` out."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gap_factor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`gap_factor` must be positive, got </span><span class="si">{</span><span class="n">gap_factor</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">gap_factor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">schedule</span><span class="p">,</span> <span class="n">mission</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_kind_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the gap factor, which is recorded so that the sampler can be rebuilt.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            ``{"gap_factor": ...}``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"gap_factor"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap_factor</span><span class="p">}</span>
+
+<div class="viewcode-block" id="BracketedBreakoutSampler.describe">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler.describe.html#uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler.describe">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Describe the map: its band, the threshold and the gap the explosion has to be bracketed to.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The `settings` of a sampler of this class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            For example ``"FUV: SNR &gt;= 5, explosion bracketed within 1 x its window"``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'band'</span><span class="p">]</span><span class="si">}</span><span class="s2">: SNR &gt;= </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'snr_threshold'</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"explosion bracketed within </span><span class="si">{</span><span class="n">settings</span><span class="p">[</span><span class="s1">'gap_factor'</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> x its window"</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Move the transient to a point, and remember it for the window of each event.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : numpy.ndarray</span>
+<span class="sd">            The point, shape ``(2,)``.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_place</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BracketedBreakoutSampler.detect">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler.detect.html#uvex_transients.phase_space.sampling.breakout.BracketedBreakoutSampler.detect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator</span><span class="p">,</span> <span class="n">catalog</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the events whose first detection is within their own window of their last non-detection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        simulator : ~uvex_transients.simulation.core.SurveySimulator</span>
+<span class="sd">            The simulator that made `catalog`.</span>
+<span class="sd">        catalog : ~uvex_transients.simulation.event_catalog.EventCatalog</span>
+<span class="sd">            The events drawn at the placed point.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~uvex_transients.simulation.event_catalog.EventCatalog</span>
+<span class="sd">            The rows of `catalog` that are recovered.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">catalog</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">catalog</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"redshift"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="c1"># In days. The farthest event has the longest window, and a non-detection before the explosion by more than</span>
+        <span class="c1"># an event's own window could not bracket it, so one search back of that length covers every event.</span>
+        <span class="n">own</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap_factor</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_window</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_point</span><span class="p">)</span>
+        <span class="n">far</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap_factor</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transient</span><span class="o">.</span><span class="n">duration_limit</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">simulator</span><span class="o">.</span><span class="n">filter_by_time_since_last_nondetection</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mission</span><span class="p">,</span>
+            <span class="n">snr_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span><span class="p">,</span>
+            <span class="n">max_delay</span><span class="o">=</span><span class="n">own</span><span class="p">,</span>
+            <span class="n">lookback</span><span class="o">=</span><span class="n">far</span><span class="p">,</span>
+            <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">band</span><span class="p">],</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

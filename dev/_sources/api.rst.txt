@@ -45,6 +45,20 @@ Monte Carlo sampling of transient populations against a survey schedule.
 
     uvex_transients.simulation
 
+Phase Space
+-----------
+Maps of the survey's recovery of a transient over the plane of two of its properties (the canonical transient
+over peak luminosity and half-decline time, a shock breakout over its luminosity and time scale), made by a
+:class:`~uvex_transients.phase_space.sampling.base.Sampler` that counts the detections at a point and a Gaussian
+process that places the next one.
+
+.. autosummary::
+    :toctree: _as_gen
+    :recursive:
+    :template: module.rst
+
+    uvex_transients.phase_space
+
 Surveys
 -------
 Representation and validation of survey schedules.

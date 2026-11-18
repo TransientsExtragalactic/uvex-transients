@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -52,7 +52,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/simulation/overview';</script>
     <script>
@@ -780,7 +780,7 @@ agnostic to which SED any given row actually uses.</p>
 transient’s redshift-limited volume is, by construction, near the limit where it’s essentially
 undetectable. A <strong>cut</strong> is a screening step that takes an
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event_catalog.EventCatalog.html#uvex_transients.simulation.event_catalog.EventCatalog" title="uvex_transients.simulation.event_catalog.EventCatalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventCatalog</span></code></a> and a
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses, even for
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mission</span></code></a> (for its <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a>’s bandpasses, even for
 the cuts that don’t use it, so every cut shares one call signature) and returns a new
 <code class="docutils literal notranslate"><span class="pre">EventCatalog</span></code> over the surviving rows – <code class="docutils literal notranslate"><span class="pre">nside</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code>/<code class="docutils literal notranslate"><span class="pre">time_bins</span></code>/<code class="docutils literal notranslate"><span class="pre">seed</span></code>/<code class="docutils literal notranslate"><span class="pre">sampling_factor</span></code>
 unchanged, <code class="docutils literal notranslate"><span class="pre">pre_cut_counts</span></code> unchanged, and original <code class="docutils literal notranslate"><span class="pre">event_id</span></code> values preserved rather than
@@ -809,8 +809,8 @@ a cheap pass that throws away the hopeless majority, then the expensive, schedul
 what remains.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-0">
-Limiting Magnitude</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-0-content" class="sd-tab-label" for="sd-tab-item-0">
+Limiting Magnitude</label><div class="sd-tab-content docutils" id="sd-tab-item-0-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude.html#uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude" title="uvex_transients.simulation.core.SurveySimulator.filter_by_limiting_magnitude"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_limiting_magnitude()</span></code></a></p>
 <p><strong>Description:</strong> Schedule-independent – it never checks whether the schedule actually
 pointed anywhere near an event. For each transient type, every event’s own physical
@@ -829,15 +829,15 @@ into one dense array at once), and raising <code class="docutils literal notrans
 events that only momentarily clear the limit.</p>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-1">
-Signal-to-Noise Ratio</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-1-content" class="sd-tab-label" for="sd-tab-item-1">
+Signal-to-Noise Ratio</label><div class="sd-tab-content docutils" id="sd-tab-item-1-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_snr.html#uvex_transients.simulation.core.SurveySimulator.filter_by_snr" title="uvex_transients.simulation.core.SurveySimulator.filter_by_snr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_snr()</span></code></a></p>
 <p><strong>Description:</strong> The real question, schedule and all: over every observation the schedule
 actually made of an event’s position while it was active, is it ever detected above
 <code class="docutils literal notranslate"><span class="pre">snr_threshold</span></code>? Every surviving event’s observations are gathered with one batched
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of.html#uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of" title="uvex_transients.surveys.base.SurveySchedule.get_observation_indices_of"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_observation_indices_of()</span></code></a> call per
 chunk (see <a class="reference internal" href="../surveys/overview.html#user-guide-surveys"><span class="std std-ref">Surveys</span></a>), then evaluated together with
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>. Each observation is judged on a <em>measured</em> SNR (a
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a>. Each observation is judged on a <em>measured</em> SNR (a
 simulated noisy measurement, the same one
 <a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> makes), and epochs before
 the explosion never count.</p>
@@ -1335,7 +1335,7 @@ distance, and foreground dust; the last a rest-frame, distance-independent bolom
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.event.Event.simulate_photometry.html#uvex_transients.simulation.event.Event.simulate_photometry" title="uvex_transients.simulation.event.Event.simulate_photometry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulate_photometry()</span></code></a> is the expensive step every
 earlier screening pass was designed to defer: real, per-observation, per-band synthetic photometry
 against every observation in <code class="docutils literal notranslate"><span class="pre">observations</span></code>, batched into one
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.synphot.Detector.html#m4opt.synphot.Detector.get_snr" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_snr()</span></code></a> call per band regardless of how many observations there
 are:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">detected</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">detected</span><span class="o">.</span><span class="n">event_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">{</span><span class="s2">"tde"</span><span class="p">:</span> <span class="n">tde</span><span class="p">},</span> <span class="n">schedule</span><span class="p">)</span>
 

@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -52,7 +52,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/surveys/overview';</script>
     <script>
@@ -725,12 +725,12 @@ of the higher-level methods below.</p>
 against a declarative schema (<code class="docutils literal notranslate"><span class="pre">SurveySchedule._SCHEMA</span></code>, built from
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.utils.QTableColumnSpec.html#uvex_transients.surveys.utils.QTableColumnSpec" title="uvex_transients.surveys.utils.QTableColumnSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTableColumnSpec</span></code></a>).</p></li>
 <li><p>An <strong>instrument field of view</strong>, <code class="docutils literal notranslate"><span class="pre">instrument_fov</span></code> – either a single
-<a class="reference external" href="https://docs.astropy.org/projects/regions/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a> (of any shape <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.fov.footprint.html#m4opt.fov.footprint" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">m4opt.fov.footprint()</span></code></a> supports, e.g.
+<a class="reference external" href="https://docs.astropy.org/projects/regions/en/stable/api/regions.SkyRegion.html#regions.SkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkyRegion</span></code></a> (of any shape <a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.fov.footprint.html#m4opt.fov.footprint" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-func docutils literal notranslate"><span class="pre">m4opt.fov.footprint()</span></code></a> supports, e.g.
 <a class="reference external" href="https://docs.astropy.org/projects/regions/en/stable/api/regions.RectangleSkyRegion.html#regions.RectangleSkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RectangleSkyRegion</span></code></a> or <a class="reference external" href="https://docs.astropy.org/projects/regions/en/stable/api/regions.CircleSkyRegion.html#regions.CircleSkyRegion" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CircleSkyRegion</span></code></a>) or a
 <a class="reference external" href="https://docs.astropy.org/projects/regions/en/stable/api/regions.Regions.html#regions.Regions" title="(in regions v0.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Regions</span></code></a> collection of several, such as a real instrument’s chip-gapped
 footprint made of multiple detector tiles (e.g. <code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.uvex.fov</span></code>) – defined at
 RA=0deg/Dec=0deg/PA=0deg (the same convention <code class="docutils literal notranslate"><span class="pre">m4opt</span></code> uses, e.g.
-<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission.fov" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.Mission.fov</span></code></a>), that every observation’s footprint is derived from by
+<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.missions.Mission.html#m4opt.missions.Mission.fov" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">m4opt.missions.Mission.fov</span></code></a>), that every observation’s footprint is derived from by
 translating and rolling it to that row’s <code class="docutils literal notranslate"><span class="pre">target_coord</span></code>/<code class="docutils literal notranslate"><span class="pre">roll</span></code>.</p></li>
 </ol>
 <p>The table’s required columns are:</p>
@@ -997,8 +997,8 @@ diagnostic below is some function of that one per-pixel sequence, evaluated inde
 pixel on the sky.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-0">
-Visit Count Distribution</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-0-content" class="sd-tab-label" for="sd-tab-item-0">
+Visit Count Distribution</label><div class="sd-tab-content docutils" id="sd-tab-item-0-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count()</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count_histogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count_histogram()</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf.html#uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf" title="uvex_transients.surveys.base.SurveySchedule.compute_visit_count_cdf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_visit_count_cdf()</span></code></a>.</p>
@@ -1021,8 +1021,8 @@ page is only defined where <span class="math notranslate nohighlight">\(N(p) \ge
 even applicable.</p>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-1">
-Pair-wise Cadence</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-1-content" class="sd-tab-label" for="sd-tab-item-1">
+Pair-wise Cadence</label><div class="sd-tab-content docutils" id="sd-tab-item-1-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a>.</p>
 <p><strong>Description:</strong> Consider every pair of pixel <span class="math notranslate nohighlight">\(p\)</span>’s own visits and how far apart in
@@ -1047,8 +1047,8 @@ median or minimum against a transient’s characteristic fade time tells you whe
 sampling is fine enough to resolve it at all.</p>
 </div>
 <input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-2">
-Successive Gaps</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-2-content" class="sd-tab-label" for="sd-tab-item-2">
+Successive Gaps</label><div class="sd-tab-content docutils" id="sd-tab-item-2-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_time_differences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_time_differences()</span></code></a>
 / <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics.html#uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics" title="uvex_transients.surveys.base.SurveySchedule.compute_cadence_statistics"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_cadence_statistics()</span></code></a> with
 <code class="docutils literal notranslate"><span class="pre">pairs='consecutive'</span></code>.</p>
@@ -1066,8 +1066,8 @@ pixel actually sat unobserved through, back to back. That makes it the more lite
 “how long between one look and the next,” and the natural input to <em>Max Gap</em> below.</p>
 </div>
 <input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-3">
-Max Gap</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-3-content" class="sd-tab-label" for="sd-tab-item-3">
+Max Gap</label><div class="sd-tab-content docutils" id="sd-tab-item-3-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_max_gap.html#uvex_transients.surveys.base.SurveySchedule.compute_max_gap" title="uvex_transients.surveys.base.SurveySchedule.compute_max_gap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_max_gap()</span></code></a>.</p>
 <p><strong>Description:</strong> The single worst successive gap at pixel <span class="math notranslate nohighlight">\(p\)</span>,</p>
 <div class="math notranslate nohighlight">
@@ -1082,8 +1082,8 @@ visibility gap – during which a fast transient could rise and fade without a s
 supporting observation.</p>
 </div>
 <input id="sd-tab-item-4" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-4">
-Pair Counts</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-4-content" class="sd-tab-label" for="sd-tab-item-4">
+Pair Counts</label><div class="sd-tab-content docutils" id="sd-tab-item-4-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_counts.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_counts" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_counts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_counts()</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_pair_count_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_pair_count_curve()</span></code></a>.</p>
 <p><strong>Description:</strong> Fix a characteristic transient timescale <span class="math notranslate nohighlight">\(T\)</span> and a qualifying
@@ -1113,8 +1113,8 @@ answers yes/no per pixel: one lucky qualifying pair counts exactly the same as c
 cadence support.</p>
 </div>
 <input id="sd-tab-item-5" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-5">
-Control-Time Curve</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-5-content" class="sd-tab-label" for="sd-tab-item-5">
+Control-Time Curve</label><div class="sd-tab-content docutils" id="sd-tab-item-5-content">
 <p><strong>Method:</strong> <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time()</span></code></a>,
 <a class="reference internal" href="../../_as_gen/uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve.html#uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve" title="uvex_transients.surveys.base.SurveySchedule.compute_control_time_curve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute_control_time_curve()</span></code></a>.</p>
 <p><strong>Description:</strong> Refines <em>Pair Counts</em> from “does a qualifying pair exist” to “for how much

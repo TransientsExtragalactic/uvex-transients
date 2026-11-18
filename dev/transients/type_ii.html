@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -52,7 +52,7 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'transients/type_ii';</script>
     <script>
@@ -507,8 +507,8 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
 (Hydrogen-free Type Ib and Ic supernovae are covered on the <a class="reference internal" href="type_i.html#transients-type-i"><span class="std std-ref">Type I page</span></a>.)</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-0">
-Type IIP</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-0-content" class="sd-tab-label" for="sd-tab-item-0">
+Type IIP</label><div class="sd-tab-content docutils" id="sd-tab-item-0-content">
 <p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe" title="uvex_transients.transients.supernovae.TypeIIPSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSNe</span></code></a>, pairing
 <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED" title="uvex_transients.models.supernovae.IIp.TypeIIPSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPSED</span></code></a> with the rate/duration metadata
 described below.</p>
@@ -625,84 +625,84 @@ described above.</p>
 <col style="width: 16.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
-<th class="head"><p class="sd-card-text">Symbol</p></th>
-<th class="head"><p class="sd-card-text">Prior</p></th>
-<th class="head"><p class="sd-card-text">Notes</p></th>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Notes</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_1</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_1\)</span></p></td>
-<td><p class="sd-card-text">TruncatedNormal(<span class="math notranslate nohighlight">\(\log_{10}(L_1/\mathrm{erg\,s^{-1}})\)</span>; mean=42.45, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.1, bounds 41.3 to 43.5)</p></td>
-<td><p class="sd-card-text">Shock-cooling luminosity scale: the power law’s value at 1 d, before the cutoff.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">L_1</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_1\)</span></p></td>
+<td><p>TruncatedNormal(<span class="math notranslate nohighlight">\(\log_{10}(L_1/\mathrm{erg\,s^{-1}})\)</span>; mean=42.45, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.1, bounds 41.3 to 43.5)</p></td>
+<td><p>Shock-cooling luminosity scale: the power law’s value at 1 d, before the cutoff.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha\)</span></p></td>
-<td><p class="sd-card-text">Uniform(0, 0.35)</p></td>
-<td><p class="sd-card-text">Shock-cooling power-law decay index.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">alpha</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha\)</span></p></td>
+<td><p>Uniform(0, 0.35)</p></td>
+<td><p>Shock-cooling power-law decay index.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_c</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_c\)</span></p></td>
-<td><p class="sd-card-text">Uniform(9 d, 13 d)</p></td>
-<td><p class="sd-card-text">Exponential cutoff time of the shock-cooling decline.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_c</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_c\)</span></p></td>
+<td><p>Uniform(9 d, 13 d)</p></td>
+<td><p>Exponential cutoff time of the shock-cooling decline.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_p</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_p\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=41.76, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
-<td><p class="sd-card-text">Plateau luminosity (median <span class="math notranslate nohighlight">\(\sim6\times10^{41}\)</span> erg/s).</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">L_p</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_p\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=41.76, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
+<td><p>Plateau luminosity (median <span class="math notranslate nohighlight">\(\sim6\times10^{41}\)</span> erg/s).</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_P</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_P\)</span></p></td>
-<td><p class="sd-card-text">Uniform(75 d, 135 d)</p></td>
-<td><p class="sd-card-text">Plateau-end / radioactive-tail-onset epoch.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_P</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_P\)</span></p></td>
+<td><p>Uniform(75 d, 135 d)</p></td>
+<td><p>Plateau-end / radioactive-tail-onset epoch.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_drop</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{drop}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (7 d)</p></td>
-<td><p class="sd-card-text">Plateau-end transition width.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau_drop</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{drop}\)</span></p></td>
+<td><p>Fixed (7 d)</p></td>
+<td><p>Plateau-end transition width.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_Co</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_\mathrm{Co}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.03, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
-<td><p class="sd-card-text">Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">L_Co</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_\mathrm{Co}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.03, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.35)</p></td>
+<td><p>Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_Co</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{Co}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (111.4 d)</p></td>
-<td><p class="sd-card-text">Radioactive-tail decay timescale, fixed to the <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> e-folding
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau_Co</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{Co}\)</span></p></td>
+<td><p>Fixed (111.4 d)</p></td>
+<td><p>Radioactive-tail decay timescale, fixed to the <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> e-folding
 time.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=4.7, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.15)</p></td>
-<td><p class="sd-card-text">Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(5\times10^4\)</span> K). Not constrained by data.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=4.7, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.15)</p></td>
+<td><p>Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(5\times10^4\)</span> K). Not constrained by data.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.74, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.04)</p></td>
-<td><p class="sd-card-text">Late-time temperature (median <span class="math notranslate nohighlight">\(5.5\times10^3\)</span> K). Raised by hand after the line blanketing was added.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.74, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.04)</p></td>
+<td><p>Late-time temperature (median <span class="math notranslate nohighlight">\(5.5\times10^3\)</span> K). Raised by hand after the line blanketing was added.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_T</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_T\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(t_T/\mathrm{d})\)</span>; mean=0.77, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
-<td><p class="sd-card-text">Epoch at which the photosphere is halfway from <span class="math notranslate nohighlight">\(T_0\)</span> to <span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_T</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_T\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(t_T/\mathrm{d})\)</span>; mean=0.77, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
+<td><p>Epoch at which the photosphere is halfway from <span class="math notranslate nohighlight">\(T_0\)</span> to <span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span>
 (median <span class="math notranslate nohighlight">\(\sim6\)</span> d). Fit to the Swift/UVOT UVW1 light curves.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">k_T</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(k_T\)</span></p></td>
-<td><p class="sd-card-text">Uniform(1.5, 2.0)</p></td>
-<td><p class="sd-card-text">Steepness of the cooling transition. Lowered by hand after the line blanketing was added.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">k_T</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(k_T\)</span></p></td>
+<td><p>Uniform(1.5, 2.0)</p></td>
+<td><p>Steepness of the cooling transition. Lowered by hand after the line blanketing was added.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
-<td><p class="sd-card-text">Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
+<td><p>Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
+<td><p>Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
-<td><p class="sd-card-text">Fixed (5)</p></td>
-<td><p class="sd-card-text">Power-law index of the line-blanketing suppression. The Type Ia value.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
+<td><p>Fixed (5)</p></td>
+<td><p>Power-law index of the line-blanketing suppression. The Type Ia value.</p></td>
 </tr>
 </tbody>
 </table>
@@ -776,8 +776,8 @@ homogeneous in comoving volume out to its redshift limit:</p>
 </figure>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-1">
-Type IIP + Excess</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-1-content" class="sd-tab-label" for="sd-tab-item-1">
+Type IIP + Excess</label><div class="sd-tab-content docutils" id="sd-tab-item-1-content">
 <p>Implemented by <a class="reference internal" href="../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe" title="uvex_transients.transients.supernovae.TypeIIPExcessSNe"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSNe</span></code></a>, pairing
 <a class="reference internal" href="../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPExcessSED.html#uvex_transients.models.supernovae.IIp.TypeIIPExcessSED" title="uvex_transients.models.supernovae.IIp.TypeIIPExcessSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIIPExcessSED</span></code></a> with the rate/duration
 metadata described below. IXF/GGI-like: a bright, hot, fast early excess on top of the same
@@ -870,107 +870,107 @@ expectation. <code class="docutils literal notranslate"><span class="pre">T_floo
 <col style="width: 16.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
-<th class="head"><p class="sd-card-text">Symbol</p></th>
-<th class="head"><p class="sd-card-text">Prior</p></th>
-<th class="head"><p class="sd-card-text">Notes</p></th>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Notes</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t0</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_0\)</span></p></td>
-<td><p class="sd-card-text">Uniform(0.5 d, 3.5 d)</p></td>
-<td><p class="sd-card-text">Explosion/rise reference epoch.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t0</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_0\)</span></p></td>
+<td><p>Uniform(0.5 d, 3.5 d)</p></td>
+<td><p>Explosion/rise reference epoch.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_rise</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{rise}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(\tau_\mathrm{rise}/\mathrm{d})\)</span>; mean=-0.2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.15)</p></td>
-<td><p class="sd-card-text">Rise timescale (median <span class="math notranslate nohighlight">\(\sim0.63\)</span> d).</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau_rise</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{rise}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(\tau_\mathrm{rise}/\mathrm{d})\)</span>; mean=-0.2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.15)</p></td>
+<td><p>Rise timescale (median <span class="math notranslate nohighlight">\(\sim0.63\)</span> d).</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_pk</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_\mathrm{pk}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})\)</span>; mean=43.3, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.25)</p></td>
-<td><p class="sd-card-text">Early cooling-phase peak luminosity scale (median <span class="math notranslate nohighlight">\(\sim2\times10^{43}\)</span> erg/s).</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">L_pk</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_\mathrm{pk}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{pk}/\mathrm{erg\,s^{-1}})\)</span>; mean=43.3, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.25)</p></td>
+<td><p>Early cooling-phase peak luminosity scale (median <span class="math notranslate nohighlight">\(\sim2\times10^{43}\)</span> erg/s).</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_cool</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{cool}\)</span></p></td>
-<td><p class="sd-card-text">Uniform(4 d, 15 d)</p></td>
-<td><p class="sd-card-text">Early cooling-phase decay timescale.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau_cool</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{cool}\)</span></p></td>
+<td><p>Uniform(4 d, 15 d)</p></td>
+<td><p>Early cooling-phase decay timescale.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_p</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_p\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=42.2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
-<td><p class="sd-card-text">Plateau luminosity.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">L_p</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_p\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_p/\mathrm{erg\,s^{-1}})\)</span>; mean=42.2, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2)</p></td>
+<td><p>Plateau luminosity.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_P</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_P\)</span></p></td>
-<td><p class="sd-card-text">Uniform(50 d, 150 d)</p></td>
-<td><p class="sd-card-text">Plateau-end / radioactive-tail-onset epoch.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">t_P</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_P\)</span></p></td>
+<td><p>Uniform(50 d, 150 d)</p></td>
+<td><p>Plateau-end / radioactive-tail-onset epoch.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_drop</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{drop}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (10.5 d)</p></td>
-<td><p class="sd-card-text">Plateau-end transition width.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tau_drop</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{drop}\)</span></p></td>
+<td><p>Fixed (10.5 d)</p></td>
+<td><p>Plateau-end transition width.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">L_Co</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(L_\mathrm{Co}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.5, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3)</p></td>
-<td><p class="sd-card-text">Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">L_Co</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(L_\mathrm{Co}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(L_\mathrm{Co}/\mathrm{erg\,s^{-1}})\)</span>; mean=41.5, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.3)</p></td>
+<td><p>Radioactive-tail luminosity at <code class="docutils literal notranslate"><span class="pre">t_P</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_Co</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_\mathrm{Co}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (111.4 d)</p></td>
-<td><p class="sd-card-text">Radioactive-tail decay timescale, fixed to the <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> e-folding time.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tau_Co</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_\mathrm{Co}\)</span></p></td>
+<td><p>Fixed (111.4 d)</p></td>
+<td><p>Radioactive-tail decay timescale, fixed to the <span class="math notranslate nohighlight">\(^{56}\mathrm{Co}\)</span> e-folding time.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=5.0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
-<td><p class="sd-card-text">Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(10^5\)</span> K), the hot flash. Not constrained by data.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T0</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_0\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_0/\mathrm{K})\)</span>; mean=5.0, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.1)</p></td>
+<td><p>Temperature at <span class="math notranslate nohighlight">\(t=0\)</span> (median <span class="math notranslate nohighlight">\(10^5\)</span> K), the hot flash. Not constrained by data.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.69, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.06)</p></td>
-<td><p class="sd-card-text">Late-time temperature (median <span class="math notranslate nohighlight">\(4.9\times10^3\)</span> K).</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(T_\mathrm{floor}/\mathrm{K})\)</span>; mean=3.69, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.06)</p></td>
+<td><p>Late-time temperature (median <span class="math notranslate nohighlight">\(4.9\times10^3\)</span> K).</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">tau_T</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\tau_T\)</span></p></td>
-<td><p class="sd-card-text">Uniform(0.15 d, 0.3 d)</p></td>
-<td><p class="sd-card-text">Cooling timescale of the initial flash.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau_T</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\tau_T\)</span></p></td>
+<td><p>Uniform(0.15 d, 0.3 d)</p></td>
+<td><p>Cooling timescale of the initial flash.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_T</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_T\)</span></p></td>
-<td><p class="sd-card-text">Uniform(1.8, 2.4)</p></td>
-<td><p class="sd-card-text">Cooling power-law index of the initial flash.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">alpha_T</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha_T\)</span></p></td>
+<td><p>Uniform(1.8, 2.4)</p></td>
+<td><p>Cooling power-law index of the initial flash.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_bump</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\Delta T_\mathrm{bump}\)</span></p></td>
-<td><p class="sd-card-text">Normal(<span class="math notranslate nohighlight">\(\log_{10}(\Delta T_\mathrm{bump}/\mathrm{K})\)</span>; mean=4.19, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.08)</p></td>
-<td><p class="sd-card-text">Peak temperature excess of the reheating bump (median <span class="math notranslate nohighlight">\(1.55\times10^4\)</span> K).</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">T_bump</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\Delta T_\mathrm{bump}\)</span></p></td>
+<td><p>Normal(<span class="math notranslate nohighlight">\(\log_{10}(\Delta T_\mathrm{bump}/\mathrm{K})\)</span>; mean=4.19, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.08)</p></td>
+<td><p>Peak temperature excess of the reheating bump (median <span class="math notranslate nohighlight">\(1.55\times10^4\)</span> K).</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">t_bump</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(t_\mathrm{bump}\)</span></p></td>
-<td><p class="sd-card-text">Uniform(2.4 d, 3.6 d)</p></td>
-<td><p class="sd-card-text">Epoch of the bump’s peak.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t_bump</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(t_\mathrm{bump}\)</span></p></td>
+<td><p>Uniform(2.4 d, 3.6 d)</p></td>
+<td><p>Epoch of the bump’s peak.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">beta_bump</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\beta_\mathrm{bump}\)</span></p></td>
-<td><p class="sd-card-text">Uniform(5, 12)</p></td>
-<td><p class="sd-card-text">Rise power-law index of the bump.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">beta_bump</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta_\mathrm{bump}\)</span></p></td>
+<td><p>Uniform(5, 12)</p></td>
+<td><p>Rise power-law index of the bump.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">alpha_bump</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\alpha_\mathrm{bump}\)</span></p></td>
-<td><p class="sd-card-text">Uniform(1.6, 2.4)</p></td>
-<td><p class="sd-card-text">Decay power-law index of the bump.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">alpha_bump</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha_\mathrm{bump}\)</span></p></td>
+<td><p>Uniform(1.6, 2.4)</p></td>
+<td><p>Decay power-law index of the bump.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
-<td><p class="sd-card-text">Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
+<td><p>Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
+<td><p>Frequency blueward of which line blanketing suppresses the flux. The Type Ia value.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
-<td><p class="sd-card-text">Fixed (3.5)</p></td>
-<td><p class="sd-card-text">Power-law index of the line-blanketing suppression. Weaker than the ordinary Type IIP value of 5.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
+<td><p>Fixed (3.5)</p></td>
+<td><p>Power-law index of the line-blanketing suppression. Weaker than the ordinary Type IIP value of 5.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1041,8 +1041,8 @@ homogeneous in comoving volume out to its redshift limit:</p>
 </figure>
 </div>
 <input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-2">
-Type IIb</label><div class="sd-tab-content docutils">
+<label aria-controls="sd-tab-item-2-content" class="sd-tab-label" for="sd-tab-item-2">
+Type IIb</label><div class="sd-tab-content docutils" id="sd-tab-item-2-content">
 <p>Type IIb supernovae are core-collapse explosions of massive stars that have been stripped of most,
 but not all, of their hydrogen envelope. Many show a double-peaked light curve: an early, hours-
 to-days-long flash powered by the shock heating and subsequent cooling of the extended envelope,
@@ -1142,77 +1142,77 @@ component is an unblanketed blackbody.</p>
 <col style="width: 34.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p class="sd-card-text">Parameter</p></th>
-<th class="head"><p class="sd-card-text">Symbol</p></th>
-<th class="head"><p class="sd-card-text">Prior</p></th>
-<th class="head"><p class="sd-card-text">Notes</p></th>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Prior</p></th>
+<th class="head"><p>Notes</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_star</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_*\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.35) around <span class="math notranslate nohighlight">\(6.3\times10^8\)</span> cm/s</p></td>
-<td><p class="sd-card-text">Scale velocity of the shock near the stellar surface.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">v_star</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(v_*\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.35) around <span class="math notranslate nohighlight">\(6.3\times10^8\)</span> cm/s</p></td>
+<td><p>Scale velocity of the shock near the stellar surface.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">radius</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(R\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.85) around <span class="math notranslate nohighlight">\(6\times10^{12}\)</span> cm</p></td>
-<td><p class="sd-card-text">Progenitor stellar radius.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">radius</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(R\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.85) around <span class="math notranslate nohighlight">\(6\times10^{12}\)</span> cm</p></td>
+<td><p>Progenitor stellar radius.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">opacity</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
-<td><p class="sd-card-text">Fixed (0.34 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
-<td><p class="sd-card-text">Electron-scattering opacity of the shock cooling.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">opacity</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p>Fixed (0.34 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
+<td><p>Electron-scattering opacity of the shock cooling.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">envelope_mass</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_E\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=1.0) around <span class="math notranslate nohighlight">\(0.05\ M_\odot\)</span></p></td>
-<td><p class="sd-card-text">Hydrogen-rich envelope mass.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">envelope_mass</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_E\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=1.0) around <span class="math notranslate nohighlight">\(0.05\ M_\odot\)</span></p></td>
+<td><p>Hydrogen-rich envelope mass.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">core_mass</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_C\)</span></p></td>
-<td><p class="sd-card-text">LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.35) around <span class="math notranslate nohighlight">\(2.8\ M_\odot\)</span></p></td>
-<td><p class="sd-card-text">Core mass.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core_mass</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_C\)</span></p></td>
+<td><p>LogNormal(<span class="math notranslate nohighlight">\(\sigma\)</span>=0.35) around <span class="math notranslate nohighlight">\(2.8\ M_\odot\)</span></p></td>
+<td><p>Core mass.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
-<td><p class="sd-card-text">TruncatedNormal(mean=0.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.07, bounds 0.01 to 0.4 <span class="math notranslate nohighlight">\(M_\odot\)</span>)</p></td>
-<td><p class="sd-card-text">Nickel-56 mass. Lower than the Type Ib value.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
+<td><p>TruncatedNormal(mean=0.1, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.07, bounds 0.01 to 0.4 <span class="math notranslate nohighlight">\(M_\odot\)</span>)</p></td>
+<td><p>Nickel-56 mass. Lower than the Type Ib value.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
-<td><p class="sd-card-text">TruncatedNormal(mean=2.6, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.1, bounds 0.1 to 8 <span class="math notranslate nohighlight">\(M_\odot\)</span>)</p></td>
-<td><p class="sd-card-text">Ejecta mass.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
+<td><p>TruncatedNormal(mean=2.6, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.1, bounds 0.1 to 8 <span class="math notranslate nohighlight">\(M_\odot\)</span>)</p></td>
+<td><p>Ejecta mass.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
-<td><p class="sd-card-text">TruncatedNormal(mean=9.9, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.4, bounds 4 to 16; units of <span class="math notranslate nohighlight">\(10^3\)</span> km/s)</p></td>
-<td><p class="sd-card-text">Constant ejecta velocity.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">v_ej</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(v_\mathrm{ej}\)</span></p></td>
+<td><p>TruncatedNormal(mean=9.9, <span class="math notranslate nohighlight">\(\sigma\)</span>=1.4, bounds 4 to 16; units of <span class="math notranslate nohighlight">\(10^3\)</span> km/s)</p></td>
+<td><p>Constant ejecta velocity.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
-<td><p class="sd-card-text">Fixed (0.06 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
-<td><p class="sd-card-text">Grey optical opacity of the ejecta.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kappa</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\kappa\)</span></p></td>
+<td><p>Fixed (0.06 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
+<td><p>Grey optical opacity of the ejecta.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
-<td><p class="sd-card-text">Fixed (0.04 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
-<td><p class="sd-card-text">Opacity to high-energy photons.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\kappa_\gamma\)</span></p></td>
+<td><p>Fixed (0.04 cm<sup>2</sup> g<sup>-1</sup>)</p></td>
+<td><p>Opacity to high-energy photons.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
-<td><p class="sd-card-text">TruncatedNormal(mean=5000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K, bounds 3000 K to 10000 K)</p></td>
-<td><p class="sd-card-text">Minimum photospheric temperature of the nickel component.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">T_floor</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(T_\mathrm{floor}\)</span></p></td>
+<td><p>TruncatedNormal(mean=5000 K, <span class="math notranslate nohighlight">\(\sigma\)</span>=1000 K, bounds 3000 K to 10000 K)</p></td>
+<td><p>Minimum photospheric temperature of the nickel component.</p></td>
 </tr>
-<tr class="row-odd"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
-<td><p class="sd-card-text">Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
-<td><p class="sd-card-text">Frequency blueward of which line blanketing suppresses the nickel component.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
+<td><p>Fixed (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz)</p></td>
+<td><p>Frequency blueward of which line blanketing suppresses the nickel component.</p></td>
 </tr>
-<tr class="row-even"><td><p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
-<td><p class="sd-card-text"><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
-<td><p class="sd-card-text">Fixed (4.0)</p></td>
-<td><p class="sd-card-text">Power-law index of the line-blanketing suppression. Weaker than the Type Ib value of 5.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
+<td><p>Fixed (4.0)</p></td>
+<td><p>Power-law index of the line-blanketing suppression. Weaker than the Type Ib value of 5.</p></td>
 </tr>
 </tbody>
 </table>

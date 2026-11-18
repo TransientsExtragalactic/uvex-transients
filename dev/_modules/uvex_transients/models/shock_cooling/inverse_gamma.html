@@ -36,7 +36,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -51,7 +51,7 @@
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/shock_cooling/inverse_gamma';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
@@ -477,6 +477,11 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"InverseGammaBlackbodySED"</span><span class="p">]</span>
 
 <span class="n">_FOUR_PI_SIGMA_SB</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">SIGMA_SB_CGS</span>
+<span class="n">_SECONDS_PER_DAY</span> <span class="o">=</span> <span class="mf">86400.0</span>
+<span class="c1">#: The cap on the breakout radius in cm, at ``t_0`` of a day and ``L_0`` of `_L_BO_CAP`, scaling as t_0^(2/3) L_0^(1/3).</span>
+<span class="n">_R_BO_CAP_CGS</span> <span class="o">=</span> <span class="mf">8.8e13</span>
+<span class="c1">#: The luminosity, in erg/s, at which the cap on the breakout radius is `_R_BO_CAP_CGS` (at a ``t_0`` of a day).</span>
+<span class="n">_L_BO_CAP</span> <span class="o">=</span> <span class="mf">1e44</span>
 
 
 <div class="viewcode-block" id="InverseGammaBlackbodySED">
@@ -493,33 +498,35 @@
 
 <span class="sd">    where :math:`S_\mathrm{BB}` is the normalized blackbody shape of</span>
 <span class="sd">    :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`. The temperature follows from the</span>
-<span class="sd">    luminosity and a photospheric radius that is a function of time alone,</span>
+<span class="sd">    luminosity and a photospheric radius that grows linearly in time from a breakout radius,</span>
 
 <span class="sd">    .. math::</span>
 
 <span class="sd">        T(t) = \left[\frac{L_\mathrm{bol}(t)}{4\pi\sigma_\mathrm{SB} R_\mathrm{ph}^2(t)}\right]^{1/4},</span>
 <span class="sd">        \qquad</span>
 <span class="sd">        R_\mathrm{ph}(t) = R_\mathrm{bo}\left(1 + \frac{x}{x_s}\right),</span>
-<span class="sd">        \qquad</span>
-<span class="sd">        R_\mathrm{bo} = c\, t_\mathrm{pk},</span>
 
-<span class="sd">    with :math:`x = t/t_0`. The breakout radius :math:`R_\mathrm{bo}` is the distance light travels by the time</span>
-<span class="sd">    :math:`t_\mathrm{pk}` of the peak of the light curve, which lies between :math:`t_0` and :math:`t_0\,p/q`</span>
-<span class="sd">    and is found numerically. The radius grows linearly in time, doubling at :math:`x = x_s`.</span>
+<span class="sd">    with :math:`x = t/t_0`. The radius doubles at :math:`x = x_s`. The breakout radius is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        R_\mathrm{bo} = \min\left[c\,t_0,\;</span>
+<span class="sd">        8.8\times10^{13}\,\mathrm{cm}\left(\frac{t_0}{1\,\mathrm{d}}\right)^{2/3}</span>
+<span class="sd">        \left(\frac{L_0}{10^{44}\,\mathrm{erg\,s^{-1}}}\right)^{1/3}\right],</span>
+
+<span class="sd">    so it is set by :math:`t_0` and :math:`L_0` and is not a separate parameter.</span>
 
 <span class="sd">    .. note::</span>
 
-<span class="sd">        :math:`R_\mathrm{bo} = c\,t_\mathrm{pk}` is an *effective* radius, the size implied by the duration of the</span>
-<span class="sd">        pulse, and not a separate parameter. The observed pulse lasts :math:`t_\mathrm{pk} \approx</span>
-<span class="sd">        \max(R/c, t_\mathrm{diff})`, where :math:`R/c` is the light-travel time across the breakout radius and</span>
-<span class="sd">        :math:`t_\mathrm{diff}` is the photon diffusion time through the breakout layer. The shock itself moves at</span>
-<span class="sd">        :math:`v \approx 0.03`-:math:`0.3\,c` for non-relativistic breakout, and the time since breakout does not</span>
-<span class="sd">        include its travel through the star. Hence :math:`c\,t_\mathrm{pk}` equals the true radius when the pulse is</span>
-<span class="sd">        light-crossing limited (for example red and blue supergiant breakouts, with</span>
-<span class="sd">        :math:`t_\mathrm{pk}/(R/c) \sim 1`-:math:`10`), and is an upper limit when diffusion sets the duration (for</span>
-<span class="sd">        example Wolf-Rayet stars, where the ratio can reach :math:`\sim 30`). In that case the photosphere is</span>
-<span class="sd">        too large and the temperature too low, by a factor :math:`(t_\mathrm{pk}/(R/c))^{1/2}`, which is at most</span>
-<span class="sd">        a few for the supergiant classes.</span>
+<span class="sd">        :math:`R_\mathrm{bo}` is an *effective* radius, the size implied by the duration of the pulse. The first term</span>
+<span class="sd">        is the distance light travels in :math:`t_0`, which is the size of a breakout that is light-crossing limited</span>
+<span class="sd">        (the observed pulse lasts :math:`\max(R/c, t_\mathrm{diff})`, with :math:`t_\mathrm{diff}` the photon diffusion</span>
+<span class="sd">        time through the breakout layer). It overestimates the radius when diffusion sets the duration, and without a</span>
+<span class="sd">        cap the photosphere of a long event would be implausibly large and cold. The second term is that cap. It grows</span>
+<span class="sd">        as :math:`t_0^{2/3} L_0^{1/3}`, more slowly than :math:`c\,t_0`, and is the smaller of the two for all but the</span>
+<span class="sd">        shortest time scales: at :math:`L_0 = 10^{44}` erg/s it takes over at :math:`t_0 \approx 3` s, and at</span>
+<span class="sd">        :math:`10^{46}` erg/s at about :math:`3\times10^2` s. The two terms use :math:`t_0`, not the time of the peak</span>
+<span class="sd">        of the light curve, which differs from it by under 1% for the default shape.</span>
 
 <span class="sd">    The temperature goes to zero with the luminosity as :math:`t \to 0`, and the radius does not vanish, so the</span>
 <span class="sd">    emission is a blackbody of finite radius at every time. The bolometric luminosity is exact, with no integration</span>
@@ -596,7 +603,7 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_photospheric_radius_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">        :math:`R_\mathrm{ph}(t) = c\,t_\mathrm{pk}\,(1 + t / (t_0 x_s))`.</span>
+<span class="sd">        :math:`R_\mathrm{ph}(t) = R_\mathrm{bo}\,(1 + t / (t_0 x_s))`, with :math:`R_\mathrm{bo}` the breakout radius.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -610,8 +617,15 @@
 <span class="sd">        numpy.ndarray</span>
 <span class="sd">            :math:`R_\mathrm{ph}(t)` in cm.</span>
 <span class="sd">        """</span>
-        <span class="n">t_peak</span> <span class="o">=</span> <span class="n">InverseGammaBrokenPowerLawLightcurve</span><span class="o">.</span><span class="n">_peak_time</span><span class="p">(</span><span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">C_CGS</span> <span class="o">*</span> <span class="n">t_peak</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"t_scale"</span><span class="p">]</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"x_break"</span><span class="p">]))</span>
+        <span class="n">t_scale</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"t_scale"</span><span class="p">]</span>
+        <span class="n">light_crossing</span> <span class="o">=</span> <span class="n">C_CGS</span> <span class="o">*</span> <span class="n">t_scale</span>
+        <span class="n">capped</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">_R_BO_CAP_CGS</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">t_scale</span> <span class="o">/</span> <span class="n">_SECONDS_PER_DAY</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"amplitude"</span><span class="p">]</span> <span class="o">/</span> <span class="n">_L_BO_CAP</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">breakout_radius</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">light_crossing</span><span class="p">,</span> <span class="n">capped</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">breakout_radius</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="p">(</span><span class="n">t_scale</span> <span class="o">*</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"x_break"</span><span class="p">]))</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_temperature_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>

@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -52,7 +52,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'report/phase_space/plot_detection_maps';</script>
     <script>
@@ -524,7 +524,7 @@ simulation: the figure is made from the fitted map and the simulated points.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="nn">.</span><span class="nn">pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="nn">.</span><span class="nn">table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="w">
 </span><span class="w">
-</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">phase_space</span><span class="nn">.</span><span class="nn">overlay</span><span class="w"> </span><span class="kn">import</span> <span class="n">split_measurements</span><span class="w">
+</span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">phase_space</span><span class="nn">.</span><span class="nn">analysis</span><span class="nn">.</span><span class="nn">overlay</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-phase_space-analysis-overlay sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.phase_space.analysis.overlay.split_measurements.html#uvex_transients.phase_space.analysis.overlay.split_measurements" title="uvex_transients.phase_space.analysis.overlay.split_measurements"><span class="n">split_measurements</span></a><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">phase_space</span><span class="nn">.</span><span class="nn">plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_map</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_phase_space_map</span><span class="w">
 </span><span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients</span><span class="nn">.</span><span class="nn">utils</span><span class="nn">.</span><span class="nn">plotting</span><span class="w"> </span><span class="kn">import</span> <a class="sphx-glr-backref-module-uvex_transients-utils-plotting sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><span class="n">set_plot_style</span></a><span class="w">
@@ -563,7 +563,7 @@ the same band.</p>
 </span>        <span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">map</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">,</span><span class="w">
 </span>        <span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">points</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">,</span><span class="w">
 </span>        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">FUV detection map</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
-</span>        <span class="n">overlays</span><span class="o">=</span><span class="n">split_measurements</span><span class="p">(</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">overlay</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="p">,</span><span class="w">
+</span>        <span class="n">overlays</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients-phase_space-analysis-overlay sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.phase_space.analysis.overlay.split_measurements.html#uvex_transients.phase_space.analysis.overlay.split_measurements" title="uvex_transients.phase_space.analysis.overlay.split_measurements"><span class="n">split_measurements</span></a><span class="p">(</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">overlay</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="p">,</span><span class="w">
 </span>    <span class="p">)</span><span class="w">
 </span>    <a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
@@ -577,11 +577,11 @@ the same band.</p>
 </span>        <span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">map</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">,</span><span class="w">
 </span>        <span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">points</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">,</span><span class="w">
 </span>        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;</span><span class="s2">NUV detection map</span><span class="s2">&quot;</span><span class="p">,</span><span class="w">
-</span>        <span class="n">overlays</span><span class="o">=</span><span class="n">split_measurements</span><span class="p">(</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">overlay</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="p">,</span><span class="w">
+</span>        <span class="n">overlays</span><span class="o">=</span><a class="sphx-glr-backref-module-uvex_transients-phase_space-analysis-overlay sphx-glr-backref-type-py-function reference internal" href="../../_as_gen/uvex_transients.phase_space.analysis.overlay.split_measurements.html#uvex_transients.phase_space.analysis.overlay.split_measurements" title="uvex_transients.phase_space.analysis.overlay.split_measurements"><span class="n">split_measurements</span></a><span class="p">(</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;</span><span class="s2">overlay</span><span class="s2">&quot;</span><span class="p">]</span><span class="p">)</span><span class="p">,</span><span class="w">
 </span>    <span class="p">)</span><span class="w">
 </span>    <a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.583 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 0.668 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-report-phase-space-plot-detection-maps-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/92bcab2b06cd89176f7e44eb196ca9d5/plot_detection_maps.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_detection_maps.ipynb</span></code></a></p>

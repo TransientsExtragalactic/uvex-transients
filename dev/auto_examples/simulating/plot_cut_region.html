@@ -37,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=19744cd7" />
   
   <!-- So that users can add custom icons -->
@@ -52,7 +52,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'auto_examples/simulating/plot_cut_region';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
@@ -533,7 +533,7 @@ to download the full example code.</p>
 <p><a class="reference internal" href="../../_as_gen/uvex_transients.simulation.core.SurveySimulator.filter_by_region.html#uvex_transients.simulation.core.SurveySimulator.filter_by_region" title="uvex_transients.simulation.core.SurveySimulator.filter_by_region"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter_by_region()</span></code></a> keeps only
 events inside an arbitrary sky region: a <cite>~regions.SkyRegion</cite>/<cite>~regions.Regions</cite>
 instance, or a path to a region file (e.g. a DS9 <code class="docutils literal notranslate"><span class="pre">.reg</span></code>). It uses the same
-<code class="docutils literal notranslate"><span class="pre">regions</span></code>/<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.fov.contains.html#m4opt.fov.contains" title="(in m4opt v4.0.1.dev9+g5df889ed7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">contains()</span></code></a> convention
+<code class="docutils literal notranslate"><span class="pre">regions</span></code>/<a class="reference external" href="https://m4opt.readthedocs.io/en/latest/api/m4opt.fov.contains.html#m4opt.fov.contains" title="(in m4opt v4.0.2.dev5+g3635f5f6b)"><code class="xref py py-func docutils literal notranslate"><span class="pre">contains()</span></code></a> convention
 <cite>~uvex_transients.surveys.base.SurveySchedule</cite> uses for its own instrument FOV, so no WCS
 is needed.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="w">
@@ -566,19 +566,20 @@ Generating events:   0%|          | 0/10 [00:00&lt;?, ?bin/s, bin=1/10, type=sls
 Building HEALPix coverage index for (nside=32, order='nested'); this can be slow for a long schedule.
 
 Generating events:   0%|          | 0/10 [00:00&lt;?, ?bin/s, bin=1/10, type=slsn]
-Generating events:  10%|█         | 1/10 [00:05&lt;00:50,  5.63s/bin, bin=1/10, type=slsn]
-Generating events:  10%|█         | 1/10 [00:05&lt;00:50,  5.63s/bin, bin=2/10, type=slsn]
-Generating events:  20%|██        | 2/10 [00:05&lt;00:45,  5.63s/bin, bin=3/10, type=slsn]
-Generating events:  30%|███       | 3/10 [00:05&lt;00:39,  5.63s/bin, bin=4/10, type=slsn]
-Generating events:  40%|████      | 4/10 [00:05&lt;00:33,  5.63s/bin, bin=5/10, type=slsn]
-Generating events:  50%|█████     | 5/10 [00:05&lt;00:04,  1.15bin/s, bin=5/10, type=slsn]
-Generating events:  50%|█████     | 5/10 [00:05&lt;00:04,  1.15bin/s, bin=6/10, type=slsn]
-Generating events:  60%|██████    | 6/10 [00:05&lt;00:03,  1.15bin/s, bin=7/10, type=slsn]
-Generating events:  70%|███████   | 7/10 [00:05&lt;00:02,  1.15bin/s, bin=8/10, type=slsn]
-Generating events:  80%|████████  | 8/10 [00:05&lt;00:01,  1.15bin/s, bin=9/10, type=slsn]
-Generating events:  90%|█████████ | 9/10 [00:05&lt;00:00,  2.46bin/s, bin=9/10, type=slsn]
-Generating events:  90%|█████████ | 9/10 [00:05&lt;00:00,  2.46bin/s, bin=10/10, type=slsn]
-Generating events: 100%|██████████| 10/10 [00:05&lt;00:00,  1.69bin/s, bin=10/10, type=slsn]
+Generating events:  10%|█         | 1/10 [00:07&lt;01:05,  7.27s/bin, bin=1/10, type=slsn]
+Generating events:  10%|█         | 1/10 [00:07&lt;01:05,  7.27s/bin, bin=2/10, type=slsn]
+Generating events:  20%|██        | 2/10 [00:07&lt;00:58,  7.27s/bin, bin=3/10, type=slsn]
+Generating events:  30%|███       | 3/10 [00:07&lt;00:50,  7.27s/bin, bin=4/10, type=slsn]
+Generating events:  40%|████      | 4/10 [00:07&lt;00:08,  1.41s/bin, bin=4/10, type=slsn]
+Generating events:  40%|████      | 4/10 [00:07&lt;00:08,  1.41s/bin, bin=5/10, type=slsn]
+Generating events:  50%|█████     | 5/10 [00:07&lt;00:07,  1.41s/bin, bin=6/10, type=slsn]
+Generating events:  60%|██████    | 6/10 [00:07&lt;00:05,  1.41s/bin, bin=7/10, type=slsn]
+Generating events:  70%|███████   | 7/10 [00:07&lt;00:02,  1.48bin/s, bin=7/10, type=slsn]
+Generating events:  70%|███████   | 7/10 [00:07&lt;00:02,  1.48bin/s, bin=8/10, type=slsn]
+Generating events:  80%|████████  | 8/10 [00:07&lt;00:01,  1.48bin/s, bin=9/10, type=slsn]
+Generating events:  90%|█████████ | 9/10 [00:07&lt;00:00,  1.48bin/s, bin=10/10, type=slsn]
+Generating events: 100%|██████████| 10/10 [00:07&lt;00:00,  2.49bin/s, bin=10/10, type=slsn]
+Generating events: 100%|██████████| 10/10 [00:07&lt;00:00,  1.31bin/s, bin=10/10, type=slsn]
 168450 events sampled.
 </pre></div>
 </div>
@@ -615,7 +616,7 @@ Generating events: 100%|██████████| 10/10 [00:05&lt;00:00,  
 </span><a class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span><a class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">(</span><span class="p">)</span><span class="w">
 </span></pre></div></div>
-<img src="../../_images/sphx_glr_plot_cut_region_001.png" srcset="../../_images/sphx_glr_plot_cut_region_001.png" alt="Effect of the region cut" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 6.770 seconds)</p>
+<img src="../../_images/sphx_glr_plot_cut_region_001.png" srcset="../../_images/sphx_glr_plot_cut_region_001.png" alt="Effect of the region cut" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 8.675 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-simulating-plot-cut-region-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/71a9d08fcabe400adee39113b40ad87e/plot_cut_region.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_cut_region.ipynb</span></code></a></p>
