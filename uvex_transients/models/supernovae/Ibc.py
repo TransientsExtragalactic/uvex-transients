@@ -21,7 +21,8 @@ class TypeIbSED(LineBlanketedArnettDecaySED):
     Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely, exactly as
     :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` does (radioactive-decay Arnett diffusion,
     floored photospheric temperature and a line-blanketed blackbody); only :attr:`_DEFAULT_PARAMETERS`
-    differs. ``break_frequency`` and ``beta`` start at the Type Ia values. The priors on ``M_Ni``, ``M_ej``
+    differs. ``break_frequency`` and ``beta`` start at the original Type Ia calibration (not its recalibrated
+    one). The priors on ``M_Ni``, ``M_ej``
     and ``v_ej`` are the SN Ib subsample statistics (mean,
     sample standard deviation of the analytical-model fits in Table 6 of :footcite:t:`lyman2016`, 13
     events). ``kappa`` is fixed at :math:`0.06\,\mathrm{cm^2\,g^{-1}}`, the single grey optical opacity

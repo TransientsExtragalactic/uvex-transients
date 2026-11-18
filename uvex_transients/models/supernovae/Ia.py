@@ -35,12 +35,25 @@ class TypeIaSED(HostDustMixin, LineBlanketedArnettDecaySED):
     The paper's ``M_Ni`` Gaussian (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`,
     :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`) gives a distribution of peak V-band absolute magnitude that is about
     0.3 mag too bright, and too broad, against the ASAS-SN luminosity function of SNe Ia, even with host dust. The
-    ``M_Ni`` prior is therefore a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.4\,M_\odot` and
+    ``M_Ni`` prior is therefore a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.48\,M_\odot` and
     :math:`\sigma_\mathrm{Ni}=0.2\,M_\odot`, chosen together with the mean of the :math:`A_V` prior below by trial
-    and error (about 50 combinations compared by the total variation distance of the binned distributions), not by a
-    fit. The peak V-band magnitude constrains only the combination of the two: other pairs fit equally well, so
+    and error (compared by the total variation distance of the binned distributions), not by a fit. The peak
+    V-band magnitude constrains only the combination of the two: other pairs fit equally well, so
     neither value is measured here. The distribution is still too thin at the faintest end (:math:`M_V\gtrsim-17.5`),
     where subluminous events (91bg-like) are missing from a single Gaussian.
+
+    .. rubric:: UV line blanketing
+
+    ``break_frequency`` (:math:`0.9\times10^{15}` Hz, about 3330 Angstrom) and ``beta`` (5.5) were set against the
+    peak :math:`\nu L_\nu` of the Swift/UVOT SNe Ia (UVW1, UVM2 and UVW2), with the priors above. The first
+    calibration (:math:`0.75\times10^{15}` Hz, 5) predates the host dust and the tuned ``M_Ni``, and left the model
+    about 0.35 dex too faint in UVW1 and UVW2. The median peaks in both bands and the UVW1 to UVW2 colour now agree
+    with the data (to 0.02 dex), but the UVW1 to UVM2 colour does not: the model is too bright in UVM2 by about 0.35
+    dex, and no choice of the two parameters fixes that. The Swift SNe Ia are a brighter and narrower sample than the
+    ASAS-SN-like population of the model, so the agreement in level is only as good as that comparison, the
+    colours are the more robust of the two, and the observed UVOT bands do not reach the UVEX FUV band, which is
+    an extrapolation. Because the blanketing returns the flux it removes to longer wavelengths, changing it moves
+    the V band too, so ``M_Ni`` was tuned again after it.
 
     .. rubric:: Host dust
 
@@ -101,7 +114,7 @@ class TypeIaSED(HostDustMixin, LineBlanketedArnettDecaySED):
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         "M_Ni": Parameter(
-            prior=TruncatedNormalPrior(mean=0.4, sigma=0.2, lower=0.05, upper=3.0),
+            prior=TruncatedNormalPrior(mean=0.48, sigma=0.2, lower=0.05, upper=3.0),
             scale=1 * u.Msun,
             description="Nickel-56 mass synthesized in the explosion (tuned to the ASAS-SN luminosity function).",
             latex=r"M_\mathrm{Ni}",
@@ -137,13 +150,13 @@ class TypeIaSED(HostDustMixin, LineBlanketedArnettDecaySED):
             latex=r"T_\mathrm{floor}",
         ),
         "break_frequency": Parameter(
-            prior=ConstantPrior(value=0.75),
+            prior=ConstantPrior(value=0.9),
             scale=1e15 * u.Hz,
-            description="Frequency above which the line-blanketing suppression sets in.",
+            description="Frequency above which the line-blanketing suppression sets in (set against Swift/UVOT).",
             latex=r"\nu_\mathrm{break}",
         ),
         "beta": Parameter(
-            prior=ConstantPrior(value=5.0),
+            prior=ConstantPrior(value=5.5),
             scale=1.0,
             description="Power-law index of the suppression above the break.",
             latex=r"\beta",

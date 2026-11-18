@@ -144,7 +144,8 @@ class TypeIIPSED(SpectralModel):
     (see :class:`~uvex_transients.models.spectra.thermal.ModifiedBlackbodySpectrum`), and the shape is divided by
     its integral (the shared table of
     :func:`~uvex_transients.models._util_functions.get_modified_blackbody_norm_interpolator`) so that
-    :math:`L_\mathrm{bol}(t)` is unchanged. Both parameters start at the Type Ia values. The cooling-law
+    :math:`L_\mathrm{bol}(t)` is unchanged. Both parameters start at the original Type Ia calibration (not its
+    recalibrated one). The cooling-law
     parameters below were fit before the blanketing was added.
 
     ``T_floor``, ``t_T`` and ``k_T`` were fit against the Swift/UVOT UVW1 light curves of the Type IIP SNe in

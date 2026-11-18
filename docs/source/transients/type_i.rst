@@ -13,8 +13,9 @@ Arnett-style radioactive-decay diffusion physics as Type Ia, with a line-blanket
 (:class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED`), differing only in their priors (and, for
 Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
 are implemented as sibling transient classes below. The line blanketing, which suppresses the UV, is
-calibrated against Swift/UVOT UVW1 and UVW2 light curves on the Type Ia tab and adopted unchanged by
-the others.
+calibrated against Swift/UVOT UVW1, UVM2 and UVW2 light curves on the Type Ia tab. The others keep the
+original calibration (:math:`0.75\times10^{15}` Hz, 5), made before Type Ia was recalibrated to its present priors,
+and have not been recalibrated.
 
 .. note::
 
@@ -27,7 +28,8 @@ the others.
    :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s Scalzo+14-derived value. Ib and Ic
    share this same construction and differ only in the subsample statistics and event rates. Type
    Ic-BL instead uses sample statistics of its own explosion-property table (see its tab below). All
-   three also take the line-blanketing parameters ``break_frequency`` and ``beta`` from Type Ia.
+   three keep the line-blanketing parameters ``break_frequency`` and ``beta`` of the original Type Ia calibration,
+   which Type Ia has since replaced.
 
 .. tab-set::
 
@@ -72,7 +74,7 @@ the others.
              :math:`\pm1\sigma` endpoints, rather than assumed analytically -- see
              :ref:`user_guide_transients_rate_uncertainty`.
          * - Redshift limit
-           - :math:`z = 0.22`
+           - :math:`z = 0.24`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -121,8 +123,8 @@ the others.
       :math:`\mathcal{N}(t)` is the integral of the suppressed shape over frequency, so that
       :math:`L_\mathrm{bol}(t)` is unchanged by the blanketing: the flux removed from the UV is returned redward of
       the break, and only the UV-to-optical balance of the SED moves. ``break_frequency``
-      (:math:`0.75\times10^{15}` Hz, about 4000 Å) and ``beta`` (5) are fixed; they are the UV calibration of this
-      model, set against the Swift/UVOT UVW1 and UVW2 light curves shown below.
+      (:math:`0.9\times10^{15}` Hz, about 3330 Å) and ``beta`` (5.5) are fixed; they are the UV calibration of this
+      model, set against the peak luminosities of the Swift/UVOT light curves in the UV calibration section below.
 
       The remaining priors follow :footcite:t:`sarin2026` (a sample of 2205 SNe Ia from ZTF), except for
       ``M_Ni``: ``M_ej`` is the population-level Gaussian from that paper's hierarchical Arnett-model fit
@@ -133,10 +135,9 @@ the others.
       The ``M_Ni`` prior is tuned, not taken from that paper. Its Gaussian
       (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`) gives peak V-band
       magnitudes about 0.3 mag too bright, and too broad, compared with the ASAS-SN luminosity function of SNe Ia,
-      even with host dust. The prior here is a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.4\,M_\odot` and
+      even with host dust. The prior here is a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.48\,M_\odot` and
       :math:`\sigma_\mathrm{Ni}=0.2\,M_\odot`, chosen together with the mean of the :math:`A_V` prior below by trial
-      and error (about 50 combinations compared by the total variation distance between the binned distributions),
-      not by a fit. The peak V-band magnitude constrains only the combination of the two, so other pairs fit equally
+      and error (compared by the total variation distance between the binned distributions), not by a fit. The peak V-band magnitude constrains only the combination of the two, so other pairs fit equally
       well and neither is measured by this comparison. The luminosity function below shows the result.
 
       The SED is also reddened by dust in the host galaxy, with the Gordon et al. (2023) law
@@ -163,7 +164,7 @@ the others.
               - Notes / Source
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(0.4, :math:`\sigma`\=0.2; bounds :math:`[0.05, 3.0]\,M_\odot`)
+              - TruncatedNormal(0.48, :math:`\sigma`\=0.2; bounds :math:`[0.05, 3.0]\,M_\odot`)
               - Tuned to the ASAS-SN luminosity function (see above); :footcite:t:`sarin2026` has
                 0.64, :math:`\sigma`\=0.42.
             * - ``M_ej``
@@ -189,14 +190,14 @@ the others.
                 :ref:`transients_slsne`); not calibrated against SNe Ia data specifically.
             * - ``break_frequency``
               - :math:`\nu_\mathrm{break}`
-              - Fixed, :math:`0.75\times10^{15}` Hz (about 4000 Å)
+              - Fixed, :math:`0.9\times10^{15}` Hz (about 3330 Å)
               - Frequency blueward of which line blanketing suppresses the flux. Calibrated against
-                Swift/UVOT UVW1 and UVW2 (see below).
+                Swift/UVOT (see below).
             * - ``beta``
               - :math:`\beta`
-              - Fixed, 5
+              - Fixed, 5.5
               - Power-law index :math:`\nu^{-\beta}` of the suppression above the break. Calibrated
-                against Swift/UVOT UVW1 and UVW2.
+                against Swift/UVOT.
             * - ``A_V``
               - :math:`A_V`
               - Exponential(mean 0.4 mag)
@@ -280,6 +281,44 @@ the others.
       set against these two bands. Because the line blanketing leaves :math:`L_\mathrm{bol}(t)` unchanged, it moves flux between
       the UV and the optical, and the UV light curves are where it shows.
 
+      The two parameters were set by a coarse grid search, with the other priors above fixed, so that the median
+      peak :math:`\nu L_\nu` of the model in UVW1 and in UVW2, and the median UVW1 to UVW2 colour of the same
+      events, match the Swift supernovae (peaks of the observed points, for events with at least five detections
+      in the band). The colour does not depend on how bright the sample was selected, but the level does, and the
+      Swift supernovae are a brighter and narrower sample than the ASAS-SN-like population of the model.
+      Blanketing also moves the V band, so ``M_Ni`` was tuned again after it (see above), and the two were
+      iterated once. The result, from 3000 draws at :math:`z=0.01` against the Swift data (log10 of the peak
+      :math:`\nu L_\nu` in erg/s, median):
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 40 20 20
+
+         * - Quantity
+           - Swift
+           - Model
+         * - UVW1 peak
+           - 42.13
+           - 42.15
+         * - UVW2 peak
+           - 41.58
+           - 41.60
+         * - UVW1 minus UVW2
+           - 0.55
+           - 0.55
+         * - UVM2 peak
+           - 41.27
+           - 41.63
+         * - UVW1 minus UVM2
+           - 0.93
+           - 0.52
+
+      The first three rows were fit. The UVM2 rows were not, and are not matched: the model is too bright in UVM2 by
+      about 0.35 dex, and no choice of the break and :math:`\beta` fixes that, so it is a limit of a single smooth
+      suppression above one break frequency. The model is also broader than the data (the 16th to 84th percentile
+      of the UVW1 peak spans 0.9 dex against 0.5 dex). The UVOT bands do not reach the UVEX FUV band, so the
+      calibration there is an extrapolation.
+
       .. plot::
          :include-source: false
 
@@ -345,7 +384,7 @@ the others.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.22`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.24`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -376,7 +415,7 @@ the others.
 
       The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
       that any event above the :math:`m<24.5` limit is detectable, and that the population is
-      isotropic and homogeneous in comoving volume out to :math:`z=0.22`:
+      isotropic and homogeneous in comoving volume out to :math:`z=0.24`:
 
       .. plot::
          :include-source: false
@@ -503,8 +542,8 @@ the others.
       Scalzo+14-derived value, since Lyman et al. 2016's own analytical model has no gamma-ray
       leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
       direct constraint on it. ``T_floor`` is left close to `Type Ia`'s value. ``break_frequency`` and ``beta``
-      are fixed at the `Type Ia` values, so the UV suppression is that calibrated against Swift/UVOT for
-      thermonuclear events, and not tuned to Type Ib specifically.
+      are fixed at the original `Type Ia` calibration, which Type Ia has since replaced, and are not tuned to Type
+      Ib specifically.
 
       .. dropdown:: Parameter priors
 
@@ -644,9 +683,9 @@ the others.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      The line-blanketing parameters are those of Type Ia, unchanged. Few Type Ib supernovae have well sampled UV light
-      curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so these plots are a
-      consistency check on the Type Ia values rather than a fit.
+      The line-blanketing parameters are those of the original Type Ia calibration. Few Type Ib supernovae have well
+      sampled UV light curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so
+      these plots are a consistency check on those values rather than a fit.
 
       .. plot::
          :include-source: false
@@ -992,9 +1031,9 @@ the others.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      The line-blanketing parameters are those of Type Ia, unchanged. The Swift sample is small: 6 Type Ic supernovae
-      have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
-      consistency check on the Type Ia values rather than a fit.
+      The line-blanketing parameters are those of the original Type Ia calibration. The Swift sample is small: 6 Type Ic
+      supernovae have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
+      consistency check on those values rather than a fit.
 
       .. plot::
          :include-source: false
@@ -1226,7 +1265,7 @@ the others.
       ``T_floor`` are not constrained by that table and are left at `Type Ia`'s values;
       ``kappa_gamma`` is instead fixed at a large value (full gamma-ray trapping across the
       simulated window), unlike `Type Ia`'s Scalzo+14 value. ``break_frequency`` and ``beta`` are fixed
-      at the `Type Ia` values.
+      at the original `Type Ia` calibration.
 
       .. dropdown:: Parameter priors
 
