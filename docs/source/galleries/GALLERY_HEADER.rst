@@ -1,6 +1,12 @@
-.. image:: ../images/uvex_logo_dark.png
+.. image:: ../images/uvex_logos/UVEX_HorizLogo_White.png
    :width: 200px
    :align: center
+   :class: only-light
+
+.. image:: ../images/uvex_logos/UVEX_HorizLogo_Black.png
+   :width: 200px
+   :align: center
+   :class: only-dark
 
 .. _examples:
 

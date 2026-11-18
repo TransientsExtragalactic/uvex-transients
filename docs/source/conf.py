@@ -84,8 +84,8 @@ version_match = os.environ.get("SPHINX_VERSION_MATCH", "dev")
 html_theme_options = {
     "logo": {
         "text": "UVEX Transients",
-        "image_light": "images/uvex_logo_dark.png",
-        "image_dark": "images/uvex_logo.png",
+        "image_light": "images/uvex_logos/UVEX_HorizIcon_White.png",
+        "image_dark": "images/uvex_logos/UVEX_HorizIcon_Black.png",
         "alt_text": "UVEX Transients",
     },
     "icon_links": [
@@ -110,12 +110,12 @@ html_theme_options = {
     "check_switcher": False,
 }
 
-html_favicon = "images/trex_logo.png"
+html_favicon = "images/uvex_logos/UVEX_HorizIcon_Black.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ["_static", "images/uvex_logos"]
 html_css_files = ["custom.css"]
 
 # Example configuration for intersphinx: refer to the Python standard library.

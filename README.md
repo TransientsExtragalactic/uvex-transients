@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/source/images/uvex_logo_dark.png" width="400" alt="uvex_logo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/source/images/uvex_logos/UVEX_HorizLogo_Black.png">
+    <img src="docs/source/images/uvex_logos/UVEX_HorizLogo_White.png" width="400" alt="uvex_logo">
+  </picture>
 </p>
 
 
