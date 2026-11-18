@@ -478,6 +478,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">runtime_checkable</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
@@ -749,6 +750,99 @@
     <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">Av</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="n">axav</span>
 
     <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">nu</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="n">result</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># =========================================================================== #</span>
+<span class="c1"># HOST-GALAXY (A_V, R_V) ATTENUATION                                          #</span>
+<span class="c1"># =========================================================================== #</span>
+<span class="n">_HOST_TABLE_SIZE</span> <span class="o">=</span> <span class="mi">20001</span>
+<span class="sd">"""int: Number of wavenumber samples in the tabulated reddening-law coefficients of `_affine_coefficients`."""</span>
+
+<span class="n">_CM_PER_MICRON</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">_C_CGS</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+
+
+<span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_affine_coefficients</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Tabulate a reddening law as :math:`A(x)/A(V) = c_0(x) + c_1(x)/R_V` on a uniform wavenumber grid.</span>
+
+<span class="sd">    The Cardelli-family laws (CCM89, O'Donnell94, and G23 used here) are exactly affine in :math:`1/R_V` at every</span>
+<span class="sd">    wavenumber :math:`x`, so two evaluations at the ends of the law's valid :math:`R_V` range fix the whole</span>
+<span class="sd">    :math:`R_V` dependence. Tabulating the two coefficients once is what lets `host_log_attenuation_cgs` take a</span>
+<span class="sd">    different :math:`R_V` for every draw, which a law object (one fixed :math:`R_V` each) cannot.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        A registered law, see `get_dust_law`. It must be affine in :math:`1/R_V`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Wavenumber grid, in 1/micron, over the law's native range.</span>
+<span class="sd">    c0, c1 : numpy.ndarray</span>
+<span class="sd">        The coefficients on ``x``.</span>
+<span class="sd">    """</span>
+    <span class="n">law_class</span> <span class="o">=</span> <span class="n">_DUST_LAWS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">rv_lo</span><span class="p">,</span> <span class="n">rv_hi</span> <span class="o">=</span> <span class="n">law_class</span><span class="o">.</span><span class="n">Rv_range</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">law_class</span><span class="p">()</span><span class="o">.</span><span class="n">x_range</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">_HOST_TABLE_SIZE</span><span class="p">)</span>
+    <span class="n">f_lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">law_class</span><span class="p">(</span><span class="n">Rv</span><span class="o">=</span><span class="n">rv_lo</span><span class="p">)(</span><span class="n">x</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">f_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">law_class</span><span class="p">(</span><span class="n">Rv</span><span class="o">=</span><span class="n">rv_hi</span><span class="p">)(</span><span class="n">x</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lo</span> <span class="o">-</span> <span class="n">f_hi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">rv_lo</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">rv_hi</span><span class="p">)</span>
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">f_lo</span> <span class="o">-</span> <span class="n">c1</span> <span class="o">/</span> <span class="n">rv_lo</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span>
+
+
+<div class="viewcode-block" id="host_log_attenuation_cgs">
+<a class="viewcode-back" href="../../_as_gen/uvex_transients.dust.host_log_attenuation_cgs.html#uvex_transients.dust.host_log_attenuation_cgs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">host_log_attenuation_cgs</span><span class="p">(</span>
+    <span class="n">nu</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">A_V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">R_V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">dust_law</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Natural log of the host-galaxy attenuation for a given :math:`(A_V, R_V)`, :math:`\ln(10^{-0.4\,A(\nu)})`.</span>
+
+<span class="sd">    The counterpart of `log_attenuation` for dust that is part of an SED rather than along the line of sight:</span>
+<span class="sd">    the dust is described by its V-band attenuation :math:`A_V` and its total-to-selective ratio :math:`R_V`</span>
+<span class="sd">    (so :math:`E(B-V) = A_V/R_V`), either of which can be an array. ``nu`` is the *rest-frame* frequency, in</span>
+<span class="sd">    plain cgs numbers like the ``_eval`` methods of the SED models that call this.</span>
+
+<span class="sd">    The law's native wavelength range is not an error here. Outside it the attenuation curve is held at its</span>
+<span class="sd">    value at the nearest edge (the extreme UV blueward of 912 Angstrom and the far infrared redward of 32</span>
+<span class="sd">    microns), rather than ``NaN`` as `log_attenuation` returns, so that integrating over all frequencies stays</span>
+<span class="sd">    finite. The curve is read from a table of the law's coefficients (see `_affine_coefficients`) rather than</span>
+<span class="sd">    re-evaluated, which makes this cheap on large arrays.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nu : numpy.ndarray</span>
+<span class="sd">        Rest-frame frequency, in Hz, any shape.</span>
+<span class="sd">    A_V : float or numpy.ndarray</span>
+<span class="sd">        V-band attenuation, in magnitudes, broadcastable against ``nu``.</span>
+<span class="sd">    R_V : float or numpy.ndarray</span>
+<span class="sd">        Total-to-selective extinction ratio, broadcastable against ``nu``. It must lie in the law's valid range</span>
+<span class="sd">        (2.3 to 5.6 for G23); this is not checked here.</span>
+<span class="sd">    dust_law : str, optional</span>
+<span class="sd">        Passed through to `get_dust_law`'s registry; ``None`` uses the configured default.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        :math:`\ln` of the attenuation, with the shape that ``nu``, ``A_V`` and ``R_V`` broadcast to.</span>
+<span class="sd">    """</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">dust_law</span> <span class="ow">or</span> <span class="n">config</span><span class="p">[</span><span class="s2">"physics.default_dust_law"</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_DUST_LAWS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown dust law </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; known laws are </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_DUST_LAWS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="n">x_grid</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">_affine_coefficients</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">/</span> <span class="n">_C_CGS</span> <span class="o">*</span> <span class="n">_CM_PER_MICRON</span>
+    <span class="n">axav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_grid</span><span class="p">,</span> <span class="n">c0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_grid</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">R_V</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mf">0.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">A_V</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="n">axav</span></div>
 
 
 

@@ -634,6 +634,14 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.html">uvex_transients.models.host_dust</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.html">HostDustMixin</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.DUST_LAW.html">uvex_transients.models.host_dust.HostDustMixin.DUST_LAW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS.html">uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.html">uvex_transients.models.kilonovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.html">uvex_transients.models.kilonovae.kne</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html">KilonovaCoolingBlackbodySED</a></li>
@@ -1937,6 +1945,7 @@
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.attenuation_callable.html">uvex_transients.dust.attenuation_callable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.dust_map.html">uvex_transients.dust.dust_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.get_dust_law.html">uvex_transients.dust.get_dust_law</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.host_log_attenuation_cgs.html">uvex_transients.dust.host_log_attenuation_cgs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.log_attenuation.html">uvex_transients.dust.log_attenuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.resolve_ebv.html">uvex_transients.dust.resolve_ebv</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.dust.DustMapLike.html">DustMapLike</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -2038,6 +2047,7 @@
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_categorical_colors.html">uvex_transients.utils.plotting.get_categorical_colors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_cmap.html">uvex_transients.utils.plotting.get_cmap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_default_cmap.html">uvex_transients.utils.plotting.get_default_cmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_archived_luminosity_function.html">uvex_transients.utils.plotting.plot_archived_luminosity_function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_band_light_curve.html">uvex_transients.utils.plotting.plot_band_light_curve</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_funnel.html">uvex_transients.utils.plotting.plot_detection_funnel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_horizon.html">uvex_transients.utils.plotting.plot_detection_horizon</a></li>
@@ -2218,10 +2228,13 @@ package never touch this module, a callable, or <cite>functools.partial</cite> a
 <tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.dust.get_dust_law.html#uvex_transients.dust.get_dust_law" title="uvex_transients.dust.get_dust_law"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dust_law</span></code></a>([dust_law])</p></td>
 <td><p>Return the (cached, instantiated) reddening law to use.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.dust.log_attenuation.html#uvex_transients.dust.log_attenuation" title="uvex_transients.dust.log_attenuation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_attenuation</span></code></a>(nu, Ebv[, dust_law])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.dust.host_log_attenuation_cgs.html#uvex_transients.dust.host_log_attenuation_cgs" title="uvex_transients.dust.host_log_attenuation_cgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">host_log_attenuation_cgs</span></code></a>(nu, A_V, R_V[, ...])</p></td>
+<td><p>Natural log of the host-galaxy attenuation for a given <span class="math notranslate nohighlight">\((A_V, R_V)\)</span>, <span class="math notranslate nohighlight">\(\ln(10^{-0.4\,A(\nu)})\)</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.dust.log_attenuation.html#uvex_transients.dust.log_attenuation" title="uvex_transients.dust.log_attenuation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_attenuation</span></code></a>(nu, Ebv[, dust_law])</p></td>
 <td><p>Natural log of the Milky Way foreground attenuation, <span class="math notranslate nohighlight">\(\ln(10^{-0.4\,A(\nu)})\)</span>, at <code class="docutils literal notranslate"><span class="pre">nu</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.dust.resolve_ebv.html#uvex_transients.dust.resolve_ebv" title="uvex_transients.dust.resolve_ebv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_ebv</span></code></a>(reddening[, coord])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.dust.resolve_ebv.html#uvex_transients.dust.resolve_ebv" title="uvex_transients.dust.resolve_ebv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_ebv</span></code></a>(reddening[, coord])</p></td>
 <td><p>Resolve a <cite>Reddening</cite> value into a plain E(B-V) array.</p></td>
 </tr>
 </tbody>

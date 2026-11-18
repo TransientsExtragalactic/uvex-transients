@@ -880,8 +880,9 @@
 <span class="sd">    Type Ia (thermonuclear) supernova population.</span>
 
 <span class="sd">    Modeled with `TypeIaSED` (an Arnett-style radioactive-decay diffusion light curve with a</span>
-<span class="sd">    floored-photosphere blackbody photosphere, its priors fit to the ZTF SNe Ia sample of</span>
-<span class="sd">    Sarin et al. 2026). Unlike the `_CoreCollapseSNe` subtypes above, SNe Ia are thermonuclear</span>
+<span class="sd">    floored-photosphere blackbody photosphere and host-galaxy dust; its priors follow the ZTF SNe Ia sample of</span>
+<span class="sd">    Sarin et al. 2026, apart from the nickel mass and the dust, which are tuned to the ASAS-SN luminosity</span>
+<span class="sd">    function). Unlike the `_CoreCollapseSNe` subtypes above, SNe Ia are thermonuclear</span>
 <span class="sd">    rather than core-collapse events, so this class does not share their machinery: the rate is</span>
 <span class="sd">    the cosmic star formation history convolved with the Maoz &amp; Graur (2017) power-law delay-time</span>
 <span class="sd">    distribution (`supernovae_Ia_rate`), not a fixed fraction of the core-collapse rate. The delay</span>
@@ -904,7 +905,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">365</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.33</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.24</span>
 
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_TYPE_IA_RATE_CI</span>
 

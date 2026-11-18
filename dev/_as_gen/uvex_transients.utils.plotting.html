@@ -633,6 +633,14 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.html">uvex_transients.models.host_dust</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.html">HostDustMixin</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.DUST_LAW.html">uvex_transients.models.host_dust.HostDustMixin.DUST_LAW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS.html">uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.html">uvex_transients.models.kilonovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.html">uvex_transients.models.kilonovae.kne</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html">KilonovaCoolingBlackbodySED</a></li>
@@ -1936,6 +1944,7 @@
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.attenuation_callable.html">uvex_transients.dust.attenuation_callable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.dust_map.html">uvex_transients.dust.dust_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.get_dust_law.html">uvex_transients.dust.get_dust_law</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.host_log_attenuation_cgs.html">uvex_transients.dust.host_log_attenuation_cgs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.log_attenuation.html">uvex_transients.dust.log_attenuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.resolve_ebv.html">uvex_transients.dust.resolve_ebv</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.dust.DustMapLike.html">DustMapLike</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -2037,6 +2046,7 @@
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_categorical_colors.html">uvex_transients.utils.plotting.get_categorical_colors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_cmap.html">uvex_transients.utils.plotting.get_cmap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_default_cmap.html">uvex_transients.utils.plotting.get_default_cmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_archived_luminosity_function.html">uvex_transients.utils.plotting.plot_archived_luminosity_function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_band_light_curve.html">uvex_transients.utils.plotting.plot_band_light_curve</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_funnel.html">uvex_transients.utils.plotting.plot_detection_funnel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_horizon.html">uvex_transients.utils.plotting.plot_detection_horizon</a></li>
@@ -2239,37 +2249,40 @@ themselves, as two visually distinct error layers on the same <cite>matplotlib.a
 <tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.get_default_cmap.html#uvex_transients.utils.plotting.get_default_cmap" title="uvex_transients.utils.plotting.get_default_cmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_cmap</span></code></a>()</p></td>
 <td><p>Return the package's default colormap, <code class="docutils literal notranslate"><span class="pre">config[&quot;plotting.default_cmap&quot;]</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_band_light_curve.html#uvex_transients.utils.plotting.plot_band_light_curve" title="uvex_transients.utils.plotting.plot_band_light_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_band_light_curve</span></code></a>(ax, band, t_obs, phot, *)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_archived_luminosity_function.html#uvex_transients.utils.plotting.plot_archived_luminosity_function" title="uvex_transients.utils.plotting.plot_archived_luminosity_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_archived_luminosity_function</span></code></a>(table, ...)</p></td>
+<td><p>Overplot an archived, observed luminosity function on a model's magnitude function, as points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_band_light_curve.html#uvex_transients.utils.plotting.plot_band_light_curve" title="uvex_transients.utils.plotting.plot_band_light_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_band_light_curve</span></code></a>(ax, band, t_obs, phot, *)</p></td>
 <td><p>Draw one photometric band's theory curve, SNR-detected points, and upper limits onto <cite>ax</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_funnel.html#uvex_transients.utils.plotting.plot_detection_funnel" title="uvex_transients.utils.plotting.plot_detection_funnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_detection_funnel</span></code></a>(ax, x, counts, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_funnel.html#uvex_transients.utils.plotting.plot_detection_funnel" title="uvex_transients.utils.plotting.plot_detection_funnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_detection_funnel</span></code></a>(ax, x, counts, ...[, ...])</p></td>
 <td><p>Draw one funnel's bars plus its MC and rate uncertainty layers onto <cite>ax</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_horizon.html#uvex_transients.utils.plotting.plot_detection_horizon" title="uvex_transients.utils.plotting.plot_detection_horizon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_detection_horizon</span></code></a>(transient, curve, grid, *)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_horizon.html#uvex_transients.utils.plotting.plot_detection_horizon" title="uvex_transients.utils.plotting.plot_detection_horizon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_detection_horizon</span></code></a>(transient, curve, grid, *)</p></td>
 <td><p>Plot how the redshift limit of a transient class follows from its SED.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_footprints.html#uvex_transients.utils.plotting.plot_footprints" title="uvex_transients.utils.plotting.plot_footprints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_footprints</span></code></a>(footprints, *[, nside, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_footprints.html#uvex_transients.utils.plotting.plot_footprints" title="uvex_transients.utils.plotting.plot_footprints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_footprints</span></code></a>(footprints, *[, nside, ...])</p></td>
 <td><p>Aitoff map of several survey footprints, each in its own color with its area in the legend.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_healpix_map</span></code></a>(values, *[, nside, order, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_healpix_map.html#uvex_transients.utils.plotting.plot_healpix_map" title="uvex_transients.utils.plotting.plot_healpix_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_healpix_map</span></code></a>(values, *[, nside, order, ...])</p></td>
 <td><p>Aitoff-projected scatter of a full-sky HEALPix map, log-color-scaled.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram</span></code></a>(values, *[, title, xlabel, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_histogram.html#uvex_transients.utils.plotting.plot_histogram" title="uvex_transients.utils.plotting.plot_histogram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram</span></code></a>(values, *[, title, xlabel, ...])</p></td>
 <td><p>Log-binned histogram of a strictly positive quantity, e.g. one pooled across a HEALPix map's pixels.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_luminosity_function.html#uvex_transients.utils.plotting.plot_luminosity_function" title="uvex_transients.utils.plotting.plot_luminosity_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_luminosity_function</span></code></a>(table, *[, band, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_luminosity_function.html#uvex_transients.utils.plotting.plot_luminosity_function" title="uvex_transients.utils.plotting.plot_luminosity_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_luminosity_function</span></code></a>(table, *[, band, ...])</p></td>
 <td><p>Plot the luminosity function of a transient class: its stepped density, with the interval of each bin shaded.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_rate_bars.html#uvex_transients.utils.plotting.plot_rate_bars" title="uvex_transients.utils.plotting.plot_rate_bars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_rate_bars</span></code></a>(ax, categories, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_rate_bars.html#uvex_transients.utils.plotting.plot_rate_bars" title="uvex_transients.utils.plotting.plot_rate_bars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_rate_bars</span></code></a>(ax, categories, ...)</p></td>
 <td><p>Bar chart of an all-sky rate estimate per category (e.g. band), with MC + rate uncertainty.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_swift_uv_calibration.html#uvex_transients.utils.plotting.plot_swift_uv_calibration" title="uvex_transients.utils.plotting.plot_swift_uv_calibration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_swift_uv_calibration</span></code></a>(sed, sn_type, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.plot_swift_uv_calibration.html#uvex_transients.utils.plotting.plot_swift_uv_calibration" title="uvex_transients.utils.plotting.plot_swift_uv_calibration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_swift_uv_calibration</span></code></a>(sed, sn_type, *[, ...])</p></td>
 <td><p>Overplot Swift/UVOT light curves on a supernova SED's simulated light curves in one UV band.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.resolve_fig_axes.html#uvex_transients.utils.plotting.resolve_fig_axes" title="uvex_transients.utils.plotting.resolve_fig_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_fig_axes</span></code></a>([fig, axes, fig_size, dpi, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.resolve_fig_axes.html#uvex_transients.utils.plotting.resolve_fig_axes" title="uvex_transients.utils.plotting.resolve_fig_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_fig_axes</span></code></a>([fig, axes, fig_size, dpi, ...])</p></td>
 <td><p>Resolve a <code class="docutils literal notranslate"><span class="pre">(figure,</span> <span class="pre">axes)</span></code> pair from any combination of already-provided pieces.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_plot_style</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.utils.plotting.set_plot_style.html#uvex_transients.utils.plotting.set_plot_style" title="uvex_transients.utils.plotting.set_plot_style"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_plot_style</span></code></a>()</p></td>
 <td><p>Apply the package's default <cite>matplotlib</cite> style, from <code class="docutils literal notranslate"><span class="pre">config[&quot;plotting.*&quot;]</span></code>.</p></td>
 </tr>
 </tbody>

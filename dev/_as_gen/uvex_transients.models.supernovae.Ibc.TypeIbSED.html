@@ -634,6 +634,14 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.html">uvex_transients.models.host_dust</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.html">HostDustMixin</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.DUST_LAW.html">uvex_transients.models.host_dust.HostDustMixin.DUST_LAW</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS.html">uvex_transients.models.host_dust.HostDustMixin.HOST_DUST_PARAMETERS</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.html">uvex_transients.models.kilonovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.html">uvex_transients.models.kilonovae.kne</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.kilonovae.kne.KilonovaCoolingBlackbodySED.html">KilonovaCoolingBlackbodySED</a></li>
@@ -1937,6 +1945,7 @@
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.attenuation_callable.html">uvex_transients.dust.attenuation_callable</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.dust_map.html">uvex_transients.dust.dust_map</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.get_dust_law.html">uvex_transients.dust.get_dust_law</a></li>
+<li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.host_log_attenuation_cgs.html">uvex_transients.dust.host_log_attenuation_cgs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.log_attenuation.html">uvex_transients.dust.log_attenuation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="uvex_transients.dust.resolve_ebv.html">uvex_transients.dust.resolve_ebv</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="uvex_transients.dust.DustMapLike.html">DustMapLike</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -2038,6 +2047,7 @@
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_categorical_colors.html">uvex_transients.utils.plotting.get_categorical_colors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_cmap.html">uvex_transients.utils.plotting.get_cmap</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.get_default_cmap.html">uvex_transients.utils.plotting.get_default_cmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_archived_luminosity_function.html">uvex_transients.utils.plotting.plot_archived_luminosity_function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_band_light_curve.html">uvex_transients.utils.plotting.plot_band_light_curve</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_funnel.html">uvex_transients.utils.plotting.plot_detection_funnel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="uvex_transients.utils.plotting.plot_detection_horizon.html">uvex_transients.utils.plotting.plot_detection_horizon</a></li>
@@ -2202,7 +2212,8 @@
 <p>Reuses <a class="reference internal" href="uvex_transients.models.arnett.LineBlanketedArnettDecaySED.html#uvex_transients.models.arnett.LineBlanketedArnettDecaySED" title="uvex_transients.models.arnett.LineBlanketedArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineBlanketedArnettDecaySED</span></code></a> entirely, exactly as
 <a class="reference internal" href="uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED" title="uvex_transients.models.supernovae.Ia.TypeIaSED"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeIaSED</span></code></a> does (radioactive-decay Arnett diffusion,
 floored photospheric temperature and a line-blanketed blackbody); only <code class="xref py py-attr docutils literal notranslate"><span class="pre">_DEFAULT_PARAMETERS</span></code>
-differs. <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> start at the Type Ia values. The priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code>
+differs. <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> start at the original Type Ia calibration (not its recalibrated
+one). The priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code>
 and <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are the SN Ib subsample statistics (mean,
 sample standard deviation of the analytical-model fits in Table 6 of Lyman <em>et al.</em><a class="footnote-reference brackets" href="#footcite-lyman2016" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>, 13
 events). <code class="docutils literal notranslate"><span class="pre">kappa</span></code> is fixed at <span class="math notranslate nohighlight">\(0.06\,\mathrm{cm^2\,g^{-1}}\)</span>, the single grey optical opacity

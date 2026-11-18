@@ -463,9 +463,9 @@
   <h1>Source code for uvex_transients.utils.luminosity_function_archive</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Access to the packaged archive of observed luminosity functions (``test_data/transients/luminosity_functions.h5``).</span>
 
-<span class="sd">The archive holds each curve under ``/&lt;transient_type&gt;/luminosity_function_&lt;band&gt;/&lt;source&gt;/{M, dAndM}``, with</span>
+<span class="sd">The archive holds each curve under ``/&lt;transient_type&gt;/luminosity_function_&lt;band&gt;/&lt;source&gt;/{M, dNdM}``, with</span>
 <span class="sd">``&lt;transient_type&gt;`` named as in the light-curve archive (`~uvex_transients.utils.lightcurve_archive`), for example</span>
-<span class="sd">``supernovae/Ia``. ``M`` is the peak absolute magnitude in the band and ``dAndM`` the volumetric rate per magnitude,</span>
+<span class="sd">``supernovae/Ia``. ``M`` is the peak absolute magnitude in the band and ``dNdM`` the volumetric rate per magnitude,</span>
 <span class="sd">stored as given by the source. The rates have an overall normalization that is not ours, so the curves compare to a</span>
 <span class="sd">model by shape: normalize both over the same range of ``M``.</span>
 <span class="sd">"""</span>
@@ -504,7 +504,7 @@
 <span class="sd">    &gt;&gt;&gt; lf = archive.table(</span>
 <span class="sd">    ...     "supernovae/Ia", "ASAS-SN"</span>
 <span class="sd">    ... )  # doctest: +SKIP</span>
-<span class="sd">    &gt;&gt;&gt; lf["M"], lf["dAndM"]  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; lf["M"], lf["dNdM"]  # doctest: +SKIP</span>
 <span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -577,7 +577,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        astropy.table.QTable</span>
-<span class="sd">            Columns ``M`` (peak absolute magnitude, ascending, in `~astropy.units.mag`) and ``dAndM`` (rate per</span>
+<span class="sd">            Columns ``M`` (peak absolute magnitude, ascending, in `~astropy.units.mag`) and ``dNdM`` (rate per</span>
 <span class="sd">            magnitude, in Mpc^-3 yr^-1 mag^-1). ``.meta`` holds the attributes of the source group: the label it has</span>
 <span class="sd">            in the source file and the header that says what the axes are.</span>
 
@@ -593,7 +593,7 @@
             <span class="n">source</span> <span class="o">=</span> <span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">group</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">transient_type</span><span class="si">}</span><span class="s2">/luminosity_function_</span><span class="si">{</span><span class="n">band</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
-            <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">({</span><span class="s2">"M"</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s2">"M"</span><span class="p">][()]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">mag</span><span class="p">,</span> <span class="s2">"dAndM"</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s2">"dAndM"</span><span class="p">][()]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">mag</span><span class="p">})</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">QTable</span><span class="p">({</span><span class="s2">"M"</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s2">"M"</span><span class="p">][()]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">mag</span><span class="p">,</span> <span class="s2">"dNdM"</span><span class="p">:</span> <span class="n">group</span><span class="p">[</span><span class="s2">"dNdM"</span><span class="p">][()]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Mpc</span><span class="o">**-</span><span class="mi">3</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">yr</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">mag</span><span class="p">})</span>
             <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">table</span></div>
 

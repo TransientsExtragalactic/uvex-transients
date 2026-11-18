@@ -502,8 +502,9 @@ Arnett-style radioactive-decay diffusion physics as Type Ia, with a line-blanket
 (<a class="reference internal" href="../_as_gen/uvex_transients.models.arnett.LineBlanketedArnettDecaySED.html#uvex_transients.models.arnett.LineBlanketedArnettDecaySED" title="uvex_transients.models.arnett.LineBlanketedArnettDecaySED"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineBlanketedArnettDecaySED</span></code></a>), differing only in their priors (and, for
 Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
 are implemented as sibling transient classes below. The line blanketing, which suppresses the UV, is
-calibrated against Swift/UVOT UVW1 and UVW2 light curves on the Type Ia tab and adopted unchanged by
-the others.</p>
+calibrated against Swift/UVOT UVW1, UVM2 and UVW2 light curves on the Type Ia tab. The others keep the
+original calibration (<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz, 5), made before Type Ia was recalibrated to its present priors,
+and have not been recalibrated.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The Type Ib and Type Ic priors on <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>, <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> and <code class="docutils literal notranslate"><span class="pre">v_ej</span></code> are the per-subtype sample
@@ -515,7 +516,8 @@ leakage-free formalism (the original Arnett 1982 diffusion model), so it is inst
 <span class="math notranslate nohighlight">\(0.04\,\mathrm{cm^2\,g^{-1}}\)</span>, comparable to <cite>Type Ia</cite>’s Scalzo+14-derived value. Ib and Ic
 share this same construction and differ only in the subsample statistics and event rates. Type
 Ic-BL instead uses sample statistics of its own explosion-property table (see its tab below). All
-three also take the line-blanketing parameters <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> from Type Ia.</p>
+three keep the line-blanketing parameters <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> of the original Type Ia calibration,
+which Type Ia has since replaced.</p>
 </div>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
@@ -565,7 +567,7 @@ is evaluated by calling <cite>supernovae_Ia_rate</cite> directly at that normali
 <a class="reference internal" href="../user_guide/transients/overview.html#user-guide-transients-rate-uncertainty"><span class="std std-ref">Rate Uncertainty and All-Sky Yield</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Redshift limit</p></td>
-<td><p><span class="math notranslate nohighlight">\(z = 0.33\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(z = 0.24\)</span></p></td>
 <td><p>–</p></td>
 <td><p>Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED’s
 priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -610,14 +612,31 @@ break frequency <a class="footnote-reference brackets" href="#footcite-2017apj-8
 <span class="math notranslate nohighlight">\(\mathcal{N}(t)\)</span> is the integral of the suppressed shape over frequency, so that
 <span class="math notranslate nohighlight">\(L_\mathrm{bol}(t)\)</span> is unchanged by the blanketing: the flux removed from the UV is returned redward of
 the break, and only the UV-to-optical balance of the SED moves. <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code>
-(<span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz, about 4000 Å) and <code class="docutils literal notranslate"><span class="pre">beta</span></code> (5) are fixed; they are the UV calibration of this
-model, set against the Swift/UVOT UVW1 and UVW2 light curves shown below.</p>
-<p>The remaining priors follow Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> (a sample of 2205 SNe Ia from ZTF): <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> and
-<code class="docutils literal notranslate"><span class="pre">M_ej</span></code> are the population-level Gaussians from that paper’s hierarchical Arnett-model fit
-(<span class="math notranslate nohighlight">\(\mu_\mathrm{Ni}=0.64\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{Ni}=0.42\,M_\odot\)</span>;
-<span class="math notranslate nohighlight">\(\mu_\mathrm{ej}=1.26\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{ej}=0.33\,M_\odot\)</span>),
+(<span class="math notranslate nohighlight">\(0.9\times10^{15}\)</span> Hz, about 3330 Å) and <code class="docutils literal notranslate"><span class="pre">beta</span></code> (5.5) are fixed; they are the UV calibration of this
+model, set against the peak luminosities of the Swift/UVOT light curves in the UV calibration section below.</p>
+<p>The remaining priors follow Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> (a sample of 2205 SNe Ia from ZTF), except for
+<code class="docutils literal notranslate"><span class="pre">M_Ni</span></code>: <code class="docutils literal notranslate"><span class="pre">M_ej</span></code> is the population-level Gaussian from that paper’s hierarchical Arnett-model fit
+(<span class="math notranslate nohighlight">\(\mu_\mathrm{ej}=1.26\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{ej}=0.33\,M_\odot\)</span>),
 <code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> is fixed at the value adopted by Scalzo <em>et al.</em><a class="footnote-reference brackets" href="#footcite-scalzo2014" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a>, and <code class="docutils literal notranslate"><span class="pre">kappa</span></code> is
 uniform over that paper’s marginalization range.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> prior is tuned, not taken from that paper. Its Gaussian
+(<span class="math notranslate nohighlight">\(\mu_\mathrm{Ni}=0.64\,M_\odot\)</span>, <span class="math notranslate nohighlight">\(\sigma_\mathrm{Ni}=0.42\,M_\odot\)</span>) gives peak V-band
+magnitudes about 0.3 mag too bright, and too broad, compared with the ASAS-SN luminosity function of SNe Ia,
+even with host dust. The prior here is a truncated Gaussian with <span class="math notranslate nohighlight">\(\mu_\mathrm{Ni}=0.48\,M_\odot\)</span> and
+<span class="math notranslate nohighlight">\(\sigma_\mathrm{Ni}=0.2\,M_\odot\)</span>, chosen together with the mean of the <span class="math notranslate nohighlight">\(A_V\)</span> prior below by trial
+and error (compared by the total variation distance between the binned distributions), not by a fit. The peak V-band magnitude constrains only the combination of the two, so other pairs fit equally
+well and neither is measured by this comparison. The luminosity function below shows the result.</p>
+<p>The SED is also reddened by dust in the host galaxy, with the Gordon et al. (2023) law
+(<a class="reference internal" href="../_as_gen/uvex_transients.models.host_dust.HostDustMixin.DUST_LAW.html#uvex_transients.models.host_dust.HostDustMixin.DUST_LAW" title="uvex_transients.models.host_dust.HostDustMixin.DUST_LAW"><code class="xref py py-attr docutils literal notranslate"><span class="pre">DUST_LAW</span></code></a>). The V-band attenuation <span class="math notranslate nohighlight">\(A_V\)</span> is
+exponentially distributed with a mean of 0.4 mag, and <span class="math notranslate nohighlight">\(R_V\)</span> is normal, <span class="math notranslate nohighlight">\(2.70\pm0.25\)</span>, truncated
+to the 2.3 to 5.6 range of the law. The width of the <span class="math notranslate nohighlight">\(R_V\)</span> prior is that of the uncertainty on its
+population mean, which is smaller than the 95% upper limit of 0.61 on the scatter of the population. The two
+are independent. The dust is part of the model rather than a correction applied to it: the dust that shaped
+the light of any one event is unknown, so the SED describes the luminosity we observe and infer. In
+particular <span class="math notranslate nohighlight">\(L_\mathrm{bol}(t)\)</span> is the integral of the <em>attenuated</em> <span class="math notranslate nohighlight">\(L_\nu\)</span>, below the intrinsic
+Arnett luminosity by the fraction the dust absorbs (<code class="docutils literal notranslate"><span class="pre">A_V=0</span></code> recovers the dust-free SED). Foreground dust of
+the Milky Way is separate (the <code class="docutils literal notranslate"><span class="pre">ebv</span></code> argument of the photometry methods). Of the classes on this page only
+Type Ia carries host dust so far.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
@@ -638,8 +657,9 @@ uniform over that paper’s marginalization range.</p>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">M_Ni</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(M_\mathrm{Ni}\)</span></p></td>
-<td><p>TruncatedNormal(0.64, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.42; bounds <span class="math notranslate nohighlight">\([0.05, 3.0]\,M_\odot\)</span>)</p></td>
-<td><p>Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>.</p></td>
+<td><p>TruncatedNormal(0.48, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.2; bounds <span class="math notranslate nohighlight">\([0.05, 3.0]\,M_\odot\)</span>)</p></td>
+<td><p>Tuned to the ASAS-SN luminosity function (see above); Sarin <em>et al.</em><a class="footnote-reference brackets" href="#footcite-sarin2026" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> has
+0.64, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.42.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">M_ej</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(M_\mathrm{ej}\)</span></p></td>
@@ -669,15 +689,26 @@ uniform over that paper’s marginalization range.</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">break_frequency</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(\nu_\mathrm{break}\)</span></p></td>
-<td><p>Fixed, <span class="math notranslate nohighlight">\(0.75\times10^{15}\)</span> Hz (about 4000 Å)</p></td>
+<td><p>Fixed, <span class="math notranslate nohighlight">\(0.9\times10^{15}\)</span> Hz (about 3330 Å)</p></td>
 <td><p>Frequency blueward of which line blanketing suppresses the flux. Calibrated against
-Swift/UVOT UVW1 and UVW2 (see below).</p></td>
+Swift/UVOT (see below).</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">beta</span></code></p></td>
 <td><p><span class="math notranslate nohighlight">\(\beta\)</span></p></td>
-<td><p>Fixed, 5</p></td>
+<td><p>Fixed, 5.5</p></td>
 <td><p>Power-law index <span class="math notranslate nohighlight">\(\nu^{-\beta}\)</span> of the suppression above the break. Calibrated
-against Swift/UVOT UVW1 and UVW2.</p></td>
+against Swift/UVOT.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">A_V</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(A_V\)</span></p></td>
+<td><p>Exponential(mean 0.4 mag)</p></td>
+<td><p>V-band attenuation by dust in the host galaxy; the reddening law is G23.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">R_V</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(R_V\)</span></p></td>
+<td><p>TruncatedNormal(2.70, <span class="math notranslate nohighlight">\(\sigma\)</span>=0.25; bounds <span class="math notranslate nohighlight">\([2.3, 5.6]\)</span>)</p></td>
+<td><p>Total-to-selective ratio of the host dust. The mean and its uncertainty are measured; the
+scatter of the population is only bounded (<span class="math notranslate nohighlight">\(\sigma&lt;0.61\)</span>, 95%).</p></td>
 </tr>
 </tbody>
 </table>
@@ -705,6 +736,50 @@ an amount that differs from event to event.</p>
 105 with at least four UVW2 detections), and the line-blanketing parameters <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> were
 set against these two bands. Because the line blanketing leaves <span class="math notranslate nohighlight">\(L_\mathrm{bol}(t)\)</span> unchanged, it moves flux between
 the UV and the optical, and the UV light curves are where it shows.</p>
+<p>Median peak <span class="math notranslate nohighlight">\(\nu L_\nu\)</span> (log10, erg/s) of 3000 model draws at <span class="math notranslate nohighlight">\(z=0.01\)</span> against the Swift
+supernovae:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Quantity</p></th>
+<th class="head"><p>Swift</p></th>
+<th class="head"><p>Model</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>UVW1 peak</p></td>
+<td><p>42.13</p></td>
+<td><p>42.15</p></td>
+</tr>
+<tr class="row-odd"><td><p>UVW2 peak</p></td>
+<td><p>41.58</p></td>
+<td><p>41.60</p></td>
+</tr>
+<tr class="row-even"><td><p>UVW1 minus UVW2</p></td>
+<td><p>0.55</p></td>
+<td><p>0.55</p></td>
+</tr>
+<tr class="row-odd"><td><p>UVM2 peak</p></td>
+<td><p>41.27</p></td>
+<td><p>41.63</p></td>
+</tr>
+<tr class="row-even"><td><p>UVW1 minus UVM2</p></td>
+<td><p>0.93</p></td>
+<td><p>0.52</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The first three rows were fit. The UVM2 rows were not, and are not matched: the model is too bright in UVM2 by
+about 0.35 dex, and no choice of the break and <span class="math notranslate nohighlight">\(\beta\)</span> fixes that, so it is a limit of a single smooth
+suppression above one break frequency. The colour does not depend on how bright the sample was selected but
+the level does, and the Swift supernovae are a brighter sample than the model’s. The model is also broader
+than the data (the 16th to 84th percentile of the UVW1 peak spans 0.9 dex against 0.5 dex). The UVOT bands
+do not reach the UVEX FUV band, so the calibration there is an extrapolation.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/fb3828a21ecff9f850e4cb19dba86215/type_i-2.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/45df007dda2629dbc8ff5f8c933cf2cc/type_i-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/dcfea48bd0bb42800bdd92e0d813b5d4/type_i-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/e7711f1f25d159289b85be1a095c0f9a/type_i-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-2.png" class="plot-directive" src="../_images/type_i-2.png" />
@@ -715,13 +790,20 @@ the UV and the optical, and the UV light curves are where it shows.</p>
 </figure>
 <p class="rubric">Luminosity Function</p>
 <p>The distribution of peak absolute magnitude in the Johnson V band, from 10000 draws of the SED
-priors above. Each draw’s rest-frame band light curve is measured at its brightest point. The curve
+priors above. Each draw’s rest-frame band light curve is measured at its brightest point, with the host
+dust included. The curve
 is normalized per event, so it integrates to 1 over <span class="math notranslate nohighlight">\(M_V\)</span>: multiply it by the rate to get a
 volumetric luminosity function, in events per comoving volume, time and magnitude. The shaded
 bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
 <span class="math notranslate nohighlight">\(M_V\)</span> is the AB magnitude at 10 pc of a spectrum flat in <span class="math notranslate nohighlight">\(L_\nu\)</span> that has the same
 Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
 magnitude of the SED itself.</p>
+<p>The points are the luminosity function of SNe Ia of ASAS-SN, which the <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> and <span class="math notranslate nohighlight">\(A_V\)</span> priors were
+tuned to (so this is a check of that tuning, not an independent test). Its rate has a normalization that is
+not ours, so only its shape is compared: the points are scaled to unit area over the magnitudes they cover
+and then by the fraction of the model’s events in that range. Where the shapes agree, the points lie on the
+model’s curve. The model has too few events at the faint end (<span class="math notranslate nohighlight">\(M_V\gtrsim-17.5\)</span>), where the ASAS-SN
+curve has a tail of subluminous events that a single Gaussian in <code class="docutils literal notranslate"><span class="pre">M_Ni</span></code> does not reproduce.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/3689ef124721b6ba72c6f7ac161c049c/type_i-4.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/88b1b43f6e3b27ceec592c3f9122adbe/type_i-4.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/b5df133fb6fcdd57fb6eb0a65ef1e524/type_i-4.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/79d6d7f9ab5131551cc763cfc04058ac/type_i-4.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-4.png" class="plot-directive" src="../_images/type_i-4.png" />
@@ -734,7 +816,7 @@ draw’s peak apparent AB magnitude, in whichever band is brighter, against reds
 detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
 <span class="math notranslate nohighlight">\(m&lt;24.5\)</span>. The right panel shows the redshift beyond which, with 95% confidence, at most
 1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-adopted above, <span class="math notranslate nohighlight">\(z=0.33\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
+adopted above, <span class="math notranslate nohighlight">\(z=0.24\)</span>, is its value at <span class="math notranslate nohighlight">\(m=24.5\)</span>, rounded up and derived on a
 finer grid than this plot’s.</p>
 <p>The limit bounds the fraction of the <em>population</em> that is detectable beyond it, not the
 fraction of detected events, and it does not include Milky Way extinction or sky position.</p>
@@ -744,7 +826,7 @@ fraction of detected events, and it does not include Milky Way extinction or sky
 </figure>
 <p>The anticipated rate of SNe Ia detectable by UVEX at this limit is as follows, assuming
 that any event above the <span class="math notranslate nohighlight">\(m&lt;24.5\)</span> limit is detectable, and that the population is
-isotropic and homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=0.33\)</span>:</p>
+isotropic and homogeneous in comoving volume out to <span class="math notranslate nohighlight">\(z=0.24\)</span>:</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/dfe9de02d2d9c683f71d9118a09d7b0d/type_i-6.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/8c07b8c303a9c180701611ef64e47274/type_i-6.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/b1fa33762adf82db055c7d0133fe30df/type_i-6.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/78e55324ab95280a802c93fc754006e8/type_i-6.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-6.png" class="plot-directive" src="../_images/type_i-6.png" />
@@ -819,8 +901,8 @@ opacity value that paper assumes (rather than fits) for every event in its sampl
 Scalzo+14-derived value, since Lyman et al. 2016’s own analytical model has no gamma-ray
 leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
 direct constraint on it. <code class="docutils literal notranslate"><span class="pre">T_floor</span></code> is left close to <cite>Type Ia</cite>’s value. <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code>
-are fixed at the <cite>Type Ia</cite> values, so the UV suppression is that calibrated against Swift/UVOT for
-thermonuclear events, and not tuned to Type Ib specifically.</p>
+are fixed at the original <cite>Type Ia</cite> calibration, which Type Ia has since replaced, and are not tuned to Type
+Ib specifically.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
@@ -906,9 +988,9 @@ integrated through the corresponding UVOT transmission curve from the SVO Filter
 legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
 the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
 an amount that differs from event to event.</p>
-<p>The line-blanketing parameters are those of Type Ia, unchanged. Few Type Ib supernovae have well sampled UV light
-curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so these plots are a
-consistency check on the Type Ia values rather than a fit.</p>
+<p>The line-blanketing parameters are those of the original Type Ia calibration. Few Type Ib supernovae have well
+sampled UV light curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so
+these plots are a consistency check on those values rather than a fit.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/522c4d407f9e2c3a64a5d43bdb817b8c/type_i-8.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/11718245424cb2d2355e93c7a10d9787/type_i-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/564329b5f05c7c827d4926dcc2cee94e/type_i-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/90793011b2aa077691d54ae37f1ded2c/type_i-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-8.png" class="plot-directive" src="../_images/type_i-8.png" />
@@ -1097,9 +1179,9 @@ integrated through the corresponding UVOT transmission curve from the SVO Filter
 legend gives how many are shown. Only those with an estimated explosion date (black) are timed from explosion;
 the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
 an amount that differs from event to event.</p>
-<p>The line-blanketing parameters are those of Type Ia, unchanged. The Swift sample is small: 6 Type Ic supernovae
-have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
-consistency check on the Type Ia values rather than a fit.</p>
+<p>The line-blanketing parameters are those of the original Type Ia calibration. The Swift sample is small: 6 Type Ic
+supernovae have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
+consistency check on those values rather than a fit.</p>
 <p>(<a class="reference download internal" download="" href="../_downloads/1ecd3c64a5343dcf1ac711c29f762e4c/type_i-14.py"><code class="xref download docutils literal notranslate"><span class="pre">Source</span> <span class="pre">code</span></code></a>, <a class="reference download internal" download="" href="../_downloads/1f2c5113d851e7f9742f060695fca18d/type_i-14.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/9a4ce7074223f52d8f51c44a4e99c4a1/type_i-14.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../_downloads/0f167a0d988a598e736e08d62452da24/type_i-14.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
 <figure class="align-default">
 <img alt="../_images/type_i-14.png" class="plot-directive" src="../_images/type_i-14.png" />
@@ -1226,7 +1308,7 @@ photospheric velocities (<code class="docutils literal notranslate"><span class=
 <code class="docutils literal notranslate"><span class="pre">T_floor</span></code> are not constrained by that table and are left at <cite>Type Ia</cite>’s values;
 <code class="docutils literal notranslate"><span class="pre">kappa_gamma</span></code> is instead fixed at a large value (full gamma-ray trapping across the
 simulated window), unlike <cite>Type Ia</cite>’s Scalzo+14 value. <code class="docutils literal notranslate"><span class="pre">break_frequency</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span></code> are fixed
-at the <cite>Type Ia</cite> values.</p>
+at the original <cite>Type Ia</cite> calibration.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 <span class="sd-summary-text">Parameter priors</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">

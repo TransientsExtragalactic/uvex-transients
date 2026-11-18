@@ -472,25 +472,62 @@
     <span class="n">TruncatedNormalPrior</span><span class="p">,</span>
     <span class="n">UniformPrior</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.host_dust</span><span class="w"> </span><span class="kn">import</span> <span class="n">HostDustMixin</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TypeIaSED"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="TypeIaSED">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.Ia.TypeIaSED.html#uvex_transients.models.supernovae.Ia.TypeIaSED">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TypeIaSED</span><span class="p">(</span><span class="n">LineBlanketedArnettDecaySED</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIaSED</span><span class="p">(</span><span class="n">HostDustMixin</span><span class="p">,</span> <span class="n">LineBlanketedArnettDecaySED</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Type Ia supernova SED, with priors fit to a ZTF sample of SNe Ia.</span>
+<span class="sd">    Type Ia supernova SED, attenuated by host-galaxy dust, with priors tuned to the ASAS-SN luminosity function.</span>
 
-<span class="sd">    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely (radioactive-decay Arnett</span>
-<span class="sd">    diffusion, floored photospheric temperature and a line-blanketed blackbody); only</span>
-<span class="sd">    :attr:`_DEFAULT_PARAMETERS` differs. The priors follow</span>
-<span class="sd">    :footcite:t:`sarin2026` (Sarin et al. 2026, a sample of 2205 SNe Ia from ZTF): ``M_Ni`` and ``M_ej``</span>
-<span class="sd">    are the population-level Gaussians from that paper's hierarchical Arnett-model fit</span>
-<span class="sd">    (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`, :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`;</span>
-<span class="sd">    :math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`), ``kappa_gamma`` is</span>
+<span class="sd">    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` (radioactive-decay Arnett</span>
+<span class="sd">    diffusion, floored photospheric temperature and a line-blanketed blackbody), with its parameters' priors</span>
+<span class="sd">    replaced and the host dust of :class:`~uvex_transients.models.host_dust.HostDustMixin` added. The priors</span>
+<span class="sd">    follow :footcite:t:`sarin2026` (Sarin et al. 2026, a sample of 2205 SNe Ia from ZTF), except for ``M_Ni``:</span>
+<span class="sd">    ``M_ej`` is the population-level Gaussian from that paper's hierarchical Arnett-model fit</span>
+<span class="sd">    (:math:`\mu_\mathrm{ej}=1.26\,M_\odot`, :math:`\sigma_\mathrm{ej}=0.33\,M_\odot`), ``kappa_gamma`` is</span>
 <span class="sd">    fixed at the value adopted by :footcite:t:`scalzo2014` (Scalzo et al. 2014), and ``kappa`` is uniform</span>
 <span class="sd">    over that paper's marginalization range.</span>
+
+<span class="sd">    .. rubric:: Tuning to the ASAS-SN luminosity function</span>
+
+<span class="sd">    The paper's ``M_Ni`` Gaussian (:math:`\mu_\mathrm{Ni}=0.64\,M_\odot`,</span>
+<span class="sd">    :math:`\sigma_\mathrm{Ni}=0.42\,M_\odot`) gives a distribution of peak V-band absolute magnitude that is about</span>
+<span class="sd">    0.3 mag too bright, and too broad, against the ASAS-SN luminosity function of SNe Ia, even with host dust. The</span>
+<span class="sd">    ``M_Ni`` prior is therefore a truncated Gaussian with :math:`\mu_\mathrm{Ni}=0.48\,M_\odot` and</span>
+<span class="sd">    :math:`\sigma_\mathrm{Ni}=0.2\,M_\odot`, chosen together with the mean of the :math:`A_V` prior below by trial</span>
+<span class="sd">    and error (compared by the total variation distance of the binned distributions), not by a fit. The peak</span>
+<span class="sd">    V-band magnitude constrains only the combination of the two: other pairs fit equally well, so</span>
+<span class="sd">    neither value is measured here. The distribution is still too thin at the faintest end (:math:`M_V\gtrsim-17.5`),</span>
+<span class="sd">    where subluminous events (91bg-like) are missing from a single Gaussian.</span>
+
+<span class="sd">    .. rubric:: UV line blanketing</span>
+
+<span class="sd">    ``break_frequency`` (:math:`0.9\times10^{15}` Hz, about 3330 Angstrom) and ``beta`` (5.5) were set against the</span>
+<span class="sd">    peak :math:`\nu L_\nu` of the Swift/UVOT SNe Ia (UVW1, UVM2 and UVW2), with the priors above. The first</span>
+<span class="sd">    calibration (:math:`0.75\times10^{15}` Hz, 5) predates the host dust and the tuned ``M_Ni``, and left the model</span>
+<span class="sd">    about 0.35 dex too faint in UVW1 and UVW2. The median peaks in both bands and the UVW1 to UVW2 colour now agree</span>
+<span class="sd">    with the data (to 0.02 dex), but the UVW1 to UVM2 colour does not: the model is too bright in UVM2 by about 0.35</span>
+<span class="sd">    dex, and no choice of the two parameters fixes that. The Swift SNe Ia are a brighter and narrower sample than the</span>
+<span class="sd">    ASAS-SN-like population of the model, so the agreement in level is only as good as that comparison, the</span>
+<span class="sd">    colours are the more robust of the two, and the observed UVOT bands do not reach the UVEX FUV band, which is</span>
+<span class="sd">    an extrapolation. Because the blanketing returns the flux it removes to longer wavelengths, changing it moves</span>
+<span class="sd">    the V band too, so ``M_Ni`` was tuned again after it.</span>
+
+<span class="sd">    .. rubric:: Host dust</span>
+
+<span class="sd">    The SED is reddened by dust in the host galaxy, with the G23 law</span>
+<span class="sd">    (:attr:`~uvex_transients.models.host_dust.HostDustMixin.DUST_LAW`) and a V-band attenuation :math:`A_V`</span>
+<span class="sd">    drawn from an exponential distribution with mean 0.4 mag. :math:`R_V` is normal with</span>
+<span class="sd">    :math:`2.70 \pm 0.25`, truncated to G23's range of 2.3 to 5.6; the width is that of the uncertainty on the</span>
+<span class="sd">    mean, which is within the 95% upper limit of 0.61 on the scatter of the population. The two are independent.</span>
+<span class="sd">    The dust is part of the model, not a correction applied on top: nothing is known of the dust that shaped any</span>
+<span class="sd">    given event, so the SED describes the luminosity we observe and infer, and ``eval_bolometric`` is the</span>
+<span class="sd">    integral of the attenuated :math:`L_\nu`. ``A_V=0`` recovers the dust-free SED. Milky Way foreground dust</span>
+<span class="sd">    is separate (the ``ebv`` argument of the photometry methods).</span>
 
 <span class="sd">    .. rubric:: Parameters</span>
 
@@ -525,6 +562,12 @@
 <span class="sd">       * - ``beta``</span>
 <span class="sd">         - :math:`\beta`</span>
 <span class="sd">         - Power-law index of the suppression above the break.</span>
+<span class="sd">       * - ``A_V``</span>
+<span class="sd">         - :math:`A_V`</span>
+<span class="sd">         - V-band attenuation by dust in the host galaxy.</span>
+<span class="sd">       * - ``R_V``</span>
+<span class="sd">         - :math:`R_V`</span>
+<span class="sd">         - Total-to-selective extinction ratio of the host dust.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -533,9 +576,9 @@
 
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.64</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.42</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">3.0</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">3.0</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass synthesized in the explosion."</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass synthesized in the explosion (tuned to the ASAS-SN luminosity function)."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{Ni}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"M_ej"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
@@ -569,17 +612,18 @@
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"break_frequency"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1e15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in."</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in (set against Swift/UVOT)."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\nu_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.5</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
+        <span class="o">**</span><span class="n">HostDustMixin</span><span class="o">.</span><span class="n">HOST_DUST_PARAMETERS</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 </pre></div>
