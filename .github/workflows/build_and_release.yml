@@ -12,8 +12,9 @@
 #
 # The shape of the data-product side is a fan-out and a fan-in:
 #
-#   create_release --+-- run_primary     (configs/full_run.yaml, flat assets)
-#                    +-- run_infant_sne  (configs/infant_sne.yaml, infant_sne.zip)
+#   create_release --+-- run_primary      (configs/full_run.yaml, flat assets)
+#                    +-- run_infant_sne   (configs/infant_sne.yaml, infant_sne.zip)
+#                    +-- run_phase_space  (configs/phase_space.yaml, phase_space.zip)
 #                    +-- ...                          |
 #                                                     +-- trigger_docs
 #
@@ -49,6 +50,7 @@ on:
           - all
           - primary
           - infant_sne
+          - phase_space
 
 jobs:
   # ------------------------------------------ #
@@ -167,6 +169,23 @@ jobs:
       release_tag: ${{ needs.create_release.outputs.tag }}
       package: true
 
+  # The phase-space recovery maps are not a population: `kind: phase_space` runs
+  # `uvex-transients phase-space`, which maps the survey's recovery of a canonical transient
+  # in the FUV and the NUV, and packages the maps (one directory each) into phase_space.zip.
+  run_phase_space:
+    name: Phase-space maps (phase_space.yaml)
+    needs: [create_release]
+    if: ${{ github.event_name == 'push' || inputs.only == 'all' || inputs.only == 'phase_space' }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/_run_and_release.yml
+    with:
+      config: configs/phase_space.yaml
+      name: phase_space
+      kind: phase_space
+      release_tag: ${{ needs.create_release.outputs.tag }}
+      package: true
+
   # ------------------------------------------ #
   # Build the docs once the assets are there    #
   # ------------------------------------------ #
@@ -181,7 +200,7 @@ jobs:
   # from a secondary run skip themselves when its asset is missing.
   trigger_docs:
     name: Trigger versioned documentation build
-    needs: [create_release, run_primary, run_infant_sne]
+    needs: [create_release, run_primary, run_infant_sne, run_phase_space]
     if: ${{ !cancelled() && github.event_name == 'push' && needs.run_primary.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:

@@ -11,8 +11,7 @@ import numpy as np
 from astropy.table import QTable
 
 from uvex_transients.utils import config
-
-from ._stats import clopper_pearson_interval
+from uvex_transients.utils.stat_utils import clopper_pearson_interval
 
 _COLUMNS = (
     "transient_type",

@@ -29,6 +29,7 @@ from uvex_transients.utils.plotting import (
     plot_footprints,
     plot_healpix_map,
     plot_histogram,
+    plot_luminosity_function,
     plot_rate_bars,
     resolve_fig_axes,
     set_plot_style,
@@ -528,3 +529,38 @@ class TestPlotSwiftUVCalibration:
 
         with pytest.raises(ValueError, match="No 'NotAType'"):
             plot_swift_uv_calibration(TypeIaSED, "NotAType")
+
+
+class TestPlotLuminosityFunction:
+    """Tests for `plot_luminosity_function`."""
+
+    @staticmethod
+    def _table(quantity):
+        edges = np.array([1.0, 2.0, 3.0, 4.0])
+        unit, pdf_unit = (u.ABmag, 1 / u.mag) if quantity == "magnitude" else (u.erg / u.s, (u.erg / u.s) ** -1)
+        table = QTable()
+        table["lo"], table["hi"] = edges[:-1] * unit, edges[1:] * unit
+        table["count"] = [0, 10, 5]
+        table["pdf"] = [0.0, 0.6, 0.4] * pdf_unit
+        table["pdf_lo"] = [0.0, 0.5, 0.3] * pdf_unit
+        table["pdf_hi"] = [0.9, 0.7, 0.5] * pdf_unit
+        table.meta["quantity"] = quantity
+        return table
+
+    def test_a_magnitude_function_is_linear_with_the_bright_end_to_the_right(self):
+        fig, ax = plot_luminosity_function(self._table("magnitude"), band="V", label="Ia")
+        assert isinstance(fig, Figure) and isinstance(ax, Axes)
+        assert ax.xaxis_inverted() and ax.get_xscale() == "linear"
+        assert "M_{V}" in ax.get_xlabel() and ax.get_legend() is not None
+        plt.close(fig)
+
+    def test_a_luminosity_function_is_on_log_axes(self):
+        fig, ax = plot_luminosity_function(self._table("luminosity"))
+        assert ax.get_xscale() == "log" and ax.get_yscale() == "log" and not ax.xaxis_inverted()
+        plt.close(fig)
+
+    def test_it_draws_onto_given_axes(self):
+        fig, ax = plt.subplots()
+        out_fig, out_ax = plot_luminosity_function(self._table("magnitude"), ax=ax)
+        assert out_ax is ax and out_fig is fig
+        plt.close(fig)

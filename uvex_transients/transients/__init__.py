@@ -24,6 +24,11 @@ from .LFBOTs import *
 
 __all__ += LFBOTs.__all__
 
+from . import llgrb
+from .llgrb import *
+
+__all__ += llgrb.__all__
+
 from . import TDEs
 from .TDEs import *
 

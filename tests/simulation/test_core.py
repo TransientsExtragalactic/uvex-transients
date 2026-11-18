@@ -381,6 +381,126 @@ def test_generate_events_bad_sampling_factor_raises_before_sampling(make_schedul
 
 
 # --------------------------------------------------------------------------- #
+# sample_N_events: a fixed count per type                                     #
+# --------------------------------------------------------------------------- #
+_TWO_TDES = {"tde_a": TidalDisruptionEvent, "tde_b": TidalDisruptionEvent}
+
+
+def _two_type_simulator(make_schedule, seed=1):
+    schedule = make_schedule(n_sched=20)
+    transients = {name: cls() for name, cls in _TWO_TDES.items()}
+    return SurveySimulator(schedule, transients=transients, simulation_seed=seed)
+
+
+def test_sample_n_events_number_applies_to_every_type(make_schedule):
+    """A single count is the number of events of every registered type, and `pre_cut_counts` records it."""
+    catalog = _two_type_simulator(make_schedule).sample_N_events(30, time_bins=3, nside=64)
+
+    counts = np.unique(catalog.table["transient_type"], return_counts=True)
+    assert dict(zip(*counts)) == {"tde_a": 30, "tde_b": 30}
+    assert catalog.pre_cut_counts == {"tde_a": 30, "tde_b": 30}
+    assert catalog.sampling_factor is None
+    assert list(catalog.table["event_id"]) == list(range(60))
+
+
+def test_sample_n_events_mapping_applies_per_type(make_schedule):
+    catalog = _two_type_simulator(make_schedule).sample_N_events({"tde_a": 10, "tde_b": 45}, time_bins=3, nside=64)
+
+    assert catalog.pre_cut_counts == {"tde_a": 10, "tde_b": 45}
+    assert len(catalog) == 55
+
+
+def test_sample_n_events_columns_match_generate_events(make_schedule):
+    """The fixed-count catalog has the same columns as `generate_events`, populated for every row."""
+    sim = _two_type_simulator(make_schedule)
+    fixed = sim.sample_N_events(20, time_bins=2, nside=64)
+    poisson = sim.generate_events(time_bins=2, nside=64, sampling_factor=0.001)
+
+    assert set(fixed.table.colnames) == set(poisson.table.colnames)
+    assert np.isfinite(fixed.table["ebv"]).all()
+    assert (fixed.table["luminosity_distance"] > 0).all()
+    assert (fixed.nside, fixed.order) == (poisson.nside, poisson.order)
+
+
+def test_sample_n_events_allocates_bins_in_proportion_to_exposure(make_schedule):
+    """Events fall in bins in proportion to effective exposure, so none land in a bin the survey never sees."""
+    schedule = make_schedule(n_sched=20)
+    sim = SurveySimulator(schedule, transients={"tde": TidalDisruptionEvent()}, simulation_seed=3)
+    # Reaches well past the end of the schedule, so the last bins have no exposure at all.
+    edges = schedule.start_time + np.linspace(0.0, 1.0, 9) * 4 * schedule.duration
+
+    exposure = sim.compute_effective_exposure(edges, nside=64).effective_exposure.to_value(u.sr * u.day)
+    assert (exposure == 0).any() and (exposure > 0).any()  # the premise
+
+    n = 4000
+    catalog = sim.sample_N_events(n, time_bins=edges, nside=64)
+    per_bin = np.bincount(catalog.time_bin, minlength=len(exposure))
+    fraction = exposure / exposure.sum()
+
+    assert per_bin.sum() == n
+    assert (per_bin[exposure == 0] == 0).all()
+    sigma = np.sqrt(n * fraction * (1 - fraction))
+    assert (np.abs(per_bin - n * fraction) <= 5 * sigma + 1).all(), (per_bin, n * fraction)
+
+
+def test_sample_n_events_explosion_times_stay_in_their_bin(make_schedule):
+    sim = _two_type_simulator(make_schedule)
+    catalog = sim.sample_N_events(40, time_bins=4, nside=64)
+    edges = catalog.time_bins
+
+    for k in np.unique(catalog.time_bin):
+        t = catalog.t_explosion[catalog.time_bin == k]
+        assert (t >= edges[k]).all() and (t < edges[k + 1]).all()
+
+
+def test_sample_n_events_is_reproducible(make_schedule):
+    first = _two_type_simulator(make_schedule).sample_N_events(25, time_bins=3, nside=64)
+    second = _two_type_simulator(make_schedule).sample_N_events(25, time_bins=3, nside=64)
+    other = _two_type_simulator(make_schedule, seed=2).sample_N_events(25, time_bins=3, nside=64)
+
+    np.testing.assert_array_equal(first.table["parameter_seed"], second.table["parameter_seed"])
+    np.testing.assert_array_equal(first.table["redshift"], second.table["redshift"])
+    assert not np.array_equal(first.table["redshift"], other.table["redshift"])
+
+
+def test_sample_n_events_catalog_round_trips_to_disk(make_schedule, tmp_path):
+    catalog = _two_type_simulator(make_schedule).sample_N_events(15, time_bins=2, nside=64)
+
+    path = tmp_path / "catalog.ecsv"
+    catalog.to_disk(path)
+    assert EventCatalog.from_disk(path).pre_cut_counts == {"tde_a": 15, "tde_b": 15}
+
+
+def test_sample_n_events_mapping_unknown_key_raises(make_schedule):
+    sim = SurveySimulator(make_schedule(n_sched=5), transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
+
+    with pytest.raises(ValueError, match="unknown transient key"):
+        sim.sample_N_events({"tde": 5, "not-a-real-key": 5}, time_bins=1, nside=64)
+
+
+def test_sample_n_events_mapping_must_name_every_type(make_schedule):
+    with pytest.raises(ValueError, match="missing"):
+        _two_type_simulator(make_schedule).sample_N_events({"tde_a": 5}, time_bins=1, nside=64)
+
+
+@pytest.mark.parametrize("bad", [0, -3, 2.5, True, None, "10"])
+@pytest.mark.parametrize("as_mapping", [False, True])
+def test_sample_n_events_bad_count_raises(make_schedule, bad, as_mapping):
+    sim = SurveySimulator(make_schedule(n_sched=5), transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
+
+    with pytest.raises(ValueError, match="positive integers"):
+        sim.sample_N_events({"tde": bad} if as_mapping else bad, time_bins=1, nside=64)
+
+
+def test_sample_n_events_without_exposure_raises(make_schedule):
+    sim = SurveySimulator(make_schedule(n_sched=5), transients={"tde": TidalDisruptionEvent()}, simulation_seed=1)
+    before_survey = Time(["2020-01-01", "2020-06-01"])
+
+    with pytest.raises(ValueError, match="no survey exposure"):
+        sim.sample_N_events(5, time_bins=before_survey, nside=64)
+
+
+# --------------------------------------------------------------------------- #
 # iter_epochs                                                                 #
 # --------------------------------------------------------------------------- #
 def _collect_epochs(sim, catalog, **kwargs):

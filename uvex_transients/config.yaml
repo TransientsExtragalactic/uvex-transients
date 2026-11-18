@@ -312,3 +312,132 @@ simulation:
   # Default confidence level of the Clopper-Pearson interval in
   # uvex_transients.simulation.rates.estimate_yield.
   default_confidence: 0.9
+
+
+# ------------------------------- #
+# PHASE SPACE CONFIGURATION       #
+# ------------------------------- #
+phase_space:
+  # The sections are named as in a phase-space run-config (see uvex_transients.cli.phase_space): `detection:` is what
+  # counts as a recovery, `simulation:` how a point is simulated, `stopping:` how many tries a point gets, and
+  # `campaign:` how the campaign spends its points. They are the defaults of every kind of map. A section named for a
+  # kind of sampler (`canonical:`, `breakout:`) holds that kind's own settings and axes, and a key in it takes the
+  # place of the key of the same name in the shared sections, for that kind only. A kind built on another (the
+  # bracketed breakout on the breakout) takes the sections of both, its own first.
+
+  # The mission, whose detector and background recover the events.
+  mission: uvex_fast
+
+  # What counts as a recovery (see uvex_transients.phase_space.sampling.core.SurveySampler).
+  detection:
+    # The band that recovers the events and defines the luminosity. One band makes one map.
+    band: FUV
+    # A recovery is a detection above snr_threshold on at least n_visits visits. Another definition is a `cuts:` list
+    # of cuts of the simulator (`SurveySimulator.available_cuts`) that is not in the configuration, since it has no
+    # default; see `uvex_transients.phase_space.sampling.core.check_detection`. A detection that is only on a field's
+    # first visit is discarded when exclude_first_visit_detections is set, since nothing there can confirm it.
+    snr_threshold: 5.0
+    n_visits: 2
+    exclude_first_visit_detections: true
+
+  # How a point is simulated.
+  simulation:
+    # The AB depth that sets the redshift limit of a point: only events brighter than it, at their own redshift, are
+    # drawn. 24.5 is about the single-dwell depth of UVEX. The survey also recovers some fainter events (10 to 17% of
+    # the recoveries at the points tried), which a deeper limit of about 25.5 would count, at more events per point.
+    mag_limit: 24.5
+    # Number of equal explosion-time bins spanning the survey. More bins waste fewer events on fields not observed
+    # near the explosion, at about 0.1 s per bin per chunk.
+    time_bins: 12
+
+  # How many events a point gets: events simulated per chunk (and so the fewest per point), the recoveries a point is
+  # topped up to (30 is an 18% relative error on the recovery), and the most events a point may use.
+  stopping:
+    chunk_size: 1000
+    k_target: 30
+    n_max: 20000
+
+  # Active learning of the recovery map (see uvex_transients.phase_space.map.PhaseSpaceMap and uvex_transients.phase_space.experiment).
+  campaign:
+    # Points of the space-filling design evaluated before the first fit, points added per round, and the most points
+    # to evaluate in all.
+    n_initial: 24
+    batch_size: 4
+    max_points: 120
+    # Stop when the largest posterior standard deviation of ln(p + floor) falls below this; 0.1 is a 10% relative
+    # uncertainty on the recovery.
+    tolerance: 0.1
+    # "imse" values a point by what it teaches about the whole map, "variance" only by what it teaches about itself.
+    acquisition: imse
+    # Size of the candidate set the acquisition is evaluated on each round, and the recovery (one in a thousand-event
+    # point) below which the log uncertainty is not chased.
+    n_candidates: 1024
+    floor: 1.0e-3
+    # Restarts of the kernel hyperparameter optimizer.
+    n_restarts: 3
+
+  # Points per axis of the grid a fitted map is written on.
+  grid_size: 60
+
+  # The canonical transient placed at each point of a recovery map (see uvex_transients.phase_space.sampling.canonical):
+  # a fast-rise, exponential-decay light curve with a power-law spectrum.
+  canonical:
+    # Index alpha of the spectrum, L_nu ~ nu^alpha, which sets the K-correction (1+z)^(1+alpha). At -1 the flux density
+    # of an event depends on redshift only through the distance, at 0 (flat) distant events are brightened, and at -2
+    # they are dimmed, as for a spectrum that falls steeply to high energies.
+    spectral_index: -2.0
+    # Rise time over decay time of the light curve. It moves the peak a little and the half-decline time hardly at all
+    # (by about 25% between 0.03 and 0.3).
+    rise_ratio: 0.1
+    # An event is followed until it has faded by this many magnitudes below its peak, which sets the window of
+    # observations that can see it. 6 drops the observations of a nearby event only when it is 250 times fainter.
+    fade_mag: 6.0
+
+    # The rectangle of a map, as log10 L_band / (erg/s) and log10 half-decline time / day.
+    log_luminosity: [41.0, 43.5]
+    log_half_time: [-1.0, 2.5]
+
+  # The shock breakout sampler (see uvex_transients.phase_space.sampling.breakout): a map over the peak luminosity L_0 and the time
+  # scale t_0 of a breakout, whose emission is a blackbody on an expanding photosphere.
+  breakout:
+    # The default ranges of the axes: log10 L_0 / (erg/s), and log10 t_0 / s. The redshift limit is tabulated over them.
+    # Only an event that lasts longer than a dwell is mapped, so t_0 is at least one dwell: 10^2.96 s = 912 s is the
+    # lowest value at or above the 900 s dwell of the UVEX schedule, and the sampler refuses a lower one. The upper end,
+    # 1e6 s (12 days), reaches the long breakouts of dense circumstellar material.
+    log_L0: [42.0, 46.5]
+    log_t0: [2.96, 6.0]
+    # An exposure of a breakout is only a detection if it lies within the window out to the bolometric half-decline of
+    # the light curve, so a single exposure that reaches the threshold is a detection, and there is no second visit.
+    n_visits: 1
+    # A breakout is far shorter than a bin of explosion times, so the fraction of events in the sampled footprint that
+    # land in an exposure falls as 1 / (the width of a bin). More bins make each point need fewer events, at about 0.1 s
+    # per bin per chunk; the recovered volume-time does not depend on it.
+    time_bins: 400
+    # The redshift the limit is tabulated to, and the points per axis of the table of the limit. A limit that reaches
+    # z_max is clipped to it.
+    z_max: 10.0
+    table_points: 33
+
+  # Resolution of the tables the sampler interpolates. They set the precision of the redshift limit and of the volume
+  # and exposure scales (about 0.1% and 5%), not what is measured.
+  numerics:
+    # Spacing, in dex, of the window lengths the footprint exposure is tabulated at.
+    exposure_spacing: 0.1
+    # The smallest redshift of the table the redshift limit is inverted from, and its number of log-spaced points. The
+    # minimum is far below any limit a map reaches, so that a shallow depth (20 AB puts a faint event within a few
+    # megaparsecs) is not clipped to a larger volume than it has.
+    z_table_min: 1.0e-5
+    z_table_points: 512
+    # The same for the cumulative comoving volume.
+    volume_z_min: 1.0e-6
+    volume_points: 6000
+
+  # Placing the shipped transient classes on a map (see uvex_transients.phase_space.analysis.overlay).
+  overlay:
+    # Draws from each class's priors, and the log-spaced rest-frame times (days) each is evaluated on, from t_min to
+    # t_max_factor times the class's duration. t_min is the earliest epoch that matters: the first minutes after
+    # explosion are never observed.
+    n_draws: 1000
+    n_time: 300
+    t_min: 0.01
+    t_max_factor: 5.0

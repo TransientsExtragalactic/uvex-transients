@@ -182,6 +182,7 @@ if events is not None:
     from uvex_transients.missions import uvex_fast as uvex
     from uvex_transients.transients.kilonovae import Kilonova
     from uvex_transients.transients.LFBOTs import LuminousFastBlueOpticalTransient
+    from uvex_transients.transients.llgrb import LowLuminosityGRB
     from uvex_transients.transients.supernovae import (
         MagnetarSLSNe,
         TypeIaSNe,
@@ -204,6 +205,7 @@ if events is not None:
         "iib_sne": TypeIIbSNe(),
         "slsne": MagnetarSLSNe(),
         "tde": TidalDisruptionEvent(),
+        "llgrb": LowLuminosityGRB(),
         "lfbot": LuminousFastBlueOpticalTransient(),
         "kilonova": Kilonova(),
     }

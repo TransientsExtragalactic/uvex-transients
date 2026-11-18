@@ -1,8 +1,10 @@
 .DEFAULT_GOAL := help
-.PHONY: help install lint format test coverage docs docs-clean clean run horizons sync-scheduler release
+.PHONY: help install lint format test test-slow coverage docs docs-clean clean run phase-space horizons sync-scheduler release
 
 RUN_CONFIG ?= configs/full_run.yaml
 RUN_OUT_DIR ?= results/dev/
+PS_CONFIG ?= configs/phase_space.yaml
+PS_OUT_DIR ?= results/phase_space/
 
 help: ## Show this help.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -16,8 +18,11 @@ lint: ## Check code style with ruff (no fixes applied).
 format: ## Auto-format the codebase with ruff.
 	ruff format .
 
-test: ## Run the test suite.
+test: ## Run the test suite (slow tests deselected).
 	pytest
+
+test-slow: ## Run only the slow tests.
+	pytest -m slow
 
 coverage: ## Run the test suite with branch coverage.
 	pytest --cov
@@ -33,6 +38,9 @@ clean: ## Remove build artifacts (see clean.sh).
 
 run: ## Run the full-population pipeline (RUN_CONFIG -> RUN_OUT_DIR; both overridable).
 	uvex-transients run $(RUN_CONFIG) --out-dir $(RUN_OUT_DIR) --overwrite
+
+phase-space: ## Make the phase-space recovery maps (PS_CONFIG -> PS_OUT_DIR; both overridable).
+	uvex-transients phase-space $(PS_CONFIG) --out-dir $(PS_OUT_DIR) --overwrite
 
 horizons: ## Rebuild the stored detection-horizon curves (CLASSES="TypeIaSNe TDE" for chosen classes; takes seconds to a minute each).
 	python scripts/build_horizon_curves.py $(CLASSES)

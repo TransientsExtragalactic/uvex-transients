@@ -12,7 +12,8 @@ to process the baseline catalog once it's sampled -- screening cuts, set operati
 catalogs, and post-processing actions like synthetic photometry, chained in one declared order,
 GitHub-Actions style. The CLI's four subcommands (``generate``, ``cut``, ``photometry``,
 and ``run``) drive that same pipeline, reading and writing plain catalog/table
-files between stages.
+files between stages. A fifth, ``phase-space``, is separate from that pipeline: it maps the survey's recovery of a
+canonical transient instead of simulating a population (see :ref:`phase_space_maps_cli`).
 
 This page is a hands-on tour of the run-config format and the commands themselves. See
 :ref:`user_guide_simulation` for what each stage actually does under the hood; this page is about
@@ -181,7 +182,7 @@ overrides you want on top of its defaults:
 
 ``class:`` must name a registered :class:`~uvex_transients.transients.base.TransientBase`
 subclass: every built-in type (``TidalDisruptionEvent``, ``Kilonova``,
-``LuminousFastBlueOpticalTransient``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``, ``TypeIIbSNe``,
+``LuminousFastBlueOpticalTransient``, ``LowLuminosityGRB``, ``TypeIIPSNe``, ``TypeIIPExcessSNe``, ``TypeIIbSNe``,
 ``ShockCoolingIIb``, ``TypeIbSNe``, ``TypeIcSNe``) is available by class name; an unrecognized one
 raises, listing what *is* registered.
 
@@ -670,6 +671,133 @@ a real run would refuse to overwrite one that already exists, the dry run flags 
 FAIL`` and exits non-zero unless ``--overwrite`` is also given. The schedule is loaded (and
 downloaded on first use), but the command never reads the ``--in`` input of ``cut``/``photometry``,
 only checks that it exists.
+
+----
+
+.. _phase_space_maps_cli:
+
+Phase-Space Maps
+---------------------
+
+.. code-block:: bash
+
+    uvex-transients phase-space configs/phase_space.yaml --out-dir results/phase_space/
+
+The ``phase-space`` command reads a different kind of run-config, with no ``transients:`` or ``steps:``. It names a
+survey and lists **maps**, each the survey's recovery of a transient over two of its properties (see
+:mod:`uvex_transients.phase_space`). By default a map is of the canonical transient, over the peak luminosity in one
+band and the rest-frame half-decline time. The shipped
+`phase_space.yaml <https://github.com/TransientsExtragalactic/uvex-transients/blob/main/configs/phase_space.yaml>`__
+makes the two detection maps (at least two observations at :math:`5\sigma`, to 25 AB) in the FUV and the NUV:
+
+.. code-block:: yaml
+
+    schedule:
+      name: uvex_v0.6.0
+    mission: uvex_fast
+    overlay: true             # shade the shipped transient classes on every map that can
+
+    detection:                # shared by every map; a map overrides it key by key
+      snr_threshold: 5.0
+      n_visits: 2
+    simulation:
+      mag_limit: 25.0
+
+    maps:
+      - id: fuv_detection     # names the output directory
+        detection: {band: FUV}
+      - id: nuv_detection
+        detection: {band: NUV}
+
+The sections are named for what they decide, and each may be given at the top level and in a map. A key left out takes
+its value from the ``phase_space:`` section of the package configuration, whose sections have the same names
+(``phase_space.detection``, ``phase_space.simulation``, ``phase_space.stopping``, ``phase_space.campaign``), plus one
+named for each kind of sampler (``phase_space.canonical``, ``phase_space.breakout``) whose keys take the place of the
+shared ones for that kind. A misspelt key is an error, and every problem in the file is reported at once.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 82
+
+   * - Section
+     - What it decides
+   * - ``detection:``
+     - What counts as a recovery: ``band``, ``snr_threshold``, ``n_visits``, ``exclude_first_visit_detections``, and
+       ``cuts`` for any other definition (below).
+   * - ``simulation:``
+     - How a point is simulated: ``mag_limit`` (the depth that sets the redshift limit), ``time_bins``, ``nside`` and
+       ``order``.
+   * - ``stopping:``
+     - How many tries a point gets: ``chunk_size``, ``k_target`` and ``n_max``.
+   * - ``settings:``
+     - The arguments of the sampler that belong to no section above, such as the shape of the canonical transient
+       (``spectral_index``, ``rise_ratio``, ``fade_mag``) or the ``z_max`` of a breakout.
+   * - ``axes:``
+     - The ranges of the axes of the map, by name: ``{log_luminosity: [36.5, 45.0]}``.
+   * - ``campaign:``
+     - How the campaign spends its points: ``n_initial``, ``batch_size``, ``max_points``, ``tolerance`` and
+       ``acquisition``.
+   * - ``grid_size:``
+     - Points per axis of the fitted map.
+
+A different definition of a detection is a list of ``cuts:``, the cuts that ``steps:`` use (see
+:meth:`~uvex_transients.simulation.core.SurveySimulator.available_cuts`), applied in order to the events a point draws.
+For example, a first detection that the survey brackets to within a day:
+
+.. code-block:: yaml
+
+    detection:
+      band: FUV
+      cuts:
+        - cut: snr
+        - cut: time_since_last_nondetection
+          params: {max_delay: 1.0}   # days
+
+A map of another transient names its ``kind:``, and ``uvex-transients phase-space kinds`` lists the registered ones. A
+map that is not of the top-level kind takes none of the top-level ``detection:``, ``simulation:``, ``stopping:``,
+``settings:`` or ``axes:``, since what a visit count or an axis name means belongs to the sampler. Only ``campaign:``
+and ``grid_size:`` are shared by every map. To share another section on purpose, use a YAML anchor.
+
+.. code-block:: yaml
+
+    maps:
+      - id: breakout_fuv
+        kind: breakout
+        detection: {band: FUV}
+        settings: {z_max: 8.0}
+        axes: {log_L0: [43.0, 46.0], log_t0: [3.0, 4.0]}
+
+.. note::
+
+    The layout of this file changed. ``recovery:`` is now ``detection:``, ``simulation:`` and ``stopping:``,
+    ``sampler:`` is ``campaign:``, ``transient:`` is part of ``settings:``, and the ranges of ``map:`` are ``axes:``.
+    The old names are refused with what replaces them.
+
+Each map is written to ``OUT_DIR/<id>/`` as ``points.ecsv`` (every simulated point, saved after every batch),
+``map.ecsv`` (the fitted map on a grid) and ``map.png``, and ``overlay.ecsv`` (the measured classes) for a sampler that
+has an overlay, which the canonical one does. ``--map ID`` makes only one map, ``--workers N`` measures the points of a
+batch in parallel, and an existing map is refused unless ``--overwrite`` replaces it or ``--resume`` continues it from
+its saved points. ``--dry-run`` validates the file and the bands without loading the schedule. The command needs the
+``phase_space`` extra (``pip install 'uvex_transients[phase_space]'``).
+
+``phase-space CONFIG`` runs every stage. They are also commands of their own, over the directories of maps and with no
+run-config, so that the simulation (the slow part) is run once and the rest repeated or changed:
+
+.. code-block:: bash
+
+    uvex-transients phase-space run configs/phase_space.yaml --out-dir results/phase_space/ --workers 8
+    uvex-transients phase-space fit results/phase_space/ --config configs/phase_space.yaml
+    uvex-transients phase-space plot results/phase_space/
+    uvex-transients phase-space compare results/a/fuv_detection results/b/fuv_detection --out-dir results/diff
+    uvex-transients phase-space info results/phase_space/
+
+``plot`` draws the figure that the map's sampler defines. ``--field NAME`` (repeated) draws the columns of ``map.ecsv`` you
+name instead, one panel each, including a quantity that carries no interval such as ``z_limit``. A figure is of a plane,
+so a map over more than two axes has its ``points.ecsv`` and ``map.ecsv`` but no figure.
+
+Adding a new kind of map is a new :class:`~uvex_transients.phase_space.sampling.base.Sampler`; the module documentation
+of :mod:`uvex_transients.phase_space.sampling.base` describes the contract and the optional hooks (``describe``,
+``draw_map``, ``annotate_map``, ``HAS_OVERLAY`` and the others) that keep the rest of the code from asking what kind a sampler is.
 
 ----
 

@@ -459,6 +459,27 @@ def test_time_since_last_nondetection_bounds_and_flag(sim, monkeypatch):
         sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=5.0)
 
 
+def test_time_since_last_nondetection_per_event_limits(sim, monkeypatch):
+    """An array limit has one value per event, in the catalog's order, and is compared with that event's own gap."""
+    chunk = _gap_chunk()
+    monkeypatch.setattr(sim, "iter_epochs", lambda *args, **kwargs: iter([chunk]))
+    catalog = _six_event_catalog()
+
+    def kept(**kwargs):
+        result = sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=5.0, **kwargs)
+        return set(np.asarray(result.table["event_id"]).tolist())
+
+    # The gaps are 2, 6, (none), (never detected), 3 and 2 days for events 0, 1, 2, 3, 4 and 5
+    assert kept(max_delay=np.array([1.5, 6.0, 0.0, 0.0, 3.0, 2.5])) == {1, 4, 5}
+    assert kept(max_delay=np.array([1.5, 5.0, 0.0, 0.0, 3.5, 2.5])) == {4, 5}
+    assert kept(min_delay=np.array([2.5, 0.0, 0.0, 0.0, 3.5, 0.0]), max_delay=7.0) == {1, 5}
+    # A number is the same limit for every event
+    assert kept(max_delay=np.full(6, 2.5)) == kept(max_delay=2.5) == {0, 5}
+
+    with pytest.raises(ValueError, match="one value for each of the 6 events"):
+        sim.filter_by_time_since_last_nondetection(catalog, uvex, snr_threshold=5.0, max_delay=np.ones(5))
+
+
 @pytest.mark.parametrize(("lookback", "expected_lookback"), [(None, None), (10.0, 10 * u.day)])
 def test_nondetection_gaps_request_every_row(sim, lookback, expected_lookback, monkeypatch):
     """The cut keeps every row (no SNR floor) and forwards `lookback` in days."""

@@ -18,7 +18,7 @@ there, at what redshifts, and when.
 
 This page covers that shared machinery -- ``TransientBase``/``ExtragalacticTransient`` themselves,
 not any one population. For the astrophysics, adopted rate, SED choice, and default parameter priors
-of each implemented population (kilonovae, TDEs, LFBOTs, supernovae), see the :ref:`transients`
+of each implemented population (kilonovae, TDEs, LFBOTs, low-luminosity GRBs, supernovae), see the :ref:`transients`
 gallery instead; for how :class:`~uvex_transients.simulation.core.SurveySimulator` drives this
 sampling against a real survey schedule, see :ref:`user_guide_simulation`.
 
@@ -100,7 +100,7 @@ through a Monte Carlo run):
        used for windowing, so an overly generous value costs some wasted sampling but an overly
        tight one silently drops real detections.
 
-Twelve populations ship with the package today, each pairing one of these SEDs with a rate and
+Thirteen populations ship with the package today, each pairing one of these SEDs with a rate and
 duration -- see the linked :ref:`transients` page for each one's astrophysics and priors:
 
 .. list-table::
@@ -123,6 +123,10 @@ duration -- see the linked :ref:`transients` page for each one's astrophysics an
      - :class:`~uvex_transients.models.lfbots.lfbots.LFBOTCoolingBlackbodySED`
      - 100 d
      - 4.3
+   * - :class:`~uvex_transients.transients.llgrb.LowLuminosityGRB`
+     - :class:`~uvex_transients.models.supernovae.llgrb.LLGRBSED`
+     - 30 d
+     - 2.41
    * - :class:`~uvex_transients.transients.supernovae.TypeIIPSNe`
      - :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`
      - 100 d

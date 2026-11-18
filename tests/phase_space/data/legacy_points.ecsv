@@ -1,0 +1,31 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: log_luminosity, datatype: float64}
+# - {name: log_half_time, datatype: float64}
+# - {name: k, datatype: int64}
+# - {name: n, datatype: int64}
+# - {name: z_limit, datatype: float64}
+# - {name: volume_time, datatype: float64}
+# - {name: coverage, datatype: float64}
+# - {name: n_chunks, datatype: int64}
+# meta: !!omap
+# - bounds:
+#   - [40.0, 44.5]
+#   - [-1.0, 2.0]
+# - names: [log_luminosity, log_half_time]
+# - sampler: {acquisition: imse, batch_size: 2, floor: 0.001, k_target: 5.0, max_points: 6, n_candidates: 64, n_initial: 4, n_max: 600.0,
+#     n_min: 200.0, n_restarts: 0, tolerance: 0.0}
+# - evaluator:
+#     class: uvex_transients.phase_space.evaluator.RecoveryEvaluator
+#     settings: {band: FUV, chunk_size: 200, cosmology: Planck18, exclude_first_visit_detections: true, fade_mag: 6.0, k_target: 5, mag_limit: 24.5,
+#       mission: uvex_fast, n_max: 600, n_visits: 1, nside: 32, order: nested, rise_ratio: 0.1, schedule_name: null, seed: 3, snr_threshold: 5.0,
+#       spectral_index: -2.0, time_bins: 3}
+# schema: astropy-2.0
+log_luminosity log_half_time k n z_limit volume_time coverage n_chunks
+41.12081472715363 1.2241020342335105 8 200 0.13969891258305187 228086.50243391265 0.000732421875 1
+42.27349014533684 -0.6035097753629088 1 600 0.4106720586151404 3986355.3809693987 0.000732421875 3
+44.295016408897936 1.42051637545228 19 200 2.025688587632639 80706039.22709113 0.000732421875 1
+41.31421387847513 -0.03229713626205921 1 600 0.16922839559818312 388903.1423516585 0.000732421875 3
+42.6634984863922 0.5233916398137808 7 400 0.5717350244439727 8695652.155866748 0.000732421875 2
+41.83680868940428 1.9153194511309266 14 200 0.2780132653392815 1481713.93959654 0.000732421875 1

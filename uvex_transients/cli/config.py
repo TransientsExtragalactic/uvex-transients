@@ -48,7 +48,7 @@ _STEP_TYPES = frozenset({"cut", "logical_op", "action"})
 # `class:` lookup. Adding a 6th transient type means adding its module name here too;
 # `tests/cli/test_config.py::test_known_transient_modules_matches_the_package_directory`
 # fails loudly if this list and the actual package contents ever drift apart.
-_KNOWN_TRANSIENT_MODULES = ("TDEs", "LFBOTs", "kilonovae", "supernovae")
+_KNOWN_TRANSIENT_MODULES = ("TDEs", "LFBOTs", "kilonovae", "llgrb", "supernovae")
 
 
 def _import_known_transients() -> None:
