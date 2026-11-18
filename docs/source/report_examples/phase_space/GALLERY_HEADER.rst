@@ -62,5 +62,5 @@ Reading the data
 
 The maps are made by ``uvex-transients phase-space configs/phase_space.yaml`` and attached to each release as one
 ``phase_space.zip``. :func:`~uvex_transients.utils.results.get_phase_space_map` fetches the files of one map, and
-:meth:`~uvex_transients.phase_space.sampler.PhaseSpaceSampler.load` rebuilds the model from ``points.ecsv`` to evaluate
+:meth:`~uvex_transients.phase_space.experiment.Experiment.load` rebuilds the model from ``points.ecsv`` to evaluate
 a map anywhere, at any resolution.

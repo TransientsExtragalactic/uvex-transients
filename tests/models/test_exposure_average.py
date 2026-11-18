@@ -14,7 +14,7 @@ from m4opt.missions._uvex import uvex
 from scipy.integrate import quad
 
 from uvex_transients.models._utils import N_EXPOSURE_NODES, exposure_average_nodes
-from uvex_transients.phase_space.transient import _FREDPowerLawSED
+from uvex_transients.phase_space.sampling.canonical import _FREDPowerLawSED
 
 EXPOSURE = 900.0
 """float: The UVEX dwell, in seconds."""

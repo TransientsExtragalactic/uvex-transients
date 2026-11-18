@@ -5,7 +5,7 @@ import pytest
 from astropy import units as u
 
 from uvex_transients.cli.config import _KNOWN_TRANSIENT_MODULES
-from uvex_transients.phase_space.transient import _CanonicalTransient, fred_time_scales
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient, fred_time_scales
 from uvex_transients.transients.base import ExtragalacticTransient, TransientBase
 
 L_NU = 1e29 * u.erg / u.s / u.Hz

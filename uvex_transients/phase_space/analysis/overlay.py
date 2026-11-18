@@ -2,9 +2,10 @@
 Place the shipped transient classes on a recovery map, by measuring the two quantities the map is made of.
 
 A map is over the peak luminosity in a band and the rest-frame half-decline time of a canonical transient (see
-`~uvex_transients.phase_space.transient._CanonicalTransient`). `measure_class` draws parameters from a class's SED
-priors and measures the same two quantities on each draw, in the band of the map, which gives the region of the map the
-class occupies.
+:class:`~uvex_transients.phase_space.sampling.canonical._CanonicalTransient`).
+:func:`~uvex_transients.phase_space.analysis.overlay.measure_class` draws parameters from a class's SED priors and
+measures the same two quantities on each draw, in the band of the map, which gives the region of the map the class
+occupies.
 
 The overlay shows where a class sits, not how many of it the survey recovers: two events with the same peak and
 half-decline time can differ in rise, tail and colour evolution, which the map holds fixed. A class's yield at its
@@ -88,7 +89,7 @@ def measure_class(
         Number of grid points. If `None` (the default), uses ``config["phase_space.overlay.n_time"]``.
     rng : int or numpy.random.Generator, optional
         Random-number source for the draws, as for
-        `~uvex_transients.models.core.base.SpectralModel.sample_parameters`.
+        :meth:`~uvex_transients.models.core.base.SpectralModel.sample_parameters`.
 
     Returns
     -------
@@ -134,7 +135,7 @@ def stack_measurements(measurements: Sequence[Table]) -> Table:
     Parameters
     ----------
     measurements : sequence of astropy.table.Table
-        Tables from `measure_class`.
+        Tables from :func:`~uvex_transients.phase_space.analysis.overlay.measure_class`.
 
     Returns
     -------
@@ -152,7 +153,9 @@ def stack_measurements(measurements: Sequence[Table]) -> Table:
 
 def split_measurements(stacked: Table) -> list[Table]:
     """
-    Split a table from `stack_measurements` back into one table per class.
+    Split a stacked table back into one table per class.
+
+    The stacked table is the output of :func:`~uvex_transients.phase_space.analysis.overlay.stack_measurements`.
 
     Parameters
     ----------
@@ -163,7 +166,8 @@ def split_measurements(stacked: Table) -> list[Table]:
     -------
     list of astropy.table.Table
         One table per class, in order of first appearance, each with the class name in ``meta["class"]`` as
-        `measure_class` leaves it (so each can be passed to ``plot_map(overlays=...)``).
+        :func:`~uvex_transients.phase_space.analysis.overlay.measure_class` leaves it (so each can be passed to
+        ``plot_map(overlays=...)``).
     """
     classes = np.asarray(stacked["class"]).astype(str)
     tables = []

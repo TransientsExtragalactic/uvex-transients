@@ -6,7 +6,7 @@ import synphot
 from astropy import units as u
 
 from uvex_transients.models.core.priors import PowerLawPrior
-from uvex_transients.phase_space.transient import _CanonicalTransient
+from uvex_transients.phase_space.sampling.canonical import _CanonicalTransient
 from uvex_transients.transients.base import TransientBase
 from uvex_transients.transients.kilonovae import Kilonova
 from uvex_transients.utils.phot_utils import equivalent_bandwidth, luminosity_to_absolute_magnitude
@@ -133,7 +133,7 @@ def test_a_seed_reproduces_the_function(log_uniform, bandpass):
 def test_every_registered_class_has_a_luminosity_function(bandpass):
     """A class added later without a measurable peak in a UV band fails here, not in a user's run."""
     # The registry fills as modules are imported
-    import uvex_transients.phase_space.overlay as overlay  # noqa: F401  (imports the shipped transient modules)
+    import uvex_transients.phase_space.analysis.overlay as overlay  # noqa: F401  (imports the shipped transient modules)
 
     classes = {name: cls for name, cls in TransientBase.registry().items() if not name.startswith("_")}
     assert classes

@@ -1,5 +1,7 @@
 """Tests for the `@cut`/registry mechanism on `SurveySimulator`."""
 
+import inspect
+
 import numpy as np
 import pytest
 from astropy.table import QTable
@@ -71,6 +73,19 @@ def test_run_cut_unknown_name_raises(make_schedule):
     simulator = SurveySimulator(make_schedule(), transients={"tde": TidalDisruptionEvent()})
     with pytest.raises(ValueError, match="Unknown cut 'bogus'"):
         simulator.run_cut("bogus", _empty_catalog(), uvex)
+
+
+def test_get_cut_returns_the_registered_function_and_its_parameters():
+    """`get_cut` hands back the cut itself, whose signature says what it takes, without running or logging it."""
+    cut_function = SurveySimulator.get_cut("time_since_last_nondetection")
+    assert cut_function is SurveySimulator.filter_by_time_since_last_nondetection
+    assert {"snr_threshold", "max_delay", "lookback"} <= set(inspect.signature(cut_function).parameters)
+
+
+def test_get_cut_unknown_name_raises():
+    """An unregistered name raises a `ValueError` naming the ones that do exist."""
+    with pytest.raises(ValueError, match="Unknown cut 'bogus'"):
+        SurveySimulator.get_cut("bogus")
 
 
 def test_subclass_extends_the_registry():

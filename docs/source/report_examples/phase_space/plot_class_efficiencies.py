@@ -19,7 +19,7 @@ import numpy as np
 from astropy.table import Table
 from scipy.interpolate import LinearNDInterpolator
 
-from uvex_transients.phase_space.overlay import split_measurements
+from uvex_transients.phase_space.analysis.overlay import split_measurements
 from uvex_transients.utils import get_phase_space_map
 from uvex_transients.utils.plotting import get_band_color, set_plot_style
 

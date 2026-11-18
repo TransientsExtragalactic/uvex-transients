@@ -17,6 +17,11 @@ from uvex_transients.models.lightcurves.generic import InverseGammaBrokenPowerLa
 __all__ = ["InverseGammaBlackbodySED"]
 
 _FOUR_PI_SIGMA_SB = 4.0 * np.pi * SIGMA_SB_CGS
+_SECONDS_PER_DAY = 86400.0
+#: The cap on the breakout radius in cm, at ``t_0`` of a day and ``L_0`` of `_L_BO_CAP`, scaling as t_0^(2/3) L_0^(1/3).
+_R_BO_CAP_CGS = 8.8e13
+#: The luminosity, in erg/s, at which the cap on the breakout radius is `_R_BO_CAP_CGS` (at a ``t_0`` of a day).
+_L_BO_CAP = 1e44
 
 
 class InverseGammaBlackbodySED(SpectralModel):
@@ -31,33 +36,35 @@ class InverseGammaBlackbodySED(SpectralModel):
 
     where :math:`S_\mathrm{BB}` is the normalized blackbody shape of
     :class:`~uvex_transients.models.spectra.thermal.BlackbodySpectrum`. The temperature follows from the
-    luminosity and a photospheric radius that is a function of time alone,
+    luminosity and a photospheric radius that grows linearly in time from a breakout radius,
 
     .. math::
 
         T(t) = \left[\frac{L_\mathrm{bol}(t)}{4\pi\sigma_\mathrm{SB} R_\mathrm{ph}^2(t)}\right]^{1/4},
         \qquad
         R_\mathrm{ph}(t) = R_\mathrm{bo}\left(1 + \frac{x}{x_s}\right),
-        \qquad
-        R_\mathrm{bo} = c\, t_\mathrm{pk},
 
-    with :math:`x = t/t_0`. The breakout radius :math:`R_\mathrm{bo}` is the distance light travels by the time
-    :math:`t_\mathrm{pk}` of the peak of the light curve, which lies between :math:`t_0` and :math:`t_0\,p/q`
-    and is found numerically. The radius grows linearly in time, doubling at :math:`x = x_s`.
+    with :math:`x = t/t_0`. The radius doubles at :math:`x = x_s`. The breakout radius is
+
+    .. math::
+
+        R_\mathrm{bo} = \min\left[c\,t_0,\;
+        8.8\times10^{13}\,\mathrm{cm}\left(\frac{t_0}{1\,\mathrm{d}}\right)^{2/3}
+        \left(\frac{L_0}{10^{44}\,\mathrm{erg\,s^{-1}}}\right)^{1/3}\right],
+
+    so it is set by :math:`t_0` and :math:`L_0` and is not a separate parameter.
 
     .. note::
 
-        :math:`R_\mathrm{bo} = c\,t_\mathrm{pk}` is an *effective* radius, the size implied by the duration of the
-        pulse, and not a separate parameter. The observed pulse lasts :math:`t_\mathrm{pk} \approx
-        \max(R/c, t_\mathrm{diff})`, where :math:`R/c` is the light-travel time across the breakout radius and
-        :math:`t_\mathrm{diff}` is the photon diffusion time through the breakout layer. The shock itself moves at
-        :math:`v \approx 0.03`-:math:`0.3\,c` for non-relativistic breakout, and the time since breakout does not
-        include its travel through the star. Hence :math:`c\,t_\mathrm{pk}` equals the true radius when the pulse is
-        light-crossing limited (for example red and blue supergiant breakouts, with
-        :math:`t_\mathrm{pk}/(R/c) \sim 1`-:math:`10`), and is an upper limit when diffusion sets the duration (for
-        example Wolf-Rayet stars, where the ratio can reach :math:`\sim 30`). In that case the photosphere is
-        too large and the temperature too low, by a factor :math:`(t_\mathrm{pk}/(R/c))^{1/2}`, which is at most
-        a few for the supergiant classes.
+        :math:`R_\mathrm{bo}` is an *effective* radius, the size implied by the duration of the pulse. The first term
+        is the distance light travels in :math:`t_0`, which is the size of a breakout that is light-crossing limited
+        (the observed pulse lasts :math:`\max(R/c, t_\mathrm{diff})`, with :math:`t_\mathrm{diff}` the photon diffusion
+        time through the breakout layer). It overestimates the radius when diffusion sets the duration, and without a
+        cap the photosphere of a long event would be implausibly large and cold. The second term is that cap. It grows
+        as :math:`t_0^{2/3} L_0^{1/3}`, more slowly than :math:`c\,t_0`, and is the smaller of the two for all but the
+        shortest time scales: at :math:`L_0 = 10^{44}` erg/s it takes over at :math:`t_0 \approx 3` s, and at
+        :math:`10^{46}` erg/s at about :math:`3\times10^2` s. The two terms use :math:`t_0`, not the time of the peak
+        of the light curve, which differs from it by under 1% for the default shape.
 
     The temperature goes to zero with the luminosity as :math:`t \to 0`, and the radius does not vanish, so the
     emission is a blackbody of finite radius at every time. The bolometric luminosity is exact, with no integration
@@ -134,7 +141,7 @@ class InverseGammaBlackbodySED(SpectralModel):
     @classmethod
     def _photospheric_radius_cgs(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
         r"""
-        :math:`R_\mathrm{ph}(t) = c\,t_\mathrm{pk}\,(1 + t / (t_0 x_s))`.
+        :math:`R_\mathrm{ph}(t) = R_\mathrm{bo}\,(1 + t / (t_0 x_s))`, with :math:`R_\mathrm{bo}` the breakout radius.
 
         Parameters
         ----------
@@ -148,8 +155,15 @@ class InverseGammaBlackbodySED(SpectralModel):
         numpy.ndarray
             :math:`R_\mathrm{ph}(t)` in cm.
         """
-        t_peak = InverseGammaBrokenPowerLawLightcurve._peak_time(**parameters)
-        return C_CGS * t_peak * (1.0 + t / (parameters["t_scale"] * parameters["x_break"]))
+        t_scale = parameters["t_scale"]
+        light_crossing = C_CGS * t_scale
+        capped = (
+            _R_BO_CAP_CGS
+            * (t_scale / _SECONDS_PER_DAY) ** (2.0 / 3.0)
+            * (parameters["amplitude"] / _L_BO_CAP) ** (1.0 / 3.0)
+        )
+        breakout_radius = np.minimum(light_crossing, capped)
+        return breakout_radius * (1.0 + t / (t_scale * parameters["x_break"]))
 
     @classmethod
     def _temperature_cgs(cls, t: FloatArray, **parameters: CGSParameterValue) -> FloatArray:
