@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.981** total execution time for 29 files **from all galleries**:
+**00:01.543** total execution time for 31 files **from all galleries**:
 
 .. container::
 
@@ -32,8 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_report_infant_sne_plot_infant_sne_yields.py` (``report_examples/infant_sne/plot_infant_sne_yields.py``)
-     - 00:00.981
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
+     - 00:01.543
      - 0.0
    * - :ref:`sphx_glr_auto_examples_custom_transients_plot_kilonova_detection_horizon.py` (``galleries/custom_transients/plot_kilonova_detection_horizon.py``)
      - 00:00.000
@@ -113,9 +113,15 @@ Computation times
    * - :ref:`sphx_glr_report_full_run_event_detection_plot_footprint_overlap.py` (``report_examples/full_run/event_detection/plot_footprint_overlap.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterization.py` (``report_examples/full_run/transient_characterization/plot_characterization.py``)
+   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_report_full_run_transient_characterization_plot_characterized_footprints.py` (``report_examples/full_run/transient_characterization/plot_characterized_footprints.py``)
+   * - :ref:`sphx_glr_report_infant_sne_plot_infant_sne_yields.py` (``report_examples/infant_sne/plot_infant_sne_yields.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_phase_space_plot_class_efficiencies.py` (``report_examples/phase_space/plot_class_efficiencies.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_report_phase_space_plot_detection_maps.py` (``report_examples/phase_space/plot_detection_maps.py``)
      - 00:00.000
      - 0.0

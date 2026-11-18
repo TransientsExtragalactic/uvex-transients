@@ -9,6 +9,7 @@ from ..simulation.exposure_catalog import ExposureCatalog
 from ..utils import configure_logging
 from . import pipeline, steps
 from .config import RunConfig
+from .phase_space_commands import phase_space_group
 
 _LOGO_PATH = Path(__file__).resolve().parents[1] / "_logo.txt"
 
@@ -322,3 +323,7 @@ def run_command(
         size = f"{len(artifact)} rows" if hasattr(artifact, "__len__") else "1 artifact"
         where = f" -> {path.name}" if path is not None else ""
         click.echo(f"{step.type} {step.id}: {size}{where}")
+
+
+# The phase-space maps are a group of commands over the files of a map, one per stage; see `phase_space_commands`
+cli.add_command(phase_space_group)

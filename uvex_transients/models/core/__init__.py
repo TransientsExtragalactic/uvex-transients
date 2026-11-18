@@ -15,6 +15,6 @@ from .priors import *
 
 __all__.extend(priors.__all__)
 
-from ._tolerance import EffectivePeakGrid
 from .base import ComposedSpectralModel, Lightcurve, SpectralModel, Spectrum
+from .detection_horizon import EffectivePeakGrid
 from .parameters import Parameter

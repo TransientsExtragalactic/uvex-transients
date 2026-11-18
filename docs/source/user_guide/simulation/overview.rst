@@ -146,7 +146,10 @@ schedule into ``time_bins`` windows and, for each window and each transient type
 :meth:`~uvex_transients.surveys.base.SurveySchedule.get_observed_healpix_ids` which HEALPix pixels
 the schedule touches at all between the start of the window and its end *plus* that transient's own
 ``duration_limit`` -- i.e. late enough that a transient exploding right at the end of the window
-could still be caught while it's active. Events are then sampled only within those pixels, via
+could still be caught while it's active. That set is dilated by one ring of neighbouring pixels,
+since a pixel counts as covered only if its center is inside a footprint and a position near the edge
+can lie in a pixel that is not; the dilated set contains every position the schedule can later match
+to an observation. Events are then sampled only within those pixels, via
 :meth:`~uvex_transients.transients.base.ExtragalacticTransient.sample_events_on_healpix_grid`, with
 explosion times drawn uniformly within the window itself (never the padded tail), so no event is
 ever double-counted across adjacent bins. See :ref:`user_guide_transients` for how that per-pixel

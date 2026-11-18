@@ -1225,6 +1225,7 @@ class SurveySchedule:
         end_time: Time,
         nside: int | None = None,
         order: str | None = None,
+        dilate: bool = False,
     ) -> np.ndarray:
         """
         Return the HEALPix pixel indices covered by observations in a time interval.
@@ -1249,13 +1250,24 @@ class SurveySchedule:
         order : str, optional
             HEALPix pixel ordering scheme, ``"nested"`` or ``"ring"``, or `None` to use
             ``config["healpix.default_order"]``.
+        dilate : bool, optional
+            If `True`, also return the (up to eight) neighbours of every covered pixel. The
+            coverage index registers a pixel only if its center is inside a footprint, so a
+            position inside a footprint can sit in a pixel that is not covered. The dilated set
+            contains every pixel that :meth:`get_observation_indices_of` can match a position
+            to, since that method looks up a position's own pixel and its neighbours. Use it
+            to sample positions that an observation could reach. As there, it is sufficient when
+            a pixel is much smaller than the footprint. The default is `False`, the covered
+            pixels alone.
 
         Returns
         -------
         numpy.ndarray
             Sorted, deduplicated HEALPix pixel indices covered by any
-            observation in the interval; empty if there were none.
+            observation in the interval (and, if `dilate`, their neighbours); empty if there
+            were none.
         """
+        nside, order = resolve_healpix_resolution(nside, order)
         pixel_offsets, sorted_rows = self.get_healpix_coverage_index(nside=nside, order=order)
 
         if len(sorted_rows) == 0:
@@ -1281,7 +1293,17 @@ class SurveySchedule:
         cumulative_covered = np.concatenate(([0], np.cumsum(covered)))
         hits_per_pixel = cumulative_covered[pixel_offsets[1:]] - cumulative_covered[pixel_offsets[:-1]]
 
-        return np.flatnonzero(hits_per_pixel > 0).astype(np.int64)
+        covered_pixels = np.flatnonzero(hits_per_pixel > 0).astype(np.int64)
+        if not dilate or len(covered_pixels) == 0:
+            return covered_pixels
+
+        # The same neighbour set `get_observation_indices_of` searches, so every position it can match
+        # to an observation lies in a returned pixel. `neighbours` marks a missing neighbour (at a
+        # base-pixel corner) with -1 and raises an expected "invalid value" RuntimeWarning for it.
+        hpx = ah.HEALPix(nside=nside, order=order)
+        with np.errstate(invalid="ignore"):
+            neighbour_pixels = np.asarray(hpx.neighbours(covered_pixels), dtype=np.int64).ravel()
+        return np.unique(np.concatenate([covered_pixels, neighbour_pixels[neighbour_pixels >= 0]]))
 
     def get_observation_indices_of(
         self,

@@ -65,14 +65,14 @@ if report is not None:
 # of points is not the expected number of detections.
 
 if report is not None:
-    rare = ["slsne", "tde", "lfbot", "kilonova"]
+    rare = ["slsne", "tde", "llgrb", "lfbot", "kilonova"]
     supernovae = SummaryReport(report.summary, {k: v for k, v in report.populations.items() if k not in rare})
     supernovae.plot_sky(mask=supernovae.detected)
 
 plt.show()
 
 # %%
-# The rare types, SLSNe, TDEs, LFBOTs and kilonovae:
+# The rare types, SLSNe, TDEs, llGRBs, LFBOTs and kilonovae:
 
 # sphinx_gallery_thumbnail_number = 3
 if report is not None:
