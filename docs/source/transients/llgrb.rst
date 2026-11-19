@@ -93,8 +93,9 @@ For the default priors the Bazin maximum is before the burst, so the excess is a
 :math:`t=0`. The rise of the UV light curves over the first :math:`\sim0.5` d is the photosphere cooling, not a
 rise in the bolometric luminosity.
 
-The supernova priors are those of :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`, the Ic-BL
-population of :footcite:t:`srinivasaragavan2024` (see :ref:`transients_type_i`). They are not tuned to any llGRB.
+The supernova priors are the Ic-BL population of :footcite:t:`srinivasaragavan2024`, as
+:class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` had them before it was tuned to the ZTF CLU sample (see
+:ref:`transients_type_i`). They are held here, and do not follow that class. They are not tuned to any llGRB.
 The priors on the early excess are centered on a fit to the Swift/UVOT UVW2, UVM2 and UVW1 light curves of
 SN 2006aj, the only GRB-associated supernova in the packaged Swift/UVOT archive. They are not a population
 estimate, and their widths are judgment, not measured scatter.

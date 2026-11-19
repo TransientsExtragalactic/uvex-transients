@@ -7,7 +7,7 @@ from astropy import units as u
 from uvex_transients.models.core.parameters import Parameter
 from uvex_transients.models.core.priors import ConstantPrior, TruncatedNormalPrior
 from uvex_transients.models.shock_cooling.morag import MoragShockCoolingArnettSED, MoragShockCoolingSED
-from uvex_transients.models.supernovae.Ibc import TypeIbSED
+from uvex_transients.models.supernovae.Ibc import _TypeIbIntrinsicSED
 
 __all__ = ["TypeIIbSED"]
 
@@ -34,10 +34,12 @@ class TypeIIbSED(MoragShockCoolingArnettSED):
     breakout, a trough, then the rise to the nickel peak.
 
     The shock cooling priors are those of
-    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, and the nickel priors, including
-    the line-blanketing parameters ``break_frequency`` and ``beta``, are those of
-    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except ``M_Ni``, which is lowered to a
-    Type IIb-like truncated normal (mean :math:`0.1\,M_\odot`, :math:`\sigma=0.07\,M_\odot`, bounds 0.01 to 0.4). See
+    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, and the nickel priors
+    are those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (without its host dust: this model has
+    none), except ``M_Ni``, which is a Type IIb-like truncated normal (mean :math:`0.1\,M_\odot`,
+    :math:`\sigma=0.07\,M_\odot`, bounds 0.01 to 0.4), and the line-blanketing parameters ``break_frequency``
+    (:math:`0.75\times10^{15}` Hz) and ``beta`` (4), which are not those of Type Ib: those were re-set against
+    Swift/UVOT and this model's were not. See
     :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED` for how the two components are
     combined.
 
@@ -59,17 +61,24 @@ class TypeIIbSED(MoragShockCoolingArnettSED):
     .. footbibliography::
     """
 
-    _ARNETT_SED: ClassVar[type[TypeIbSED]] = TypeIbSED
-    _ARNETT_PARAMETERS: ClassVar[tuple[str, ...]] = tuple(TypeIbSED._DEFAULT_PARAMETERS)
+    _ARNETT_SED: ClassVar[type[_TypeIbIntrinsicSED]] = _TypeIbIntrinsicSED
+    _ARNETT_PARAMETERS: ClassVar[tuple[str, ...]] = tuple(_TypeIbIntrinsicSED._DEFAULT_PARAMETERS)
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         **MoragShockCoolingSED._DEFAULT_PARAMETERS,
-        **TypeIbSED._DEFAULT_PARAMETERS,
+        **_TypeIbIntrinsicSED._DEFAULT_PARAMETERS,
         "M_Ni": Parameter(
             prior=TruncatedNormalPrior(mean=0.1, sigma=0.07, lower=0.01, upper=0.4),
             scale=1 * u.Msun,
             description="Nickel-56 mass synthesized in the explosion.",
             latex=r"M_\mathrm{Ni}",
+        ),
+        # The line blanketing of Type Ib was re-set against Swift/UVOT; this model keeps the one it had.
+        "break_frequency": Parameter(
+            prior=ConstantPrior(value=0.75),
+            scale=1e15 * u.Hz,
+            description="Frequency above which the line-blanketing suppression sets in.",
+            latex=r"\nu_\mathrm{break}",
         ),
         "beta": Parameter(
             prior=ConstantPrior(value=4.0),

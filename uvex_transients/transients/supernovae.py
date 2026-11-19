@@ -269,16 +269,16 @@ class TypeIIbSNe(_CoreCollapseSNe):
 class TypeIbSNe(_CoreCollapseSNe):
     """Type Ib core-collapse SNe: `TypeIbSED`.
 
-    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the
-    13-event SN Ib subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter
-    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors tuned to the
+    SN Ib subsample of the volume-limited ZTF CLU stripped-envelope sample [citation pending],
+    following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
     """
 
     DEFAULT_MODEL = TypeIbSED
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.23
+    DEFAULT_Z_LIM = 0.22
 
     RATE_FRACTION = _TYPE_IB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IB_FRACTION_ERR)
@@ -287,16 +287,16 @@ class TypeIbSNe(_CoreCollapseSNe):
 class TypeIcSNe(_CoreCollapseSNe):
     """Type Ic core-collapse SNe: `TypeIcSED`.
 
-    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the
-    8-event SN Ic subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter
-    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors tuned to the
+    SN Ic subsample of the volume-limited ZTF CLU stripped-envelope sample [citation pending],
+    following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.
     """
 
     DEFAULT_MODEL = TypeIcSED
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.24
+    DEFAULT_Z_LIM = 0.23
 
     RATE_FRACTION = _TYPE_IC_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IC_FRACTION_ERR)
@@ -305,8 +305,9 @@ class TypeIcSNe(_CoreCollapseSNe):
 class TypeIcBLSNe(_CoreCollapseSNe):
     """Type Ic-BL (broad-lined) core-collapse SNe: `TypeIcBLSED`.
 
-    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to a
-    36-event ZTF SNe Ic-BL sample, following the same first-principles Arnett-model convention as
+    Radioactive-decay Arnett diffusion x floored-photosphere blackbody: the `TypeIcSED` priors, except
+    ``M_Ni``, ``M_ej`` and ``v_ej``, which are tuned to the Ic-BL subsample of the volume-limited ZTF CLU
+    stripped-envelope sample [citation pending]. Follows the same first-principles Arnett-model convention as
     `TypeIaSNe`/`TypeIbSNe`/`TypeIcSNe`.
     """
 
@@ -314,7 +315,7 @@ class TypeIcBLSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.27
+    DEFAULT_Z_LIM = 0.32
 
     RATE_FRACTION = _TYPE_ICBL_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_ICBL_FRACTION_ERR)

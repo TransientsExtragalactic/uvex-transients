@@ -41,6 +41,7 @@ from uvex_transients.models.supernovae import (
     TypeIIPSED,
     VillarCoolingBlackbodySED,
 )
+from uvex_transients.models.supernovae.Ibc import _TypeIbIntrinsicSED
 from uvex_transients.models.tdes import AlushStoneTDESED, VanVelzenTDESED
 from uvex_transients.phase_space.sampling.canonical import _FREDPowerLawSED
 
@@ -113,6 +114,10 @@ class TestTypeIIbSED(SpectralModelContract):
 
 class TestTypeIbSED(SpectralModelContract):
     model_class = TypeIbSED
+
+
+class TestTypeIbIntrinsicSED(SpectralModelContract):
+    model_class = _TypeIbIntrinsicSED
 
 
 class TestTypeIcSED(SpectralModelContract):

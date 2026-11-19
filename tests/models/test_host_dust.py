@@ -1,4 +1,4 @@
-"""Tests for `HostDustMixin`, through `TypeIaSED`, the one SED that carries it."""
+"""Tests for `HostDustMixin`, through `TypeIaSED`."""
 
 import numpy as np
 import pytest

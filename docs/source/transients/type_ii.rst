@@ -899,7 +899,7 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
 
          The shock cooling priors are those of :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
          and the nickel priors are those of the Type Ib SED
-         (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`). Neither is a fit to Type IIb events, and
+         (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, without its host dust). Neither is a fit to Type IIb events, and
          the duration below was derived for an earlier, phenomenological Type IIb SED. It needs to be
          recomputed.
 
@@ -963,8 +963,10 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
 
          The shock cooling parameters have the priors of
          :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`, and the nickel and
-         line-blanketing parameters those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except
-         ``M_Ni`` and ``beta``. The line blanketing applies to the nickel component only: the shock cooling
+         line-blanketing parameters those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (which
+         has host dust, that this model does not), except ``M_Ni``, ``beta`` and ``break_frequency``, the last
+         two of which keep the values they had before the line blanketing of Type Ib was re-set against
+         Swift/UVOT. The line blanketing applies to the nickel component only: the shock cooling
          component is an unblanketed blackbody.
 
          .. list-table::
@@ -998,18 +1000,18 @@ the sum of a shock cooling flash and a radioactively powered main peak. Each is 
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
               - TruncatedNormal(mean=0.1, :math:`\sigma`\=0.07, bounds 0.01 to 0.4 :math:`M_\odot`)
-              - Nickel-56 mass. Lower than the Type Ib value.
+              - Nickel-56 mass. Set for Type IIb; higher than the Type Ib median (0.06 :math:`M_\odot`).
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
-              - TruncatedNormal(mean=2.6, :math:`\sigma`\=1.1, bounds 0.1 to 8 :math:`M_\odot`)
+              - TruncatedNormal(mean=2.3, :math:`\sigma`\=2.2, bounds 0.1 to 20 :math:`M_\odot`)
               - Ejecta mass.
             * - ``v_ej``
               - :math:`v_\mathrm{ej}`
-              - TruncatedNormal(mean=9.9, :math:`\sigma`\=1.4, bounds 4 to 16; units of :math:`10^3` km/s)
+              - TruncatedNormal(mean=9.6, :math:`\sigma`\=3.5, bounds 4 to 25; units of :math:`10^3` km/s)
               - Constant ejecta velocity.
             * - ``kappa``
               - :math:`\kappa`
-              - Fixed (0.06 cm\ :sup:`2` g\ :sup:`-1`)
+              - Fixed (0.07 cm\ :sup:`2` g\ :sup:`-1`)
               - Grey optical opacity of the ejecta.
             * - ``kappa_gamma``
               - :math:`\kappa_\gamma`
