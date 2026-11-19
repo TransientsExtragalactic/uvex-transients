@@ -344,3 +344,24 @@ def test_no_orphan_curve_files():
     """A stored curve whose class no longer exists is deleted, not left to rot."""
     stored = {path.stem for path in horizon.CURVE_DIR.glob("*.ecsv")}
     assert stored <= set(SHIPPED)
+
+
+@pytest.mark.parametrize("name", SHIPPED)
+def test_stored_curves_are_capped_at_the_current_lyman_limit(name):
+    """
+    No stored horizon goes past the redshift where the Lyman limit enters the NUV band, and the cap is the current one.
+
+    The fingerprint does not cover the bands, so a changed bandpass would otherwise leave stale curves in place.
+    """
+    from uvex_transients.missions import uvex_fast
+    from uvex_transients.models.core.detection_horizon import lyman_limit_redshift
+
+    curve = HorizonCurve.read(curve_path(name))
+    assert curve is not None
+    z_lyman = lyman_limit_redshift(uvex_fast.detector.bandpasses)
+    assert curve.meta["z_lyman"] == pytest.approx(z_lyman), (
+        f"The stored horizon curve of {name} was built for another Lyman cap; run `make horizons CLASSES={name}`."
+    )
+    assert curve.z_limits.max() <= z_lyman * (1 + 1e-9)
+    default = TransientBase.registry()[name].DEFAULT_Z_LIM
+    assert default <= np.ceil(z_lyman * 100) / 100, f"{name}: DEFAULT_Z_LIM {default} is beyond the Lyman cap."
