@@ -531,6 +531,25 @@ class TestPlotSwiftUVCalibration:
         with pytest.raises(ValueError, match="No 'NotAType'"):
             plot_swift_uv_calibration(TypeIaSED, "NotAType")
 
+    def test_fixed_parameters_replace_their_draws(self):
+        from uvex_transients.models.supernovae import TypeIIPSED
+
+        # With every event given circumstellar material the model light curves rise, which they do not otherwise
+        fig_on = plot_swift_uv_calibration(TypeIIPSED, "IIP", n_models=8, n_observed=1, fixed={"csm": 1.0})
+        fig_off = plot_swift_uv_calibration(TypeIIPSED, "IIP", n_models=8, n_observed=1, fixed={"csm": 0.0})
+        (ax_on,), (ax_off,) = fig_on.axes, fig_off.axes
+        early_on = np.median([line.get_ydata()[0] / line.get_ydata().max() for line in ax_on.lines[:8]])
+        early_off = np.median([line.get_ydata()[0] / line.get_ydata().max() for line in ax_off.lines[:8]])
+        assert early_on < early_off
+        plt.close(fig_on)
+        plt.close(fig_off)
+
+    def test_unknown_fixed_parameter_raises(self):
+        from uvex_transients.models.supernovae import TypeIaSED
+
+        with pytest.raises(ValueError, match="not a parameter"):
+            plot_swift_uv_calibration(TypeIaSED, "Ia", fixed={"excess": 1.0})
+
 
 class TestPlotLuminosityFunction:
     """Tests for `plot_luminosity_function`."""

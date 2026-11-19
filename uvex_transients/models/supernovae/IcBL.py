@@ -4,37 +4,35 @@ from typing import ClassVar
 
 from astropy import units as u
 
-from uvex_transients.models.arnett import LineBlanketedArnettDecaySED
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import (
-    ConstantPrior,
-    TruncatedNormalPrior,
-    UniformPrior,
-)
+from uvex_transients.models.core.priors import TruncatedNormalPrior
+from uvex_transients.models.supernovae.Ibc import TypeIcSED
 
 __all__ = ["TypeIcBLSED"]
 
 
-class TypeIcBLSED(LineBlanketedArnettDecaySED):
+class TypeIcBLSED(TypeIcSED):
     r"""
-    Type Ic-BL (broad-lined) supernova SED, with priors fit to a ZTF sample of SNe Ic-BL.
+    Type Ic-BL (broad-lined) supernova SED, with priors from the ZTF volume-limited stripped-envelope SN sample.
 
-    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely, exactly as
-    :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` does (radioactive-decay Arnett diffusion,
-    floored photospheric temperature and a line-blanketed blackbody); only :attr:`_DEFAULT_PARAMETERS`
-    differs. ``break_frequency`` and ``beta`` start at the original Type Ia calibration (not its recalibrated
-    one). The priors on ``M_Ni``, ``M_ej``
-    and ``v_ej`` are sample statistics (mean, sample
-    standard deviation) of the 36-event explosion-property table of :footcite:t:`srinivasaragavan2024`
-    (nickel mass, kinetic energy, ejecta mass and photospheric velocity per event). One event
-    (SN 2020wgz), whose reported
-    :math:`M_\mathrm{Ni}=2.46\,M_\odot` is a >5-sigma outlier driven by an ``e_k``/``m_ej`` *lower
-    limit* rather than a measurement, is excluded from the ``M_Ni`` statistics. ``M_ej`` uses only
-    rows with a measured (non-lower-limit) value, and ``v_ej`` is identified with the sample's
-    photospheric velocities (``v_ph``), regardless of the epoch quoted. ``kappa`` and ``T_floor``
-    are not constrained by that table and are left at `TypeIaSED`'s values; ``kappa_gamma`` is
-    instead fixed at a large value (full gamma-ray trapping across the simulated window), unlike
-    `TypeIaSED`'s Scalzo+14 value.
+    This is :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` with its own ``M_Ni``, ``M_ej`` and ``v_ej``,
+    tuned to the SNe Ic-BL of the ZTF CLU + CATS150 sample [citation pending] in the same way (each truncated normal
+    is tuned so that its 16th, 50th and 84th percentiles, after truncation, reproduce the sample's):
+
+    * ``M_Ni``: median :math:`0.19\,M_\odot`, 16th to 84th percentile 0.093 to 0.29 :math:`M_\odot`.
+    * ``M_ej``: the observed Ic-BL median of about :math:`3.2\,M_\odot` (16th to 84th percentile 1.3 to 5.4)
+      scaled by 0.90, the sample-wide shift in median ejecta mass under survey-efficiency weighting (see
+      :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`), giving 1.17, 2.9 and 4.86 :math:`M_\odot`.
+    * ``v_ej``: :math:`16.8\times10^3` km/s with a width of :math:`3.5\times10^3` km/s. This is the CLU velocity
+      proxy (see :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`), not the photospheric velocities of
+      :footcite:t:`srinivasaragavan2024`, which this model used before and which have a mean of
+      :math:`20.1\times10^3` km/s.
+
+    Every other prior is that of Type Ic (``kappa`` is :math:`0.07\,\mathrm{cm^2\,g^{-1}}` throughout), including
+    the UV line blanketing set against Swift/UVOT and the host dust: see that class and
+    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` for how they were chosen, and for what the data do and
+    do not constrain. A change to those Type Ic priors is a change to this model too. The ``M_Ni`` of this model is
+    not the log-normal of Types Ib and Ic, which was set against the ASAS-SN luminosity function of those types.
 
     .. rubric:: Parameters
 
@@ -47,28 +45,34 @@ class TypeIcBLSED(LineBlanketedArnettDecaySED):
          - Description
        * - ``M_Ni``
          - :math:`M_\mathrm{Ni}`
-         - Nickel-56 mass synthesized in the explosion.
+         - Nickel-56 mass synthesized in the explosion. The Ic-BL sample's.
        * - ``M_ej``
          - :math:`M_\mathrm{ej}`
-         - Ejecta mass.
+         - Ejecta mass. The Ic-BL sample's.
        * - ``v_ej``
          - :math:`v_\mathrm{ej}`
-         - Ejecta velocity, taken to be constant and equal to the photospheric velocity.
+         - Ejecta velocity, taken to be constant and equal to the photospheric velocity. The Ic-BL sample's.
        * - ``kappa``
          - :math:`\kappa`
-         - Grey optical opacity.
+         - Grey optical opacity. As Type Ic.
        * - ``kappa_gamma``
          - :math:`\kappa_\gamma`
-         - Opacity to high-energy photons. Fixed.
+         - Opacity to high-energy photons. As Type Ic.
        * - ``T_floor``
          - :math:`T_\mathrm{floor}`
-         - Minimum photospheric temperature.
+         - Minimum photospheric temperature. As Type Ic.
        * - ``break_frequency``
          - :math:`\nu_\mathrm{break}`
-         - Frequency blueward of which line blanketing suppresses the flux.
+         - Frequency blueward of which line blanketing suppresses the flux. As Type Ic.
        * - ``beta``
          - :math:`\beta`
-         - Power-law index of the suppression above the break.
+         - Power-law index of the suppression above the break. As Type Ic.
+       * - ``A_V``
+         - :math:`A_V`
+         - V-band attenuation by dust in the host galaxy. As Type Ic.
+       * - ``R_V``
+         - :math:`R_V`
+         - Total-to-selective extinction ratio of the host dust. As Type Ic.
 
     References
     ----------
@@ -76,52 +80,26 @@ class TypeIcBLSED(LineBlanketedArnettDecaySED):
     """
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
+        **TypeIcSED._DEFAULT_PARAMETERS,
         "M_Ni": Parameter(
-            prior=TruncatedNormalPrior(mean=0.33, sigma=0.24, lower=0.02, upper=2.0),
+            # Truncated quantiles: 0.093 [16%], 0.189 [50%], 0.291 [84%] Msun (target 0.093, 0.19, 0.29).
+            prior=TruncatedNormalPrior(mean=0.183, sigma=0.106, lower=0.005, upper=1.5),
             scale=1 * u.Msun,
             description="Nickel-56 mass synthesized in the explosion.",
             latex=r"M_\mathrm{Ni}",
         ),
         "M_ej": Parameter(
-            prior=TruncatedNormalPrior(mean=2.54, sigma=1.95, lower=0.1, upper=10.0),
+            # Truncated quantiles: 1.18 [16%], 2.87 [50%], 4.89 [84%] Msun (target 1.17, 2.9, 4.86).
+            prior=TruncatedNormalPrior(mean=2.47, sigma=2.22, lower=0.1, upper=20.0),
             scale=1 * u.Msun,
             description="Ejecta mass.",
             latex=r"M_\mathrm{ej}",
         ),
         "v_ej": Parameter(
-            prior=TruncatedNormalPrior(mean=20.1, sigma=4.96, lower=5.0, upper=45.0),
+            # Truncated quantiles: 13.3 [16%], 16.8 [50%], 20.3 [84%] (target 13.3, 16.8, 20.3).
+            prior=TruncatedNormalPrior(mean=16.8, sigma=3.5, lower=5.0, upper=30.0),
             scale=1e3 * u.km / u.s,
             description="Constant ejecta velocity, identified with the photospheric velocity.",
             latex=r"v_\mathrm{ej}",
-        ),
-        "kappa": Parameter(
-            prior=UniformPrior(lower=0.05, upper=0.15),
-            scale=1 * u.cm**2 / u.g,
-            description="Grey optical opacity.",
-            latex=r"\kappa",
-        ),
-        "kappa_gamma": Parameter(
-            prior=ConstantPrior(value=1000.0),
-            scale=1 * u.cm**2 / u.g,
-            description="Opacity to high-energy photons. Fixed at a large value (full gamma-ray trapping).",
-            latex=r"\kappa_\gamma",
-        ),
-        "T_floor": Parameter(
-            prior=TruncatedNormalPrior(mean=6000.0, sigma=1000.0, lower=3000.0, upper=10000.0),
-            scale=1 * u.K,
-            description="Minimum photospheric temperature.",
-            latex=r"T_\mathrm{floor}",
-        ),
-        "break_frequency": Parameter(
-            prior=ConstantPrior(value=0.75),
-            scale=1e15 * u.Hz,
-            description="Frequency above which the line-blanketing suppression sets in.",
-            latex=r"\nu_\mathrm{break}",
-        ),
-        "beta": Parameter(
-            prior=ConstantPrior(value=5.0),
-            scale=1.0,
-            description="Power-law index of the suppression above the break.",
-            latex=r"\beta",
         ),
     }

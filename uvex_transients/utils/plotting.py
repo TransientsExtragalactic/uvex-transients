@@ -1147,6 +1147,7 @@ def plot_swift_uv_calibration(
     n_models: int = 100,
     n_observed: int = 20,
     min_points: int = 4,
+    fixed: Mapping[str, float] | None = None,
     rng: np.random.Generator | int | None = 0,
     ax: Axes | None = None,
 ) -> Figure:
@@ -1176,6 +1177,11 @@ def plot_swift_uv_calibration(
         Maximum number of observed supernovae to overplot. The default is 20.
     min_points : int, optional
         Minimum number of detections in `band` for a supernova to be eligible. The default is 4.
+    fixed : mapping of str to float, optional
+        Dimensionless parameters of `sed` to fix at one value for every draw, in place of drawing them, for example
+        ``{"csm": 1.0}`` to show only the Type IIP events with circumstellar material. They are fixed in the model
+        (see `~uvex_transients.models.core.base.SpectralModel`), so that the parameters that depend on them are drawn
+        consistently. The default is to draw every parameter.
     rng : numpy.random.Generator or int, optional
         Random-number source for the parameter draws and the observed sample. The default is 0.
     ax : matplotlib.axes.Axes, optional
@@ -1211,7 +1217,13 @@ def plot_swift_uv_calibration(
     t_max = 1.1 * max(float(np.max(lc["t"].value)) for lc in curves)
     t = np.linspace(0.5, t_max, 250) * u.day
 
-    params = sed().sample_parameters(size=n_models, rng=rng)
+    model = sed()
+    for name in fixed or {}:
+        if name not in model:
+            raise ValueError(f"{name!r} is not a parameter of {sed.__name__}; its parameters are {list(model)}.")
+    params = sed(**{name: float(value) for name, value in (fixed or {}).items()}).sample_parameters(
+        size=n_models, rng=rng
+    )
     params_grid = {name: value[:, None] for name, value in params.items()}
     mag = sed.mag_bandpass(get_bandpass(f"Swift/UVOT.{band}"), t, redshift=z_ref, **params_grid)
     f_nu = mag.to(u.erg / u.s / u.cm**2 / u.Hz)

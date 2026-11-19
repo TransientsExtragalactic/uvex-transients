@@ -86,9 +86,6 @@ else:
 #      - 7
 #      - The UV is brightest in the first days to weeks, during shock breakout and cooling, and the
 #        shock-cooling peak of a IIb arrives within about a week.
-#    * - Type IIP + excess
-#      - 3
-#      - The early excess lasts only a few days, so the explosion has to be pinned down more tightly.
 #    * - SLSN-I
 #      - 60
 #      - SLSNe rise slowly, over roughly 30 to 100 days in the rest frame (longer in the observer frame).
@@ -190,7 +187,6 @@ if events is not None:
         TypeIcBLSNe,
         TypeIcSNe,
         TypeIIbSNe,
-        TypeIIPExcessSNe,
         TypeIIPSNe,
     )
     from uvex_transients.transients.TDEs import TidalDisruptionEvent
@@ -201,7 +197,6 @@ if events is not None:
         "ic_sne": TypeIcSNe(),
         "icbl_sne": TypeIcBLSNe(),
         "iip_sne": TypeIIPSNe(),
-        "iip_excess_sne": TypeIIPExcessSNe(),
         "iib_sne": TypeIIbSNe(),
         "slsne": MagnetarSLSNe(),
         "tde": TidalDisruptionEvent(),

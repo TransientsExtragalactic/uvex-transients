@@ -126,7 +126,6 @@ STANDARD_POPULATIONS = {
     "ic_sne": PopulationSpec("Type Ic", max_gap=10.0),
     "icbl_sne": PopulationSpec("Type Ic-BL", max_gap=10.0),
     "iip_sne": PopulationSpec("Type IIP", max_gap=7.0),
-    "iip_excess_sne": PopulationSpec("Type IIP + excess", max_gap=3.0),
     "iib_sne": PopulationSpec("Type IIb", max_gap=7.0),
     "slsne": PopulationSpec("SLSN-I", max_gap=60.0),
     "tde": PopulationSpec("TDE", max_gap=30.0),
@@ -143,7 +142,7 @@ that the rare ones are drawn on top of them in the sky maps.
 
 POPULATION_GROUPS = {
     "Type I SNe": ["ia_sne", "ib_sne", "ic_sne", "icbl_sne"],
-    "Type II SNe": ["iip_sne", "iip_excess_sne", "iib_sne"],
+    "Type II SNe": ["iip_sne", "iib_sne"],
     "SLSNe": ["slsne"],
     "Exotic transients": ["tde", "llgrb", "lfbot", "kilonova"],
 }

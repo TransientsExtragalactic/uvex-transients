@@ -23,7 +23,7 @@ The simulation draws Monte Carlo events of **every registered transient class**,
 default rate, redshift limit and duration (see :ref:`transients` for the model and rate of each):
 
 - **Type I supernovae**: Ia, Ib, Ic and the broad-lined Ic-BL,
-- **Type II supernovae**: IIP, IIP with an early excess, and IIb,
+- **Type II supernovae**: IIP (a fraction of which have an early excess), and IIb,
 - **Superluminous supernovae** (the magnetar-powered SLSN-I),
 - **Exotic transients**: tidal disruption events, low-luminosity GRBs (llGRBs), luminous fast blue optical
   transients (LFBOTs) and kilonovae.
@@ -77,7 +77,7 @@ summary table, and are not part of the run, so they can be changed without regen
      - A highest-SNR measurement brighter than **23 AB**.
    * - Bracketed explosion
      - A gap from the last constraining non-detection to the first detection that is shorter than a limit per type
-       (from 3 days for kilonovae and Type IIP with an excess, to 60 days for SLSNe), so the explosion time is
+       (from 1 day for llGRBs to 60 days for SLSNe), so the explosion time is
        pinned down.
 
 These are relatively relaxed cuts. They choose events that UVEX gets UV coverage of and that can probably be

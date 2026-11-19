@@ -335,7 +335,6 @@ INSET_RANGE = (-2, 5)
 # The transient class of each population, as the run config names them.
 TRANSIENT_CLASSES = {
     "iip_sne": "TypeIIPSNe",
-    "iip_excess_sne": "TypeIIPExcessSNe",
     "iib_sne": "TypeIIbSNe",
     "ib_sne": "TypeIbSNe",
     "ic_sne": "TypeIcSNe",

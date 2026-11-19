@@ -124,15 +124,16 @@ def _sample_parameters_from_seeds(sed, seeds) -> dict:
     """
     if len(seeds) == 0:
         return {name: np.array([]) for name in sed.sample_parameters(size=0)}
-    # `Parameter.sample` is a latent draw followed by an elementwise transform. Only the draws depend on the
-    # per-event stream, so they are made one event at a time, in parameter order, and the transform (the
-    # expensive part, since it builds an astropy Quantity) is applied once to each whole column.
+    # `SpectralModel.sample_parameters` is a latent draw (`_sample_latent_parameters`, which a model with correlated
+    # parameters overrides) followed by an elementwise transform. Only the draws depend on the per-event stream, so
+    # they are made one event at a time, and the transform (the expensive part, since it builds an astropy
+    # Quantity) is applied once to each whole column.
     parameters = sed._parameters
     latent = {name: np.empty(len(seeds)) for name in parameters}
     for i, seed in enumerate(seeds):
-        rng = np.random.default_rng(int(seed))
-        for name, parameter in parameters.items():
-            latent[name][i] = parameter.sample_latent_variable(size=1, rng=rng)[0]
+        draw = sed._sample_latent_parameters(1, np.random.default_rng(int(seed)))
+        for name in parameters:
+            latent[name][i] = draw[name][0]
     return {name: parameters[name].transform_latent_to_physical(latent[name]) for name in parameters}
 
 
