@@ -483,6 +483,10 @@
 <span class="sd">are stored as `~uvex_transients.transients.horizon.HorizonCurve` files.</span>
 
 <span class="sd">The guarantee covers the SED's parameter priors only. Milky Way extinction and sky position are not included.</span>
+
+<span class="sd">By default the horizon is also capped at the redshift where the Lyman limit (912 A rest-frame) reaches the blue edge of</span>
+<span class="sd">the reddest detecting band (`lyman_limit_redshift`, about 1.13 for UVEX). Beyond it the bands see only rest-frame</span>
+<span class="sd">wavelengths that the host and the intervening IGM absorb, so no event is detectable there however bright it is.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -491,6 +495,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">const</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">FLRW</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">QTable</span>
@@ -526,12 +531,19 @@
     <span class="s2">"detection_horizon"</span><span class="p">,</span>
     <span class="s2">"effective_peak_grid"</span><span class="p">,</span>
     <span class="s2">"first_crossing"</span><span class="p">,</span>
+    <span class="s2">"lyman_limit_redshift"</span><span class="p">,</span>
     <span class="s2">"observability_curve"</span><span class="p">,</span>
     <span class="s2">"reduce_bands"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">Criterion</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"any"</span><span class="p">,</span> <span class="s2">"all"</span><span class="p">,</span> <span class="s2">"k_of_n"</span><span class="p">]</span>
 <span class="sd">"""How bands combine into one effective peak magnitude; see `reduce_bands`."""</span>
+
+<span class="n">LYMAN_LIMIT</span> <span class="o">=</span> <span class="mf">911.76</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span>
+<span class="sd">"""~astropy.units.Quantity: Rest-frame wavelength of the hydrogen Lyman limit, below which the Universe is opaque."""</span>
+
+<span class="n">LYMAN_EDGE_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="sd">"""float: Fraction of its peak throughput at which a band is taken to begin, for `lyman_limit_redshift`."""</span>
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -826,6 +838,53 @@
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># The Lyman limit                                                             #</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="lyman_limit_redshift">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.core.detection_horizon.lyman_limit_redshift.html#uvex_transients.models.core.detection_horizon.lyman_limit_redshift">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lyman_limit_redshift</span><span class="p">(</span>
+    <span class="n">bandpasses</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpectralElement</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SpectralElement</span><span class="p">],</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">LYMAN_EDGE_THRESHOLD</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Find the redshift at which the Lyman limit enters the reddest detecting band.</span>
+
+<span class="sd">    Radiation emitted blueward of 912 A is absorbed by the host's neutral hydrogen and by Lyman-limit systems along the</span>
+<span class="sd">    line of sight, so an event whose observed band lies entirely below the redshifted limit is undetectable. The Lyman</span>
+<span class="sd">    limit is at :math:`\lambda_L (1 + z)` and reaches the blue edge :math:`\lambda_b` of a band at</span>
+<span class="sd">    :math:`z = \lambda_b / \lambda_L - 1`. The reddest band is the last to be reached, so its edge sets the redshift</span>
+<span class="sd">    beyond which no band is left clear of the limit. For the ``uvex_fast`` bands that band is NUV, with its blue edge</span>
+<span class="sd">    near 1940 A, and the redshift is about 1.13.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement</span>
+<span class="sd">        The detecting bands.</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        A band begins where its throughput first reaches this fraction of its peak. The default is 0.01.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        :math:`\max_b \lambda_{b,\mathrm{blue}} / 911.76\,\mathrm{\AA} - 1`, over the bands :math:`b`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `threshold` is not in ``(0, 1)``, or `bandpasses` is empty.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"`threshold` must be in (0, 1), got </span><span class="si">{</span><span class="n">threshold</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">grids</span> <span class="o">=</span> <span class="n">resolve_bandpasses</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">)</span>
+    <span class="n">blue_edges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">nu</span><span class="p">,</span> <span class="n">throughput</span> <span class="ow">in</span> <span class="n">grids</span><span class="p">:</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">c</span> <span class="o">/</span> <span class="p">(</span><span class="n">nu</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">))</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span>
+        <span class="n">blue_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wavelength</span><span class="p">[</span><span class="n">throughput</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">throughput</span><span class="o">.</span><span class="n">max</span><span class="p">()]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">blue_edges</span><span class="p">)</span> <span class="o">/</span> <span class="n">LYMAN_LIMIT</span><span class="o">.</span><span class="n">to_value</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
 <span class="c1"># From the grid to a horizon                                                  #</span>
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 <div class="viewcode-block" id="first_crossing">
@@ -976,6 +1035,8 @@
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">interpolate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">max_extensions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">lyman_limit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">lyman_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">LYMAN_EDGE_THRESHOLD</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">QTable</span><span class="p">,</span> <span class="n">EffectivePeakGrid</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -983,6 +1044,8 @@
 
 <span class="sd">    Evaluates the population on a logarithmic redshift grid from `z_min` to `z_max` and doubles `z_max` until every</span>
 <span class="sd">    limit is bracketed, with one seed for every attempt so that widening the grid does not redraw the population.</span>
+<span class="sd">    Unless `lyman_limit` is `False`, the grid never goes past the redshift at which the Lyman limit reaches the</span>
+<span class="sd">    reddest band (`lyman_limit_redshift`), and a horizon that would lie beyond it is reported as that redshift.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1016,18 +1079,35 @@
 <span class="sd">        Interpolate the crossings; see `observability_curve`.</span>
 <span class="sd">    max_extensions : int, optional</span>
 <span class="sd">        How many times `z_max` may be doubled. The default is 5.</span>
+<span class="sd">    lyman_limit : bool, optional</span>
+<span class="sd">        Whether to cap the horizon at the redshift where the Lyman limit enters the reddest band. The default is</span>
+<span class="sd">        `True`. The cap overrides the statistical guarantee: a population that is still detectable there gets the cap</span>
+<span class="sd">        as its horizon, flagged in the ``capped`` column.</span>
+<span class="sd">    lyman_threshold : float, optional</span>
+<span class="sd">        The fraction of its peak throughput at which a band begins; see `lyman_limit_redshift`.</span>
 <span class="sd">    **kwargs</span>
 <span class="sd">        Further arguments of `effective_peak_grid`, such as ``criterion``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    curve : ~astropy.table.QTable</span>
-<span class="sd">        As returned by `observability_curve`.</span>
+<span class="sd">        As returned by `observability_curve`, with a ``capped`` column that is `True` where the horizon is the Lyman</span>
+<span class="sd">        cap, and the cap in ``meta["z_lyman"]`` (absent if `lyman_limit` is `False`).</span>
 <span class="sd">    grid : EffectivePeakGrid</span>
 <span class="sd">        The grid the curve was read from, which can be reused for further limits.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `lyman_limit` is `True` and the cap is not above `z_min`.</span>
 <span class="sd">    """</span>
     <span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mag_limits</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="n">mag_limits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
     <span class="n">seed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">get_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">))</span>
+
+    <span class="n">z_lyman</span> <span class="o">=</span> <span class="n">lyman_limit_redshift</span><span class="p">(</span><span class="n">bandpasses</span><span class="p">,</span> <span class="n">lyman_threshold</span><span class="p">)</span> <span class="k">if</span> <span class="n">lyman_limit</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">if</span> <span class="n">z_lyman</span> <span class="o">&lt;=</span> <span class="n">z_min</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The Lyman limit reaches the bandpasses at z=</span><span class="si">{</span><span class="n">z_lyman</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">, not above z_min=</span><span class="si">{</span><span class="n">z_min</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="n">z_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">z_max</span><span class="p">,</span> <span class="n">z_lyman</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_extensions</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">grid</span> <span class="o">=</span> <span class="n">effective_peak_grid</span><span class="p">(</span>
@@ -1043,10 +1123,17 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">table</span> <span class="o">=</span> <span class="n">_curve_table</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">])):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">]))</span> <span class="ow">or</span> <span class="n">z_max</span> <span class="o">&gt;=</span> <span class="n">z_lyman</span><span class="p">:</span>
             <span class="k">break</span>
-        <span class="n">z_max</span> <span class="o">*=</span> <span class="mf">2.0</span>
+        <span class="n">z_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">z_max</span><span class="p">,</span> <span class="n">z_lyman</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">lyman_limit</span><span class="p">:</span>
+        <span class="c1"># A draw that is still detectable at the cap is censored, so a limit that cannot be bracketed below it is the</span>
+        <span class="c1"># cap itself.</span>
+        <span class="n">z_limit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">]),</span> <span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">],</span> <span class="n">z_lyman</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">z_limit</span><span class="p">,</span> <span class="n">z_lyman</span><span class="p">)</span>
+        <span class="n">table</span><span class="p">[</span><span class="s2">"capped"</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"z_limit"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">z_lyman</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-9</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"z_lyman"</span><span class="p">]</span> <span class="o">=</span> <span class="n">z_lyman</span>
     <span class="n">_warn_if_unbracketed</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">table</span><span class="p">,</span> <span class="n">grid</span></div>
 

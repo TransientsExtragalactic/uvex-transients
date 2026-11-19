@@ -597,10 +597,13 @@
 </details></li>
 <li class="toctree-l3 current active has-children"><a aria-current="page" class="current reference internal" href="#">uvex_transients.models.core.detection_horizon</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.Criterion.html">uvex_transients.models.core.detection_horizon.Criterion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_LIMIT.html">uvex_transients.models.core.detection_horizon.LYMAN_LIMIT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD.html">uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.check_sample_count.html">uvex_transients.models.core.detection_horizon.check_sample_count</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.detection_horizon.html">uvex_transients.models.core.detection_horizon.detection_horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.effective_peak_grid.html">uvex_transients.models.core.detection_horizon.effective_peak_grid</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.first_crossing.html">uvex_transients.models.core.detection_horizon.first_crossing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.lyman_limit_redshift.html">uvex_transients.models.core.detection_horizon.lyman_limit_redshift</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.observability_curve.html">uvex_transients.models.core.detection_horizon.observability_curve</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html">uvex_transients.models.core.detection_horizon.peak_band_magnitudes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.reduce_bands.html">uvex_transients.models.core.detection_horizon.reduce_bands</a></li>
@@ -2183,11 +2186,20 @@ classes expose these steps as <cite>~uvex_transients.models.core.base.SpectralMo
 <cite>~uvex_transients.transients.base.ExtragalacticTransient.get_detection_horizon</cite>. The horizons of the shipped classes
 are stored as <cite>~uvex_transients.transients.horizon.HorizonCurve</cite> files.</p>
 <p>The guarantee covers the SED’s parameter priors only. Milky Way extinction and sky position are not included.</p>
+<p>By default the horizon is also capped at the redshift where the Lyman limit (912 A rest-frame) reaches the blue edge of
+the reddest detecting band (<cite>lyman_limit_redshift</cite>, about 1.13 for UVEX). Beyond it the bands see only rest-frame
+wavelengths that the host and the intervening IGM absorb, so no event is detectable there however bright it is.</p>
 <p class="rubric">Attributes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.Criterion.html#uvex_transients.models.core.detection_horizon.Criterion" title="uvex_transients.models.core.detection_horizon.Criterion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Criterion</span></code></a></p></td>
 <td><p>How bands combine into one effective peak magnitude; see <cite>reduce_bands</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_LIMIT.html#uvex_transients.models.core.detection_horizon.LYMAN_LIMIT" title="uvex_transients.models.core.detection_horizon.LYMAN_LIMIT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LYMAN_LIMIT</span></code></a></p></td>
+<td><p>Rest-frame wavelength of the hydrogen Lyman limit, below which the Universe is opaque.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD.html#uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD" title="uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LYMAN_EDGE_THRESHOLD</span></code></a></p></td>
+<td><p>Fraction of its peak throughput at which a band is taken to begin, for <cite>lyman_limit_redshift</cite>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -2207,13 +2219,16 @@ are stored as <cite>~uvex_transients.transients.horizon.HorizonCurve</cite> file
 <tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.first_crossing.html#uvex_transients.models.core.detection_horizon.first_crossing" title="uvex_transients.models.core.detection_horizon.first_crossing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first_crossing</span></code></a>(m_eff, z_grid, mag_limit, *)</p></td>
 <td><p>Find each draw's detection redshift: the first grid redshift at which it is fainter than the limit.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.observability_curve.html#uvex_transients.models.core.detection_horizon.observability_curve" title="uvex_transients.models.core.detection_horizon.observability_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observability_curve</span></code></a>(grid, mag_limits, *[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.lyman_limit_redshift.html#uvex_transients.models.core.detection_horizon.lyman_limit_redshift" title="uvex_transients.models.core.detection_horizon.lyman_limit_redshift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lyman_limit_redshift</span></code></a>(bandpasses[, threshold])</p></td>
+<td><p>Find the redshift at which the Lyman limit enters the reddest detecting band.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.observability_curve.html#uvex_transients.models.core.detection_horizon.observability_curve" title="uvex_transients.models.core.detection_horizon.observability_curve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observability_curve</span></code></a>(grid, mag_limits, *[, ...])</p></td>
 <td><p>Bound the redshift beyond which a population is undetectable, for each magnitude limit.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html#uvex_transients.models.core.detection_horizon.peak_band_magnitudes" title="uvex_transients.models.core.detection_horizon.peak_band_magnitudes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_band_magnitudes</span></code></a>(eval_log_luminosity, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html#uvex_transients.models.core.detection_horizon.peak_band_magnitudes" title="uvex_transients.models.core.detection_horizon.peak_band_magnitudes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_band_magnitudes</span></code></a>(eval_log_luminosity, ...)</p></td>
 <td><p>Brightest AB magnitude over time of each draw, in each band, at each redshift.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.reduce_bands.html#uvex_transients.models.core.detection_horizon.reduce_bands" title="uvex_transients.models.core.detection_horizon.reduce_bands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_bands</span></code></a>(peak_mags[, criterion, k])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="uvex_transients.models.core.detection_horizon.reduce_bands.html#uvex_transients.models.core.detection_horizon.reduce_bands" title="uvex_transients.models.core.detection_horizon.reduce_bands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_bands</span></code></a>(peak_mags[, criterion, k])</p></td>
 <td><p>Combine per-band peak magnitudes into one effective peak magnitude.</p></td>
 </tr>
 </tbody>

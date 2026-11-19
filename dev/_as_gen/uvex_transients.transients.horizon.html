@@ -597,10 +597,13 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.html">uvex_transients.models.core.detection_horizon</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.Criterion.html">uvex_transients.models.core.detection_horizon.Criterion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_LIMIT.html">uvex_transients.models.core.detection_horizon.LYMAN_LIMIT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD.html">uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.check_sample_count.html">uvex_transients.models.core.detection_horizon.check_sample_count</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.detection_horizon.html">uvex_transients.models.core.detection_horizon.detection_horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.effective_peak_grid.html">uvex_transients.models.core.detection_horizon.effective_peak_grid</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.first_crossing.html">uvex_transients.models.core.detection_horizon.first_crossing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.lyman_limit_redshift.html">uvex_transients.models.core.detection_horizon.lyman_limit_redshift</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.observability_curve.html">uvex_transients.models.core.detection_horizon.observability_curve</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html">uvex_transients.models.core.detection_horizon.peak_band_magnitudes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.reduce_bands.html">uvex_transients.models.core.detection_horizon.reduce_bands</a></li>
@@ -2162,8 +2165,8 @@
 <p>Stored detection-horizon curves of the transient classes.</p>
 <p>A <cite>HorizonCurve</cite> is the redshift limit <span class="math notranslate nohighlight">\(z_L(m)\)</span> of a transient population as a function of the AB magnitude limit
 <span class="math notranslate nohighlight">\(m\)</span>: beyond <span class="math notranslate nohighlight">\(z_L\)</span>, with 95% confidence, at most 1% of events drawn from the SED’s priors are brighter than
-<span class="math notranslate nohighlight">\(m\)</span> in either UVEX band. The calculation is in <cite>uvex_transients.models.core.detection_horizon</cite>; this module
-stores and checks its result.</p>
+<span class="math notranslate nohighlight">\(m\)</span> in either UVEX band, and never beyond the redshift where the Lyman limit enters the NUV band. The calculation
+is in <cite>uvex_transients.models.core.detection_horizon</cite>; this module stores and checks its result.</p>
 <p>A curve takes seconds to a minute to compute, so each shipped class stores its own as
 <code class="docutils literal notranslate"><span class="pre">horizon_curves/&lt;ClassName&gt;.ecsv</span></code>, which <cite>~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve</cite>
 reads. A custom class, or a shipped one

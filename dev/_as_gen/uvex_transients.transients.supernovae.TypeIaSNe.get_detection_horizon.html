@@ -596,10 +596,13 @@
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.html">uvex_transients.models.core.detection_horizon</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.Criterion.html">uvex_transients.models.core.detection_horizon.Criterion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_LIMIT.html">uvex_transients.models.core.detection_horizon.LYMAN_LIMIT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD.html">uvex_transients.models.core.detection_horizon.LYMAN_EDGE_THRESHOLD</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.check_sample_count.html">uvex_transients.models.core.detection_horizon.check_sample_count</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.detection_horizon.html">uvex_transients.models.core.detection_horizon.detection_horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.effective_peak_grid.html">uvex_transients.models.core.detection_horizon.effective_peak_grid</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.first_crossing.html">uvex_transients.models.core.detection_horizon.first_crossing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.lyman_limit_redshift.html">uvex_transients.models.core.detection_horizon.lyman_limit_redshift</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.observability_curve.html">uvex_transients.models.core.detection_horizon.observability_curve</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.peak_band_magnitudes.html">uvex_transients.models.core.detection_horizon.peak_band_magnitudes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="uvex_transients.models.core.detection_horizon.reduce_bands.html">uvex_transients.models.core.detection_horizon.reduce_bands</a></li>
@@ -2191,12 +2194,13 @@ horizon.</p></li>
 <li><p><strong>progress</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – Whether to show a progress bar. The default is <cite>True</cite>.</p></li>
 <li><p><strong>interpolate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – Whether to interpolate each crossing instead of rounding it up to a grid point.</p></li>
 <li><p><strong>**kwargs</strong> – Further arguments of <cite>~uvex_transients.models.core.detection_horizon.detection_horizon</cite>, such as
-<code class="docutils literal notranslate"><span class="pre">criterion</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">criterion</span></code> or <code class="docutils literal notranslate"><span class="pre">lyman_limit</span></code>. By default the horizon is capped at the redshift where the Lyman limit
+enters the reddest band, <code class="docutils literal notranslate"><span class="pre">lyman_limit=False</span></code> removes the cap.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>curve</strong> (<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a>) – One row per magnitude limit, with <code class="docutils literal notranslate"><span class="pre">mag_limit</span></code>, <code class="docutils literal notranslate"><span class="pre">z_limit</span></code> and <code class="docutils literal notranslate"><span class="pre">n_censored</span></code> columns.</p></li>
+<li><p><strong>curve</strong> (<a class="reference external" href="https://docs.astropy.org/en/stable/api/astropy.table.QTable.html#astropy.table.QTable" title="(in Astropy v8.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">QTable</span></code></a>) – One row per magnitude limit, with <code class="docutils literal notranslate"><span class="pre">mag_limit</span></code>, <code class="docutils literal notranslate"><span class="pre">z_limit</span></code>, <code class="docutils literal notranslate"><span class="pre">n_censored</span></code> and <code class="docutils literal notranslate"><span class="pre">capped</span></code> columns.</p></li>
 <li><p><strong>grid</strong> (<a class="reference internal" href="uvex_transients.models.core.detection_horizon.EffectivePeakGrid.html#uvex_transients.models.core.detection_horizon.EffectivePeakGrid" title="uvex_transients.models.core.detection_horizon.EffectivePeakGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">EffectivePeakGrid</span></code></a>) – The evaluated grid, which can be reused for further limits.</p></li>
 </ul>
 </p>
