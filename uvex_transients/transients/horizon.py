@@ -3,8 +3,8 @@ Stored detection-horizon curves of the transient classes.
 
 A `HorizonCurve` is the redshift limit :math:`z_L(m)` of a transient population as a function of the AB magnitude limit
 :math:`m`: beyond :math:`z_L`, with 95% confidence, at most 1% of events drawn from the SED's priors are brighter than
-:math:`m` in either UVEX band. The calculation is in `uvex_transients.models.core.detection_horizon`; this module
-stores and checks its result.
+:math:`m` in either UVEX band, and never beyond the redshift where the Lyman limit enters the NUV band. The calculation
+is in `uvex_transients.models.core.detection_horizon`; this module stores and checks its result.
 
 A curve takes seconds to a minute to compute, so each shipped class stores its own as
 ``horizon_curves/<ClassName>.ecsv``, which `~uvex_transients.transients.base.ExtragalacticTransient.horizon_curve`
@@ -387,6 +387,7 @@ class HorizonCurve:
             "t_min_day": float(t_min.to_value(u.day)),
             "z_min": Z_MIN,
             "criterion": "any",
+            "z_lyman": float(table.meta["z_lyman"]),
             "interpolate": True,
             "bands": list(table.meta["bands"]),
             "fingerprint": [float(x) for x in fingerprint(transient)],
