@@ -878,12 +878,13 @@ class ExtragalacticTransient(TransientBase, ABC):
             Whether to interpolate each crossing instead of rounding it up to a grid point.
         **kwargs
             Further arguments of `~uvex_transients.models.core.detection_horizon.detection_horizon`, such as
-            ``criterion``.
+            ``criterion`` or ``lyman_limit``. By default the horizon is capped at the redshift where the Lyman limit
+            enters the reddest band, ``lyman_limit=False`` removes the cap.
 
         Returns
         -------
         curve : ~astropy.table.QTable
-            One row per magnitude limit, with ``mag_limit``, ``z_limit`` and ``n_censored`` columns.
+            One row per magnitude limit, with ``mag_limit``, ``z_limit``, ``n_censored`` and ``capped`` columns.
         grid : ~uvex_transients.models.core.detection_horizon.EffectivePeakGrid
             The evaluated grid, which can be reused for further limits.
         """

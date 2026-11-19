@@ -23,6 +23,10 @@ classes expose these steps as `~uvex_transients.models.core.base.SpectralModel.g
 are stored as `~uvex_transients.transients.horizon.HorizonCurve` files.
 
 The guarantee covers the SED's parameter priors only. Milky Way extinction and sky position are not included.
+
+By default the horizon is also capped at the redshift where the Lyman limit (912 A rest-frame) reaches the blue edge of
+the reddest detecting band (`lyman_limit_redshift`, about 1.13 for UVEX). Beyond it the bands see only rest-frame
+wavelengths that the host and the intervening IGM absorb, so no event is detectable there however bright it is.
 """
 
 import warnings
@@ -31,6 +35,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
 import numpy as np
+from astropy import constants as const
 from astropy import units as u
 from astropy.cosmology import FLRW
 from astropy.table import QTable
@@ -66,12 +71,19 @@ __all__ = [
     "detection_horizon",
     "effective_peak_grid",
     "first_crossing",
+    "lyman_limit_redshift",
     "observability_curve",
     "reduce_bands",
 ]
 
 Criterion = Literal["any", "all", "k_of_n"]
 """How bands combine into one effective peak magnitude; see `reduce_bands`."""
+
+LYMAN_LIMIT = 911.76 * u.AA
+"""~astropy.units.Quantity: Rest-frame wavelength of the hydrogen Lyman limit, below which the Universe is opaque."""
+
+LYMAN_EDGE_THRESHOLD = 0.01
+"""float: Fraction of its peak throughput at which a band is taken to begin, for `lyman_limit_redshift`."""
 
 
 # --------------------------------------------------------------------------- #
@@ -354,6 +366,50 @@ def effective_peak_grid(
 
 
 # --------------------------------------------------------------------------- #
+# The Lyman limit                                                             #
+# --------------------------------------------------------------------------- #
+def lyman_limit_redshift(
+    bandpasses: Mapping[str, SpectralElement] | Sequence[SpectralElement],
+    threshold: float = LYMAN_EDGE_THRESHOLD,
+) -> float:
+    r"""
+    Find the redshift at which the Lyman limit enters the reddest detecting band.
+
+    Radiation emitted blueward of 912 A is absorbed by the host's neutral hydrogen and by Lyman-limit systems along the
+    line of sight, so an event whose observed band lies entirely below the redshifted limit is undetectable. The Lyman
+    limit is at :math:`\lambda_L (1 + z)` and reaches the blue edge :math:`\lambda_b` of a band at
+    :math:`z = \lambda_b / \lambda_L - 1`. The reddest band is the last to be reached, so its edge sets the redshift
+    beyond which no band is left clear of the limit. For the ``uvex_fast`` bands that band is NUV, with its blue edge
+    near 1940 A, and the redshift is about 1.13.
+
+    Parameters
+    ----------
+    bandpasses : Mapping[str, ~synphot.SpectralElement] or sequence of ~synphot.SpectralElement
+        The detecting bands.
+    threshold : float, optional
+        A band begins where its throughput first reaches this fraction of its peak. The default is 0.01.
+
+    Returns
+    -------
+    float
+        :math:`\max_b \lambda_{b,\mathrm{blue}} / 911.76\,\mathrm{\AA} - 1`, over the bands :math:`b`.
+
+    Raises
+    ------
+    ValueError
+        If `threshold` is not in ``(0, 1)``, or `bandpasses` is empty.
+    """
+    if not 0.0 < threshold < 1.0:
+        raise ValueError(f"`threshold` must be in (0, 1), got {threshold!r}.")
+    _, grids = resolve_bandpasses(bandpasses)
+    blue_edges = []
+    for nu, throughput in grids:
+        wavelength = (const.c / (nu * u.Hz)).to_value(u.AA)
+        blue_edges.append(wavelength[throughput >= threshold * throughput.max()].min())
+    return float(max(blue_edges) / LYMAN_LIMIT.to_value(u.AA) - 1.0)
+
+
+# --------------------------------------------------------------------------- #
 # From the grid to a horizon                                                  #
 # --------------------------------------------------------------------------- #
 def first_crossing(m_eff: np.ndarray, z_grid: np.ndarray, mag_limit: float, *, interpolate: bool = False) -> np.ndarray:
@@ -496,6 +552,8 @@ def detection_horizon(
     progress: bool = True,
     interpolate: bool = False,
     max_extensions: int = 5,
+    lyman_limit: bool = True,
+    lyman_threshold: float = LYMAN_EDGE_THRESHOLD,
     **kwargs,
 ) -> tuple[QTable, EffectivePeakGrid]:
     """
@@ -503,6 +561,8 @@ def detection_horizon(
 
     Evaluates the population on a logarithmic redshift grid from `z_min` to `z_max` and doubles `z_max` until every
     limit is bracketed, with one seed for every attempt so that widening the grid does not redraw the population.
+    Unless `lyman_limit` is `False`, the grid never goes past the redshift at which the Lyman limit reaches the
+    reddest band (`lyman_limit_redshift`), and a horizon that would lie beyond it is reported as that redshift.
 
     Parameters
     ----------
@@ -536,18 +596,35 @@ def detection_horizon(
         Interpolate the crossings; see `observability_curve`.
     max_extensions : int, optional
         How many times `z_max` may be doubled. The default is 5.
+    lyman_limit : bool, optional
+        Whether to cap the horizon at the redshift where the Lyman limit enters the reddest band. The default is
+        `True`. The cap overrides the statistical guarantee: a population that is still detectable there gets the cap
+        as its horizon, flagged in the ``capped`` column.
+    lyman_threshold : float, optional
+        The fraction of its peak throughput at which a band begins; see `lyman_limit_redshift`.
     **kwargs
         Further arguments of `effective_peak_grid`, such as ``criterion``.
 
     Returns
     -------
     curve : ~astropy.table.QTable
-        As returned by `observability_curve`.
+        As returned by `observability_curve`, with a ``capped`` column that is `True` where the horizon is the Lyman
+        cap, and the cap in ``meta["z_lyman"]`` (absent if `lyman_limit` is `False`).
     grid : EffectivePeakGrid
         The grid the curve was read from, which can be reused for further limits.
+
+    Raises
+    ------
+    ValueError
+        If `lyman_limit` is `True` and the cap is not above `z_min`.
     """
     limits = np.atleast_1d(np.asarray(getattr(mag_limits, "value", mag_limits), dtype=np.float64))
     seed = int(get_rng(rng).integers(2**32))
+
+    z_lyman = lyman_limit_redshift(bandpasses, lyman_threshold) if lyman_limit else np.inf
+    if z_lyman <= z_min:
+        raise ValueError(f"The Lyman limit reaches the bandpasses at z={z_lyman:.3g}, not above z_min={z_min:.3g}.")
+    z_max = min(z_max, z_lyman)
 
     for _ in range(max_extensions + 1):
         grid = effective_peak_grid(
@@ -563,10 +640,17 @@ def detection_horizon(
             **kwargs,
         )
         table = _curve_table(grid, limits, confidence, tolerance, interpolate)
-        if np.all(np.isfinite(table["z_limit"])):
+        if np.all(np.isfinite(table["z_limit"])) or z_max >= z_lyman:
             break
-        z_max *= 2.0
+        z_max = min(2.0 * z_max, z_lyman)
 
+    if lyman_limit:
+        # A draw that is still detectable at the cap is censored, so a limit that cannot be bracketed below it is the
+        # cap itself.
+        z_limit = np.where(np.isfinite(table["z_limit"]), table["z_limit"], z_lyman)
+        table["z_limit"] = np.minimum(z_limit, z_lyman)
+        table["capped"] = table["z_limit"] >= z_lyman * (1.0 - 1e-9)
+        table.meta["z_lyman"] = z_lyman
     _warn_if_unbracketed(table, grid)
     return table, grid
 

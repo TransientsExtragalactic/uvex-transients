@@ -80,3 +80,49 @@ def test_too_few_samples_for_the_confidence_is_rejected():
         _Kilonovalike().get_detection_horizon(
             25.0, BANDS, n_samples=20, n_z=6, n_time=10, confidence=0.95, tolerance=0.01, progress=False
         )
+
+
+# --------------------------------------------------------------------------- #
+# The Lyman limit                                                             #
+# --------------------------------------------------------------------------- #
+def test_lyman_limit_redshift_is_set_by_the_blue_edge_of_the_reddest_band():
+    """The Lyman limit reaches a band's blue edge at lambda_blue / 911.76 A - 1, and the reddest band is the last."""
+    from uvex_transients.models.core.detection_horizon import lyman_limit_redshift
+
+    box = lambda centre: SpectralElement(Box1D, amplitude=1.0, x_0=centre * u.AA, width=400 * u.AA)  # noqa: E731
+    z_nuv = lyman_limit_redshift({"NUV": box(2300)})
+    np.testing.assert_allclose(z_nuv, 2100.0 / 911.76 - 1.0, rtol=1e-3)
+    assert lyman_limit_redshift({"FUV": box(1500), "NUV": box(2300)}) == pytest.approx(z_nuv)
+    assert lyman_limit_redshift([box(1500)]) < z_nuv
+
+
+def test_lyman_limit_redshift_rejects_a_bad_threshold():
+    from uvex_transients.models.core.detection_horizon import lyman_limit_redshift
+
+    with pytest.raises(ValueError, match="threshold"):
+        lyman_limit_redshift(BANDS, threshold=1.5)
+
+
+def test_the_horizon_is_capped_at_the_lyman_limit_by_default():
+    """A population that stays detectable past the cap gets the cap, flagged, and the grid stops there."""
+    from uvex_transients.models.core.detection_horizon import lyman_limit_redshift
+
+    z_lyman = lyman_limit_redshift(BANDS)
+    curve, grid = _Kilonovalike().get_detection_horizon([18.0, 40.0], BANDS, rng=1, z_max=0.5, **{**SMALL, "n_z": 12})
+    assert grid.z_grid[-1] == pytest.approx(z_lyman)
+    assert curve["z_limit"][1] == pytest.approx(z_lyman)  # nothing is too faint at 40 AB, so this one is capped
+    assert bool(curve["capped"][1]) and not bool(curve["capped"][0])
+    assert curve["z_limit"][0] < z_lyman
+    assert curve.meta["z_lyman"] == pytest.approx(z_lyman)
+
+
+def test_the_cap_can_be_switched_off():
+    """`lyman_limit=False` restores the uncapped horizon, which can lie beyond the Lyman limit."""
+    from uvex_transients.models.core.detection_horizon import lyman_limit_redshift
+
+    z_lyman = lyman_limit_redshift(BANDS)
+    curve, grid = _Kilonovalike().get_detection_horizon(
+        40.0, BANDS, rng=1, z_max=0.5, lyman_limit=False, **{**SMALL, "n_z": 12}
+    )
+    assert "capped" not in curve.colnames and "z_lyman" not in curve.meta
+    assert grid.z_grid[-1] > z_lyman or not np.isfinite(curve["z_limit"][0])

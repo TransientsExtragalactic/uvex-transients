@@ -63,24 +63,30 @@ transients:
 # `sampling_factor` is a `{transient key: factor}` mapping (see
 # `docs/source/user_guide/cli/overview.rst`) of multipliers on each type's
 # physical event rate, and a type left out of it is sampled at its physical
-# rate. Every supernova class is kept at 0.05 (one event in twenty), except
-# Type IIb at 0.025 (one in forty), which keeps the high-rate populations
-# (Type IIb and IIP SNe, with millions of raw events) tractable. The kilonova,
-# LFBOT, low-luminosity GRB and TDE populations are rare enough to be sampled in full, so they carry
-# no thinning noise. The event count is drawn from a Poisson distribution at the
-# scaled rate, so each type's events all carry the same weight, which is
-# applied automatically once sampled. A rare type keeps few events at a small
-# factor, so choose one that leaves enough of them for the cuts that follow.
+# rate. The supernova classes are thinned, to keep the high-rate populations
+# tractable: Type IIP at 0.01 (one event in a hundred, which is about the
+# number of events it had before its recalibration pushed its redshift limit
+# out), Type IIb at 0.025 and every other class at 0.05. The low-luminosity GRB
+# and TDE populations are rare enough to be sampled in full. The kilonova and
+# LFBOT populations are rarer still, so they are super-sampled by a factor of
+# 10, which is ten times as many events as really happen, to tighten the
+# constraints on what survives the cuts. The event count is drawn from a
+# Poisson distribution at the scaled rate, so each type's events all carry the
+# same weight, which is applied automatically once sampled (yields are
+# unaffected by the factor). A rare type keeps few events at a small factor, so
+# choose one that leaves enough of them for the cuts that follow.
 generate:
   time_bins: 800
   sampling_factor:
-    iip_sne: 0.05
+    iip_sne: 0.01
     iib_sne: 0.025
     ib_sne: 0.05
     ic_sne: 0.05
     icbl_sne: 0.05
     slsne: 0.05
     ia_sne: 0.05
+    kilonova: 10
+    lfbot: 10
   seed: 42
 
 # Two `cut` steps, chained, then a `photometry` action and an `event_summary`
