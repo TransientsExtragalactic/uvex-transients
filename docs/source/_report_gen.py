@@ -33,7 +33,6 @@ _DISPLAY_NAMES = {
     "llgrb": "Low-Luminosity GRB",
     "ia_sne": "Type Ia SNe",
     "iip_sne": "Type IIP SNe",
-    "iip_excess_sne": "Type IIP SNe (Excess)",
     "iib_sne": "Type IIb SNe",
     "ib_sne": "Type Ib SNe",
     "ic_sne": "Type Ic SNe",
@@ -53,7 +52,6 @@ _TRANSIENT_PAGES = {
     "ic_sne": "type_i",
     "icbl_sne": "type_i",
     "iip_sne": "type_ii",
-    "iip_excess_sne": "type_ii",
     "iib_sne": "type_ii",
     "slsne": "slsne",
 }

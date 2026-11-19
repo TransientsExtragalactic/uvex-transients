@@ -16,7 +16,6 @@ from uvex_transients.models.supernovae import (
     TypeIcBLSED,
     TypeIcSED,
     TypeIIbSED,
-    TypeIIPExcessSED,
     TypeIIPSED,
 )
 from uvex_transients.utils.cosmology import (
@@ -34,7 +33,6 @@ from .base import ExtragalacticTransient
 
 __all__ = [
     "TypeIIPSNe",
-    "TypeIIPExcessSNe",
     "TypeIIbSNe",
     "TypeIaSNe",
     "TypeIbSNe",
@@ -122,13 +120,6 @@ def _with_cc_normalization_uncertainty(fraction_err: tuple[float, float]) -> tup
 _TYPE_IIP_FRACTION = _TYPE_II_OF_CC * _IIP_OF_TYPEII
 _TYPE_IIP_FRACTION_ERR = combine_fractional_errors(_TYPE_II_OF_CC_ERR, _IIP_OF_TYPEII_ERR)
 
-# Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,
-# following the high incidence of early CSM-interaction signatures found among Type II SNe by
-# Bruch et al. 2023 (ZTF). This 30% multiplier has no published uncertainty of its own, so it
-# doesn't change the fractional error inherited from `_TYPE_IIP_FRACTION_ERR`.
-_TYPE_IIP_EXCESS_FRACTION = 0.30 * _TYPE_IIP_FRACTION
-_TYPE_IIP_EXCESS_FRACTION_ERR = _TYPE_IIP_FRACTION_ERR
-
 _TYPE_IIB_FRACTION = _SESNE_FRACTION * _IIB_OF_SESNE
 _TYPE_IIB_FRACTION_ERR = combine_fractional_errors(_SESNE_FRACTION_ERR, _IIB_OF_SESNE_ERR)
 
@@ -190,29 +181,20 @@ class _CoreCollapseSNe(ExtragalacticTransient, ABC):
 
 
 class TypeIIPSNe(_CoreCollapseSNe):
-    """Type IIP core-collapse SNe: `TypeIIPSED` (two-exponential + radioactive-tail lightcurve x cooling blackbody)."""
+    """
+    Type IIP core-collapse SNe: `TypeIIPSED` (plateau and radioactive tail, with a CSM excess in 36% of the events).
+
+    The CSM events are part of this population, not a separate one, so the rate is that of all Type IIP.
+    """
 
     DEFAULT_MODEL = TypeIIPSED
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.51
+    DEFAULT_Z_LIM = 1.07
 
     RATE_FRACTION = _TYPE_IIP_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_FRACTION_ERR)
-
-
-class TypeIIPExcessSNe(_CoreCollapseSNe):
-    """Early-interacting (IXF/GGI-like) Type IIP core-collapse SNe: `TypeIIPExcessSED`."""
-
-    DEFAULT_MODEL = TypeIIPExcessSED
-    DEFAULT_DURATION = 100 * u.day
-    # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
-    # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.53
-
-    RATE_FRACTION = _TYPE_IIP_EXCESS_FRACTION
-    RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IIP_EXCESS_FRACTION_ERR)
 
 
 class ShockCoolingIIb(_CoreCollapseSNe):
@@ -257,7 +239,7 @@ class TypeIIbSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 200 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 1.0
+    DEFAULT_Z_LIM = 0.79
     # The shock cooling component is evaluated at every epoch and its luminosity grows without bound toward t -> 0,
     # so the horizon is taken from 0.1 d after explosion, where its formulas are not wildly outside their regime.
     HORIZON_T_MIN = 0.1 * u.day
@@ -278,7 +260,7 @@ class TypeIbSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.22
+    DEFAULT_Z_LIM = 0.23
 
     RATE_FRACTION = _TYPE_IB_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IB_FRACTION_ERR)
@@ -296,7 +278,7 @@ class TypeIcSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 100 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.23
+    DEFAULT_Z_LIM = 0.21
 
     RATE_FRACTION = _TYPE_IC_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_TYPE_IC_FRACTION_ERR)
@@ -351,7 +333,7 @@ class MagnetarSLSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 600 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 3.2
+    DEFAULT_Z_LIM = 2.83
 
     RATE_FRACTION = _SLSN_FRACTION
     RATE_CI = _with_cc_normalization_uncertainty(_SLSN_FRACTION_ERR)

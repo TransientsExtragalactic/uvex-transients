@@ -503,7 +503,7 @@ together on the Type Ib tab. Type Ic-BL has the calibration of Type Ic.
              :attr:`~uvex_transients.transients.supernovae.TypeIbSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.22`
+           - :math:`z = 0.23`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -818,7 +818,7 @@ together on the Type Ib tab. Type Ic-BL has the calibration of Type Ic.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.22`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.23`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -944,7 +944,7 @@ together on the Type Ib tab. Type Ic-BL has the calibration of Type Ic.
              :attr:`~uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.23`
+           - :math:`z = 0.21`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -1189,7 +1189,7 @@ together on the Type Ib tab. Type Ic-BL has the calibration of Type Ic.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.23`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.21`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the

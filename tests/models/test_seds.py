@@ -37,7 +37,6 @@ from uvex_transients.models.supernovae import (
     TypeIcBLSED,
     TypeIcSED,
     TypeIIbSED,
-    TypeIIPExcessSED,
     TypeIIPSED,
     VillarCoolingBlackbodySED,
 )
@@ -102,10 +101,10 @@ class TestPiroShockCoolingSED(SpectralModelContract):
 
 class TestTypeIIPSED(SpectralModelContract):
     model_class = TypeIIPSED
-
-
-class TestTypeIIPExcessSED(SpectralModelContract):
-    model_class = TypeIIPExcessSED
+    # The population is hierarchical (an event class, then L50 and L_c, then everything that follows from them).
+    jointly_sampled_parameters = (
+        frozenset({"csm", "L50", "s", "M_Ni", "v_ph", "t_r", "R0", "L_c", "t_c", "k", "tau_d"}),
+    )
 
 
 class TestTypeIIbSED(SpectralModelContract):
