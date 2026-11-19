@@ -464,39 +464,37 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.arnett</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineBlanketedArnettDecaySED</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConstantPrior</span><span class="p">,</span>
-    <span class="n">TruncatedNormalPrior</span><span class="p">,</span>
-    <span class="n">UniformPrior</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedNormalPrior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.supernovae.Ibc</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeIcSED</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TypeIcBLSED"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="TypeIcBLSED">
 <a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IcBL.TypeIcBLSED.html#uvex_transients.models.supernovae.IcBL.TypeIcBLSED">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TypeIcBLSED</span><span class="p">(</span><span class="n">LineBlanketedArnettDecaySED</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIcBLSED</span><span class="p">(</span><span class="n">TypeIcSED</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
-<span class="sd">    Type Ic-BL (broad-lined) supernova SED, with priors fit to a ZTF sample of SNe Ic-BL.</span>
+<span class="sd">    Type Ic-BL (broad-lined) supernova SED, with priors from the ZTF volume-limited stripped-envelope SN sample.</span>
 
-<span class="sd">    Reuses :class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED` entirely, exactly as</span>
-<span class="sd">    :class:`~uvex_transients.models.supernovae.Ia.TypeIaSED` does (radioactive-decay Arnett diffusion,</span>
-<span class="sd">    floored photospheric temperature and a line-blanketed blackbody); only :attr:`_DEFAULT_PARAMETERS`</span>
-<span class="sd">    differs. ``break_frequency`` and ``beta`` start at the original Type Ia calibration (not its recalibrated</span>
-<span class="sd">    one). The priors on ``M_Ni``, ``M_ej``</span>
-<span class="sd">    and ``v_ej`` are sample statistics (mean, sample</span>
-<span class="sd">    standard deviation) of the 36-event explosion-property table of :footcite:t:`srinivasaragavan2024`</span>
-<span class="sd">    (nickel mass, kinetic energy, ejecta mass and photospheric velocity per event). One event</span>
-<span class="sd">    (SN 2020wgz), whose reported</span>
-<span class="sd">    :math:`M_\mathrm{Ni}=2.46\,M_\odot` is a &gt;5-sigma outlier driven by an ``e_k``/``m_ej`` *lower</span>
-<span class="sd">    limit* rather than a measurement, is excluded from the ``M_Ni`` statistics. ``M_ej`` uses only</span>
-<span class="sd">    rows with a measured (non-lower-limit) value, and ``v_ej`` is identified with the sample's</span>
-<span class="sd">    photospheric velocities (``v_ph``), regardless of the epoch quoted. ``kappa`` and ``T_floor``</span>
-<span class="sd">    are not constrained by that table and are left at `TypeIaSED`'s values; ``kappa_gamma`` is</span>
-<span class="sd">    instead fixed at a large value (full gamma-ray trapping across the simulated window), unlike</span>
-<span class="sd">    `TypeIaSED`'s Scalzo+14 value.</span>
+<span class="sd">    This is :class:`~uvex_transients.models.supernovae.Ibc.TypeIcSED` with its own ``M_Ni``, ``M_ej`` and ``v_ej``,</span>
+<span class="sd">    tuned to the SNe Ic-BL of the ZTF CLU + CATS150 sample [citation pending] in the same way (each truncated normal</span>
+<span class="sd">    is tuned so that its 16th, 50th and 84th percentiles, after truncation, reproduce the sample's):</span>
+
+<span class="sd">    * ``M_Ni``: median :math:`0.19\,M_\odot`, 16th to 84th percentile 0.093 to 0.29 :math:`M_\odot`.</span>
+<span class="sd">    * ``M_ej``: the observed Ic-BL median of about :math:`3.2\,M_\odot` (16th to 84th percentile 1.3 to 5.4)</span>
+<span class="sd">      scaled by 0.90, the sample-wide shift in median ejecta mass under survey-efficiency weighting (see</span>
+<span class="sd">      :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`), giving 1.17, 2.9 and 4.86 :math:`M_\odot`.</span>
+<span class="sd">    * ``v_ej``: :math:`16.8\times10^3` km/s with a width of :math:`3.5\times10^3` km/s. This is the CLU velocity</span>
+<span class="sd">      proxy (see :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`), not the photospheric velocities of</span>
+<span class="sd">      :footcite:t:`srinivasaragavan2024`, which this model used before and which have a mean of</span>
+<span class="sd">      :math:`20.1\times10^3` km/s.</span>
+
+<span class="sd">    Every other prior is that of Type Ic (``kappa`` is :math:`0.07\,\mathrm{cm^2\,g^{-1}}` throughout), including</span>
+<span class="sd">    the UV line blanketing set against Swift/UVOT and the host dust: see that class and</span>
+<span class="sd">    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` for how they were chosen, and for what the data do and</span>
+<span class="sd">    do not constrain. A change to those Type Ic priors is a change to this model too. The ``M_Ni`` of this model is</span>
+<span class="sd">    not the log-normal of Types Ib and Ic, which was set against the ASAS-SN luminosity function of those types.</span>
 
 <span class="sd">    .. rubric:: Parameters</span>
 
@@ -509,28 +507,34 @@
 <span class="sd">         - Description</span>
 <span class="sd">       * - ``M_Ni``</span>
 <span class="sd">         - :math:`M_\mathrm{Ni}`</span>
-<span class="sd">         - Nickel-56 mass synthesized in the explosion.</span>
+<span class="sd">         - Nickel-56 mass synthesized in the explosion. The Ic-BL sample's.</span>
 <span class="sd">       * - ``M_ej``</span>
 <span class="sd">         - :math:`M_\mathrm{ej}`</span>
-<span class="sd">         - Ejecta mass.</span>
+<span class="sd">         - Ejecta mass. The Ic-BL sample's.</span>
 <span class="sd">       * - ``v_ej``</span>
 <span class="sd">         - :math:`v_\mathrm{ej}`</span>
-<span class="sd">         - Ejecta velocity, taken to be constant and equal to the photospheric velocity.</span>
+<span class="sd">         - Ejecta velocity, taken to be constant and equal to the photospheric velocity. The Ic-BL sample's.</span>
 <span class="sd">       * - ``kappa``</span>
 <span class="sd">         - :math:`\kappa`</span>
-<span class="sd">         - Grey optical opacity.</span>
+<span class="sd">         - Grey optical opacity. As Type Ic.</span>
 <span class="sd">       * - ``kappa_gamma``</span>
 <span class="sd">         - :math:`\kappa_\gamma`</span>
-<span class="sd">         - Opacity to high-energy photons. Fixed.</span>
+<span class="sd">         - Opacity to high-energy photons. As Type Ic.</span>
 <span class="sd">       * - ``T_floor``</span>
 <span class="sd">         - :math:`T_\mathrm{floor}`</span>
-<span class="sd">         - Minimum photospheric temperature.</span>
+<span class="sd">         - Minimum photospheric temperature. As Type Ic.</span>
 <span class="sd">       * - ``break_frequency``</span>
 <span class="sd">         - :math:`\nu_\mathrm{break}`</span>
-<span class="sd">         - Frequency blueward of which line blanketing suppresses the flux.</span>
+<span class="sd">         - Frequency blueward of which line blanketing suppresses the flux. As Type Ic.</span>
 <span class="sd">       * - ``beta``</span>
 <span class="sd">         - :math:`\beta`</span>
-<span class="sd">         - Power-law index of the suppression above the break.</span>
+<span class="sd">         - Power-law index of the suppression above the break. As Type Ic.</span>
+<span class="sd">       * - ``A_V``</span>
+<span class="sd">         - :math:`A_V`</span>
+<span class="sd">         - V-band attenuation by dust in the host galaxy. As Type Ic.</span>
+<span class="sd">       * - ``R_V``</span>
+<span class="sd">         - :math:`R_V`</span>
+<span class="sd">         - Total-to-selective extinction ratio of the host dust. As Type Ic.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -538,53 +542,27 @@
 <span class="sd">    """</span>
 
     <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">TypeIcSED</span><span class="o">.</span><span class="n">_DEFAULT_PARAMETERS</span><span class="p">,</span>
         <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.33</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.24</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">2.0</span><span class="p">),</span>
+            <span class="c1"># Truncated quantiles: 0.093 [16%], 0.189 [50%], 0.291 [84%] Msun (target 0.093, 0.19, 0.29).</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.183</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.106</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass synthesized in the explosion."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{Ni}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"M_ej"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">2.54</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.95</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
+            <span class="c1"># Truncated quantiles: 1.18 [16%], 2.87 [50%], 4.89 [84%] Msun (target 1.17, 2.9, 4.86).</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">2.47</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.22</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">20.0</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Ejecta mass."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{ej}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">"v_ej"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">20.1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">4.96</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">45.0</span><span class="p">),</span>
+            <span class="c1"># Truncated quantiles: 13.3 [16%], 16.8 [50%], 20.3 [84%] (target 13.3, 16.8, 20.3).</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">16.8</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">30.0</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">1e3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">km</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">"Constant ejecta velocity, identified with the photospheric velocity."</span><span class="p">,</span>
             <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"v_\mathrm</span><span class="si">{ej}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"kappa"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">UniformPrior</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.15</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Grey optical opacity."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"kappa_gamma"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">g</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Opacity to high-energy photons. Fixed at a large value (full gamma-ray trapping)."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\kappa_\gamma"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"T_floor"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">3000.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">10000.0</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Minimum photospheric temperature."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{floor}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"break_frequency"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">1e15</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Hz</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Frequency above which the line-blanketing suppression sets in."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\nu_\mathrm</span><span class="si">{break}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="s2">"beta"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
-            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"Power-law index of the suppression above the break."</span><span class="p">,</span>
-            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta"</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">}</span></div>
 

@@ -476,7 +476,6 @@
     <span class="n">TypeIcBLSED</span><span class="p">,</span>
     <span class="n">TypeIcSED</span><span class="p">,</span>
     <span class="n">TypeIIbSED</span><span class="p">,</span>
-    <span class="n">TypeIIPExcessSED</span><span class="p">,</span>
     <span class="n">TypeIIPSED</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -494,7 +493,6 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"TypeIIPSNe"</span><span class="p">,</span>
-    <span class="s2">"TypeIIPExcessSNe"</span><span class="p">,</span>
     <span class="s2">"TypeIIbSNe"</span><span class="p">,</span>
     <span class="s2">"TypeIaSNe"</span><span class="p">,</span>
     <span class="s2">"TypeIbSNe"</span><span class="p">,</span>
@@ -582,13 +580,6 @@
 <span class="n">_TYPE_IIP_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_II_OF_CC</span> <span class="o">*</span> <span class="n">_IIP_OF_TYPEII</span>
 <span class="n">_TYPE_IIP_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_TYPE_II_OF_CC_ERR</span><span class="p">,</span> <span class="n">_IIP_OF_TYPEII_ERR</span><span class="p">)</span>
 
-<span class="c1"># Early-interacting, IXF/GGI-like Type IIP SNe as a fraction of the ordinary Type IIP rate above,</span>
-<span class="c1"># following the high incidence of early CSM-interaction signatures found among Type II SNe by</span>
-<span class="c1"># Bruch et al. 2023 (ZTF). This 30% multiplier has no published uncertainty of its own, so it</span>
-<span class="c1"># doesn't change the fractional error inherited from `_TYPE_IIP_FRACTION_ERR`.</span>
-<span class="n">_TYPE_IIP_EXCESS_FRACTION</span> <span class="o">=</span> <span class="mf">0.30</span> <span class="o">*</span> <span class="n">_TYPE_IIP_FRACTION</span>
-<span class="n">_TYPE_IIP_EXCESS_FRACTION_ERR</span> <span class="o">=</span> <span class="n">_TYPE_IIP_FRACTION_ERR</span>
-
 <span class="n">_TYPE_IIB_FRACTION</span> <span class="o">=</span> <span class="n">_SESNE_FRACTION</span> <span class="o">*</span> <span class="n">_IIB_OF_SESNE</span>
 <span class="n">_TYPE_IIB_FRACTION_ERR</span> <span class="o">=</span> <span class="n">combine_fractional_errors</span><span class="p">(</span><span class="n">_SESNE_FRACTION_ERR</span><span class="p">,</span> <span class="n">_IIB_OF_SESNE_ERR</span><span class="p">)</span>
 
@@ -652,32 +643,20 @@
 <div class="viewcode-block" id="TypeIIPSNe">
 <a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIPSNe.html#uvex_transients.transients.supernovae.TypeIIPSNe">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TypeIIPSNe</span><span class="p">(</span><span class="n">_CoreCollapseSNe</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Type IIP core-collapse SNe: `TypeIIPSED` (two-exponential + radioactive-tail lightcurve x cooling blackbody)."""</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Type IIP core-collapse SNe: `TypeIIPSED` (plateau and radioactive tail, with a CSM excess in 36% of the events).</span>
+
+<span class="sd">    The CSM events are part of this population, not a separate one, so the rate is that of all Type IIP.</span>
+<span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.51</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.07</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIP_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IIP_FRACTION_ERR</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="TypeIIPExcessSNe">
-<a class="viewcode-back" href="../../../_as_gen/uvex_transients.transients.supernovae.TypeIIPExcessSNe.html#uvex_transients.transients.supernovae.TypeIIPExcessSNe">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">TypeIIPExcessSNe</span><span class="p">(</span><span class="n">_CoreCollapseSNe</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Early-interacting (IXF/GGI-like) Type IIP core-collapse SNe: `TypeIIPExcessSED`."""</span>
-
-    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIIPExcessSED</span>
-    <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
-    <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
-    <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.53</span>
-
-    <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IIP_EXCESS_FRACTION</span>
-    <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IIP_EXCESS_FRACTION_ERR</span><span class="p">)</span></div>
 
 
 
@@ -728,7 +707,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">1.25</span>
     <span class="c1"># The shock cooling component is evaluated at every epoch and its luminosity grows without bound toward t -&gt; 0,</span>
     <span class="c1"># so the horizon is taken from 0.1 d after explosion, where its formulas are not wildly outside their regime.</span>
     <span class="n">HORIZON_T_MIN</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
@@ -743,9 +722,9 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TypeIbSNe</span><span class="p">(</span><span class="n">_CoreCollapseSNe</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Type Ib core-collapse SNe: `TypeIbSED`.</span>
 
-<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the</span>
-<span class="sd">    13-event SN Ib subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter</span>
-<span class="sd">    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.</span>
+<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors tuned to the</span>
+<span class="sd">    SN Ib subsample of the volume-limited ZTF CLU stripped-envelope sample [citation pending],</span>
+<span class="sd">    following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.</span>
 <span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIbSED</span>
@@ -764,16 +743,16 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TypeIcSNe</span><span class="p">(</span><span class="n">_CoreCollapseSNe</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Type Ic core-collapse SNe: `TypeIcSED`.</span>
 
-<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to the</span>
-<span class="sd">    8-event SN Ic subsample of the Lyman et al. 2016 stripped-envelope SNe explosion-parameter</span>
-<span class="sd">    catalogue, following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.</span>
+<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors tuned to the</span>
+<span class="sd">    SN Ic subsample of the volume-limited ZTF CLU stripped-envelope sample [citation pending],</span>
+<span class="sd">    following `TypeIaSNe`/`TypeIcBLSNe`'s first-principles Arnett-model convention.</span>
 <span class="sd">    """</span>
 
     <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="n">TypeIcSED</span>
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.24</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.21</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_IC_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_IC_FRACTION_ERR</span><span class="p">)</span></div>
@@ -785,8 +764,9 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TypeIcBLSNe</span><span class="p">(</span><span class="n">_CoreCollapseSNe</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Type Ic-BL (broad-lined) core-collapse SNe: `TypeIcBLSED`.</span>
 
-<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody, its priors fit to a</span>
-<span class="sd">    36-event ZTF SNe Ic-BL sample, following the same first-principles Arnett-model convention as</span>
+<span class="sd">    Radioactive-decay Arnett diffusion x floored-photosphere blackbody: the `TypeIcSED` priors, except</span>
+<span class="sd">    ``M_Ni``, ``M_ej`` and ``v_ej``, which are tuned to the Ic-BL subsample of the volume-limited ZTF CLU</span>
+<span class="sd">    stripped-envelope sample [citation pending]. Follows the same first-principles Arnett-model convention as</span>
 <span class="sd">    `TypeIaSNe`/`TypeIbSNe`/`TypeIcSNe`.</span>
 <span class="sd">    """</span>
 
@@ -794,7 +774,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.27</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">0.32</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_TYPE_ICBL_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_TYPE_ICBL_FRACTION_ERR</span><span class="p">)</span></div>
@@ -833,7 +813,7 @@
     <span class="n">DEFAULT_DURATION</span> <span class="o">=</span> <span class="mi">600</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
     <span class="c1"># Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than</span>
     <span class="c1"># 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.</span>
-    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">3.2</span>
+    <span class="n">DEFAULT_Z_LIM</span> <span class="o">=</span> <span class="mf">2.83</span>
 
     <span class="n">RATE_FRACTION</span> <span class="o">=</span> <span class="n">_SLSN_FRACTION</span>
     <span class="n">RATE_CI</span> <span class="o">=</span> <span class="n">_with_cc_normalization_uncertainty</span><span class="p">(</span><span class="n">_SLSN_FRACTION_ERR</span><span class="p">)</span></div>

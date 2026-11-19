@@ -13,23 +13,24 @@ Arnett-style radioactive-decay diffusion physics as Type Ia, with a line-blanket
 (:class:`~uvex_transients.models.arnett.LineBlanketedArnettDecaySED`), differing only in their priors (and, for
 Ic-BL, in its higher characteristic ejecta velocities and kinetic energies); the three populations
 are implemented as sibling transient classes below. The line blanketing, which suppresses the UV, is
-calibrated against Swift/UVOT UVW1, UVM2 and UVW2 light curves on the Type Ia tab. The others keep the
-original calibration (:math:`0.75\times10^{15}` Hz, 5), made before Type Ia was recalibrated to its present priors,
-and have not been recalibrated.
+calibrated against Swift/UVOT UVW1, UVM2 and UVW2 light curves, for Type Ia on its tab and for Types Ib and Ic
+together on the Type Ib tab. Type Ic-BL has the calibration of Type Ic.
 
 .. note::
 
-   The Type Ib and Type Ic priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are the per-subtype sample
-   statistics (mean, sample standard deviation) of the analytical Arnett-model fits in Table 6 of
-   :footcite:t:`lyman2016` (13 Ib and 8 Ic events). ``kappa`` is fixed at the single value
-   (:math:`0.06\,\mathrm{cm^2\,g^{-1}}`) Lyman et al. 2016 themselves assume for every fit in their
-   sample rather than fitting per event. ``kappa_gamma`` has no analogue in Lyman et al. 2016's
-   leakage-free formalism (the original Arnett 1982 diffusion model), so it is instead fixed at
-   :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s Scalzo+14-derived value. Ib and Ic
-   share this same construction and differ only in the subsample statistics and event rates. Type
-   Ic-BL instead uses sample statistics of its own explosion-property table (see its tab below). All
-   three keep the line-blanketing parameters ``break_frequency`` and ``beta`` of the original Type Ia calibration,
-   which Type Ia has since replaced.
+   The Type Ib and Type Ic priors on ``M_ej`` and ``v_ej`` follow the modified-Arnett fits to the
+   volume-limited (< 150 Mpc) ZTF CLU + CATS150 stripped-envelope sample [citation pending] (88 Ib and 113
+   normal Ic events), each tuned so that its 16th, 50th and 84th percentiles reproduce the CLU subtype
+   distribution, with ``M_ej`` corrected for the survey's efficiency. ``M_Ni`` is not taken from that sample:
+   it is a log-normal set against the ASAS-SN luminosity function, and both types are reddened by host-galaxy
+   dust, as `Type Ia` is. ``kappa`` is fixed at
+   :math:`0.07\,\mathrm{cm^2\,g^{-1}}`, the grey opacity that analysis uses to turn diffusion times into
+   ejecta masses. ``kappa_gamma`` is instead fixed at :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to
+   `Type Ia`'s Scalzo+14-derived value, since that analysis fits a gamma-ray trapping time rather than an
+   opacity. Ib and Ic share this same construction and differ only in the subsample statistics and event
+   rates. Type Ic-BL is Type Ic with its own ``M_Ni``, ``M_ej`` and ``v_ej``, tuned in the same way to the Ic-BL
+   events of the same sample (see its tab below), so it has the same ``kappa``, ``kappa_gamma``, line blanketing
+   (set against Swift/UVOT, see the Type Ib tab) and host dust.
 
 .. tab-set::
 
@@ -510,7 +511,7 @@ and have not been recalibrated.
          * - Duration
            - 100 days
            - --
-           - Covers the rise, peak (:math:`t_p \approx 16` d after explosion, prior median) and the decline.
+           - Covers the rise, peak (:math:`t_p \approx 18` d after explosion, prior median) and the decline.
 
       .. rubric:: SED Model
 
@@ -529,16 +530,31 @@ and have not been recalibrated.
           T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
           T_\mathrm{floor}\right\}.
 
-      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are the SN Ib subsample statistics (mean, sample
-      standard deviation) of the analytical-model fits in Table 6 of :footcite:t:`lyman2016` (13
-      events). ``kappa`` is fixed at :math:`0.06\,\mathrm{cm^2\,g^{-1}}`, the single grey optical
-      opacity value that paper assumes (rather than fits) for every event in its sample.
-      ``kappa_gamma`` is fixed at :math:`0.04\,\mathrm{cm^2\,g^{-1}}`, comparable to `Type Ia`'s
-      Scalzo+14-derived value, since Lyman et al. 2016's own analytical model has no gamma-ray
-      leakage term at all (it is the original Arnett 1982 diffusion formalism) and so gives no
-      direct constraint on it. ``T_floor`` is left close to `Type Ia`'s value. ``break_frequency`` and ``beta``
-      are fixed at the original `Type Ia` calibration, which Type Ia has since replaced, and are not tuned to Type
-      Ib specifically.
+      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` follow the modified-Arnett fits to the 88 SNe Ib of the
+      volume-limited (< 150 Mpc) ZTF CLU + CATS150 sample [citation pending]. Each truncated normal is tuned
+      so that its 16th, 50th and 84th percentiles (after truncation) reproduce the CLU subtype
+      distribution, so its ``mean`` and ``sigma`` are fit parameters rather than the sample moments.
+      ``M_ej`` is the observed distribution scaled by the sample-wide 0.90 shift under the survey-efficiency
+      (:math:`1/\epsilon`) weighting, and ``v_ej`` is the He I 5876 absorption velocity converted to the
+      characteristic velocity :math:`v_m=(2E_K/M_\mathrm{ej})^{1/2}`. ``M_Ni`` is a log-normal, median
+      :math:`0.06\,M_\odot` and :math:`\sigma_{\ln}=0.7`, truncated to 0.005 to 1.5 :math:`M_\odot`. It replaces a
+      truncated normal tuned to the CLU nickel mass (efficiency-corrected median 0.093 :math:`M_\odot`), which
+      put the peak absolute magnitudes in a narrow band where the ASAS-SN luminosity function is still
+      rising toward the faint end; many low-mass and few high-mass events is what that function needs. It is
+      set by comparison with the function, not fit to the CLU nickel masses. ``kappa`` is fixed at :math:`0.07\,\mathrm{cm^2\,g^{-1}}`, the
+      grey opacity that analysis uses to turn diffusion times into ejecta masses (the ``M_ej`` prior is
+      only consistent with that value). ``kappa_gamma`` is fixed at :math:`0.04\,\mathrm{cm^2\,g^{-1}}`,
+      comparable to `Type Ia`'s Scalzo+14-derived value, since the sample analysis fits a gamma-ray
+      trapping time per event rather than an opacity. ``T_floor`` is left close to `Type Ia`'s value.
+      ``break_frequency`` (:math:`1.4\times10^{15}` Hz, about 2140 Å) and ``beta`` (3) are fixed, and were set
+      against the Swift/UVOT light curves of Type Ib and Ic together (see the UV calibration section below).
+
+      The SED is reddened by dust in the host galaxy, with the G23 law and a V-band attenuation :math:`A_V`
+      drawn from an exponential distribution with mean 0.6 mag (a plausible range for the mean is 0.3 to 1.0).
+      :math:`R_V` is the `Type Ia` prior (normal, :math:`2.70\pm0.25`, truncated to G23's range of 2.3 to 5.6),
+      which is not measured for stripped-envelope events. As for `Type Ia`, the dust is part of the model, so
+      :math:`L_\mathrm{bol}(t)` is the integral of the attenuated :math:`L_\nu`, and the luminosity
+      function below includes it.
 
       .. dropdown:: Parameter priors
 
@@ -552,24 +568,27 @@ and have not been recalibrated.
               - Notes / Source
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(0.17, :math:`\sigma`\=0.16; bounds :math:`[0.01, 3.0]\,M_\odot`)
-              - :footcite:t:`lyman2016`, SN Ib subsample (13 events).
+              - LogNormal(median 0.06, :math:`\sigma_{\ln}`\=0.7; bounds :math:`[0.005, 1.5]\,M_\odot`)
+              - Set against the ASAS-SN luminosity function, not the CLU nickel masses. 16 to 84%: 0.03 to
+                0.12 :math:`M_\odot`.
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
-              - TruncatedNormal(2.6, :math:`\sigma`\=1.1; bounds :math:`[0.1, 8.0]\,M_\odot`)
-              - :footcite:t:`lyman2016`, SN Ib subsample.
+              - TruncatedNormal(2.3, :math:`\sigma`\=2.2; bounds :math:`[0.1, 20]\,M_\odot`)
+              - ZTF CLU SN Ib [citation pending]; observed 2.95 [1.3, 5.8] :math:`M_\odot` scaled by 0.90
+                (prior: 2.75 [1.10, 4.76]).
             * - ``v_ej``
               - :math:`v_\mathrm{ej}`
-              - TruncatedNormal(9.9, :math:`\sigma`\=1.4; bounds :math:`[4, 16]\times10^3\ \mathrm{km\,s^{-1}}`)
-              - :footcite:t:`lyman2016`, SN Ib subsample photospheric velocities.
+              - TruncatedNormal(9.6, :math:`\sigma`\=3.5; bounds :math:`[4, 25]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - ZTF CLU SN Ib [citation pending]; He I 5876 velocity proxy, median 9.84
+                (prior: 9.8 [6.7, 13.2]).
             * - ``kappa``
               - :math:`\kappa`
-              - Fixed, 0.06 :math:`\mathrm{cm^2\,g^{-1}}`
-              - :footcite:t:`lyman2016`'s assumed (not fit) value.
+              - Fixed, 0.07 :math:`\mathrm{cm^2\,g^{-1}}`
+              - The grey opacity of the ZTF CLU analysis [citation pending], which the ``M_ej`` prior assumes.
             * - ``kappa_gamma``
               - :math:`\kappa_\gamma`
               - Fixed, 0.04 :math:`\mathrm{cm^2\,g^{-1}}`
-              - Not constrained by :footcite:t:`lyman2016` (no leakage term in their model);
+              - Not taken from the ZTF CLU sample, which fits a gamma-ray trapping time instead;
                 comparable to `Type Ia`'s :footcite:t:`scalzo2014` value.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
@@ -578,12 +597,20 @@ and have not been recalibrated.
                 against Ib data specifically.
             * - ``break_frequency``
               - :math:`\nu_\mathrm{break}`
-              - Fixed, :math:`0.75\times10^{15}` Hz
-              - Line-blanketing break frequency, the `Type Ia` value.
+              - Fixed, :math:`1.4\times10^{15}` Hz
+              - Line-blanketing break frequency, set against Swift/UVOT (see below). Bounded below by the data.
             * - ``beta``
               - :math:`\beta`
-              - Fixed, 5
-              - Line-blanketing suppression index, the `Type Ia` value.
+              - Fixed, 3
+              - Line-blanketing suppression index. Not constrained by the Swift/UVOT data (see below).
+            * - ``A_V``
+              - :math:`A_V`
+              - Exponential(mean 0.6 mag)
+              - V-band attenuation by host-galaxy dust. A plausible range for the mean is 0.3 to 1.0.
+            * - ``R_V``
+              - :math:`R_V`
+              - TruncatedNormal(2.70, :math:`\sigma`\=0.25; bounds :math:`[2.3, 5.6]`)
+              - Total-to-selective extinction ratio of the host dust; the `Type Ia` prior.
 
       .. rubric:: Simulated Light Curves
 
@@ -591,8 +618,8 @@ and have not been recalibrated.
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
       individual bolometric light curves of the Type Ib SNe in :footcite:t:`lyman2016`, which are measured
       relative to maximum light; this checks the *shape* of the light curve (rise, peak width and
-      decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
-      from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+      decline) predicted by the Arnett diffusion model against an independent sample (the priors
+      are fit to the ZTF CLU sample, not to these events). The bottom panel shows the floored-photosphere blackbody temperature against time since
       explosion, overlaid with the temperatures of the Type Ib SNe in :footcite:t:`prentice2019`,
       shifted to time since explosion using the tabulated :math:`t_p`.
 
@@ -678,9 +705,51 @@ and have not been recalibrated.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      The line-blanketing parameters are those of the original Type Ia calibration. Few Type Ib supernovae have well
-      sampled UV light curves (8 with at least four UVW1 detections, and 3 with at least four UVW2 detections), so
-      these plots are a consistency check on those values rather than a fit.
+      The line-blanketing parameters ``break_frequency`` and ``beta`` were set against the Swift supernovae of Type
+      Ib and Ic together, because the archive holds few of either (events with at least four detections: Ib 8 in
+      UVW1, 2 in UVM2 and 3 in UVW2; Ic 3, 1 and 2) and the two share their construction. As for `Type Ia`, they
+      were set by a coarse grid search, with the other priors fixed, so that the median peak :math:`\nu L_\nu` in
+      UVW1 and UVW2, and the median UVW1 to UVW2 colour of the five events with both, match the pooled sample,
+      with the model's Ib and Ic mixed in the proportions of the data. The previous values (:math:`0.75\times10^{15}`
+      Hz and 5, the original Type Ia calibration) left the model 0.5 to 1 dex too faint in the UV bands.
+
+      Median peak :math:`\nu L_\nu` (log10, erg/s) of 1500 draws of each model at :math:`z=0.01` against the pooled
+      Swift supernovae:
+
+      .. list-table::
+         :header-rows: 1
+         :widths: 40 20 20 20
+
+         * - Quantity
+           - Swift
+           - Model, 0.75e15 Hz, 5
+           - Model, 1.4e15 Hz, 3
+         * - UVW1 peak
+           - 40.80
+           - 40.28
+           - 40.78
+         * - UVW2 peak
+           - 40.60
+           - 39.62
+           - 40.24
+         * - UVW1 minus UVW2
+           - 0.50
+           - 0.67
+           - 0.55
+         * - UVM2 peak
+           - 40.45
+           - 39.31
+           - 40.29
+
+      The first three rows were fit; UVM2 was not, and rests on three events. The data are not enough to determine
+      both parameters. Any break above about :math:`1.4\times10^{15}` Hz, with any :math:`\beta`, matches them about
+      equally well, up to removing the blanketing from the UVOT bands altogether (the model's UV is identical for
+      every break above about :math:`1.8\times10^{15}` Hz). So the data bound the break from below and do not
+      constrain :math:`\beta`; the values adopted keep some suppression at the blue end, and the UVEX FUV band lies
+      beyond the UVOT bands, so the calibration there is an extrapolation. The UVW2 peak is still 0.36 dex low even
+      with no blanketing, which is one bootstrap standard deviation of the data median (0.34 dex). The Swift
+      supernovae are a brighter sample than the model's population, so the level carries that caveat, and the
+      colour, which is the more robust of the two, has a standard deviation of 0.07 dex.
 
       .. plot::
          :include-source: false
@@ -713,7 +782,17 @@ and have not been recalibrated.
       bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
       :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
       Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
-      magnitude of the SED itself.
+      magnitude of the SED itself. The host dust is included.
+
+      The points are the luminosity function of SNe Ib of ASAS-SN, which the ``M_Ni`` prior was set against
+      (so this is a check of that choice, not an independent test). Its rate has a normalization that is not
+      ours, so only its shape is compared: the points are scaled to unit area over the magnitudes they cover
+      and then by the fraction of the model's events in that range. Where the shapes agree, the points lie on
+      the model's curve.
+      The model's peak and faint side agree with the points, but it lies above them at
+      :math:`M_V\approx-16.6` to :math:`-17.3`, and has no events as bright as the brightest point
+      (:math:`M_V\approx-19.9`). The points do not constrain the model fainter than :math:`M_V\approx-15.4`,
+      where it has a tail.
 
       .. plot::
          :include-source: false
@@ -722,11 +801,12 @@ and have not been recalibrated.
 
          from uvex_transients.transients.supernovae import TypeIbSNe
          from uvex_transients.utils.filter_utils import get_bandpass
-         from uvex_transients.utils.plotting import plot_luminosity_function
+         from uvex_transients.utils.plotting import plot_archived_luminosity_function, plot_luminosity_function
 
          v_band = get_bandpass("Generic/Johnson.V")
          lf = TypeIbSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
-         plot_luminosity_function(lf, band="V")
+         fig, ax = plot_luminosity_function(lf, band="V", label="Model")
+         plot_archived_luminosity_function(lf, "supernovae/Ib", "ASAS-SN", ax=ax)
          plt.show()
 
       .. rubric:: Observability Summary
@@ -864,7 +944,7 @@ and have not been recalibrated.
              :attr:`~uvex_transients.transients.supernovae.TypeIcSNe.RATE_CI` (see
              :ref:`user_guide_transients_rate_uncertainty`).
          * - Redshift limit
-           - :math:`z = 0.24`
+           - :math:`z = 0.21`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -882,9 +962,11 @@ and have not been recalibrated.
       with `Type Ib`'s :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (see its SED Model
       section above for the :math:`F_\mathrm{decay}(t)`/:math:`T(t)` math and the reasoning behind
       ``kappa``, ``kappa_gamma`` and ``T_floor``, and the line-blanketed photosphere with its fixed
-      ``break_frequency`` and ``beta``), differing only in that ``M_Ni``, ``M_ej`` and
-      ``v_ej`` are drawn from the SN Ic subsample statistics of Table 6 of :footcite:t:`lyman2016`
-      (8 events) instead of the Type Ib ones.
+      ``break_frequency`` and ``beta``, and the host dust), differing only in that ``M_ej`` and
+      ``v_ej`` are tuned to the 113 normal SNe Ic (Ic-BL excluded) of the same ZTF CLU + CATS150
+      sample [citation pending] instead of the Type Ib ones. ``M_Ni`` is the same log-normal as Type Ib,
+      and the host dust is the same (:math:`A_V` exponential with mean 0.6 mag). For Ic the velocity is the O I 7774 absorption
+      velocity converted to :math:`v_m`, substantially faster than Fe II photospheric velocities.
 
       .. dropdown:: Parameter priors
 
@@ -898,24 +980,26 @@ and have not been recalibrated.
               - Notes / Source
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(0.22, :math:`\sigma`\=0.16; bounds :math:`[0.01, 3.0]\,M_\odot`)
-              - :footcite:t:`lyman2016`, SN Ic subsample (8 events).
+              - LogNormal(median 0.06, :math:`\sigma_{\ln}`\=0.7; bounds :math:`[0.005, 1.5]\,M_\odot`)
+              - As Type Ib. Set against the ASAS-SN luminosity function, not the CLU nickel masses.
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
-              - TruncatedNormal(3.0, :math:`\sigma`\=2.8; bounds :math:`[0.1, 6.0]\,M_\odot`)
-              - :footcite:t:`lyman2016`, SN Ic subsample.
+              - TruncatedNormal(2.2, :math:`\sigma`\=3.35; bounds :math:`[0.1, 20]\,M_\odot`)
+              - ZTF CLU SN Ic [citation pending]; observed 3.62 [1.4, 7.3] :math:`M_\odot` scaled by 0.90
+                (prior: 3.34 [1.21, 6.19]).
             * - ``v_ej``
               - :math:`v_\mathrm{ej}`
-              - TruncatedNormal(10.4, :math:`\sigma`\=1.2; bounds :math:`[4, 16]\times10^3\ \mathrm{km\,s^{-1}}`)
-              - :footcite:t:`lyman2016`, SN Ic subsample photospheric velocities.
+              - TruncatedNormal(14.2, :math:`\sigma`\=3.6; bounds :math:`[4, 25]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - ZTF CLU SN Ic [citation pending]; O I 7774 velocity proxy, median 14.2
+                (prior: 14.2 [10.6, 17.8]).
             * - ``kappa``
               - :math:`\kappa`
-              - Fixed, 0.06 :math:`\mathrm{cm^2\,g^{-1}}`
-              - :footcite:t:`lyman2016`'s assumed (not fit) value.
+              - Fixed, 0.07 :math:`\mathrm{cm^2\,g^{-1}}`
+              - The grey opacity of the ZTF CLU analysis [citation pending], which the ``M_ej`` prior assumes.
             * - ``kappa_gamma``
               - :math:`\kappa_\gamma`
               - Fixed, 0.04 :math:`\mathrm{cm^2\,g^{-1}}`
-              - Not constrained by :footcite:t:`lyman2016` (no leakage term in their model);
+              - Not taken from the ZTF CLU sample, which fits a gamma-ray trapping time instead;
                 comparable to `Type Ia`'s :footcite:t:`scalzo2014` value.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
@@ -924,12 +1008,20 @@ and have not been recalibrated.
                 against Ic data specifically.
             * - ``break_frequency``
               - :math:`\nu_\mathrm{break}`
-              - Fixed, :math:`0.75\times10^{15}` Hz
-              - Line-blanketing break frequency, the `Type Ia` value.
+              - Fixed, :math:`1.4\times10^{15}` Hz
+              - Line-blanketing break frequency, set against Swift/UVOT (see below). Bounded below by the data.
             * - ``beta``
               - :math:`\beta`
-              - Fixed, 5
-              - Line-blanketing suppression index, the `Type Ia` value.
+              - Fixed, 3
+              - Line-blanketing suppression index. Not constrained by the Swift/UVOT data (see below).
+            * - ``A_V``
+              - :math:`A_V`
+              - Exponential(mean 0.6 mag)
+              - V-band attenuation by host-galaxy dust. A plausible range for the mean is 0.3 to 1.0.
+            * - ``R_V``
+              - :math:`R_V`
+              - TruncatedNormal(2.70, :math:`\sigma`\=0.25; bounds :math:`[2.3, 5.6]`)
+              - Total-to-selective extinction ratio of the host dust; the `Type Ia` prior.
 
       .. rubric:: Simulated Light Curves
 
@@ -937,8 +1029,8 @@ and have not been recalibrated.
       the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the
       individual bolometric light curves of the Type Ic SNe in :footcite:t:`lyman2016`, which are measured
       relative to maximum light; this checks the *shape* of the light curve (rise, peak width and
-      decline) predicted by the Arnett diffusion model against the same sample its priors are drawn
-      from. The bottom panel shows the floored-photosphere blackbody temperature against time since
+      decline) predicted by the Arnett diffusion model against an independent sample (the priors
+      are fit to the ZTF CLU sample, not to these events). The bottom panel shows the floored-photosphere blackbody temperature against time since
       explosion, overlaid with the temperatures of the Type Ic SNe in :footcite:t:`prentice2019`,
       shifted to time since explosion using the tabulated :math:`t_p`.
 
@@ -1026,9 +1118,10 @@ and have not been recalibrated.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      The line-blanketing parameters are those of the original Type Ia calibration. The Swift sample is small: 6 Type Ic
-      supernovae have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots are a
-      consistency check on those values rather than a fit.
+      The line-blanketing parameters are those of `Type Ib`, which were set against Types Ib and Ic together (see its
+      UV calibration section for the fit and for what the data do and do not constrain). The Swift sample is small:
+      6 Type Ic supernovae have at least three UVW1 detections, and 3 have at least three UVW2 detections. These plots
+      are a consistency check on those values rather than a fit to Ic alone.
 
       .. plot::
          :include-source: false
@@ -1061,7 +1154,16 @@ and have not been recalibrated.
       bands are the 68% (Clopper-Pearson) intervals of each bin, and bins with no events are not drawn.
       :math:`M_V` is the AB magnitude at 10 pc of a spectrum flat in :math:`L_\nu` that has the same
       Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
-      magnitude of the SED itself.
+      magnitude of the SED itself. The host dust is included.
+
+      The points are the luminosity function of SNe Ic of ASAS-SN, which the ``M_Ni`` prior was set against
+      (so this is a check of that choice, not an independent test). Its rate has a normalization that is not
+      ours, so only its shape is compared: the points are scaled to unit area over the magnitudes they cover
+      and then by the fraction of the model's events in that range. Where the shapes agree, the points lie on
+      the model's curve.
+      The model's peak and faint side agree with the points, but its distribution ends near
+      :math:`M_V\approx-19.3`, short of the brightest point (:math:`M_V\approx-20.6`). The points do not
+      constrain the model fainter than :math:`M_V\approx-15.4`, where it has a tail.
 
       .. plot::
          :include-source: false
@@ -1070,11 +1172,12 @@ and have not been recalibrated.
 
          from uvex_transients.transients.supernovae import TypeIcSNe
          from uvex_transients.utils.filter_utils import get_bandpass
-         from uvex_transients.utils.plotting import plot_luminosity_function
+         from uvex_transients.utils.plotting import plot_archived_luminosity_function, plot_luminosity_function
 
          v_band = get_bandpass("Generic/Johnson.V")
          lf = TypeIcSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
-         plot_luminosity_function(lf, band="V")
+         fig, ax = plot_luminosity_function(lf, band="V", label="Model")
+         plot_archived_luminosity_function(lf, "supernovae/Ic", "ASAS-SN", ax=ax)
          plt.show()
 
       .. rubric:: Observability Summary
@@ -1086,7 +1189,7 @@ and have not been recalibrated.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.24`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.21`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
@@ -1189,10 +1292,9 @@ and have not been recalibrated.
       Type Ic-BL (broad-lined) supernovae are Type Ic explosions with unusually high kinetic
       energies and ejecta velocities, identified spectroscopically by their broad, blended
       absorption features. Like `Type Ib`/`Type Ic` above and `Type Ia`, this population's SED
-      follows the same first-principles Arnett-style radioactive-decay model, but with its own
-      priors, calibrated from an explosion-property table (nickel mass, ejecta mass, photospheric
-      velocity) specific to its own ZTF sample rather than the Lyman et al. 2016 sample used for
-      `Type Ib`/`Type Ic`.
+      follows the same first-principles Arnett-style radioactive-decay model. It is the `Type Ic` SED
+      with its own nickel mass, ejecta mass and ejecta velocity, tuned to the Ic-BL events of the same ZTF
+      CLU sample [citation pending].
 
       Implemented by :class:`~uvex_transients.transients.supernovae.TypeIcBLSNe`, pairing
       :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` with the rate/duration
@@ -1222,7 +1324,7 @@ and have not been recalibrated.
              fraction is itself consistent with zero, so the combined lower `RATE_CI` factor is
              slightly negative; treat the lower bound as effectively zero rather than literally.
          * - Redshift limit
-           - :math:`z = 0.27`
+           - :math:`z = 0.32`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -1249,18 +1351,20 @@ and have not been recalibrated.
           T(t) = \max\left\{\left[\frac{L(t)}{4\pi\sigma_\mathrm{SB}(v_\mathrm{ej}t)^2}\right]^{1/4},
           T_\mathrm{floor}\right\}.
 
-      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are sample statistics (mean, sample standard
-      deviation) of the 36-event explosion-property table of :footcite:t:`srinivasaragavan2024`
-      (nickel mass, kinetic energy, ejecta mass and photospheric velocity per event). One event
-      (SN 2020wgz), whose reported
-      :math:`M_\mathrm{Ni}=2.46\,M_\odot` is a >5-sigma outlier driven by an ``e_k``/``m_ej`` *lower
-      limit* rather than a measurement, is excluded from the ``M_Ni`` statistics; ``M_ej`` uses only
-      rows with a measured (non-lower-limit) value; ``v_ej`` is identified with the sample's
-      photospheric velocities (``v_ph``), regardless of the epoch quoted. ``kappa`` and
-      ``T_floor`` are not constrained by that table and are left at `Type Ia`'s values;
-      ``kappa_gamma`` is instead fixed at a large value (full gamma-ray trapping across the
-      simulated window), unlike `Type Ia`'s Scalzo+14 value. ``break_frequency`` and ``beta`` are fixed
-      at the original `Type Ia` calibration.
+      The priors on ``M_Ni``, ``M_ej`` and ``v_ej`` are tuned to the Ic-BL events of the volume-limited ZTF CLU +
+      CATS150 sample [citation pending], as for `Type Ib` (each truncated normal is tuned so that its 16th, 50th and
+      84th percentiles, after truncation, reproduce the sample's): ``M_Ni`` has median :math:`0.19\,M_\odot` and a
+      16th to 84th percentile range of 0.093 to 0.29; ``M_ej`` is the observed median of about
+      :math:`3.2\,M_\odot` (1.3 to 5.4) scaled by 0.90, the sample-wide shift under survey-efficiency weighting;
+      and ``v_ej`` is :math:`16.8\times10^3` km/s with a width of :math:`3.5\times10^3` km/s. The ``M_Ni`` is not the
+      log-normal of Types Ib and Ic, which was set against the ASAS-SN luminosity function of those types. Before
+      this, the three priors were sample statistics of the 36-event explosion-property table of
+      :footcite:t:`srinivasaragavan2024` (``v_ej`` there has a mean of :math:`20.1\times10^3` km/s).
+
+      Every other prior is that of `Type Ic`: ``kappa`` is :math:`0.07\,\mathrm{cm^2\,g^{-1}}`, ``kappa_gamma`` is
+      :math:`0.04\,\mathrm{cm^2\,g^{-1}}` (it was 1000, for full gamma-ray trapping, before), ``T_floor`` is the
+      same, the line blanketing is that set against Swift/UVOT on the `Type Ib` tab, and the SED is reddened by host
+      dust with :math:`A_V` exponential with mean 0.6 mag.
 
       .. dropdown:: Parameter priors
 
@@ -1274,47 +1378,65 @@ and have not been recalibrated.
               - Notes / Source
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(0.33, :math:`\sigma`\=0.24; bounds :math:`[0.02, 2.0]\,M_\odot`)
-              - :footcite:t:`srinivasaragavan2024` (SN 2020wgz excluded, see above).
+              - TruncatedNormal(0.183, :math:`\sigma`\=0.106; bounds :math:`[0.005, 1.5]\,M_\odot`)
+              - ZTF CLU SN Ic-BL [citation pending]; median 0.19 :math:`M_\odot` (prior: 0.189 [0.093, 0.291]).
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
-              - TruncatedNormal(2.54, :math:`\sigma`\=1.95; bounds :math:`[0.1, 10.0]\,M_\odot`)
-              - :footcite:t:`srinivasaragavan2024`, measured (non-lower-limit) rows only.
+              - TruncatedNormal(2.47, :math:`\sigma`\=2.22; bounds :math:`[0.1, 20]\,M_\odot`)
+              - ZTF CLU SN Ic-BL [citation pending]; observed 3.2 [1.3, 5.4] :math:`M_\odot` scaled by 0.90
+                (prior: 2.87 [1.18, 4.89]).
             * - ``v_ej``
               - :math:`v_\mathrm{ej}`
-              - TruncatedNormal(20.1, :math:`\sigma`\=4.96; bounds :math:`[5, 45]\times10^3\ \mathrm{km\,s^{-1}}`)
-              - Sample photospheric velocities (``v_ph``).
+              - TruncatedNormal(16.8, :math:`\sigma`\=3.5; bounds :math:`[5, 30]\times10^3\ \mathrm{km\,s^{-1}}`)
+              - ZTF CLU SN Ic-BL [citation pending]; velocity proxy, median 16.8.
             * - ``kappa``
               - :math:`\kappa`
-              - Uniform(0.05, 0.15) :math:`\mathrm{cm^2\,g^{-1}}`
-              - Not constrained by the table; same range as `Type Ia`.
+              - Fixed, 0.07 :math:`\mathrm{cm^2\,g^{-1}}`
+              - As `Type Ic`: the grey opacity of the ZTF CLU analysis [citation pending].
             * - ``kappa_gamma``
               - :math:`\kappa_\gamma`
-              - Fixed, 1000 :math:`\mathrm{cm^2\,g^{-1}}`
-              - Approximates full gamma-ray trapping across the simulated window; unlike `Type Ia`,
-                not :footcite:t:`scalzo2014`'s value.
+              - Fixed, 0.04 :math:`\mathrm{cm^2\,g^{-1}}`
+              - As `Type Ic`; comparable to `Type Ia`'s :footcite:t:`scalzo2014` value.
             * - ``T_floor``
               - :math:`T_\mathrm{floor}`
               - TruncatedNormal(6000 K, :math:`\sigma`\=1000 K; bounds :math:`[3000, 10000]` K)
-              - Same floor as the other Arnett-based models on this site; not calibrated against
-                Ic-BL data specifically.
+              - As `Type Ic`; not calibrated against Ic-BL data specifically.
             * - ``break_frequency``
               - :math:`\nu_\mathrm{break}`
-              - Fixed, :math:`0.75\times10^{15}` Hz
-              - Line-blanketing break frequency, the `Type Ia` value.
+              - Fixed, :math:`1.4\times10^{15}` Hz
+              - Line-blanketing break frequency, as `Type Ic` (set against Swift/UVOT on the `Type Ib` tab).
             * - ``beta``
               - :math:`\beta`
-              - Fixed, 5
-              - Line-blanketing suppression index, the `Type Ia` value.
+              - Fixed, 3
+              - Line-blanketing suppression index, as `Type Ic`. Not constrained by the data.
+            * - ``A_V``
+              - :math:`A_V`
+              - Exponential(mean 0.6 mag)
+              - V-band attenuation by host-galaxy dust, as `Type Ic`.
+            * - ``R_V``
+              - :math:`R_V`
+              - TruncatedNormal(2.70, :math:`\sigma`\=0.25; bounds :math:`[2.3, 5.6]`)
+              - Total-to-selective extinction ratio of the host dust, as `Type Ic`.
 
       .. rubric:: Simulated Light Curves
 
-      The plot below draws 300 random parameter realizations from the priors above and shows the
-      resulting bolometric light curves and photospheric temperatures. The top panel is overlaid
-      with the individual bolometric light curves (time since explosion) of the 26 Type Ic-BL SNe
-      of :footcite:t:`srinivasaragavan2024` with a full explosion-property fit (the same sample the
-      priors above are derived from). No photospheric temperature data is bundled for Type Ic-BL,
-      so the bottom panel is unadorned.
+      The plot below draws 300 random parameter realizations from the priors above. The top panel shows
+      the bolometric light curves, each shifted so that its own peak sits at zero, overlaid with the 8 Type Ic-BL
+      SNe of :footcite:t:`lyman2016`, whose times are measured relative to maximum light, and with the 26 Type Ic-BL
+      SNe of :footcite:t:`srinivasaragavan2024` with a full explosion-property fit, shifted to their own peaks. This
+      checks the *shape* of the light curve (rise, peak width and decline) and its peak luminosity against
+      independent samples (the priors above are tuned to the ZTF CLU sample, not to these events). No photospheric
+      temperature data is bundled for Type Ic-BL, so the bottom panel, the floored-photosphere blackbody
+      temperature against time since explosion, is unadorned.
+
+      The model peaks fainter than both observed samples: its median peak :math:`\log_{10}L_\mathrm{bol}` is 42.46
+      against 42.87 for the Srinivasaragavan et al. events and about 42.9 for those of Lyman et al., and both are
+      literature samples that favour bright events. After peak the model's median decline matches the Lyman et al.
+      events with the gamma-ray opacity of `Type Ic` (:math:`\kappa_\gamma=0.04\,\mathrm{cm^2\,g^{-1}}`: 0.98 dex
+      below peak at 60 d against their 1.00, from three events), but is steeper than the Srinivasaragavan et al.
+      light curves, which are fits and decline like a fully trapped :math:`^{56}\mathrm{Co}` tail (0.55 dex at 60
+      d); a :math:`\kappa_\gamma` of 0.2 or more would be needed to match them, which is not physical for
+      :math:`^{56}\mathrm{Co}` gamma rays.
 
       .. plot::
          :include-source: false
@@ -1333,31 +1455,47 @@ and have not been recalibrated.
          params_grid = {name: value[:, None] for name, value in params.items()}
          archive = LightcurveArchive()
 
-         t = np.geomspace(0.1, 1000, 400) * u.day
-         L_bol = SEDClass.eval_bolometric(t, **params_grid)
-         T = SEDClass.temperature(t, **params_grid)
+         # Top panel: simulated light curves aligned on their own peak. Lyman+16 times are already relative to
+         # maximum light; the Srinivasaragavan+24 curves are shifted to their own peaks.
+         t_lin = np.linspace(0.05, 150, 3000) * u.day
+         L_lin = SEDClass.eval_bolometric(t_lin, **params_grid).to_value(u.erg / u.s)
+         t_peak = t_lin.to_value(u.day)[np.argmax(L_lin, axis=1)]
 
-         fig, (ax_L, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2), sharex=True)
+         fig, (ax_P, ax_T) = plt.subplots(2, 1, figsize=(6.4, 7.2))
 
          for row in range(n_samples):
-             ax_L.plot(t.to_value(u.day), L_bol[row].to_value(u.erg / u.s), color="C0", lw=0.4, alpha=0.15)
-             ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
+             ax_P.plot(t_lin.to_value(u.day) - t_peak[row], L_lin[row], color="C0", lw=0.4, alpha=0.15)
 
-         icbl_events = [name for name in archive.events("supernovae/Ic-BL") if name.endswith("srinivasaragavan2024")]
-         for i, name in enumerate(icbl_events):
+         srini_events = [name for name in archive.events("supernovae/Ic-BL") if name.endswith("srinivasaragavan2024")]
+         for i, name in enumerate(srini_events):
              lbol_obs = archive.table("supernovae/Ic-BL", name, "L_bol")
-             ax_L.plot(
-                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
-                 color="k", lw=0.8, alpha=0.4,
-                 label="Srinivasaragavan+24 (n=%d)" % len(icbl_events) if i == 0 else None,
+             t_obs = lbol_obs["time"].to_value(u.day)
+             L_obs = lbol_obs["L_bol"].to_value(u.erg / u.s)
+             ax_P.plot(
+                 t_obs - t_obs[np.argmax(L_obs)], L_obs, color="0.5", lw=0.8, alpha=0.5,
+                 label="Srinivasaragavan+24, own peak (n=%d)" % len(srini_events) if i == 0 else None,
              )
+         lyman_events = [name for name in archive.events("supernovae/Ic-BL") if name.endswith("lyman2016")]
+         for i, name in enumerate(lyman_events):
+             lbol_obs = archive.table("supernovae/Ic-BL", name, "L_bol")
+             ax_P.plot(
+                 lbol_obs["time"].to_value(u.day), lbol_obs["L_bol"].to_value(u.erg / u.s),
+                 color="k", lw=0.8, marker="o", ms=2.5, alpha=0.7,
+                 label="Lyman+16 (n=%d)" % len(lyman_events) if i == 0 else None,
+             )
+         ax_P.set_yscale("log")
+         ax_P.set_xlim([-25, 80])
+         ax_P.set_ylim([1e40, 10**44.2])
+         ax_P.set_xlabel("Time since peak [days]")
+         ax_P.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
+         ax_P.set_title(f"Type Ic-BL: simulated bolometric light curves (n={n_samples})")
+         ax_P.legend(loc="lower right", fontsize=8, frameon=False)
 
-         ax_L.set_xscale("log")
-         ax_L.set_yscale("log")
-         ax_L.set_xlim(1e-1, 1e3)
-         ax_L.set_ylabel(r"$L_\mathrm{bol}$ [erg s$^{-1}$]")
-         ax_L.set_title(f"Type Ic-BL: simulated bolometric light curves (n={n_samples})")
-         ax_L.legend(loc="lower left", fontsize=8, frameon=False)
+         # Bottom panel: photospheric temperature against time since explosion.
+         t = np.geomspace(0.1, 1000, 400) * u.day
+         T = SEDClass.temperature(t, **params_grid)
+         for row in range(n_samples):
+             ax_T.plot(t.to_value(u.day), T[row].to_value(u.K), color="C3", lw=0.4, alpha=0.15)
 
          ax_T.set_xscale("log")
          ax_T.set_yscale("log")
@@ -1378,7 +1516,8 @@ and have not been recalibrated.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      The line-blanketing parameters are those of Type Ia, unchanged. Only two Type Ic-BL supernovae have at least three
+      The line-blanketing parameters are those of `Type Ic`, which were set against Types Ib and Ic together (see the
+      `Type Ib` tab). Only two Type Ic-BL supernovae have at least three
       detections in either band, so this is the least constrained comparison on this page, and the model should not be
       read as a fit to the Type Ic-BL UV light curves.
 
@@ -1438,7 +1577,7 @@ and have not been recalibrated.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.27`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=0.32`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
