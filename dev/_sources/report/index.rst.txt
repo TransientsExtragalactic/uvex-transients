@@ -26,10 +26,10 @@ of that release, and the pages are regenerated when the documentation is rebuilt
 
 .. note::
 
-   This page is generated from the latest published release, `v0.6.3alpha <https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.6.3alpha>`__, specifically
-   its ``event_summary.ecsv`` data product. Every data product (the event catalog, photometry,
-   exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
-   listed on the `releases page <https://github.com/TransientsExtragalactic/uvex-transients/releases>`__.
+   No published release report is available yet (or it could not be fetched during this
+   documentation build, see the build log for details). Once a ``vX.Y.Z`` release with
+   ``event_summary.ecsv`` attached is published, this page will be generated automatically on
+   the next documentation build.
 
 
 .. seealso::
@@ -67,81 +67,6 @@ full scale; the others each target one science case.
    * - Phase-Space Maps
      - How well UVEX detects a transient of a given peak luminosity and decline time, whatever its physics. A canonical transient is simulated over a map of the two, in the FUV and the NUV, and the region of the map each shipped transient class occupies is shaded on it.
      - :doc:`2 analyses <phase_space/index>`
-
-Transient Detection Report
---------------------------
-
-The **0th-order** result of the TYR is the number of transients UVEX *detects* over its 2-year prime
-mission. Here, an event is **detected** if the survey observes its position after it explodes and, in at
-least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
-event whose only such observation is the first-ever visit to that field is not counted, since there is no
-reference image to detect it against. A detection says only that UVEX *sees* the event: it does not mean
-the event can be characterized or classified, which needs more observations and is a subject for
-downstream analysis.
-
-The table gives, for each transient type of the Standard Run, the expected number of real events that
-UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
-Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
-percentage of those detected events whose sky position lies inside the footprint of ZTF
-(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
-only, and do not account for whether those surveys observed the event at the right time.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 34 38 14 14
-
-   * - Transient Type
-     - Expected Detections
-     - % ZTF Overlap
-     - % Rubin Overlap
-   * - :doc:`Type Ia SNe <../transients/type_i>`
-     - :math:`10,040^{+762}_{-720}\,{}^{+772}_{-772}`
-     - 79.8%
-     - 68.1%
-   * - :doc:`Type Ib SNe <../transients/type_i>`
-     - :math:`427^{+182}_{-138}\,{}^{+192}_{-203}`
-     - 63.6%
-     - 63.6%
-   * - :doc:`Type Ic SNe <../transients/type_i>`
-     - :math:`390^{+175}_{-131}\,{}^{+199}_{-207}`
-     - 85.0%
-     - 85.0%
-   * - :doc:`Type Ic-BL SNe <../transients/type_i>`
-     - :math:`126^{+121}_{-71.1}\,{}^{+107}_{-126}`
-     - 50.0%
-     - 83.3%
-   * - :doc:`Type IIb SNe <../transients/type_ii>`
-     - :math:`9,722^{+1,089}_{-1,002}\,{}^{+4,418}_{-4,649}`
-     - 79.0%
-     - 68.3%
-   * - Iip Excess Sne
-     - :math:`27,942^{+1,242}_{-1,201}\,{}^{+8,265}_{-9,362}`
-     - 79.5%
-     - 68.6%
-   * - :doc:`Type IIP SNe <../transients/type_ii>`
-     - :math:`29,486^{+1,286}_{-1,244}\,{}^{+8,722}_{-9,879}`
-     - 81.0%
-     - 70.8%
-   * - :doc:`Kilonova <../transients/kilonovae>`
-     - :math:`0.916^{+3.32}_{-0.869}\,{}^{+1.60}_{-0.683}`
-     - 100.0%
-     - 100.0%
-   * - :doc:`LFBOT <../transients/lfbots>`
-     - :math:`296^{+28.6}_{-26.7}\,{}^{+73.9}_{-269}`
-     - 79.7%
-     - 71.4%
-   * - :doc:`Low-Luminosity GRB <../transients/llgrb>`
-     - :math:`1,060^{+54.2}_{-52.2}\,{}^{+2,258}_{-876}`
-     - 79.2%
-     - 68.2%
-   * - :doc:`SLSNe (Magnetar) <../transients/slsne>`
-     - :math:`14,785^{+878}_{-843}\,{}^{+5,532}_{-8,012}`
-     - 77.5%
-     - 69.3%
-   * - :doc:`Tidal Disruption Event <../transients/tdes>`
-     - :math:`5,825^{+124}_{-122}\,{}^{+1,127}_{-1,879}`
-     - 78.5%
-     - 68.2%
 
 Simulations
 -----------
