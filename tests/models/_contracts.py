@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Set as AbstractSet
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import numpy as np
 import pytest
@@ -206,6 +206,12 @@ class ModelContract:
     #: Fixed RNG seed used throughout, for reproducible sampling.
     seed = 20240101
 
+    #: Groups of parameters a model draws jointly, so that they are correlated by design (for example a luminosity and
+    #: the nickel mass that follows it). A pair within one group is exempt from the check that parameters are not
+    #: strongly correlated, which guards against one random stream shared by every parameter; every other pair is
+    #: still checked. Empty for a model whose parameters are independent.
+    jointly_sampled_parameters: ClassVar[tuple[frozenset[str], ...]] = ()
+
     # ----------------------------------- #
     # Construction                        #
     # ----------------------------------- #
@@ -355,6 +361,8 @@ class ModelContract:
         # One seed shared by every parameter's stream would make all of them the same draw, in rank.
         for i, a in enumerate(varying):
             for b in varying[i + 1 :]:
+                if any({a, b} <= group for group in self.jointly_sampled_parameters):
+                    continue
                 assert abs(np.corrcoef(first[a], first[b])[0, 1]) < 0.6, f"{a} and {b} are correlated"
 
 
@@ -593,13 +601,24 @@ class SpectralModelContract(ModelContract):
     # ----------------------------------- #
     # Bolometric / Normalized Shape       #
     # ----------------------------------- #
+    def _spectrum_normalization(self, cgs_params: dict[str, Any], t0: float) -> float:
+        """
+        Return the integral of ``eval_spectrum`` over frequency at ``t0``.
+
+        1 for a model whose spectral shape is normalized, as the base class assumes. A model that documents
+        another normalization (for example one in which the luminosity lost to line blanketing is not re-emitted, so
+        the shape integrates to a fraction less than 1) overrides this with the value it documents, computed
+        independently of its own spectrum.
+        """
+        return 1.0
+
     def test_eval_spectrum_integrates_to_one(self):
         cgs_params = self._scalar_cgs_params()
         lo, hi = _integration_bounds(self.model_class, cgs_params)
         t0 = to_cgs_value(self.t_grid[len(self.t_grid) // 2])
 
         integral = _integrate_over_frequency_at_time(self.model_class, cgs_params, lo, hi, t0, "eval_spectrum_cgs")
-        np.testing.assert_allclose(integral, 1.0, rtol=1e-2)
+        np.testing.assert_allclose(integral, self._spectrum_normalization(cgs_params, t0), rtol=1e-2)
 
     def test_eval_bolometric_matches_frequency_integral(self):
         cgs_params = self._scalar_cgs_params()
@@ -607,7 +626,7 @@ class SpectralModelContract(ModelContract):
         t0 = to_cgs_value(self.t_grid[len(self.t_grid) // 2])
 
         expected = _integrate_over_frequency_at_time(self.model_class, cgs_params, lo, hi, t0, "eval_cgs")
-        actual = self.model_class.eval_bolometric_cgs(t0, **cgs_params)
+        actual = self.model_class.eval_bolometric_cgs(t0, **cgs_params) * self._spectrum_normalization(cgs_params, t0)
         np.testing.assert_allclose(actual, expected, rtol=1e-2)
 
     # ----------------------------------- #

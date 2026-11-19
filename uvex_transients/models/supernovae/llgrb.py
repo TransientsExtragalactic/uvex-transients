@@ -11,10 +11,9 @@ from uvex_transients.models._utils import to_cgs_value
 from uvex_transients.models.arnett import ArnettDecaySED
 from uvex_transients.models.core.base import SpectralModel
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import NormalPrior
+from uvex_transients.models.core.priors import ConstantPrior, NormalPrior, TruncatedNormalPrior, UniformPrior
 from uvex_transients.models.lightcurves.generic import BazinLightcurve
 from uvex_transients.models.spectra.thermal import BlackbodySpectrum
-from uvex_transients.models.supernovae.IcBL import TypeIcBLSED
 
 __all__ = ["LLGRBSED"]
 
@@ -72,8 +71,11 @@ class LLGRBSED(SpectralModel):
 
     .. rubric:: Parameters
 
-    The first six parameters are those of :class:`~uvex_transients.models.arnett.ArnettDecaySED`, with the priors of
-    :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED`. The last six describe the early excess.
+    The first six parameters are those of :class:`~uvex_transients.models.arnett.ArnettDecaySED`, with the priors
+    that :class:`~uvex_transients.models.supernovae.IcBL.TypeIcBLSED` had before it was tuned to the ZTF CLU sample:
+    the sample statistics of the explosion-property table of Srinivasaragavan et al. 2024 (``M_Ni``, ``M_ej``
+    and ``v_ej``), ``kappa`` as for Type Ia, full gamma-ray trapping and the same ``T_floor``. They are held here
+    and no longer follow that class. The last six describe the early excess.
 
     .. list-table::
        :header-rows: 1
@@ -122,7 +124,7 @@ class LLGRBSED(SpectralModel):
     See Also
     --------
     uvex_transients.models.arnett.ArnettDecaySED : The supernova component on its own.
-    uvex_transients.models.supernovae.IcBL.TypeIcBLSED : The Ic-BL population this model's supernova priors come from.
+    uvex_transients.models.supernovae.IcBL.TypeIcBLSED : The Ic-BL population this model's supernova priors came from.
     uvex_transients.models.lightcurves.generic.BazinLightcurve : The early-excess light curve.
 
     Examples
@@ -142,7 +144,44 @@ class LLGRBSED(SpectralModel):
     """tuple of str: The parameters handed to the Arnett light curve."""
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
-        **{name: TypeIcBLSED._DEFAULT_PARAMETERS[name] for name in ArnettDecaySED._DEFAULT_PARAMETERS},
+        # The Ic-BL priors from before TypeIcBLSED was tuned to the ZTF CLU sample (statistics of the table of
+        # Srinivasaragavan+24, SN 2020wgz excluded from M_Ni), kept so that this model does not move with that class.
+        "M_Ni": Parameter(
+            prior=TruncatedNormalPrior(mean=0.33, sigma=0.24, lower=0.02, upper=2.0),
+            scale=1 * u.Msun,
+            description="Nickel-56 mass synthesized in the explosion.",
+            latex=r"M_\mathrm{Ni}",
+        ),
+        "M_ej": Parameter(
+            prior=TruncatedNormalPrior(mean=2.54, sigma=1.95, lower=0.1, upper=10.0),
+            scale=1 * u.Msun,
+            description="Ejecta mass.",
+            latex=r"M_\mathrm{ej}",
+        ),
+        "v_ej": Parameter(
+            prior=TruncatedNormalPrior(mean=20.1, sigma=4.96, lower=5.0, upper=45.0),
+            scale=1e3 * u.km / u.s,
+            description="Constant ejecta velocity, identified with the photospheric velocity.",
+            latex=r"v_\mathrm{ej}",
+        ),
+        "kappa": Parameter(
+            prior=UniformPrior(lower=0.05, upper=0.15),
+            scale=1 * u.cm**2 / u.g,
+            description="Grey optical opacity.",
+            latex=r"\kappa",
+        ),
+        "kappa_gamma": Parameter(
+            prior=ConstantPrior(value=1000.0),
+            scale=1 * u.cm**2 / u.g,
+            description="Opacity to high-energy photons. Fixed at a large value (full gamma-ray trapping).",
+            latex=r"\kappa_\gamma",
+        ),
+        "T_floor": Parameter(
+            prior=TruncatedNormalPrior(mean=6000.0, sigma=1000.0, lower=3000.0, upper=10000.0),
+            scale=1 * u.K,
+            description="Minimum photospheric temperature.",
+            latex=r"T_\mathrm{floor}",
+        ),
         "A_bump": Parameter(
             prior=NormalPrior(mean=44.19, sigma=0.3),
             scale=1.0 * u.erg / u.s,

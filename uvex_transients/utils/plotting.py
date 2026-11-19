@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING
 
 import astropy.units as u
 import numpy as np
+from matplotlib import rcParams
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, to_rgba
 from matplotlib.figure import Figure
@@ -69,6 +70,7 @@ __all__ = [
     "plot_rate_bars",
     "plot_detection_horizon",
     "plot_luminosity_function",
+    "plot_archived_luminosity_function",
     "plot_swift_uv_calibration",
 ]
 
@@ -1046,6 +1048,97 @@ def plot_luminosity_function(
     return fig, ax
 
 
+def plot_archived_luminosity_function(
+    table,
+    transient_type: str,
+    source: str | None = None,
+    *,
+    band: str = "V",
+    label: str | None = None,
+    color: str | None = None,
+    ax: Axes | None = None,
+) -> tuple[Figure, Axes]:
+    r"""
+    Overplot an archived, observed luminosity function on a model's magnitude function, as points.
+
+    The archived rates have an overall normalization that is not ours (see
+    `~uvex_transients.utils.luminosity_function_archive.LuminosityFunctionArchive`), so they are compared by shape.
+    The curve is normalized to unit area over the range it covers, taking each point to be the density in a bin
+    centred on it that reaches to the midpoints between neighbouring points, and then multiplied by the fraction of the
+    model's events that fall in that same range. It therefore has the model's normalization, per event, and
+    where the two shapes agree the points lie on the model's curve. The model's events outside the range
+    of the archived curve (the faint end, usually) are the reason the area of the points is less than 1.
+
+    Parameters
+    ----------
+    table : ~astropy.table.QTable
+        The model's luminosity function, as drawn by `plot_luminosity_function`, which must be of magnitudes
+        (``meta["quantity"] == "magnitude"``).
+    transient_type : str
+        The archive's name for the type, such as ``"supernovae/Ia"``.
+    source : str, optional
+        The source of the archived curve, such as ``"ASAS-SN"``. May be left out if the type has only one.
+    band : str, optional
+        The band of both curves, such as ``"V"``.
+    label : str, optional
+        Legend label of the points. If given, the legend of the axes is redrawn to include it. Defaults to the
+        label the archive has for the curve.
+    color : str, optional
+        Color of the points. Defaults to the style's text color, so that they stand apart from the model's curves.
+    ax : matplotlib.axes.Axes, optional
+        The axes to draw onto, usually the one `plot_luminosity_function` returned. A new figure if `None`.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The resolved figure.
+    ax : matplotlib.axes.Axes
+        The axes the points were drawn onto.
+
+    Raises
+    ------
+    ValueError
+        If `table` is not a function of magnitude, or the model has no events in the range of the archived curve.
+    """
+    if table.meta.get("quantity") != "magnitude":
+        raise ValueError("An archived luminosity function is a function of magnitude; `table` must be too.")
+
+    from .luminosity_function_archive import LuminosityFunctionArchive
+
+    archived = LuminosityFunctionArchive().table(transient_type, source, band)
+    centers = np.asarray(archived["M"].value, dtype=float)
+    density = np.asarray(archived["dNdM"].value, dtype=float)
+    midpoints = 0.5 * (centers[1:] + centers[:-1])
+    edges = np.concatenate([[2 * centers[0] - midpoints[0]], midpoints, [2 * centers[-1] - midpoints[-1]]])
+    widths = np.diff(edges)
+    shape = density / np.sum(density * widths)
+
+    # The fraction of the model's events inside the range of the archived curve, from each bin's overlap with it.
+    lo, hi = np.asarray(table["lo"].value, dtype=float), np.asarray(table["hi"].value, dtype=float)
+    overlap = np.clip(np.minimum(hi, edges[-1]) - np.maximum(lo, edges[0]), 0.0, None)
+    inside = float(np.sum(np.asarray(table["pdf"].value) * overlap))
+    if inside <= 0:
+        raise ValueError("The model has no events in the magnitude range of the archived luminosity function.")
+
+    set_plot_style()
+    fig, ax = resolve_fig_axes(None, ax)
+    label = archived.meta.get("label") if label is None else label
+    ax.plot(
+        centers,
+        inside * shape,
+        "o",
+        color=color or rcParams["text.color"],
+        ms=5,
+        mec=rcParams["axes.facecolor"],
+        mew=1.2,
+        label=label,
+        zorder=5,
+    )
+    if label is not None:
+        ax.legend(frameon=False)
+    return fig, ax
+
+
 def plot_swift_uv_calibration(
     sed,
     sn_type: str,
@@ -1054,6 +1147,7 @@ def plot_swift_uv_calibration(
     n_models: int = 100,
     n_observed: int = 20,
     min_points: int = 4,
+    fixed: Mapping[str, float] | None = None,
     rng: np.random.Generator | int | None = 0,
     ax: Axes | None = None,
 ) -> Figure:
@@ -1083,6 +1177,11 @@ def plot_swift_uv_calibration(
         Maximum number of observed supernovae to overplot. The default is 20.
     min_points : int, optional
         Minimum number of detections in `band` for a supernova to be eligible. The default is 4.
+    fixed : mapping of str to float, optional
+        Dimensionless parameters of `sed` to fix at one value for every draw, in place of drawing them, for example
+        ``{"csm": 1.0}`` to show only the Type IIP events with circumstellar material. They are fixed in the model
+        (see `~uvex_transients.models.core.base.SpectralModel`), so that the parameters that depend on them are drawn
+        consistently. The default is to draw every parameter.
     rng : numpy.random.Generator or int, optional
         Random-number source for the parameter draws and the observed sample. The default is 0.
     ax : matplotlib.axes.Axes, optional
@@ -1118,7 +1217,13 @@ def plot_swift_uv_calibration(
     t_max = 1.1 * max(float(np.max(lc["t"].value)) for lc in curves)
     t = np.linspace(0.5, t_max, 250) * u.day
 
-    params = sed().sample_parameters(size=n_models, rng=rng)
+    model = sed()
+    for name in fixed or {}:
+        if name not in model:
+            raise ValueError(f"{name!r} is not a parameter of {sed.__name__}; its parameters are {list(model)}.")
+    params = sed(**{name: float(value) for name, value in (fixed or {}).items()}).sample_parameters(
+        size=n_models, rng=rng
+    )
     params_grid = {name: value[:, None] for name, value in params.items()}
     mag = sed.mag_bandpass(get_bandpass(f"Swift/UVOT.{band}"), t, redshift=z_ref, **params_grid)
     f_nu = mag.to(u.erg / u.s / u.cm**2 / u.Hz)

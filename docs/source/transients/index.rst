@@ -88,12 +88,12 @@ underlying physics in any detail.
       :link-type: doc
       :class-card: sd-shadow-sm sd-border-1
 
-      Hydrogen-bearing core-collapse supernovae: Type IIP events with a months-long plateau (plus
-      a rarer, brighter/hotter early-excess IXF/GGI-like variant), and Type IIb events, a
+      Hydrogen-bearing core-collapse supernovae: Type IIP events with a months-long plateau (a
+      fraction of which have a brighter, hotter early excess like SN 2023ixf), and Type IIb events, a
       double-pulse phenomenological model spanning single- and double-peaked light curves.
 
       +++
-      :math:`z \le 0.51`-:math:`0.99` · 100-200 day window
+      :math:`z \le 0.93`-:math:`1.0` · 100-200 day window
 
    .. grid-item-card:: Type I Supernovae
       :link: type_i

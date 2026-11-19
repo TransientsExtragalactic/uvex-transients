@@ -1,8 +1,8 @@
 """Access to the packaged archive of observed luminosity functions (``test_data/transients/luminosity_functions.h5``).
 
-The archive holds each curve under ``/<transient_type>/luminosity_function_<band>/<source>/{M, dAndM}``, with
+The archive holds each curve under ``/<transient_type>/luminosity_function_<band>/<source>/{M, dNdM}``, with
 ``<transient_type>`` named as in the light-curve archive (`~uvex_transients.utils.lightcurve_archive`), for example
-``supernovae/Ia``. ``M`` is the peak absolute magnitude in the band and ``dAndM`` the volumetric rate per magnitude,
+``supernovae/Ia``. ``M`` is the peak absolute magnitude in the band and ``dNdM`` the volumetric rate per magnitude,
 stored as given by the source. The rates have an overall normalization that is not ours, so the curves compare to a
 model by shape: normalize both over the same range of ``M``.
 """
@@ -39,7 +39,7 @@ class LuminosityFunctionArchive:
     >>> lf = archive.table(
     ...     "supernovae/Ia", "ASAS-SN"
     ... )  # doctest: +SKIP
-    >>> lf["M"], lf["dAndM"]  # doctest: +SKIP
+    >>> lf["M"], lf["dNdM"]  # doctest: +SKIP
     """
 
     def __init__(self, path: str | Path | None = None):
@@ -104,7 +104,7 @@ class LuminosityFunctionArchive:
         Returns
         -------
         astropy.table.QTable
-            Columns ``M`` (peak absolute magnitude, ascending, in `~astropy.units.mag`) and ``dAndM`` (rate per
+            Columns ``M`` (peak absolute magnitude, ascending, in `~astropy.units.mag`) and ``dNdM`` (rate per
             magnitude, in Mpc^-3 yr^-1 mag^-1). ``.meta`` holds the attributes of the source group: the label it has
             in the source file and the header that says what the axes are.
 
@@ -120,7 +120,7 @@ class LuminosityFunctionArchive:
             source = sources[0]
         with h5py.File(self.path, "r") as f:
             group = f[f"{transient_type}/luminosity_function_{band}/{source}"]
-            table = QTable({"M": group["M"][()] * u.mag, "dAndM": group["dAndM"][()] * u.Mpc**-3 / u.yr / u.mag})
+            table = QTable({"M": group["M"][()] * u.mag, "dNdM": group["dNdM"][()] * u.Mpc**-3 / u.yr / u.mag})
             table.meta.update(group.attrs)
         return table
 

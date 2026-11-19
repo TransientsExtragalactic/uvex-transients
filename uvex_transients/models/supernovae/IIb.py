@@ -2,12 +2,13 @@
 
 from typing import ClassVar
 
+import numpy as np
 from astropy import units as u
 
 from uvex_transients.models.core.parameters import Parameter
-from uvex_transients.models.core.priors import ConstantPrior, TruncatedNormalPrior
+from uvex_transients.models.core.priors import LogNormalPrior, TruncatedNormalPrior
 from uvex_transients.models.shock_cooling.morag import MoragShockCoolingArnettSED, MoragShockCoolingSED
-from uvex_transients.models.supernovae.Ibc import TypeIbSED
+from uvex_transients.models.supernovae.Ibc import _TypeIbIntrinsicSED
 
 __all__ = ["TypeIIbSED"]
 
@@ -34,10 +35,14 @@ class TypeIIbSED(MoragShockCoolingArnettSED):
     breakout, a trough, then the rise to the nickel peak.
 
     The shock cooling priors are those of
-    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, and the nickel priors, including
-    the line-blanketing parameters ``break_frequency`` and ``beta``, are those of
-    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, except ``M_Ni``, which is lowered to a
-    Type IIb-like truncated normal (mean :math:`0.1\,M_\odot`, :math:`\sigma=0.07\,M_\odot`, bounds 0.01 to 0.4). See
+    :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingSED`, except ``radius`` and
+    ``envelope_mass``, whose widths (:math:`\sigma_{\ln}=1.1` and 1.3, against 0.85 and 1.0) are increased so that the
+    spread of the early UV peaks covers that of the Swift/UVOT sample. The nickel priors are those of
+    :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (without its host dust: this model has none), except
+    ``M_Ni``, a log-normal truncated to 0.005 to 1.5 :math:`M_\odot` (median :math:`0.02\,M_\odot`,
+    :math:`\sigma_{\ln}=1.1`) set against the ASAS-SN luminosity function of SNe IIb. The line blanketing
+    (``break_frequency``, ``beta``) is that of Type Ib, set against Swift/UVOT, and applies to the nickel component
+    only. See
     :class:`~uvex_transients.models.shock_cooling.morag.MoragShockCoolingArnettSED` for how the two components are
     combined.
 
@@ -59,22 +64,32 @@ class TypeIIbSED(MoragShockCoolingArnettSED):
     .. footbibliography::
     """
 
-    _ARNETT_SED: ClassVar[type[TypeIbSED]] = TypeIbSED
-    _ARNETT_PARAMETERS: ClassVar[tuple[str, ...]] = tuple(TypeIbSED._DEFAULT_PARAMETERS)
+    _ARNETT_SED: ClassVar[type[_TypeIbIntrinsicSED]] = _TypeIbIntrinsicSED
+    _ARNETT_PARAMETERS: ClassVar[tuple[str, ...]] = tuple(_TypeIbIntrinsicSED._DEFAULT_PARAMETERS)
 
     _DEFAULT_PARAMETERS: ClassVar[dict[str, Parameter]] = {
         **MoragShockCoolingSED._DEFAULT_PARAMETERS,
-        **TypeIbSED._DEFAULT_PARAMETERS,
-        "M_Ni": Parameter(
-            prior=TruncatedNormalPrior(mean=0.1, sigma=0.07, lower=0.01, upper=0.4),
-            scale=1 * u.Msun,
-            description="Nickel-56 mass synthesized in the explosion.",
-            latex=r"M_\mathrm{Ni}",
+        **_TypeIbIntrinsicSED._DEFAULT_PARAMETERS,
+        # Wider than the Morag+24 priors (sigma_ln 0.85 and 1.0), so that the spread of the early UV peaks covers the
+        # Swift/UVOT Type IIb sample, whose peaks span about 3 dex. The mean of each is unchanged.
+        "radius": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=1.1),
+            scale=6e12 * u.cm,
+            description="Progenitor stellar radius.",
+            latex=r"R",
         ),
-        "beta": Parameter(
-            prior=ConstantPrior(value=4.0),
-            scale=1.0,
-            description="Power-law index of the suppression above the break.",
-            latex=r"\beta",
+        "envelope_mass": Parameter(
+            prior=LogNormalPrior(mean=0.0, sigma=1.3),
+            scale=0.05 * u.Msun,
+            description="Hydrogen-rich envelope mass.",
+            latex=r"M_E",
+        ),
+        "M_Ni": Parameter(
+            # A normal in ln(M_Ni / Msun), truncated. Quantiles: 0.009 [16%], 0.023 [50%], 0.065 [84%], 0.18 [97.5%].
+            prior=TruncatedNormalPrior(mean=np.log(0.02), sigma=1.1, lower=np.log(0.005), upper=np.log(1.5)),
+            scale=1 * u.Msun,
+            transform="log",
+            description="Nickel-56 mass synthesized in the explosion (log-normal, set against the ASAS-SN LF).",
+            latex=r"M_\mathrm{Ni}",
         ),
     }

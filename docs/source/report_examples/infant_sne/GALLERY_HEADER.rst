@@ -18,7 +18,7 @@ Infant Supernovae
 The sample
 ==========
 
-Every supernova class of the Standard Run (Ia, Ib, Ic, Ic-BL, IIP, IIP with an early excess, IIb and the SLSNe) is
+Every supernova class of the Standard Run (Ia, Ib, Ic, Ic-BL, IIP, IIb and the SLSNe) is
 sampled over **only the 72 hours after explosion**, since an infant supernova is caught in its first days. Events
 are generated at their true rate, with no downsampling, and observed against the UVEX survey schedule. Two screens
 reduce them to the detected sample:

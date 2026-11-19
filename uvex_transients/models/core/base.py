@@ -520,10 +520,39 @@ class _ModelBase(Mapping[str, Parameter], ABC):
             parameters = list(self._parameters.keys())
 
         rng = get_rng(rng)
+        latent = self._sample_latent_parameters(size, rng)
         return {
-            parameter_name: parameter.sample(size=size, rng=rng)
+            parameter_name: parameter.transform_latent_to_physical(latent[parameter_name])
             for parameter_name, parameter in self._parameters.items()
             if parameter_name in parameters
+        }
+
+    def _sample_latent_parameters(self, size: int, rng: np.random.Generator) -> dict[str, FloatArray]:
+        """
+        Draw the latent variable of every parameter, all from one random stream.
+
+        This is the one place a model's parameters are drawn, and :meth:`sample_parameters` and the per-event
+        regeneration from a ``parameter_seed`` (``simulation.core._sample_parameters_from_seeds``) both go through
+        it, so they cannot disagree. The default draws each parameter independently from its own prior, in
+        declaration order. A model whose parameters are correlated overrides it to draw them jointly (see
+        :class:`~uvex_transients.models.supernovae.IIp.TypeIIPSED`). An override must return a latent array of
+        shape ``(size,)`` for every parameter, must honor a fixed parameter (:attr:`Parameter.is_fixed`), and must
+        draw only from ``rng``, so that a seed fixes the draw.
+
+        Parameters
+        ----------
+        size : int
+            Number of samples to draw per parameter.
+        rng : numpy.random.Generator
+            The random-number source.
+
+        Returns
+        -------
+        dict
+            ``{name: latent samples}`` for each of this model's parameters, each with shape ``(size,)``.
+        """
+        return {
+            name: parameter.sample_latent_variable(size=size, rng=rng) for name, parameter in self._parameters.items()
         }
 
 
