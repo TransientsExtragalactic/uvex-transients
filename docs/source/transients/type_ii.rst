@@ -706,9 +706,10 @@ implemented as its own transient population in a tab below.
 
       .. note::
 
-         The shock cooling priors are those of :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`
-         and the nickel priors are those of the Type Ib SED
-         (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, without its host dust). Neither is a fit to Type IIb events, and
+         The shock cooling priors are those of :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`,
+         except that ``radius`` and ``envelope_mass`` are wider (see the UV calibration below), and the nickel priors are those of the Type Ib SED
+         (:class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED`, without its host dust). Neither is a fit to Type IIb events, except that the
+         nickel mass was set against the ASAS-SN luminosity function of SNe IIb (see the luminosity function below), and
          the duration below was derived for an earlier, phenomenological Type IIb SED. It needs to be
          recomputed.
 
@@ -735,7 +736,7 @@ implemented as its own transient population in a tab below.
              :class:`~uvex_transients.transients.supernovae.ShockCoolingIIb` -- both describe the
              same underlying Type IIb population, just with different SED models.
          * - Redshift limit
-           - :math:`z = 0.79`
+           - :math:`z = 1.25`
            - --
            - Redshift beyond which, with 95% confidence, at most 1% of events drawn from the SED's
              priors are brighter than 24.5 AB (the UVEX 1 Dwell limit) in either UVEX band,
@@ -773,9 +774,8 @@ implemented as its own transient population in a tab below.
          The shock cooling parameters have the priors of
          :class:`~uvex_transients.models.shock_cooling.MoragShockCoolingSED`, and the nickel and
          line-blanketing parameters those of :class:`~uvex_transients.models.supernovae.Ibc.TypeIbSED` (which
-         has host dust, that this model does not), except ``M_Ni``, ``beta`` and ``break_frequency``, the last
-         two of which keep the values they had before the line blanketing of Type Ib was re-set against
-         Swift/UVOT. The line blanketing applies to the nickel component only: the shock cooling
+         has host dust, that this model does not), except ``M_Ni``. The line blanketing is that of Type Ib, set against
+         Swift/UVOT (see the UV calibration below), and applies to the nickel component only: the shock cooling
          component is an unblanketed blackbody.
 
          .. list-table::
@@ -792,24 +792,26 @@ implemented as its own transient population in a tab below.
               - Scale velocity of the shock near the stellar surface.
             * - ``radius``
               - :math:`R`
-              - LogNormal(:math:`\sigma`\=0.85) around :math:`6\times10^{12}` cm
-              - Progenitor stellar radius.
+              - LogNormal(:math:`\sigma`\=1.1) around :math:`6\times10^{12}` cm
+              - Progenitor stellar radius. Wider than the Morag value (0.85): see the UV calibration below.
             * - ``opacity``
               - :math:`\kappa`
               - Fixed (0.34 cm\ :sup:`2` g\ :sup:`-1`)
               - Electron-scattering opacity of the shock cooling.
             * - ``envelope_mass``
               - :math:`M_E`
-              - LogNormal(:math:`\sigma`\=1.0) around :math:`0.05\ M_\odot`
-              - Hydrogen-rich envelope mass.
+              - LogNormal(:math:`\sigma`\=1.3) around :math:`0.05\ M_\odot`
+              - Hydrogen-rich envelope mass. Wider than the Morag value (1.0): see the UV calibration below.
             * - ``core_mass``
               - :math:`M_C`
               - LogNormal(:math:`\sigma`\=0.35) around :math:`2.8\ M_\odot`
               - Core mass.
             * - ``M_Ni``
               - :math:`M_\mathrm{Ni}`
-              - TruncatedNormal(mean=0.1, :math:`\sigma`\=0.07, bounds 0.01 to 0.4 :math:`M_\odot`)
-              - Nickel-56 mass. Set for Type IIb; higher than the Type Ib median (0.06 :math:`M_\odot`).
+              - LogNormal(median 0.02 :math:`M_\odot`, :math:`\sigma_{\ln}`\=1.1), bounds 0.005 to 1.5 :math:`M_\odot`
+              - Nickel-56 mass, set against the ASAS-SN luminosity function of SNe IIb. It is below the Type Ib median
+                (0.06 :math:`M_\odot`), and was not checked against measured Type IIb nickel masses: see the
+                luminosity function below.
             * - ``M_ej``
               - :math:`M_\mathrm{ej}`
               - TruncatedNormal(mean=2.3, :math:`\sigma`\=2.2, bounds 0.1 to 20 :math:`M_\odot`)
@@ -832,12 +834,12 @@ implemented as its own transient population in a tab below.
               - Minimum photospheric temperature of the nickel component.
             * - ``break_frequency``
               - :math:`\nu_\mathrm{break}`
-              - Fixed (:math:`0.75\times10^{15}` Hz)
-              - Frequency blueward of which line blanketing suppresses the nickel component.
+              - Fixed (:math:`1.4\times10^{15}` Hz)
+              - Frequency blueward of which line blanketing suppresses the nickel component. The Type Ib value.
             * - ``beta``
               - :math:`\beta`
-              - Fixed (4.0)
-              - Power-law index of the line-blanketing suppression. Weaker than the Type Ib value of 5.
+              - Fixed (3)
+              - Power-law index of the line-blanketing suppression. The Type Ib value.
 
       .. rubric:: Simulated Light Curves
 
@@ -951,9 +953,19 @@ implemented as its own transient population in a tab below.
       the rest (grey) are timed from discovery, so they sit to the left of where the model places the same phase, by
       an amount that differs from event to event.
 
-      Only the nickel component of this SED is line-blanketed (``beta`` = 4), so the UV in the first days is
+      Only the nickel component of this SED is line-blanketed, with the values set for Type Ib (not refit to Type IIb), so the UV in the first days is
       set by the unblanketed shock cooling component. 7 Type IIb supernovae have at least four UVW1 detections, and
       6 have at least four UVW2 detections.
+
+      Nine Type IIb supernovae have Swift detections, all timed from discovery. The peak :math:`\nu L_\nu` of each, in
+      the model's distribution of peaks at :math:`z=0.01` (taken over the epochs the supernova was observed), has a
+      median percentile of about 40% in UVW1, so the model is not low overall. The events span 3 dex in peak
+      luminosity. The ``radius`` and ``envelope_mass`` priors of the shock cooling were widened (from 0.85 and 1.0 to
+      1.1 and 1.3 in :math:`\sigma_{\ln}`) to widen the model's 95% range of UV peaks from 2.5 dex to 2.9 dex. SN 2013cu,
+      which has the brightest peak (:math:`\log\nu L_\nu=43.2` in UVW1), remains at about the 99th percentile of the model,
+      which one event in nine is unlikely to do by chance, so the model's bright tail is probably still too short. The
+      Type Ib values of the line blanketing were not refit to these events, and
+      the data are too few to constrain it.
 
       .. plot::
          :include-source: false
@@ -988,6 +1000,19 @@ implemented as its own transient population in a tab below.
       Johnson V band luminosity, a fixed conversion of the luminosity rather than the photon-weighted
       magnitude of the SED itself.
 
+      The points are the luminosity function of SNe IIb of ASAS-SN, which the ``M_Ni`` prior was set against (so this
+      is a check of that choice, not an independent test). They are absolute rates, and the integrated rate over them,
+      :math:`9.5\times10^{-6}` SNe/Mpc\ :sup:`3`/yr, is within 12% of the rate adopted above, so the plot shows them
+      scaled by shape, as for Type IIP, but no normalization was fit. The nickel mass is the only parameter
+      that matters here: it has a correlation of 0.8 with the peak luminosity, and the shock cooling and ejecta
+      mass parameters are weak knobs. There are seven points, with fractional errors that are not given, and they are
+      not smooth (the :math:`M_V=-17.4` point lies below both neighbours), so the fit is limited to about 0.35 dex rms
+      by the data. It prefers median nickel masses of 0.01 to 0.02 :math:`M_\odot` with a wide scatter, and the adopted
+      0.02 :math:`M_\odot` is the upper end of what the data allow. That is below the Type Ib median (0.06
+      :math:`M_\odot`) and the 0.1 :math:`M_\odot` that this model used before, and it was not checked against
+      nickel masses measured for Type IIb events. The model has too many events at :math:`M_V=-16.1` and too few
+      at :math:`M_V=-15.4`, which has most of the observed rate.
+
       .. plot::
          :include-source: false
 
@@ -995,11 +1020,12 @@ implemented as its own transient population in a tab below.
 
          from uvex_transients.transients.supernovae import TypeIIbSNe
          from uvex_transients.utils.filter_utils import get_bandpass
-         from uvex_transients.utils.plotting import plot_luminosity_function
+         from uvex_transients.utils.plotting import plot_archived_luminosity_function, plot_luminosity_function
 
          v_band = get_bandpass("Generic/Johnson.V")
          lf = TypeIIbSNe().luminosity_function(v_band, 10000, quantity="magnitude", bins=30, rng=0)
-         plot_luminosity_function(lf, band="V")
+         fig, ax = plot_luminosity_function(lf, band="V", label="Model")
+         plot_archived_luminosity_function(lf, "supernovae/IIb", "ASAS-SN", ax=ax)
          plt.show()
 
       .. rubric:: Observability Summary
@@ -1011,9 +1037,13 @@ implemented as its own transient population in a tab below.
       detectable out to the redshift where its line crosses the UVEX 1 Dwell limit of
       :math:`m<24.5`. The right panel shows the redshift beyond which, with 95% confidence, at most
       1% of the population is detectable, as a function of the magnitude limit. The redshift limit
-      adopted above, :math:`z=0.79`, is its value at :math:`m=24.5`, rounded up and derived on a
+      adopted above, :math:`z=1.25`, is its value at :math:`m=24.5`, rounded up and derived on a
       finer grid than this plot's. Epochs earlier than 0.1 d are excluded from the light curve, because the
       shock cooling luminosity of this SED grows without bound toward :math:`t\to0`.
+
+      The limit is set by the brightest early shock cooling peaks, which the Swift data constrain only weakly (see the UV
+      calibration above), and it rose from 0.79 to 1.25 when the ``radius`` and ``envelope_mass`` priors were widened.
+      It is an extrapolation.
 
       The limit bounds the fraction of the *population* that is detectable beyond it, not the
       fraction of detected events, and it does not include Milky Way extinction or sky position.

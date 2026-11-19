@@ -239,7 +239,7 @@ class TypeIIbSNe(_CoreCollapseSNe):
     DEFAULT_DURATION = 200 * u.day
     # Redshift beyond which, with 95% confidence, at most 1% of draws from the SED's priors are brighter than
     # 24.5 AB in either UVEX band (`ExtragalacticTransient.get_detection_horizon`), rounded up.
-    DEFAULT_Z_LIM = 0.79
+    DEFAULT_Z_LIM = 1.25
     # The shock cooling component is evaluated at every epoch and its luminosity grows without bound toward t -> 0,
     # so the horizon is taken from 0.1 d after explosion, where its formulas are not wildly outside their regime.
     HORIZON_T_MIN = 0.1 * u.day
