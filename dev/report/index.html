@@ -53,6 +53,7 @@
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/sg-tags.js?v=d80f6fa4"></script>
     <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'report/index';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
@@ -421,28 +422,9 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="full_run/index.html">Standard Run</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="full_run/event_detection/index.html">Event Detection</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="full_run/event_detection/plot_footprint_overlap.html">Overlap With Other Surveys</a></li>
-<li class="toctree-l3"><a class="reference internal" href="full_run/event_detection/plot_detected_yields.html">Expected Detections</a></li>
-</ul>
-</details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="full_run/transient_characterization/index.html">Transient Characterization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="full_run/transient_characterization/plot_characterized_footprints.html">Overlap of Characterized Events</a></li>
-<li class="toctree-l3"><a class="reference internal" href="full_run/transient_characterization/plot_characterization.html">Standard Cuts and Yields</a></li>
-</ul>
-</details></li>
-</ul>
-</details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="infant_sne/index.html">Infant Supernovae</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="infant_sne/plot_infant_sne_yields.html">Infant Supernova Triggers</a></li>
-</ul>
-</details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="phase_space/index.html">Phase-Space Maps</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="phase_space/plot_detection_maps.html">Detection Maps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="phase_space/plot_class_efficiencies.html">Classes on the Maps</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="full_run/index.html">Standard Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infant_sne/index.html">Infant Supernovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase_space/index.html">Phase-Space Maps</a></li>
 </ul>
 </div>
 </nav></div>
@@ -518,10 +500,10 @@ starting from the released data products.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>No published release report is available yet (or it could not be fetched during this
-documentation build, see the build log for details). Once a <code class="docutils literal notranslate"><span class="pre">vX.Y.Z</span></code> release with
-<code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> attached is published, this page will be generated automatically on
-the next documentation build.</p>
+<p>This page is generated from the latest published release, <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases/tag/v0.6.5alpha">v0.6.5alpha</a>, specifically
+its <code class="docutils literal notranslate"><span class="pre">event_summary.ecsv</span></code> data product. Every data product (the event catalog, photometry,
+exposure, and per-event summary) is attached to that release on GitHub, and earlier releases are
+listed on the <a class="reference external" href="https://github.com/TransientsExtragalactic/uvex-transients/releases">releases page</a>.</p>
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -537,7 +519,8 @@ actions applied to them, and <a class="reference internal" href="../user_guide/c
 <p class="topic-title">On this page</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#available-simulations" id="id1">Available Simulations</a></p></li>
-<li><p><a class="reference internal" href="#simulations" id="id2">Simulations</a></p></li>
+<li><p><a class="reference internal" href="#transient-detection-report" id="id2">Transient Detection Report</a></p></li>
+<li><p><a class="reference internal" href="#simulations" id="id3">Simulations</a></p></li>
 </ul>
 </nav>
 <section id="available-simulations">
@@ -574,8 +557,97 @@ full scale; the others each target one science case.</p>
 </table>
 </div>
 </section>
+<section id="transient-detection-report">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Transient Detection Report</a><a class="headerlink" href="#transient-detection-report" title="Link to this heading">#</a></h2>
+<p>The <strong>0th-order</strong> result of the TYR is the number of transients UVEX <em>detects</em> over its 2-year prime
+mission. Here, an event is <strong>detected</strong> if the survey observes its position after it explodes and, in at
+least one observation and in at least one band (FUV or NUV), its signal-to-noise ratio exceeds 5. An
+event whose only such observation is the first-ever visit to that field is not counted, since there is no
+reference image to detect it against. A detection says only that UVEX <em>sees</em> the event: it does not mean
+the event can be characterized or classified, which needs more observations and is a subject for
+downstream analysis.</p>
+<p>The table gives, for each transient type of the Standard Run, the expected number of real events that
+UVEX detects. The first uncertainty is the 90% Clopper-Pearson interval from the finite
+Monte Carlo sample, and the second is the uncertainty on the event rate. The overlap columns are the
+percentage of those detected events whose sky position lies inside the footprint of ZTF
+(Palomar-visible sky) or Rubin (the LSST main survey and deep drilling fields). They are sky overlap
+only, and do not account for whether those surveys observed the event at the right time.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 34.0%" />
+<col style="width: 38.0%" />
+<col style="width: 14.0%" />
+<col style="width: 14.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Transient Type</p></th>
+<th class="head"><p>Expected Detections</p></th>
+<th class="head"><p>% ZTF Overlap</p></th>
+<th class="head"><p>% Rubin Overlap</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ia SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(3,548^{+470}_{-427}\,{}^{+273}_{-273}\)</span></p></td>
+<td><p>77.6%</p></td>
+<td><p>67.2%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ib SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(350^{+168}_{-123}\,{}^{+157}_{-166}\)</span></p></td>
+<td><p>83.3%</p></td>
+<td><p>72.2%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(239^{+147}_{-101}\,{}^{+122}_{-127}\)</span></p></td>
+<td><p>83.3%</p></td>
+<td><p>50.0%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_i.html"><span class="doc">Type Ic-BL SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(183^{+135}_{-87.4}\,{}^{+155}_{-183}\)</span></p></td>
+<td><p>55.6%</p></td>
+<td><p>77.8%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIb SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(16,557^{+1,401}_{-1,314}\,{}^{+7,524}_{-7,917}\)</span></p></td>
+<td><p>80.7%</p></td>
+<td><p>67.1%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/type_ii.html"><span class="doc">Type IIP SNe</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(262,135^{+8,536}_{-8,325}\,{}^{+77,536}_{-87,826}\)</span></p></td>
+<td><p>81.3%</p></td>
+<td><p>69.1%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/kilonovae.html"><span class="doc">Kilonova</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0924^{+0.345}_{-0.0877}\,{}^{+0.161}_{-0.0689}\)</span></p></td>
+<td><p>0.0%</p></td>
+<td><p>100.0%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/lfbots.html"><span class="doc">LFBOT</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(194^{+6.69}_{-6.55}\,{}^{+48.5}_{-176}\)</span></p></td>
+<td><p>78.9%</p></td>
+<td><p>70.5%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/llgrb.html"><span class="doc">Low-Luminosity GRB</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(899^{+48.9}_{-47.1}\,{}^{+1,915}_{-743}\)</span></p></td>
+<td><p>79.8%</p></td>
+<td><p>68.7%</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../transients/slsne.html"><span class="doc">SLSNe (Magnetar)</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(7,901^{+563}_{-546}\,{}^{+2,956}_{-4,281}\)</span></p></td>
+<td><p>81.2%</p></td>
+<td><p>66.9%</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../transients/tdes.html"><span class="doc">Tidal Disruption Event</span></a></p></td>
+<td><p><span class="math notranslate nohighlight">\(5,763^{+118}_{-117}\,{}^{+1,115}_{-1,859}\)</span></p></td>
+<td><p>79.4%</p></td>
+<td><p>69.1%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="simulations">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Simulations</a><a class="headerlink" href="#simulations" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Simulations</a><a class="headerlink" href="#simulations" title="Link to this heading">#</a></h2>
 <p>Each <strong>simulation</strong> is its own run of the pipeline, built for one science case: its own transient classes,
 parameter priors, sampling and selection cuts, and therefore its own data products. Each card below opens a
 gallery of the analyses done on that simulation. The examples download its data from the latest release with
@@ -677,6 +749,7 @@ rebuilt with the docs, so they follow the latest release.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-simulations">Available Simulations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transient-detection-report">Transient Detection Report</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulations">Simulations</a></li>
 </ul>
   </nav></div>

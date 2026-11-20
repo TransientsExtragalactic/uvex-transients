@@ -134,7 +134,9 @@ The event summary has one row per detected event, and the photometry one row per
 
  .. code-block:: none
 
-    Skipping this page's analysis, the release data is not available: Release v0.6.5alpha has no simulation 'infant_sne' (no asset 'infant_sne.zip'). Available simulations: [].
+    Extracting event_summary.ecsv:   0%|          | 0.00/3.62M [00:00<?, ?B/s]    Extracting event_summary.ecsv: 100%|██████████| 3.62M/3.62M [00:00<00:00, 354MB/s]
+    Extracting photometry.ecsv:   0%|          | 0.00/30.3M [00:00<?, ?B/s]    Extracting photometry.ecsv:   3%|▎         | 1.00M/30.3M [00:00<00:11, 2.57MB/s]    Extracting photometry.ecsv:  13%|█▎        | 4.00M/30.3M [00:00<00:04, 5.69MB/s]    Extracting photometry.ecsv:  23%|██▎       | 7.00M/30.3M [00:01<00:03, 6.65MB/s]    Extracting photometry.ecsv:  30%|██▉       | 9.00M/30.3M [00:01<00:03, 6.10MB/s]    Extracting photometry.ecsv:  40%|███▉      | 12.0M/30.3M [00:02<00:02, 6.61MB/s]    Extracting photometry.ecsv:  50%|████▉     | 15.0M/30.3M [00:02<00:02, 7.27MB/s]    Extracting photometry.ecsv:  56%|█████▌    | 17.0M/30.3M [00:02<00:02, 6.78MB/s]    Extracting photometry.ecsv:  66%|██████▌   | 20.0M/30.3M [00:03<00:01, 7.24MB/s]    Extracting photometry.ecsv:  76%|███████▌  | 23.0M/30.3M [00:03<00:01, 7.45MB/s]    Extracting photometry.ecsv:  83%|████████▎ | 25.0M/30.3M [00:03<00:00, 6.73MB/s]    Extracting photometry.ecsv:  93%|█████████▎| 28.0M/30.3M [00:04<00:00, 7.24MB/s]    Extracting photometry.ecsv: 100%|██████████| 30.3M/30.3M [00:04<00:00, 7.34MB/s]
+    Loaded 4409 events and 135436 photometry rows.
 
 
 
@@ -251,6 +253,12 @@ non-detection, so they do not depend on the cadence. They are what a survey that
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    There are 10 infant SNe, and 50 in theory.
+
 
 
 
@@ -295,6 +303,13 @@ passing epoch, which is the time at which that trigger would fire.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    (a) brightened >= 3.0 mag: 10 of 10 infant SNe
+    (b) rate >= 3.0 mag/day: 6 of 10 infant SNe
+
 
 
 
@@ -323,6 +338,12 @@ An infant SN is triggered if (a) OR (b) holds, restricted to the conditions swit
 
 
 
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Triggered on 10 of 10 infant SNe.
 
 
 
@@ -416,6 +437,22 @@ conservative. Rare categories are dominated by the Monte Carlo error.
 
 
 
+.. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_001.png
+   :alt: Yield (X=3.0 mag, Y=3.0 mag/day, infant: m <= 20.0 within 48 hr) black: Monte Carlo error, grey: rate uncertainty
+   :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Detections (overall)       4407.7  MC +103.2/-100.7  rate +1431.5/-1591.8
+    Infants                      10.0  MC +9.9/-4.3  rate +3.7/-4.0
+    Infants (theory)             49.9  MC +15.3/-10.7  rate +16.7/-18.6
+    (a)                          10.0  MC +9.9/-4.3  rate +3.7/-4.0
+    (b)                           6.0  MC +9.1/-3.1  rate +2.1/-2.3
+    (a) OR (b)                   10.0  MC +9.9/-4.3  rate +3.7/-4.0
 
 
 
@@ -450,6 +487,19 @@ What kinds of events are the infant SNe? The raw counts, and the expected number
 
 
 
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    10 infant SNe (10.0 expected)
+        iip_sne            5 events  (5.0 +5.5/-3.0 expected, Monte Carlo error)
+        iib_sne            5 events  (4.9 +5.5/-3.0 expected, Monte Carlo error)
+        ia_sne             0 events  (0.0 +3.1/-0.0 expected, Monte Carlo error)
+        ib_sne             0 events  (0.0 +2.6/-0.0 expected, Monte Carlo error)
+        icbl_sne           0 events  (0.0 +2.2/-0.0 expected, Monte Carlo error)
+        ic_sne             0 events  (0.0 +2.9/-0.0 expected, Monte Carlo error)
+        slsne              0 events  (0.0 +2.9/-0.0 expected, Monte Carlo error)
 
 
 
@@ -605,6 +655,30 @@ lines are the last non-detection of each band. The inset zooms in on the first d
 
 
 
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_002.png
+         :alt: Event 29944 (iib_sne, z = 0.035)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_003.png
+         :alt: Event 6006 (iip_sne, z = 0.025)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_004.png
+         :alt: Event 25369 (iip_sne, z = 0.021)
+         :srcset: /report/infant_sne/images/sphx_glr_plot_infant_sne_yields_004.png
+         :class: sphx-glr-multi-img
+
 
 
 
@@ -612,7 +686,7 @@ lines are the last non-detection of each band. The inset zooms in on the first d
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.498 seconds)
+   **Total running time of the script:** (0 minutes 9.519 seconds)
 
 
 .. _sphx_glr_download_report_infant_sne_plot_infant_sne_yields.py:
