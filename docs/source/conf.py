@@ -108,7 +108,17 @@ html_theme_options = {
     # Local/dev builds have no matching entry in versions.json (and no network
     # guarantee); don't fail the build over it.
     "check_switcher": False,
+    # Only expand the active branch of the sidebar tree. By default pydata writes the whole site's
+    # toctree into every page, and the API reference alone has >3000 autosummary pages, so the
+    # published docs were ~1 GB per version (91% of each API page was repeated sidebar markup).
+    "collapse_navigation": True,
+    "navigation_depth": 2,
 }
+
+# The autosummary-generated API pages (one per class, method and attribute) get no primary
+# sidebar at all: it is the largest source of repeated markup, and these pages are reached
+# through the API index and the navbar anyway. Their own in-page contents stay.
+html_sidebars = {"_as_gen/*": []}
 
 html_favicon = "images/uvex_logos/UVEX_HorizIcon_Black.png"
 
