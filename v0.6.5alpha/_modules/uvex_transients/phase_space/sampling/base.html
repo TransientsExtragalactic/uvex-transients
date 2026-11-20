@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.phase_space.sampling.base &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/phase_space/sampling/base';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.5alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/UVEX_HorizIcon_Black.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/UVEX_HorizIcon_White.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/UVEX_HorizIcon_Black.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.phase_space.sampling.base</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.phase_space.sampling.base</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">The core of the sampling infrastructure: the sampler contract, its products and the stopping rule.</span>
+
+<span class="sd">This module knows nothing about surveys. The samplers that simulate one are in</span>
+<span class="sd">:mod:`~uvex_transients.phase_space.sampling.core` and :mod:`~uvex_transients.phase_space.sampling.breakout`.</span>
+
+<span class="sd">Products: the quantities of a map, each of which owns how it is made.</span>
+
+<span class="sd">A fitted map is of one thing, the success fraction :math:`f` over the space. Everything else a figure or a table shows</span>
+<span class="sd">is made from it and from the point: the fraction times a volume-time is an expected yield, the fraction times a rate on</span>
+<span class="sd">top of that is an expected count, and a redshift limit does not involve the fraction at all. A</span>
+<span class="sd">:class:`~uvex_transients.phase_space.sampling.base.Product` is one of those quantities. It is a callable that takes the</span>
+<span class="sd">points and the map"s :class:`~uvex_transients.phase_space.sampling.base.Estimate` of the success fraction there and</span>
+<span class="sd">returns the columns it creates, so it is free to combine them however the quantity needs. Nothing else has to know what</span>
+<span class="sd">a volume-time or a rate is.</span>
+
+<span class="sd">A sampler supplies its own products (:attr:`~uvex_transients.phase_space.sampling.base.Sampler.products`), which are</span>
+<span class="sd">built around whatever machinery of the sampler they need. :class:`~uvex_transients.phase_space.sampling.base.Scale` and</span>
+<span class="sd">:class:`~uvex_transients.phase_space.sampling.base.Weighted` cover the two common cases, a quantity of the point alone</span>
+<span class="sd">and the success fraction times one.</span>
+
+<span class="sd">The sampler: how many detections in n tries at a point of the space.</span>
+
+<span class="sd">A phase-space map asks one question of the world, again and again: at this point `x`, of `n` independent tries, how</span>
+<span class="sd">many succeed? A :class:`~uvex_transients.phase_space.sampling.base.Sampler` answers it, and nothing else. It does not</span>
+<span class="sd">decide how many tries to make (that is the</span>
+<span class="sd">:class:`~uvex_transients.phase_space.sampling.base.StoppingRule`) and it does not know about the Gaussian process that</span>
+<span class="sd">models the answers (that is the map). What it does know is the physics of one kind of experiment:</span>
+
+<span class="sd">* :attr:`Sampler.space &lt;uvex_transients.phase_space.sampling.base.Sampler.space&gt;` is the</span>
+<span class="sd">  :class:`~uvex_transients.phase_space.space.Space` the experiment is over, with its axes and their default ranges;</span>
+<span class="sd">* :meth:`Sampler.draw &lt;uvex_transients.phase_space.sampling.base.Sampler.draw&gt;` makes `n` tries at a point and returns</span>
+<span class="sd">  the number of successes;</span>
+<span class="sd">* :attr:`Sampler.products &lt;uvex_transients.phase_space.sampling.base.Sampler.products&gt;` are the quantities of its map</span>
+<span class="sd">  beyond the success fraction (a redshift limit, a recovered volume-time), each a</span>
+<span class="sd">  :class:`~uvex_transients.phase_space.sampling.base.Product` that owns how it is made.</span>
+
+<span class="sd">Every sampler has a `kind`, a name under which it is registered, so that a file can record which sampler made it and</span>
+<span class="sd">:func:`~uvex_transients.phase_space.sampling.base.get_sampler` can find the class again without importing it by path. A</span>
+<span class="sd">subclass registers itself by naming its kind in the class statement,</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    class MySampler(Sampler, kind="my_sampler"): ...</span>
+
+<span class="sd">and an abstract intermediate class leaves it out.</span>
+
+<span class="sd">Everything beyond those four members is an optional hook with a default, so that the code that consumes a sampler (the</span>
+<span class="sd">experiment, the stages that write and draw a map, the CLI) never has to ask what kind it is:</span>
+<span class="sd">:meth:`Sampler.rate_products &lt;uvex_transients.phase_space.sampling.base.Sampler.rate_products&gt;` and</span>
+<span class="sd">:attr:`Sampler.table_meta &lt;uvex_transients.phase_space.sampling.base.Sampler.table_meta&gt;` extend the table of the map,</span>
+<span class="sd">:meth:`Sampler.describe &lt;uvex_transients.phase_space.sampling.base.Sampler.describe&gt;` titles its figure,</span>
+<span class="sd">:meth:`Sampler.draw_map &lt;uvex_transients.phase_space.sampling.base.Sampler.draw_map&gt;` draws it and</span>
+<span class="sd">:meth:`Sampler.annotate_map &lt;uvex_transients.phase_space.sampling.base.Sampler.annotate_map&gt;` decorates it,</span>
+<span class="sd">:attr:`Sampler.HAS_OVERLAY &lt;uvex_transients.phase_space.sampling.base.Sampler.HAS_OVERLAY&gt;` and</span>
+<span class="sd">:meth:`Sampler.measure_overlay &lt;uvex_transients.phase_space.sampling.base.Sampler.measure_overlay&gt;` supply a population</span>
+<span class="sd">to shade on it, and :meth:`Sampler.from_run_config &lt;uvex_transients.phase_space.sampling.base.Sampler.from_run_config&gt;`</span>
+<span class="sd">builds the sampler from a run-config. A sampler that has something to say overrides the hook; one that does not inherits</span>
+<span class="sd">an answer that says nothing. The default figure is of a plane, so a map over more than two axes is not drawn.</span>
+
+<span class="sd">The stopping rule: how many tries a point gets.</span>
+
+<span class="sd">A sampler makes however many tries it is asked for. How many to ask for is a question of statistics, not of physics: a</span>
+<span class="sd">point where the success fraction is high needs few tries to pin it down, and one where it is small needs many, so a</span>
+<span class="sd">point is sampled in chunks until it has enough successes or has used its budget.</span>
+<span class="sd">:class:`~uvex_transients.phase_space.sampling.base.StoppingRule` is that rule, and it is a separate object because two</span>
+<span class="sd">parties need it: the campaign applies it, and the map"s acquisition predicts from it the noise of a point it has not</span>
+<span class="sd">measured yet.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space._config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.space</span><span class="w"> </span><span class="kn">import</span> <span class="n">Space</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"Estimate"</span><span class="p">,</span>
+    <span class="s2">"Outcome"</span><span class="p">,</span>
+    <span class="s2">"Product"</span><span class="p">,</span>
+    <span class="s2">"Sampler"</span><span class="p">,</span>
+    <span class="s2">"Scale"</span><span class="p">,</span>
+    <span class="s2">"StoppingRule"</span><span class="p">,</span>
+    <span class="s2">"Weighted"</span><span class="p">,</span>
+    <span class="s2">"available_samplers"</span><span class="p">,</span>
+    <span class="s2">"get_sampler"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Products                                     #</span>
+<span class="c1"># ============================================ #</span>
+
+<span class="c1">#: Suffixes of the columns of an interval, by convention: a product that carries one names them ``&lt;name&gt;_lo`` and</span>
+<span class="c1">#: ``&lt;name&gt;_hi``.</span>
+<span class="n">LOWER</span> <span class="o">=</span> <span class="s2">"_lo"</span>
+<span class="n">UPPER</span> <span class="o">=</span> <span class="s2">"_hi"</span>
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Estimate                                     #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="Estimate">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Estimate.html#uvex_transients.phase_space.sampling.logistic.Estimate">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Estimate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The map's estimate of the success fraction at points: a value with an interval.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the three arrays do not have the same shape.</span>
+<span class="sd">    """</span>
+
+    <span class="n">p</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: The estimated success fraction, of shape ``(...)``."""</span>
+
+    <span class="n">p_lo</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: The lower end of its interval, of the shape of `p`."""</span>
+
+    <span class="n">p_hi</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""numpy.ndarray: The upper end of its interval, of the shape of `p`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span><span class="p">,</span> <span class="n">p_lo</span><span class="p">,</span> <span class="n">p_hi</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_lo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_hi</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">p_lo</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">p_hi</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"The estimate and its interval need one shape, got </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">p_lo</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">p_hi</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"p_lo"</span><span class="p">,</span> <span class="n">p_lo</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"p_hi"</span><span class="p">,</span> <span class="n">p_hi</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Tuple of int: The shape of the estimate, which is the shape of the points without their last axis."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Product                                      #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="Product">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Product.html#uvex_transients.phase_space.sampling.logistic.Product">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Product</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A quantity of the map, and how it is made from the points and the estimate of the success fraction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the product, which is the name of its main column. A valid Python identifier, so that it can be</span>
+<span class="sd">        used in an expression.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        What a figure calls the quantity, in mathtext if it has symbols.</span>
+<span class="sd">    unit : str, optional</span>
+<span class="sd">        The unit of the quantity.</span>
+<span class="sd">    draw : bool, optional</span>
+<span class="sd">        Whether the default figure of the map has a panel for it. Off by default; a</span>
+<span class="sd">        :class:`~uvex_transients.phase_space.sampling.base.Weighted` product, which is what a map is for, is drawn</span>
+<span class="sd">        unless it says otherwise. Any column can be drawn by asking for it by name.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `name` is not an identifier.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">draw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The name of a product must be a valid identifier, got </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">draw</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""bool: Whether the default figure has a panel for the quantity."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="w">        </span><span class="sd">"""str: The name of the product, and of its main column."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
+<span class="w">        </span><span class="sd">"""str: What a figure calls the quantity."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span>
+<span class="w">        </span><span class="sd">"""str: The unit of the quantity."""</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Estimate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make the columns of the product at points of the space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points in the coordinates of the sampler's space, shape ``(..., ndim)``.</span>
+<span class="sd">        estimate : Estimate</span>
+<span class="sd">            The map's estimate of the success fraction at those points, of shape ``(...)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to numpy.ndarray</span>
+<span class="sd">            The columns it creates, each of shape ``(...)``. The one called `name` is the main one; an interval is</span>
+<span class="sd">            carried by convention in ``&lt;name&gt;_lo`` and ``&lt;name&gt;_hi``.</span>
+<span class="sd">        """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">)"</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_points</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Estimate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Return `x` as floats, after checking that it has the points that `estimate` is of."""</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The points </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and the estimate </span><span class="si">{</span><span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> do not describe the same points."</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<div class="viewcode-block" id="Scale">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Scale.html#uvex_transients.phase_space.sampling.logistic.Scale">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Scale</span><span class="p">(</span><span class="n">Product</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    A quantity of the point alone, which does not involve the success fraction.</span>
+
+<span class="sd">    A redshift limit, a coverage or a volume-time is a :class:`~uvex_transients.phase_space.sampling.base.Scale`: it</span>
+<span class="sd">    follows from the physics at the point, with no Monte Carlo, and so has no interval.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the product, and of its one column.</span>
+<span class="sd">    function : callable</span>
+<span class="sd">        ``function(x)`` takes points of shape ``(..., ndim)`` and returns the quantity, of shape ``(...)``.</span>
+<span class="sd">    label, unit, draw : optional</span>
+<span class="sd">        As for :class:`~uvex_transients.phase_space.sampling.base.Product`.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">NDArray</span><span class="p">],</span> <span class="n">ArrayLike</span><span class="p">],</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">draw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">draw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_function</span> <span class="o">=</span> <span class="n">function</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Estimate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make the column of the quantity at points of the space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points, shape ``(..., ndim)``.</span>
+<span class="sd">        estimate : Estimate</span>
+<span class="sd">            The estimate at those points; it only supplies their shape.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to numpy.ndarray</span>
+<span class="sd">            ``{name: values}``, of shape ``(...)``.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">estimate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_function</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span></div>
+
+
+
+<div class="viewcode-block" id="Weighted">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Weighted.html#uvex_transients.phase_space.sampling.logistic.Weighted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Weighted</span><span class="p">(</span><span class="n">Product</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    The success fraction times a quantity of the point, with its interval.</span>
+
+<span class="sd">    A recovered volume-time is the success fraction times the volume-time of the survey for an event there, and an</span>
+<span class="sd">    efficiency is the fraction times the coverage. The interval of the fraction carries through, since the weight is</span>
+<span class="sd">    positive.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the product. Its columns are `name`, ``&lt;name&gt;_lo`` and ``&lt;name&gt;_hi``.</span>
+<span class="sd">    weight : callable</span>
+<span class="sd">        ``weight(x)`` takes points of shape ``(..., ndim)`` and returns the weight, of shape ``(...)``, which must</span>
+<span class="sd">        not be negative.</span>
+<span class="sd">    label, unit : str, optional</span>
+<span class="sd">        As for :class:`~uvex_transients.phase_space.sampling.base.Product`.</span>
+<span class="sd">    draw : bool, optional</span>
+<span class="sd">        As for :class:`~uvex_transients.phase_space.sampling.base.Product`, but on by default: a quantity with an</span>
+<span class="sd">        interval is what a figure of the map shows.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">NDArray</span><span class="p">],</span> <span class="n">ArrayLike</span><span class="p">],</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">draw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">draw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_weight</span> <span class="o">=</span> <span class="n">weight</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">estimate</span><span class="p">:</span> <span class="n">Estimate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make the columns of the weighted estimate at points of the space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Points, shape ``(..., ndim)``.</span>
+<span class="sd">        estimate : Estimate</span>
+<span class="sd">            The estimate of the success fraction at those points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict of str to numpy.ndarray</span>
+<span class="sd">            ``name``, ``&lt;name&gt;_lo`` and ``&lt;name&gt;_hi``, each of shape ``(...)``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a weight is negative, which would swap the ends of the interval.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">_points</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">estimate</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_weight</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">estimate</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">weight</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The weight of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> must not be negative."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">estimate</span><span class="o">.</span><span class="n">p</span> <span class="o">*</span> <span class="n">weight</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">LOWER</span><span class="p">:</span> <span class="n">estimate</span><span class="o">.</span><span class="n">p_lo</span> <span class="o">*</span> <span class="n">weight</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">UPPER</span><span class="p">:</span> <span class="n">estimate</span><span class="o">.</span><span class="n">p_hi</span> <span class="o">*</span> <span class="n">weight</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Outcome                                      #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="Outcome">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Outcome.html#uvex_transients.phase_space.sampling.logistic.Outcome">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Outcome</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The result of sampling one point: `k` successes of `n` tries, and whatever else was worth recording.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the counts do not satisfy ``0 &lt;= k &lt;= n`` with ``n &gt;= 1``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: The number of successes."""</span>
+
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: The number of tries, at least 1."""</span>
+
+    <span class="n">extras</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Mapping: Other entries of the point, by name, which become columns of the table of points."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">k</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"An outcome needs 0 &lt;= k &lt;= n and n &gt;= 1, got k=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="si">!r}</span><span class="s2"> and n=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"n"</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"extras"</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extras</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""float: The observed success fraction, ``k / n``."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Registry                                     #</span>
+<span class="c1"># ============================================ #</span>
+<span class="n">_REGISTRY</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="s2">"Sampler"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="available_samplers">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.available_samplers.html#uvex_transients.phase_space.sampling.logistic.available_samplers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">available_samplers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the kinds of every registered sampler.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of str</span>
+<span class="sd">        The kinds, sorted.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_REGISTRY</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="get_sampler">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.get_sampler.html#uvex_transients.phase_space.sampling.logistic.get_sampler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sampler</span><span class="p">(</span><span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="s2">"Sampler"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the registered sampler class of a kind.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kind : str</span>
+<span class="sd">        The kind the class was registered under.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    type of Sampler</span>
+<span class="sd">        The class.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If no sampler is registered under `kind`.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_REGISTRY</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No sampler of kind </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2">; the registered kinds are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">available_samplers</span><span class="p">())</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># Sampler                                      #</span>
+<span class="c1"># ============================================ #</span>
+<div class="viewcode-block" id="Sampler">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.html#uvex_transients.phase_space.sampling.logistic.Sampler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Sampler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Answer "how many detections in n tries at a point?" for one kind of experiment.</span>
+
+<span class="sd">    A subclass supplies :attr:`~uvex_transients.phase_space.sampling.base.Sampler.space`,</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw`,</span>
+<span class="sd">    :attr:`~uvex_transients.phase_space.sampling.base.Sampler.settings` and</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_settings`. Name a</span>
+<span class="sd">    :attr:`~uvex_transients.phase_space.sampling.base.Sampler.kind` in the class statement to register it; see the</span>
+<span class="sd">    module documentation. Everything else is an optional hook, with a default that a sampler overrides only if it has</span>
+<span class="sd">    something to say, so that nothing that consumes a sampler has to ask what kind it is:</span>
+
+<span class="sd">    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.products`,</span>
+<span class="sd">      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.rate_products` and</span>
+<span class="sd">      :attr:`~uvex_transients.phase_space.sampling.base.Sampler.yield_weight`: the quantities of its map beyond the</span>
+<span class="sd">      success fraction, and the one that two maps are compared on;</span>
+<span class="sd">    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.table_meta`: what a figure or a comparison needs to know</span>
+<span class="sd">      about the plane the axes are measured on;</span>
+<span class="sd">    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.describe`: what the map is, in a few words, for the</span>
+<span class="sd">      title of its figure;</span>
+<span class="sd">    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw_map` and</span>
+<span class="sd">      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.annotate_map`: the figure of its map, and what is drawn</span>
+<span class="sd">      on it;</span>
+<span class="sd">    * :attr:`~uvex_transients.phase_space.sampling.base.Sampler.HAS_OVERLAY` and</span>
+<span class="sd">      :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`: a population to shade on the figure,</span>
+<span class="sd">      if there is one;</span>
+<span class="sd">    * :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_run_config`: how a run-config builds it.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If a subclass names a kind that is already registered, or one that is not a non-empty string.</span>
+<span class="sd">    """</span>
+
+    <span class="n">kind</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""str or None: The name the class is registered under, which a file records. `None` for an unregistered class."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init_subclass__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># A subclass that does not name a kind is not registered, and does not claim the kind of its parent</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">kind</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The kind of </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must be a non-empty string, got </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">_REGISTRY</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A sampler of kind </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> is already registered: </span><span class="si">{</span><span class="n">_REGISTRY</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="n">_REGISTRY</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+
+<div class="viewcode-block" id="Sampler.kinds">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.kinds.html#uvex_transients.phase_space.sampling.logistic.Sampler.kinds">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kinds</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the registered kinds this class is, the most specific first.</span>
+
+<span class="sd">        A sampler built on another is also of the other's kind: the bracketed breakout is of ``breakout_bracketed`` and</span>
+<span class="sd">        of ``breakout``. This is the order in which its configured defaults are looked up (see</span>
+<span class="sd">        :func:`~uvex_transients.phase_space._config.default`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of str</span>
+<span class="sd">            The kinds of the class and of its registered parents, `()` for an unregistered class.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">klass</span><span class="o">.</span><span class="n">kind</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span> <span class="k">if</span> <span class="nb">vars</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kind"</span><span class="p">))</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># What a subclass supplies               #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Space</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Space: The axes the experiment is over, with their default ranges."""</span>
+
+<div class="viewcode-block" id="Sampler.draw">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.draw.html#uvex_transients.phase_space.sampling.logistic.Sampler.draw">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make `n` independent tries at a point and return how many succeed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The point, in the coordinates of :attr:`~uvex_transients.phase_space.sampling.base.Sampler.space`, shape</span>
+<span class="sd">            ``(ndim,)``.</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The number of tries.</span>
+<span class="sd">        seed : numpy.random.SeedSequence</span>
+<span class="sd">            The source of all the randomness of the tries. The same point, count and seed give the same number of</span>
+<span class="sd">            successes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of successes, between 0 and `n`.</span>
+<span class="sd">        """</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        dict: The arguments that rebuild this sampler, as plain types that an ECSV header can hold.</span>
+
+<span class="sd">        They are what :meth:`~uvex_transients.phase_space.sampling.base.Sampler.from_settings` takes.</span>
+<span class="sd">        """</span>
+
+<div class="viewcode-block" id="Sampler.from_settings">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.from_settings.html#uvex_transients.phase_space.sampling.logistic.Sampler.from_settings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_settings</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sampler"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Rebuild a sampler from the `settings` of another one.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The `settings` of the sampler to rebuild.</span>
+<span class="sd">        **context</span>
+<span class="sd">            What a file cannot record, such as a survey schedule that is not in the registry, for the samplers that</span>
+<span class="sd">            need it.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sampler</span>
+<span class="sd">            A sampler that makes the same experiment.</span>
+<span class="sd">        """</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># What a subclass may supply             #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">products</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Product</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tuple of Product: The quantities of a map of this sampler beyond the success fraction.</span>
+
+<span class="sd">        Each product owns how it is made from the points and the map's estimate, so it can be built around whatever</span>
+<span class="sd">        machinery of the sampler it needs: a redshift limit, a recovered volume-time. Empty by default.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="Sampler.rate_products">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.rate_products.html#uvex_transients.phase_space.sampling.logistic.Sampler.rate_products">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_products</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Product</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the quantities of a map that need a volumetric rate, such as the expected number of recoveries.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rate : ~astropy.units.Quantity</span>
+<span class="sd">            The comoving volumetric rate, with units of inverse volume per time.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of Product</span>
+<span class="sd">            The products, which are added to :attr:`~uvex_transients.phase_space.sampling.base.Sampler.products` when a</span>
+<span class="sd">            map is made with a rate. Empty by default, for a sampler that has no volume to apply a rate to.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">table_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        dict: What a figure of the map needs to label its axes, and what a comparison checks before it differences two.</span>
+
+<span class="sd">        These are entries of the ``meta`` of the fitted map's table, for plain types: the band, the shape of the</span>
+<span class="sd">        transient that the axes are measured on. Two maps are only comparable if their entries agree. Empty by default.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Sampler.describe">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.describe.html#uvex_transients.phase_space.sampling.logistic.Sampler.describe">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Describe the map of a sampler in a few words, for the title of its figure.</span>
+
+<span class="sd">        It is a class method of the `settings` that a file records, so that a map can be titled from its files alone,</span>
+<span class="sd">        without rebuilding the sampler (which can need a survey schedule).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : Mapping</span>
+<span class="sd">            The `settings` of a sampler of this class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            What the map is. By default the kind.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">kind</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span></div>
+
+
+<div class="viewcode-block" id="Sampler.draw_map">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.draw_map.html#uvex_transients.phase_space.sampling.logistic.Sampler.draw_map">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">draw_map</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">grid</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">overlay</span><span class="p">:</span> <span class="n">Table</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">show_points</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw the fitted map of a sampler of this class and save the figure.</span>
+
+<span class="sd">        It is a class method of the files of a map, so that a map can be drawn without rebuilding the sampler. The</span>
+<span class="sd">        default is :func:`~uvex_transients.phase_space.plotting.plot_grid`, which draws a map over two axes with the</span>
+<span class="sd">        products it carries and decorates it with</span>
+<span class="sd">        :meth:`~uvex_transients.phase_space.sampling.base.Sampler.annotate_map`. A map over any other number of axes is</span>
+<span class="sd">        not drawn: the figure is of a plane, so the default logs a warning and returns `None`. A sampler whose map has a</span>
+<span class="sd">        figure of its own overrides this, and is free to draw more axes in its own way.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        grid : astropy.table.Table</span>
+<span class="sd">            The fitted map (``map.ecsv``).</span>
+<span class="sd">        points : astropy.table.Table</span>
+<span class="sd">            The measured points (``points.ecsv``).</span>
+<span class="sd">        path : str or pathlib.Path</span>
+<span class="sd">            Where to save the figure.</span>
+<span class="sd">        title : str</span>
+<span class="sd">            The suptitle.</span>
+<span class="sd">        overlay : astropy.table.Table, optional</span>
+<span class="sd">            The measurements of :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`</span>
+<span class="sd">            (``overlay.ecsv``), for a sampler that has them.</span>
+<span class="sd">        show_points : bool, optional</span>
+<span class="sd">            Whether to mark the measured points.</span>
+<span class="sd">        fields : sequence of str, optional</span>
+<span class="sd">            The columns of the map to draw, one panel each (any column, including a quantity that carries no</span>
+<span class="sd">            interval). By default the success fraction, every quantity with an interval, and the uncertainty.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        matplotlib.figure.Figure or None</span>
+<span class="sd">            The figure, which the caller closes, or `None` if the map is not drawn.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_grid</span>
+
+        <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"space"</span><span class="p">][</span><span class="s2">"axes"</span><span class="p">])</span> <span class="k">if</span> <span class="s2">"space"</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">meta</span> <span class="k">else</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"The map is over </span><span class="si">%d</span><span class="s2"> axes and a figure is of two, so none is drawn."</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">annotate</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">overlay</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">ax</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">annotate_map</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">overlay</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plot_grid</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">,</span> <span class="n">show_points</span><span class="o">=</span><span class="n">show_points</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="n">annotate</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Sampler.annotate_map">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.annotate_map.html#uvex_transients.phase_space.sampling.logistic.Sampler.annotate_map">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">annotate_map</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">overlay</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw the overlay of a sampler on the axes of a figure of its map.</span>
+
+<span class="sd">        This is how a map of a sampler with an overlay is decorated in every figure that has one (the map and the</span>
+<span class="sd">        difference of two maps), so that no figure has to know what the overlay is.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : matplotlib.axes.Axes</span>
+<span class="sd">            The axes of a panel, in the plotted coordinates (the values of a logarithmic axis, not their logarithms).</span>
+<span class="sd">        overlay : astropy.table.Table</span>
+<span class="sd">            The measurements of :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay`</span>
+<span class="sd">            (``overlay.ecsv``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sequence of matplotlib.artist.Artist or None</span>
+<span class="sd">            Legend handles for what was drawn, if it is to be named in the legend. `None` by default, which draws</span>
+<span class="sd">            nothing.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="n">yield_weight</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    str or None: The name of the :class:`~uvex_transients.phase_space.sampling.base.Scale` product that turns the</span>
+<span class="sd">    success fraction into the quantity two maps are compared on (the volume-time, for a survey sampler: the recovered</span>
+<span class="sd">    volume-time is its product with the fraction). `None` compares the success fractions themselves. It is recorded in</span>
+<span class="sd">    the table of the map, so a comparison reads it from the files alone.</span>
+<span class="sd">    """</span>
+
+    <span class="n">HAS_OVERLAY</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">"""bool: Whether :meth:`~uvex_transients.phase_space.sampling.base.Sampler.measure_overlay` is implemented, for the</span>
+<span class="sd">    callers that decide whether to ask for one."""</span>
+
+<div class="viewcode-block" id="Sampler.measure_overlay">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.measure_overlay.html#uvex_transients.phase_space.sampling.logistic.Sampler.measure_overlay">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">measure_overlay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Measure a population in the plane of the map, to be shaded on its figure.</span>
+
+<span class="sd">        Only a sampler with ``HAS_OVERLAY`` set implements this.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_draws : int, optional</span>
+<span class="sd">            How many draws of each member of the population. By default the configured number.</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            The seed of the draws.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        astropy.table.Table</span>
+<span class="sd">            The measurements, which :meth:`~uvex_transients.phase_space.sampling.base.Sampler.draw_map` takes as its</span>
+<span class="sd">            ``overlay``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            If this class has no overlay.</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A sampler of kind </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> has no overlay."</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Sampler.from_run_config">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.Sampler.from_run_config.html#uvex_transients.phase_space.sampling.logistic.Sampler.from_run_config">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_run_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sampler"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build a sampler from the arguments of a map in a run-config.</span>
+
+<span class="sd">        A sampler that needs more than its own arguments (the survey, say) takes it from `run`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        run : object</span>
+<span class="sd">            The parsed run-config, with the attributes ``schedule`` (the resolved survey schedule), ``mission_name`` and</span>
+<span class="sd">            ``schedule_name``, which it resolves only when they are read.</span>
+<span class="sd">        **options</span>
+<span class="sd">            The arguments of the sampler: the detection, simulation and ``settings:`` sections of the map, merged.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sampler</span>
+<span class="sd">            The sampler. By default ``cls(**options)``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the sampler does not take one of the `options`.</span>
+<span class="sd">        """</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_check_options</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_options</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">positional</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Check that the constructor takes `options`, before it is called.</span>
+
+<span class="sd">        This catches an unknown or missing argument without wrapping the constructor in a handler that would also</span>
+<span class="sd">        report a ``TypeError`` raised inside it as a mistake in the settings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *positional</span>
+<span class="sd">            Placeholders for the positional arguments the caller will pass.</span>
+<span class="sd">        **options</span>
+<span class="sd">            The keyword arguments the caller will pass.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the arguments do not fit the signature of the constructor.</span>
+<span class="sd">        """</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="o">*</span><span class="n">positional</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> sampler does not take these settings: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
+
+        <span class="c1"># A constructor that forwards ``**kwargs`` to its parent accepts anything, so check the names of the parents'</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">named</span> <span class="o">=</span> <span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">POSITIONAL_OR_KEYWORD</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">KEYWORD_ONLY</span><span class="p">)</span>
+            <span class="n">accepted</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">name</span>
+                <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__mro__</span>
+                <span class="k">if</span> <span class="s2">"__init__"</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">klass</span><span class="p">)[</span><span class="s2">"__init__"</span><span class="p">])</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="n">named</span>
+            <span class="p">}</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="o">-</span> <span class="n">accepted</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> sampler does not take the setting(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ============================================ #</span>
+<span class="c1"># The stopping rule                            #</span>
+<span class="c1"># ============================================ #</span>
+
+
+<div class="viewcode-block" id="StoppingRule">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.StoppingRule.html#uvex_transients.phase_space.sampling.logistic.StoppingRule">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StoppingRule</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Sample a point in chunks of tries until it has `k_target` successes or has used `n_max` tries.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `chunk_size` or `k_target` is below 1, or `n_max` is below `chunk_size`.</span>
+<span class="sd">    """</span>
+
+    <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: The tries made at a time, and so the fewest a point gets."""</span>
+
+    <span class="n">k_target</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Stop adding chunks to a point once it has this many successes."""</span>
+
+    <span class="n">n_max</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">"""int: Never make more than this many tries at a point (the last chunk may take it past)."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">chunk_size</span><span class="p">,</span> <span class="n">k_target</span><span class="p">,</span> <span class="n">n_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_target</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_max</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunk_size</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">k_target</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">n_max</span> <span class="o">&lt;</span> <span class="n">chunk_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Need chunk_size &gt;= 1, k_target &gt;= 1 and n_max &gt;= chunk_size, got </span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">k_target</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">n_max</span><span class="si">}</span><span class="s2">."</span>
+            <span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"chunk_size"</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"k_target"</span><span class="p">,</span> <span class="n">k_target</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"n_max"</span><span class="p">,</span> <span class="n">n_max</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StoppingRule.from_config">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.StoppingRule.from_config.html#uvex_transients.phase_space.sampling.logistic.StoppingRule.from_config">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_config</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">k_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">kinds</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StoppingRule"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the rule, taking what is not given from ``config["phase_space.stopping"]``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        chunk_size, k_target, n_max : int, optional</span>
+<span class="sd">            As for the class. Any that is `None` (the default) is read from the configuration.</span>
+<span class="sd">        kinds : sequence of str, optional</span>
+<span class="sd">            The kinds of the sampler the rule is for, whose own sections of the configuration take precedence (see</span>
+<span class="sd">            :func:`~uvex_transients.phase_space._config.default`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        StoppingRule</span>
+<span class="sd">            The rule.</span>
+<span class="sd">        """</span>
+        <span class="n">given</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"chunk_size"</span><span class="p">:</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="s2">"k_target"</span><span class="p">:</span> <span class="n">k_target</span><span class="p">,</span> <span class="s2">"n_max"</span><span class="p">:</span> <span class="n">n_max</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">default</span><span class="p">(</span><span class="s2">"stopping"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kinds</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">given</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StoppingRule.run">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.StoppingRule.run.html#uvex_transients.phase_space.sampling.logistic.StoppingRule.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampler</span><span class="p">:</span> <span class="n">Sampler</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Outcome</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Sample a point until the rule says to stop.</span>
+
+<span class="sd">        Each chunk draws from its own child of `seed`, so a chunk does not depend on the others, and `seed` is</span>
+<span class="sd">        advanced by one child per chunk. Give every point a seed of its own.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sampler : Sampler</span>
+<span class="sd">            What makes the tries.</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The point, in the coordinates of the sampler's space.</span>
+<span class="sd">        seed : numpy.random.SeedSequence</span>
+<span class="sd">            The root seed of the point, whose children seed the chunks.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Outcome</span>
+<span class="sd">            The successes and tries, with the number of chunks as ``extras["n_chunks"]``.</span>
+<span class="sd">        """</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">n</span> <span class="o">=</span> <span class="n">chunks</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Top the point up until it has enough successes, or has used all the tries it is allowed</span>
+        <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_target</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">seed</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span>
+            <span class="n">chunks</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">Outcome</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">{</span><span class="s2">"n_chunks"</span><span class="p">:</span> <span class="n">chunks</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="StoppingRule.expected_n">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.phase_space.sampling.base.StoppingRule.expected_n.html#uvex_transients.phase_space.sampling.logistic.StoppingRule.expected_n">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">expected_n</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Predict how many tries a point of success fraction `p` will get.</span>
+
+<span class="sd">        Enough to expect :attr:`~uvex_transients.phase_space.sampling.base.StoppingRule.k_target` successes, bounded by</span>
+<span class="sd">        one chunk below and :attr:`~uvex_transients.phase_space.sampling.base.StoppingRule.n_max` above. This is what</span>
+<span class="sd">        the map's acquisition uses to predict the noise of a point before it is measured.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : array-like</span>
+<span class="sd">            The success fraction, which must be positive.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The expected number of tries, of the shape of `p`.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_target</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

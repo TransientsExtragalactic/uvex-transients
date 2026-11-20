@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.phase_space.stages &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/phase_space/stages';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.5alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/UVEX_HorizIcon_Black.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/UVEX_HorizIcon_White.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../_static/UVEX_HorizIcon_Black.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.phase_space.stages</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.phase_space.stages</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">The stages of a recovery map as operations on its directory.</span>
+
+<span class="sd">A map is a directory of files (see :mod:`~uvex_transients.phase_space.files` and</span>
+<span class="sd">:data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`), and each stage reads some of them and writes others, so that</span>
+<span class="sd">a stage can be run, repeated or changed without the ones before it:</span>
+
+<span class="sd">1. :func:`~uvex_transients.phase_space.stages.run_experiment` makes ``points.ecsv`` (with ``products=False`` to stop</span>
+<span class="sd">  there), and then the products below. It is</span>
+<span class="sd">   the only expensive stage, and the header of the points records everything needed to rebuild the experiment.</span>
+<span class="sd">2. :func:`~uvex_transients.phase_space.stages.fit_map` makes ``map.ecsv`` (and ``overlay.ecsv``, for a sampler that has</span>
+<span class="sd">  an overlay) from the points; :func:`~uvex_transients.phase_space.stages.write_map`</span>
+<span class="sd">   does the same for an experiment that is already in memory. They rebuild the sampler, so they need the survey</span>
+<span class="sd">   schedule and scikit-learn.</span>
+<span class="sd">3. :func:`~uvex_transients.phase_space.stages.plot_files` makes ``map.png`` from the files alone, and so needs neither.</span>
+<span class="sd">4. :func:`~uvex_transients.phase_space.stages.compare_maps` differences the ``map.ecsv`` of two maps, again from the</span>
+<span class="sd">  files alone.</span>
+
+<span class="sd">Up to four files are written to the directory of a map:</span>
+
+<span class="sd">``points.ecsv``</span>
+<span class="sd">    Every measured point: its coordinates, ``k`` successes out of ``n`` tries, and what the sampler records of it. It</span>
+<span class="sd">    is rewritten after every batch and read back by ``resume``.</span>
+<span class="sd">``map.ecsv``</span>
+<span class="sd">    The fitted map on a grid (see :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`): the success</span>
+<span class="sd">    fraction with a 1 sigma interval (``_lo``, ``_hi``), and the quantities of the sampler.</span>
+<span class="sd">``overlay.ecsv``</span>
+<span class="sd">    For a sampler that has an overlay (the canonical one) and with ``overlay``, the measured peak luminosity and</span>
+<span class="sd">    half-decline time of draws from every shipped transient class, in the band of the map.</span>
+<span class="sd">``map.png``</span>
+<span class="sd">    The figure of the map.</span>
+
+<span class="sd">Every stage accepts both formats of points file, so the files of a published release can be fitted again and drawn.</span>
+<span class="sd">Running a map needs the optional ``phase_space`` extra.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.files</span><span class="w"> </span><span class="kn">import</span> <span class="n">describe</span><span class="p">,</span> <span class="n">map_paths</span><span class="p">,</span> <span class="n">read_table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.sampling.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sampler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.utils.results</span><span class="w"> </span><span class="kn">import</span> <span class="n">PHASE_SPACE_FILES</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.map</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhaseSpaceMap</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"DIFFERENCE_FILES"</span><span class="p">,</span>
+    <span class="s2">"compare_maps"</span><span class="p">,</span>
+    <span class="s2">"fit_map"</span><span class="p">,</span>
+    <span class="s2">"map_title"</span><span class="p">,</span>
+    <span class="s2">"plot_files"</span><span class="p">,</span>
+    <span class="s2">"run_experiment"</span><span class="p">,</span>
+    <span class="s2">"write_map"</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1">#: The files `compare_maps` writes, by key.</span>
+<span class="n">DIFFERENCE_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"difference"</span><span class="p">:</span> <span class="s2">"difference.ecsv"</span><span class="p">,</span> <span class="s2">"figure"</span><span class="p">:</span> <span class="s2">"difference.png"</span><span class="p">}</span>
+
+
+<span class="c1">#: The progress bar constructor, kept so that `_quiet_progress` can put it back.</span>
+<span class="n">_TQDM_INIT</span> <span class="o">=</span> <span class="n">tqdm</span><span class="o">.</span><span class="fm">__init__</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_silent_tqdm_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Construct a progress bar that is disabled, whatever it asks for.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *args</span>
+<span class="sd">        Positional arguments of `tqdm.tqdm`.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Keyword arguments of `tqdm.tqdm`; ``disable`` is overridden.</span>
+<span class="sd">    """</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">"disable"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_TQDM_INIT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_quiet_progress</span><span class="p">(</span><span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Silence every progress bar of the simulation for the duration of the block, unless `enabled`.</span>
+
+<span class="sd">    Some bars pass ``disable`` explicitly, so a default would not silence them, and a map makes thousands of them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enabled : bool</span>
+<span class="sd">        Whether the bars are wanted, in which case nothing is changed.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    None</span>
+<span class="sd">        The block runs with the bars silenced.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="k">return</span>
+
+    <span class="n">tqdm</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">_silent_tqdm_init</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">tqdm</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">_TQDM_INIT</span>
+
+
+<div class="viewcode-block" id="run_experiment">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.run_experiment.html#uvex_transients.phase_space.stages.run_experiment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_experiment</span><span class="p">(</span>
+    <span class="n">experiment</span><span class="p">:</span> <span class="s2">"Experiment"</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">grid_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overlay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overlay_draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_points</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="s2">"PhaseSpaceMap"</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">map_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">map</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">products</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run an experiment of any sampler and write its data products and figure.</span>
+
+<span class="sd">    The points are saved after every batch, so a run that stops can be resumed, and the fitted map is written on a grid</span>
+<span class="sd">    with the quantities of the sampler. The files are the ones the module's docstring lists: ``points.ecsv`` (see</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.experiment.Experiment.save`), ``map.ecsv`` (see</span>
+<span class="sd">    :meth:`~uvex_transients.phase_space.experiment.Experiment.grid_table`), ``overlay.ecsv`` and ``map.png`` (see</span>
+<span class="sd">    :func:`~uvex_transients.phase_space.stages.plot_files`, which needs a map over two axes).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    experiment : ~uvex_transients.phase_space.experiment.Experiment</span>
+<span class="sd">        What to run: a sampler, the map, the stopping rule and the campaign.</span>
+<span class="sd">    out_dir : str or pathlib.Path</span>
+<span class="sd">        Directory for the files, created if needed.</span>
+<span class="sd">    grid_size : int, optional</span>
+<span class="sd">        Points per axis of the fitted map. If `None` (the default), uses ``config["phase_space.grid_size"]``.</span>
+<span class="sd">    rate : ~astropy.units.Quantity, optional</span>
+<span class="sd">        A volumetric rate; adds ``expected_recoveries`` to the map for a sampler that can make it.</span>
+<span class="sd">    overlay : bool, optional</span>
+<span class="sd">        Whether to measure the shipped transient classes in the band of the map and shade them on the figure. Only a</span>
+<span class="sd">        sampler with ``HAS_OVERLAY`` (the canonical one) can.</span>
+<span class="sd">    overlay_draws : int, optional</span>
+<span class="sd">        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.</span>
+<span class="sd">    plot : bool, optional</span>
+<span class="sd">        Whether to draw the figure. The default is `True`. A map over more than two axes has no figure.</span>
+<span class="sd">    show_points : bool, optional</span>
+<span class="sd">        Whether to mark the measured points on the figure.</span>
+<span class="sd">    resume : bool, optional</span>
+<span class="sd">        Continue from the ``points.ecsv`` in `out_dir`, if there is one.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Replace the files that are already in `out_dir`. Without it, or `resume`, existing ``points.ecsv`` or</span>
+<span class="sd">        ``map.ecsv`` raises.</span>
+<span class="sd">    progress : bool, optional</span>
+<span class="sd">        Whether to show the progress bars of the simulation. The default is `False`.</span>
+<span class="sd">    callback : callable, optional</span>
+<span class="sd">        Called with the map after the initial design and after every batch, once the points are saved.</span>
+<span class="sd">    map_fn : callable, optional</span>
+<span class="sd">        ``map_fn(function, tasks)`` returning the results in order, to measure a batch in parallel.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        The title of the figure. By default one that says how many points and tries it took.</span>
+<span class="sd">    products : bool, optional</span>
+<span class="sd">        Whether to make the map and the figure after the sampling. If `False`, only ``points.ecsv`` is written, and the</span>
+<span class="sd">        rest can be made from it later with :func:`~uvex_transients.phase_space.stages.fit_map` and</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.stages.plot_files`. The default is `True`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to pathlib.Path</span>
+<span class="sd">        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        If `out_dir` already holds a map and neither `resume` nor `overwrite` is set.</span>
+<span class="sd">    """</span>
+    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="n">name</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">PHASE_SPACE_FILES</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span><span class="n">paths</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"points"</span><span class="p">,</span> <span class="s2">"map"</span><span class="p">)</span> <span class="k">if</span> <span class="n">paths</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">existing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">resume</span> <span class="ow">or</span> <span class="n">overwrite</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2"> already holds </span><span class="si">{</span><span class="n">existing</span><span class="si">}</span><span class="s2">; pass overwrite (or resume) to continue."</span><span class="p">)</span>
+    <span class="n">out_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">resume</span> <span class="ow">and</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">experiment</span><span class="o">.</span><span class="n">resume_from</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Resuming from </span><span class="si">%d</span><span class="s2"> points in </span><span class="si">%s</span><span class="s2">."</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">phase_map</span><span class="p">),</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkpoint</span><span class="p">(</span><span class="n">phase_map</span><span class="p">:</span> <span class="s2">"PhaseSpaceMap"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Save the points, then pass the map on to the caller's callback.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        phase_map : PhaseSpaceMap</span>
+<span class="sd">            The map, after its initial design or a batch.</span>
+<span class="sd">        """</span>
+        <span class="n">experiment</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callback</span><span class="p">(</span><span class="n">phase_map</span><span class="p">)</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">_quiet_progress</span><span class="p">(</span><span class="n">progress</span><span class="p">):</span>
+        <span class="n">experiment</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">map_fn</span><span class="o">=</span><span class="n">map_fn</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">products</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">"Sampled </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%.1f</span><span class="s2"> min with </span><span class="si">%d</span><span class="s2"> points."</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">phase_map</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"points"</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">]}</span>
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">phase_map</span><span class="o">.</span><span class="n">table</span>
+    <span class="n">written</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"points"</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">write_map</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="n">grid_size</span><span class="o">=</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">rate</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="n">overlay</span><span class="p">,</span> <span class="n">overlay_draws</span><span class="o">=</span><span class="n">overlay_draws</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="n">map_title</span><span class="p">(</span>
+            <span class="n">experiment</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+            <span class="n">experiment</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+            <span class="n">minutes</span><span class="o">=</span><span class="n">elapsed</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">figure</span> <span class="o">=</span> <span class="n">plot_files</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">show_points</span><span class="o">=</span><span class="n">show_points</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="n">overlay</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">figure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">written</span><span class="p">[</span><span class="s2">"figure"</span><span class="p">]</span> <span class="o">=</span> <span class="n">figure</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Ran </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%.1f</span><span class="s2"> min with </span><span class="si">%d</span><span class="s2"> points."</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">written</span></div>
+
+
+
+<div class="viewcode-block" id="fit_map">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.fit_map.html#uvex_transients.phase_space.stages.fit_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fit_map</span><span class="p">(</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">grid_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overlay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overlay_draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">schedule</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mission</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Fit the map of the points in a directory, and write ``map.ecsv`` (and ``overlay.ecsv``).</span>
+
+<span class="sd">    The experiment is rebuilt from the header of ``points.ecsv`` and the model is fitted to its points. Nothing is</span>
+<span class="sd">    simulated. The result is the file the run itself would have written.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    directory : str or pathlib.Path</span>
+<span class="sd">        The directory of the map.</span>
+<span class="sd">    grid_size : int, optional</span>
+<span class="sd">        Points per axis of the fitted map. By default ``config["phase_space.grid_size"]``.</span>
+<span class="sd">    rate : ~astropy.units.Quantity, optional</span>
+<span class="sd">        A volumetric rate; adds ``expected_recoveries`` to the map.</span>
+<span class="sd">    overlay : bool, optional</span>
+<span class="sd">        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only a sampler</span>
+<span class="sd">        with ``HAS_OVERLAY`` (the canonical one) can.</span>
+<span class="sd">    overlay_draws : int, optional</span>
+<span class="sd">        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        The seed of the overlay draws. By default the seed of the campaign that the file records.</span>
+<span class="sd">    schedule : ~uvex_transients.surveys.base.SurveySchedule, optional</span>
+<span class="sd">        The survey schedule, if it is not one the file can fetch by its registry name.</span>
+<span class="sd">    mission : str or m4opt.missions.Mission, optional</span>
+<span class="sd">        The mission, if the file does not record one.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Replace a ``map.ecsv`` (and ``overlay.ecsv``) that is already there.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to pathlib.Path</span>
+<span class="sd">        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the directory has no ``points.ecsv``.</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        If a file to write exists and `overwrite` is not set.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If an overlay is asked for a map whose sampler has none, or the points file is not a map's.</span>
+<span class="sd">    ImportError</span>
+<span class="sd">        If scikit-learn is not installed.</span>
+<span class="sd">    """</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">describe</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">map_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"map"</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="s2">"overlay"</span><span class="p">]</span> <span class="k">if</span> <span class="n">overlay</span> <span class="k">else</span> <span class="p">[])]</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span><span class="n">paths</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">targets</span> <span class="k">if</span> <span class="n">paths</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">existing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2"> already holds </span><span class="si">{</span><span class="n">existing</span><span class="si">}</span><span class="s2">; pass overwrite to replace them."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">overlay</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">get_sampler</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span><span class="o">.</span><span class="n">HAS_OVERLAY</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A map of kind </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> has no overlay."</span><span class="p">)</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"schedule"</span><span class="p">,</span> <span class="n">schedule</span><span class="p">),</span> <span class="p">(</span><span class="s2">"mission"</span><span class="p">,</span> <span class="n">mission</span><span class="p">))</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">],</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">write_map</span><span class="p">(</span>
+        <span class="n">experiment</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">grid_size</span><span class="o">=</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">rate</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="n">overlay</span><span class="p">,</span> <span class="n">overlay_draws</span><span class="o">=</span><span class="n">overlay_draws</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="write_map">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.write_map.html#uvex_transients.phase_space.stages.write_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_map</span><span class="p">(</span>
+    <span class="n">experiment</span><span class="p">,</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">grid_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rate</span><span class="p">:</span> <span class="n">Quantity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overlay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overlay_draws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Write ``map.ecsv`` (and ``overlay.ecsv``) of an experiment whose model is fitted to its points.</span>
+
+<span class="sd">    This is what :func:`~uvex_transients.phase_space.stages.fit_map` does after rebuilding the experiment, and what a</span>
+<span class="sd">    run does with the experiment it has just measured.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    experiment : ~uvex_transients.phase_space.experiment.Experiment</span>
+<span class="sd">        The experiment, with the points measured.</span>
+<span class="sd">    directory : str or pathlib.Path</span>
+<span class="sd">        The directory of the map, created if needed.</span>
+<span class="sd">    grid_size : int, optional</span>
+<span class="sd">        Points per axis of the fitted map. By default ``config["phase_space.grid_size"]``.</span>
+<span class="sd">    rate : ~astropy.units.Quantity, optional</span>
+<span class="sd">        A volumetric rate; adds ``expected_recoveries`` to the map.</span>
+<span class="sd">    overlay : bool, optional</span>
+<span class="sd">        Whether to measure the shipped transient classes in the band of the map, for ``overlay.ecsv``. Only a sampler</span>
+<span class="sd">        with ``HAS_OVERLAY`` (the canonical one) can.</span>
+<span class="sd">    overlay_draws : int, optional</span>
+<span class="sd">        SED draws per class. By default ``config["phase_space.overlay.n_draws"]``.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        The seed of the overlay draws. By default the seed of the experiment's campaign.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to pathlib.Path</span>
+<span class="sd">        The files written, by their key in :data:`~uvex_transients.utils.results.PHASE_SPACE_FILES`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If an overlay is asked for a map whose sampler has none.</span>
+<span class="sd">    """</span>
+    <span class="n">sampler</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">sampler</span>
+    <span class="k">if</span> <span class="n">overlay</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">sampler</span><span class="o">.</span><span class="n">HAS_OVERLAY</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A map of kind </span><span class="si">{</span><span class="n">sampler</span><span class="o">.</span><span class="n">kind</span><span class="si">!r}</span><span class="s2"> has no overlay."</span><span class="p">)</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="n">directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">map_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">grid_table</span><span class="p">(</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+    <span class="n">grid</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"map"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"ascii.ecsv"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">written</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"map"</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"map"</span><span class="p">]}</span>
+
+    <span class="k">if</span> <span class="n">overlay</span><span class="p">:</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">campaign</span><span class="o">.</span><span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">sampler</span><span class="o">.</span><span class="n">measure_overlay</span><span class="p">(</span><span class="n">overlay_draws</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"overlay"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"ascii.ecsv"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">written</span><span class="p">[</span><span class="s2">"overlay"</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"overlay"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">written</span></div>
+
+
+
+<div class="viewcode-block" id="map_title">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.map_title.html#uvex_transients.phase_space.stages.map_title">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">map_title</span><span class="p">(</span><span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_tries</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">minutes</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the title of the figure of a map.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kind : str</span>
+<span class="sd">        The kind of the sampler.</span>
+<span class="sd">    settings : dict</span>
+<span class="sd">        The settings the sampler records, which its ``describe`` turns into what the map is.</span>
+<span class="sd">    n_points, n_tries : int</span>
+<span class="sd">        The number of points measured and of tries made.</span>
+<span class="sd">    minutes : float, optional</span>
+<span class="sd">        How long the run took, if it is known.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The title.</span>
+<span class="sd">    """</span>
+    <span class="n">took</span> <span class="o">=</span> <span class="s2">""</span> <span class="k">if</span> <span class="n">minutes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">minutes</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> min"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">get_sampler</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">n_points</span><span class="si">}</span><span class="s2"> points, </span><span class="si">{</span><span class="n">n_tries</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> tries</span><span class="si">{</span><span class="n">took</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+
+<div class="viewcode-block" id="plot_files">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.plot_files.html#uvex_transients.phase_space.stages.plot_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_files</span><span class="p">(</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_points</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overlay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Draw the map of a directory from its ``map.ecsv`` and ``points.ecsv``, and write ``map.png``.</span>
+
+<span class="sd">    The figure is the one the map's sampler draws (``draw_map``): for the canonical map</span>
+<span class="sd">    :func:`~uvex_transients.phase_space.plotting.plot_map`, which can shade the classes of its overlay, and for any</span>
+<span class="sd">    other</span>
+<span class="sd">    :func:`~uvex_transients.phase_space.plotting.plot_grid`. It needs matplotlib only, and the class of the sampler but</span>
+<span class="sd">    not the survey.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    directory : str or pathlib.Path</span>
+<span class="sd">        The directory of the map.</span>
+<span class="sd">    path : str or pathlib.Path, optional</span>
+<span class="sd">        Where to write the figure. By default ``map.png`` in the directory.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        A suptitle. By default one that says what the map is, from the points file.</span>
+<span class="sd">    show_points : bool, optional</span>
+<span class="sd">        Whether to mark the measured points.</span>
+<span class="sd">    overlay : bool, optional</span>
+<span class="sd">        Whether to shade the shipped classes of ``overlay.ecsv``, if the directory has one.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Replace the figure if it exists. The default is `True`, since a figure is cheap and the point of drawing it</span>
+<span class="sd">        again is usually to change it.</span>
+<span class="sd">    fields : sequence of str, optional</span>
+<span class="sd">        The columns of ``map.ecsv`` to draw, one panel each. By default the figure the map's sampler draws.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path or None</span>
+<span class="sd">        The figure, or `None` if the map's sampler does not draw one (the default figure is of two axes, so a map over</span>
+<span class="sd">        more is not drawn).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the directory lacks ``map.ecsv`` or ``points.ecsv``.</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        If the figure exists and `overwrite` is not set.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="n">info</span> <span class="o">=</span> <span class="n">describe</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">map_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="n">figure_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"figure"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">figure_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">figure_path</span><span class="si">}</span><span class="s2"> exists; pass overwrite to replace it."</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">read_table</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"map"</span><span class="p">],</span> <span class="s2">"drawing the map (make it with `fit`)"</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">read_table</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"points"</span><span class="p">],</span> <span class="s2">"drawing the map"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">map_title</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">n_points</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">n_tries</span><span class="p">)</span>
+
+    <span class="n">overlay_table</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">overlay</span> <span class="ow">and</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"overlay"</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">overlay_table</span> <span class="o">=</span> <span class="n">read_table</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"overlay"</span><span class="p">],</span> <span class="s2">"shading the classes"</span><span class="p">)</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">get_sampler</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span><span class="o">.</span><span class="n">draw_map</span><span class="p">(</span>
+        <span class="n">grid</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">figure_path</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="n">overlay_table</span><span class="p">,</span> <span class="n">show_points</span><span class="o">=</span><span class="n">show_points</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">figure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">figure_path</span></div>
+
+
+
+<div class="viewcode-block" id="compare_maps">
+<a class="viewcode-back" href="../../../_as_gen/uvex_transients.phase_space.stages.compare_maps.html#uvex_transients.phase_space.stages.compare_maps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compare_maps</span><span class="p">(</span>
+    <span class="n">baseline</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">comparison</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">out_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">floor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">check_meta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">overlay</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Difference the ``map.ecsv`` of two maps, and write ``difference.ecsv`` and ``difference.png``.</span>
+
+<span class="sd">    See :func:`~uvex_transients.phase_space.analysis.compare.difference_map` for what is compared and refused. It reads</span>
+<span class="sd">    only the fitted maps, so it needs neither the schedule nor scikit-learn.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    baseline, comparison : str or pathlib.Path</span>
+<span class="sd">        The directories of the two maps. The difference is positive where the comparison recovers more.</span>
+<span class="sd">    out_dir : str or pathlib.Path</span>
+<span class="sd">        Where to write the files, created if needed.</span>
+<span class="sd">    floor : float, optional</span>
+<span class="sd">        The recovery fraction below which a map is taken not to recover anything; see</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.</span>
+<span class="sd">    check_meta : bool, optional</span>
+<span class="sd">        Whether to refuse maps that do not measure the same axes; see</span>
+<span class="sd">        :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.</span>
+<span class="sd">    plot : bool, optional</span>
+<span class="sd">        Whether to draw the figure. The default is `True`. Maps over more than two axes have no figure.</span>
+<span class="sd">    overlay : bool, optional</span>
+<span class="sd">        Whether to shade the baseline's ``overlay.ecsv`` as its sampler draws it (``annotate_map``), if it has one</span>
+<span class="sd">        (only a map of a sampler with an overlay does).</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        The title of the figure. By default one that names the two directories.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        Replace files that are already in `out_dir`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict of str to pathlib.Path</span>
+<span class="sd">        The files written, by their key in :data:`~uvex_transients.phase_space.stages.DIFFERENCE_FILES`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If a map has no ``map.ecsv``.</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        If a file to write exists and `overwrite` is not set.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        As for :func:`~uvex_transients.phase_space.analysis.compare.difference_map`.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.analysis.compare</span><span class="w"> </span><span class="kn">import</span> <span class="n">difference_map</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.phase_space.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_difference</span>
+
+    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">out_dir</span> <span class="o">/</span> <span class="n">name</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">DIFFERENCE_FILES</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">targets</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">existing</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2"> already holds </span><span class="si">{</span><span class="n">existing</span><span class="si">}</span><span class="s2">; pass overwrite to replace them."</span><span class="p">)</span>
+
+    <span class="n">maps</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">read_table</span><span class="p">(</span><span class="n">map_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">)[</span><span class="s2">"map"</span><span class="p">],</span> <span class="s2">"a comparison (make it with `fit`)"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">directory</span> <span class="ow">in</span> <span class="p">(</span><span class="n">baseline</span><span class="p">,</span> <span class="n">comparison</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">difference_map</span><span class="p">(</span><span class="o">*</span><span class="n">maps</span><span class="p">,</span> <span class="n">floor</span><span class="o">=</span><span class="n">floor</span><span class="p">,</span> <span class="n">check_meta</span><span class="o">=</span><span class="n">check_meta</span><span class="p">)</span>
+    <span class="n">out_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">difference</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="s2">"difference"</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"ascii.ecsv"</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">written</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"difference"</span><span class="p">:</span> <span class="n">targets</span><span class="p">[</span><span class="s2">"difference"</span><span class="p">]}</span>
+
+    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">difference</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"space"</span><span class="p">][</span><span class="s2">"axes"</span><span class="p">])</span> <span class="k">if</span> <span class="s2">"space"</span> <span class="ow">in</span> <span class="n">difference</span><span class="o">.</span><span class="n">meta</span> <span class="k">else</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">plot</span> <span class="ow">and</span> <span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"The maps are over </span><span class="si">%d</span><span class="s2"> axes and a figure is of two, so none is drawn."</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="c1"># What is shaded on the figure is up to the sampler of the baseline, which is the one that made the overlay</span>
+        <span class="n">annotate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">overlay_path</span> <span class="o">=</span> <span class="n">map_paths</span><span class="p">(</span><span class="n">baseline</span><span class="p">)[</span><span class="s2">"overlay"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">overlay</span> <span class="ow">and</span> <span class="n">overlay_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">sampler_class</span> <span class="o">=</span> <span class="n">get_sampler</span><span class="p">(</span><span class="n">describe</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+            <span class="n">measurements</span> <span class="o">=</span> <span class="n">read_table</span><span class="p">(</span><span class="n">overlay_path</span><span class="p">,</span> <span class="s2">"shading the classes"</span><span class="p">)</span>
+            <span class="n">annotate</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ax</span><span class="p">:</span> <span class="n">sampler_class</span><span class="o">.</span><span class="n">annotate_map</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>  <span class="c1"># noqa: E731</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">comparison</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> relative to </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">figure</span> <span class="o">=</span> <span class="n">plot_difference</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="n">targets</span><span class="p">[</span><span class="s2">"figure"</span><span class="p">],</span> <span class="n">title</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="n">annotate</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
+        <span class="n">written</span><span class="p">[</span><span class="s2">"figure"</span><span class="p">]</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="s2">"figure"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">written</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

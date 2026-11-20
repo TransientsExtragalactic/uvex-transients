@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>uvex_transients.models.supernovae.IIp &#8212; UVEX Transients  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery.css?v=c83e6b79" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=19744cd7" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/uvex_transients/models/supernovae/IIp';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.24.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://transientsextragalactic.github.io/uvex-transients/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'v0.6.5alpha';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/UVEX_HorizIcon_Black.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/UVEX_HorizIcon_White.png" class="logo__image only-light" alt="UVEX Transients"/>
+    <img src="../../../../_static/UVEX_HorizIcon_Black.png" class="logo__image only-dark pst-js-only" alt="UVEX Transients"/>
+  
+  
+    <p class="title logo__title">UVEX Transients</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../transients/index.html">
+    Transients
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../report/index.html">
+    Transient Yield Report
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api.html">
+    API
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/TransientsExtragalactic/uvex-transients" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">uvex_transients.models.supernovae.IIp</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for uvex_transients.models.supernovae.IIp</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">"""SED model for Type IIP supernovae, with and without an early excess from confined circumstellar material."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy</span><span class="w"> </span><span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">ndtr</span><span class="p">,</span> <span class="n">ndtri</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">C_CGS</span><span class="p">,</span> <span class="n">SECONDS_PER_DAY</span><span class="p">,</span> <span class="n">SIGMA_SB_CGS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">CGSParameterValue</span><span class="p">,</span> <span class="n">FloatArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._util_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">_log_sigmoid</span><span class="p">,</span> <span class="n">planck_shape_log_cgs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_cgs_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectralModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uvex_transients.models.core.priors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConstantPrior</span><span class="p">,</span>
+    <span class="n">DiscretePrior</span><span class="p">,</span>
+    <span class="n">NormalPrior</span><span class="p">,</span>
+    <span class="n">TruncatedNormalPrior</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"TypeIIPSED"</span><span class="p">]</span>
+
+<span class="c1">#: Specific heating rates of the :math:`^{56}\mathrm{Ni}\to{}^{56}\mathrm{Co}\to{}^{56}\mathrm{Fe}` chain, in erg/s/g,</span>
+<span class="c1">#: and the e-folding times of the two decays, in seconds. The values are those of the model specification, not the</span>
+<span class="c1">#: ones the Arnett models of :mod:`uvex_transients.models.arnett` use.</span>
+<span class="n">_EPS_NI_CGS</span> <span class="o">=</span> <span class="mf">3.9e10</span>
+<span class="n">_EPS_CO_CGS</span> <span class="o">=</span> <span class="mf">6.78e9</span>
+<span class="n">_TAU_NI_CGS</span> <span class="o">=</span> <span class="mf">8.8</span> <span class="o">*</span> <span class="n">SECONDS_PER_DAY</span>
+<span class="n">_TAU_CO_CGS</span> <span class="o">=</span> <span class="mf">111.3</span> <span class="o">*</span> <span class="n">SECONDS_PER_DAY</span>
+
+<span class="c1">#: Numerical floor on :math:`L_\mathrm{bol}`, in erg/s. At and just after explosion the bolometric light curve is</span>
+<span class="c1">#: zero (or underflows in float64), and would otherwise send a magnitude to infinity downstream.</span>
+<span class="n">_L_BOL_FLOOR_CGS</span> <span class="o">=</span> <span class="mf">1e35</span>
+
+<span class="c1">#: Smallest time, in days, used inside the gamma-ray trapping term :math:`(T_0/t)^2`, which diverges at :math:`t=0`.</span>
+<span class="n">_T_TRAPPING_MIN_DAYS</span> <span class="o">=</span> <span class="mf">1e-6</span>
+
+<span class="n">_ANGSTROM_CM</span> <span class="o">=</span> <span class="mf">1e-8</span>
+
+<span class="c1">#: The grid of the table of the energy-conserving normalization :math:`N(T)`: its temperatures (log10 K) and the</span>
+<span class="c1">#: wavelengths it integrates over (log10 Angstrom). A photosphere outside the temperature range uses its end value.</span>
+<span class="n">_NORM_LOG10_TEMPERATURE</span> <span class="o">=</span> <span class="p">(</span><span class="mf">3.3</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+<span class="n">_NORM_LOG10_WAVELENGTH_ANGSTROM</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span>
+
+<span class="n">_LOG_4PI_SIGMA_SB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">SIGMA_SB_CGS</span><span class="p">)</span>
+<span class="n">_LN10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+
+<span class="c1">#: Priors of the CSM branch of the events that are not those of the parameter's own prior (the plain events').</span>
+<span class="c1">#: ``t_r``: :math:`\log_{10}(t_r/\mathrm{d})` is a normal of mean :math:`\log_{10}1.2` and width 0.40, truncated to</span>
+<span class="c1">#: :math:`[-0.7, 0.9]`. ``R0``: :math:`1.4\times10^{14}\,\mathrm{cm}\times10^{N(0, 0.20)}`, capped at</span>
+<span class="c1">#: :math:`3\times10^{14}` cm (a cap, not a truncation: the draws above it are set to it).</span>
+<span class="n">_CSM_T_R</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"log10_median"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1.2</span><span class="p">),</span> <span class="s2">"sigma"</span><span class="p">:</span> <span class="mf">0.40</span><span class="p">,</span> <span class="s2">"lower"</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">,</span> <span class="s2">"upper"</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">}</span>
+<span class="n">_CSM_R0</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"median_cm"</span><span class="p">:</span> <span class="mf">1.4e14</span><span class="p">,</span> <span class="s2">"sigma"</span><span class="p">:</span> <span class="mf">0.20</span><span class="p">,</span> <span class="s2">"cap_cm"</span><span class="p">:</span> <span class="mf">3.0e14</span><span class="p">}</span>
+
+
+<span class="c1"># ======================================== #</span>
+<span class="c1"># Spectrum helpers                         #</span>
+<span class="c1"># ======================================== #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_log_suppression</span><span class="p">(</span>
+    <span class="n">wavelength</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">lam_c</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">beta_max</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">T_b</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">dT</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    :math:`\ln S(\lambda, T)`, the UV line-blanketing suppression of the blackbody.</span>
+
+<span class="sd">    :math:`S=(\lambda/\lambda_c)^{\beta(T)}` blueward of the cutoff wavelength :math:`\lambda_c` and 1 redward of it,</span>
+<span class="sd">    with an index :math:`\beta(T)=\beta_\mathrm{max}/[1+e^{(T-T_b)/\Delta T}]` that is :math:`\beta_\mathrm{max}`</span>
+<span class="sd">    for a cool photosphere and 0 (no suppression) for a hot one.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wavelength : numpy.ndarray</span>
+<span class="sd">        Wavelength, in cm.</span>
+<span class="sd">    temperature : numpy.ndarray</span>
+<span class="sd">        Colour temperature, in K.</span>
+<span class="sd">    lam_c : float or numpy.ndarray</span>
+<span class="sd">        Cutoff wavelength, in cm.</span>
+<span class="sd">    beta_max : float or numpy.ndarray</span>
+<span class="sd">        Index of the suppression at full strength.</span>
+<span class="sd">    T_b : float or numpy.ndarray</span>
+<span class="sd">        Temperature at which the blanketing is half on, in K.</span>
+<span class="sd">    dT : float or numpy.ndarray</span>
+<span class="sd">        Width of the turn-on, in K.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The natural log of the suppression (dimensionless, :math:`\le 0`).</span>
+<span class="sd">    """</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">beta_max</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">_log_sigmoid</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">temperature</span> <span class="o">-</span> <span class="n">T_b</span><span class="p">)</span> <span class="o">/</span> <span class="n">dT</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">wavelength</span> <span class="o">/</span> <span class="n">lam_c</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+
+<span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalization_table</span><span class="p">(</span><span class="n">lam_c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">beta_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">T_b</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dT</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Tabulate :math:`N(T)=\int\pi B_\nu(T)\,S\,d\nu/\sigma T^4`, the fraction of a blackbody left by the blanketing.</span>
+
+<span class="sd">    The integral is taken over :data:`_NORM_LOG10_WAVELENGTH_ANGSTROM` by the trapezoid rule in frequency, for the</span>
+<span class="sd">    temperatures of :data:`_NORM_LOG10_TEMPERATURE`. The table depends only on the four UV parameters, so it is built</span>
+<span class="sd">    once for each set of them.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lam_c, beta_max, T_b, dT : float</span>
+<span class="sd">        The UV parameters, as for :func:`_log_suppression` (``lam_c`` in cm).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ln_temperature : numpy.ndarray</span>
+<span class="sd">        The natural log of the tabulated temperatures, in K.</span>
+<span class="sd">    norm : numpy.ndarray</span>
+<span class="sd">        :math:`N(T)` at those temperatures.</span>
+<span class="sd">    """</span>
+    <span class="n">log_t_lo</span><span class="p">,</span> <span class="n">log_t_hi</span><span class="p">,</span> <span class="n">n_t</span> <span class="o">=</span> <span class="n">_NORM_LOG10_TEMPERATURE</span>
+    <span class="n">log_l_lo</span><span class="p">,</span> <span class="n">log_l_hi</span><span class="p">,</span> <span class="n">n_l</span> <span class="o">=</span> <span class="n">_NORM_LOG10_WAVELENGTH_ANGSTROM</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">log_t_lo</span><span class="p">,</span> <span class="n">log_t_hi</span><span class="p">,</span> <span class="n">n_t</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">wavelength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">log_l_lo</span><span class="p">,</span> <span class="n">log_l_hi</span><span class="p">,</span> <span class="n">n_l</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">_ANGSTROM_CM</span>
+    <span class="n">nu</span> <span class="o">=</span> <span class="n">C_CGS</span> <span class="o">/</span> <span class="n">wavelength</span>
+
+    <span class="n">integrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+        <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span> <span class="o">+</span> <span class="n">_log_suppression</span><span class="p">(</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">lam_c</span><span class="p">,</span> <span class="n">beta_max</span><span class="p">,</span> <span class="n">T_b</span><span class="p">,</span> <span class="n">dT</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># Frequency falls as wavelength rises, so reverse both for the trapezoid rule.</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapezoid</span><span class="p">(</span><span class="n">integrand</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nu</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">temperature</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">norm</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_log_normalization</span><span class="p">(</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">lam_c</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">beta_max</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">T_b</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">dT</span><span class="p">:</span> <span class="n">FloatArray</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    :math:`\ln N(T)` by linear interpolation of the table in :math:`\ln T`.</span>
+
+<span class="sd">    One table serves the usual case, where the four UV parameters are the same for every element. If they differ</span>
+<span class="sd">    (a UV parameter given a prior that is not a constant), the elements are grouped by their set of values, and</span>
+<span class="sd">    one table is built for each.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    temperature : numpy.ndarray</span>
+<span class="sd">        Colour temperature, in K.</span>
+<span class="sd">    lam_c, beta_max, T_b, dT : float or numpy.ndarray</span>
+<span class="sd">        The UV parameters, as for :func:`_log_suppression` (``lam_c`` in cm), broadcastable against ``temperature``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        :math:`\ln N(T)`, with the shape the arguments broadcast to.</span>
+<span class="sd">    """</span>
+    <span class="n">uv</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">lam_c</span><span class="p">,</span> <span class="n">beta_max</span><span class="p">,</span> <span class="n">T_b</span><span class="p">,</span> <span class="n">dT</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">uv</span><span class="p">):</span>
+        <span class="n">ln_t</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_normalization_table</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">uv</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">temperature</span><span class="p">),</span> <span class="n">ln_t</span><span class="p">,</span> <span class="n">norm</span><span class="p">))</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_shapes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">temperature</span><span class="p">),</span> <span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">uv</span><span class="p">))</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">uv</span><span class="p">])</span>
+    <span class="n">unique</span><span class="p">,</span> <span class="n">inverse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">inverse</span> <span class="o">=</span> <span class="n">inverse</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ln_temperature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ln_temperature</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+        <span class="n">ln_t</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_normalization_table</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">key</span><span class="p">))</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="n">inverse</span> <span class="o">==</span> <span class="n">j</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">selected</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">ln_temperature</span><span class="p">[</span><span class="n">selected</span><span class="p">],</span> <span class="n">ln_t</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+
+
+<span class="c1"># ======================================== #</span>
+<span class="c1"># Sampling helpers                         #</span>
+<span class="c1"># ======================================== #</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_truncated_normal</span><span class="p">(</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">FloatArray</span><span class="p">,</span>
+    <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">lower</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">upper</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Draw from a normal distribution truncated to :math:`[\mathrm{lower}, \mathrm{upper}]`, with a per-draw mean.</span>
+
+<span class="sd">    By the inverse CDF, which uses one uniform draw per sample and so costs the same wherever the mean sits</span>
+<span class="sd">    relative to the bounds (resampling out-of-range draws would not: a bright event's nickel mass sits at the</span>
+<span class="sd">    edge of its range). An interval in the upper tail is reflected into the lower one first, where</span>
+<span class="sd">    :func:`scipy.special.ndtr` keeps its precision.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rng : numpy.random.Generator</span>
+<span class="sd">        Random-number source.</span>
+<span class="sd">    mean : float or numpy.ndarray</span>
+<span class="sd">        Mean of the untruncated normal, a scalar or an array of shape ``(size,)``.</span>
+<span class="sd">    sigma : float</span>
+<span class="sd">        Width of the untruncated normal.</span>
+<span class="sd">    lower, upper : float</span>
+<span class="sd">        Bounds. Either may be infinite.</span>
+<span class="sd">    size : int</span>
+<span class="sd">        Number of draws.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        The draws, with shape ``(size,)``.</span>
+<span class="sd">    """</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="p">(</span><span class="n">size</span><span class="p">,))</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">upper</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
+    <span class="n">flip</span> <span class="o">=</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flip</span><span class="p">,</span> <span class="o">-</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flip</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">p_lo</span> <span class="o">=</span> <span class="n">ndtr</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">ndtri</span><span class="p">(</span><span class="n">p_lo</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">ndtr</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span> <span class="o">-</span> <span class="n">p_lo</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">mean</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flip</span><span class="p">,</span> <span class="o">-</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_log10_physical</span><span class="p">(</span><span class="n">parameter</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">latent</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">""":math:`\log_{10}` of a luminosity parameter's physical value, in erg/s, from its latent values."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">to_cgs_value</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">transform_latent_to_physical</span><span class="p">(</span><span class="n">latent</span><span class="p">)))</span>
+
+
+<span class="c1"># ======================================== #</span>
+<span class="c1"># Model                                    #</span>
+<span class="c1"># ======================================== #</span>
+<div class="viewcode-block" id="TypeIIPSED">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.html#uvex_transients.models.supernovae.IIp.TypeIIPSED">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeIIPSED</span><span class="p">(</span><span class="n">SpectralModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">    Type IIP supernova SED, with an optional early excess from confined circumstellar material (CSM).</span>
+
+<span class="sd">    A semi-analytic model of the spectral luminosity :math:`L_\nu(t,\nu\mid\theta)` of Type IIP supernovae and of</span>
+<span class="sd">    the IIP events whose early light curve is boosted by a confined shell of CSM, like SN 2023ixf and SN 2024ggi.</span>
+<span class="sd">    Everything is closed form: there is no ODE integration and no grid beyond one small table of a normalization.</span>
+<span class="sd">    Redshift, distance and dust are not part of it.</span>
+
+<span class="sd">    The form follows the temperature and bolometric evolution of SNe II, with a recombination floor</span>
+<span class="sd">    :footcite:p:`faran2017`, the colour temperature of shock cooling and the departures from a blackbody that</span>
+<span class="sd">    suppress the UV :footcite:p:`morag2023,morag2024`, and the interaction power that emerges in the UV and shortens</span>
+<span class="sd">    the optical rise of events with CSM :footcite:p:`dessart2022,dessart2026`. The prevalence and brightness of the</span>
+<span class="sd">    CSM events are set from the ZTF samples :footcite:p:`bruch2023,hinds2025`, and their parameters from the fits to</span>
+<span class="sd">    SN 2023ixf and SN 2024ggi (:footcite:t:`hiramatsu2023`, :footcite:t:`shrestha2024`), as the Notes describe.</span>
+
+<span class="sd">    **Bolometric luminosity.** The sum of an envelope, a radioactive tail and a CSM pulse,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\mathrm{bol}(t) = L_\mathrm{env}(t) + L_\mathrm{Ni}(t) + L_\mathrm{csm}(t),</span>
+
+<span class="sd">    with the plateau cutoff :math:`F(t)=1/\{1+\exp[(t-t_p)/w]\}`. The envelope is the shock-cooling excess and the</span>
+<span class="sd">    plateau,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\mathrm{env}(t) = L_{50}\,10^{-0.4\,s\,(t-50)/100}\,\bigl[1+a_e e^{-t/\tau_e}\bigr]</span>
+<span class="sd">        \bigl[1-e^{-(t/t_r)^2}\bigr]F(t),</span>
+
+<span class="sd">    with :math:`t` in days, so that :math:`L_{50}` is the observed plateau luminosity at day 50. The tail is gated</span>
+<span class="sd">    to emerge only after the plateau, which is what keeps that true,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\mathrm{Ni}(t) = M_\mathrm{Ni}\bigl[(\epsilon_\mathrm{Ni}-\epsilon_\mathrm{Co})e^{-t/\tau_\mathrm{Ni}}</span>
+<span class="sd">        + \epsilon_\mathrm{Co}e^{-t/\tau_\mathrm{Co}}\bigr]\bigl[1-e^{-(T_0/t)^2}\bigr]\bigl[1-F(t)\bigr],</span>
+
+<span class="sd">    and the CSM pulse, with :math:`x=t/t_c`, is :math:`L_c\,x^k e^{k(1-x)}` up to its peak at :math:`t_c` and</span>
+<span class="sd">    :math:`L_c\exp[1-\sqrt{1+((t-t_c)/\tau_d)^2}]` after it. It equals :math:`L_c` at :math:`t_c`, with zero slope on</span>
+<span class="sd">    both sides, rises as :math:`t^k` and decays exponentially with the time :math:`\tau_d`.</span>
+<span class="sd">    :math:`L_c=0` is a plain IIP.</span>
+
+<span class="sd">    **Colour temperature.** An expanding photosphere with a recombination floor. Temperature is derived, never</span>
+<span class="sd">    specified:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        R(t) = R_0 + v_\mathrm{ph}t,\quad</span>
+<span class="sd">        T_\mathrm{exp} = \left[\frac{L_\mathrm{bol}}{4\pi\sigma R^2}\right]^{1/4},\quad</span>
+<span class="sd">        T_\mathrm{col} = \bigl[(f_cT_\mathrm{exp})^n + T_\mathrm{rec}^n\bigr]^{1/n}.</span>
+
+<span class="sd">    :math:`R_0` is the progenitor radius of a plain IIP and the breakout radius when there is CSM.</span>
+
+<span class="sd">    **Spectrum.** A blackbody at :math:`T_\mathrm{col}`, suppressed in the UV by line blanketing and renormalized</span>
+<span class="sd">    to :math:`L_\mathrm{bol}`,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        L_\nu = L_\mathrm{bol}\,\frac{\pi B_\nu(T_\mathrm{col})\,S(\lambda,T_\mathrm{col})}{\sigma T_\mathrm{col}^4\,</span>
+<span class="sd">        N(T_\mathrm{col})},\qquad</span>
+<span class="sd">        S=\begin{cases}(\lambda/\lambda_c)^{\beta(T)}&amp;\lambda&lt;\lambda_c\\1&amp;\lambda\ge\lambda_c\end{cases},\qquad</span>
+<span class="sd">        \beta(T)=\frac{\beta_\mathrm{max}}{1+e^{(T-T_b)/\Delta T}},</span>
+
+<span class="sd">    where :math:`N(T)=\int\pi B_\nu S\,d\nu/\sigma T^4` is the fraction of the blackbody left after the suppression.</span>
+<span class="sd">    The spectral shape therefore integrates to 1 at every time: **the flux removed from the UV is moved to longer</span>
+<span class="sd">    wavelengths, not lost**, so that :math:`L_\mathrm{bol}` is the luminosity actually emitted. The blanketing</span>
+<span class="sd">    is off above :math:`\sim10^4` K, where :math:`N=1`, so the early, hot photosphere is a plain blackbody and the</span>
+<span class="sd">    renormalization only matters once the photosphere has cooled (:math:`N=0.94` at 6000 K). :math:`N(T)` is</span>
+<span class="sd">    tabulated once for each set of the four UV parameters, on 400 temperatures from :math:`10^{3.3}` to</span>
+<span class="sd">    :math:`10^{5.7}` K and 1500 wavelengths from :math:`10^{1.5}` to :math:`10^{6.5}` Angstrom, and interpolated</span>
+<span class="sd">    linearly in :math:`\ln T`.</span>
+
+<span class="sd">    .. rubric:: Population</span>
+
+<span class="sd">    The parameters are drawn from a hierarchical population, as in the specification: an event is a CSM event with</span>
+<span class="sd">    probability :math:`f_\mathrm{csm}=0.36` (the parameter ``csm``), then :math:`L_{50}` (and, for a CSM event,</span>
+<span class="sd">    :math:`L_c`) is drawn, then every other parameter given them. This is not the independent draw of the other</span>
+<span class="sd">    models, so :meth:`_sample_latent_parameters` is overridden, and the rules are these.</span>
+
+<span class="sd">    * **Luminosity trends.** The priors of ``s``, ``M_Ni`` and ``v_ph`` are those of an event with</span>
+<span class="sd">      :math:`\log_{10}L_{50}=42`, and of ``t_c`` of one with :math:`\log_{10}L_c=43.15`. The mean of each, in the</span>
+<span class="sd">      variable the parameter is sampled in, moves by a slope times the distance of the event's luminosity from that</span>
+<span class="sd">      reference (:attr:`LUMINOSITY_TRENDS`), with its truncation bounds unchanged. The plateau decline steepens</span>
+<span class="sd">      and the nickel mass and the velocity rise with :math:`L_{50}`, and a brighter CSM pulse peaks later. A prior</span>
+<span class="sd">      that is not a normal or a truncated normal is drawn as it is, without the trend.</span>
+<span class="sd">    * **Event class.** ``t_r`` and ``R0`` have one prior for a plain event, the parameter's own, and another for a CSM</span>
+<span class="sd">      event (:math:`\log_{10}(t_r/\mathrm{d})` normal about :math:`\log_{10}1.2` with width 0.40 and bounds</span>
+<span class="sd">      :math:`[-0.7, 0.9]`; :math:`R_0=1.4\times10^{14}\,\mathrm{cm}\times10^{N(0,0.20)}` capped at</span>
+<span class="sd">      :math:`3\times10^{14}` cm), which is not a parameter and is changed in a subclass only. An event without CSM has</span>
+<span class="sd">      ``L_c = 0``, and the unused ``t_c``, ``k`` and ``tau_d`` are set to 3 d, 2 and 3 d.</span>
+<span class="sd">    * **Fixing a parameter** gives that value to every event, and the trends of the others follow it. ``csm=1`` or</span>
+<span class="sd">      ``csm=0`` selects the class, and fixing ``L_c`` makes every event a CSM event unless ``csm`` is fixed to 0</span>
+<span class="sd">      (``L_c`` itself cannot be fixed to 0, because it is sampled in :math:`\log_{10}`).</span>
+<span class="sd">    * **Replacing a parameter** with another :class:`~uvex_transients.models.core.parameters.Parameter` keeps the trend</span>
+<span class="sd">      if its prior is a (truncated) normal in the same variable as the one it replaces.</span>
+
+<span class="sd">    The result is a hierarchical population whose V-band peak luminosity function follows the ASAS-SN one, with</span>
+<span class="sd">    the CSM share of a magnitude-limited sample near the observed :math:`\sim65\%` (see the Notes).</span>
+
+<span class="sd">    .. rubric:: Parameters</span>
+
+<span class="sd">    .. list-table::</span>
+<span class="sd">       :header-rows: 1</span>
+<span class="sd">       :widths: 18 18 64</span>
+
+<span class="sd">       * - Parameter</span>
+<span class="sd">         - Symbol</span>
+<span class="sd">         - Description</span>
+<span class="sd">       * - ``csm``</span>
+<span class="sd">         - :math:`x_\mathrm{csm}`</span>
+<span class="sd">         - Whether the event has CSM, 1 or 0. A label of the population: the model uses ``L_c``.</span>
+<span class="sd">       * - ``L50``</span>
+<span class="sd">         - :math:`L_{50}`</span>
+<span class="sd">         - Plateau luminosity at day 50.</span>
+<span class="sd">       * - ``t_p``</span>
+<span class="sd">         - :math:`t_p`</span>
+<span class="sd">         - Plateau duration: the midpoint of the drop.</span>
+<span class="sd">       * - ``s``</span>
+<span class="sd">         - :math:`s`</span>
+<span class="sd">         - Plateau decline rate, in mag per 100 d.</span>
+<span class="sd">       * - ``a_e``</span>
+<span class="sd">         - :math:`a_e`</span>
+<span class="sd">         - Early excess amplitude, relative to the plateau.</span>
+<span class="sd">       * - ``tau_e``</span>
+<span class="sd">         - :math:`\tau_e`</span>
+<span class="sd">         - Early excess decay time.</span>
+<span class="sd">       * - ``t_r``</span>
+<span class="sd">         - :math:`t_r`</span>
+<span class="sd">         - Envelope rise time.</span>
+<span class="sd">       * - ``M_Ni``</span>
+<span class="sd">         - :math:`M_\mathrm{Ni}`</span>
+<span class="sd">         - Nickel-56 mass.</span>
+<span class="sd">       * - ``v_ph``</span>
+<span class="sd">         - :math:`v_\mathrm{ph}`</span>
+<span class="sd">         - Photospheric expansion velocity.</span>
+<span class="sd">       * - ``R0``</span>
+<span class="sd">         - :math:`R_0`</span>
+<span class="sd">         - Initial photospheric radius.</span>
+<span class="sd">       * - ``T_rec``</span>
+<span class="sd">         - :math:`T_\mathrm{rec}`</span>
+<span class="sd">         - Recombination floor temperature.</span>
+<span class="sd">       * - ``L_c``</span>
+<span class="sd">         - :math:`L_c`</span>
+<span class="sd">         - CSM pulse peak luminosity (0 for a plain event).</span>
+<span class="sd">       * - ``t_c``</span>
+<span class="sd">         - :math:`t_c`</span>
+<span class="sd">         - CSM pulse peak time.</span>
+<span class="sd">       * - ``k``</span>
+<span class="sd">         - :math:`k`</span>
+<span class="sd">         - CSM pulse rise index.</span>
+<span class="sd">       * - ``tau_d``</span>
+<span class="sd">         - :math:`\tau_d`</span>
+<span class="sd">         - CSM pulse decay time.</span>
+<span class="sd">       * - ``w``</span>
+<span class="sd">         - :math:`w`</span>
+<span class="sd">         - Width of the plateau drop. Fixed.</span>
+<span class="sd">       * - ``T0``</span>
+<span class="sd">         - :math:`T_0`</span>
+<span class="sd">         - Gamma-ray trapping timescale. Fixed.</span>
+<span class="sd">       * - ``f_c``</span>
+<span class="sd">         - :math:`f_c`</span>
+<span class="sd">         - Colour to effective temperature ratio. Fixed.</span>
+<span class="sd">       * - ``n``</span>
+<span class="sd">         - :math:`n`</span>
+<span class="sd">         - Smoothness of the transition to the temperature floor. Fixed.</span>
+<span class="sd">       * - ``lam_c``</span>
+<span class="sd">         - :math:`\lambda_c`</span>
+<span class="sd">         - Blanketing cutoff wavelength. Fixed.</span>
+<span class="sd">       * - ``beta_max``</span>
+<span class="sd">         - :math:`\beta_\mathrm{max}`</span>
+<span class="sd">         - Full-strength suppression index. Fixed.</span>
+<span class="sd">       * - ``T_b``</span>
+<span class="sd">         - :math:`T_b`</span>
+<span class="sd">         - Temperature at which the blanketing is half on. Fixed.</span>
+<span class="sd">       * - ``dT``</span>
+<span class="sd">         - :math:`\Delta T`</span>
+<span class="sd">         - Width of the blanketing turn-on. Fixed.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The priors carry these tags: **[LF]** tuned to the ASAS-SN luminosity function of SNe II, **[fit43]** from fits of</span>
+<span class="sd">    the plain model to 43 IIP bolometric light curves, **[csm2]** from fits to SN 2023ixf and SN 2024ggi, **[lit]**</span>
+<span class="sd">    set from the literature and **[assumed]** not constrained by the data.</span>
+
+<span class="sd">    * ``csm``: 0.36 [lit], :footcite:t:`bruch2023` (more than 36%) and :footcite:t:`hinds2025` (:math:`36^{+5}_{-7}\%`).</span>
+<span class="sd">    * ``L50``: :math:`\log_{10}L_{50}\sim N(41.26, 0.51)` truncated to :math:`[40.8, 43.3]` [LF]. The faint cutoff is</span>
+<span class="sd">      the faintest object of the 43.</span>
+<span class="sd">    * ``L_c``: :math:`\log_{10}L_c\sim N(43.00, 0.40)` truncated to :math:`[41.0, 44.8]` [lit], chosen so that the CSM</span>
+<span class="sd">      share of a magnitude-limited sample approaches that of :footcite:t:`hinds2025`. The luminosity function does not</span>
+<span class="sd">      constrain it.</span>
+<span class="sd">    * ``t_p`` :math:`N(105, 20)` d truncated to :math:`[60, 150]`; ``s`` :math:`N(0.8+0.5(\log_{10}L_{50}-42), 0.5)`</span>
+<span class="sd">      truncated to :math:`[0, 3]`; ``a_e`` :math:`4.0\times10^{N(0, 0.20)}`, bounded in :math:`\log_{10}` to</span>
+<span class="sd">      :math:`[-1, 1]`; ``tau_e`` :math:`10\,\mathrm{d}\times10^{N(0, 0.18)}`, :math:`\log_{10}` to :math:`[0.5, 1.5]`;</span>
+<span class="sd">      ``M_Ni`` :math:`\log_{10}\sim N(-1.45+(\log_{10}L_{50}-42), 0.17)` truncated to :math:`[-3.3, -0.5]`, all [fit43].</span>
+<span class="sd">    * ``v_ph``: :math:`8\times10^8\,\mathrm{cm/s}\times10^{0.33(\log_{10}L_{50}-42)+N(0, 0.08)}` [assumed], from</span>
+<span class="sd">      :math:`L\propto v^3`. ``T_rec``: :math:`N(6000, 500)` K truncated to :math:`[4500, 7000]` [csm2], with the</span>
+<span class="sd">      observed temperatures.</span>
+<span class="sd">    * Plain events: ``t_r`` :math:`1.0\,\mathrm{d}\times10^{N(0, 0.35)}`, :math:`\log_{10}` bounded to :math:`[-1, 0.7]`</span>
+<span class="sd">      [fit43]; ``R0`` :math:`3.5\times10^{13}\,\mathrm{cm}\times10^{N(0, 0.15)}` [assumed], a red supergiant.</span>
+<span class="sd">    * CSM events: ``t_c`` :math:`\log_{10}\sim N(\log_{10}3.5+0.5(\log_{10}L_c-43.15), 0.15)` truncated to</span>
+<span class="sd">      :math:`[0, 1]`; ``tau_d`` :math:`1.5\,\mathrm{d}\times10^{N(0, 0.30)}`, :math:`\log_{10}` to :math:`[-0.5, 1.0]`,</span>
+<span class="sd">      both [csm2]; ``k`` :math:`4.0\times10^{N(0, 0.30)}`, :math:`\log_{10}` to :math:`[0.18, 1.18]` [assumed], with</span>
+<span class="sd">      SN 2023ixf and SN 2024ggi (:math:`k\ge12`) the steep tail; ``R0`` and ``t_r`` as above [csm2], [assumed] (5 to</span>
+<span class="sd">      8 d for those two objects, the slow tail).</span>
+
+<span class="sd">    The model was checked against:</span>
+
+<span class="sd">    * the bolometric curves of 43 IIP (plain model: a median 0.02 dex each) and the bolometric curve and</span>
+<span class="sd">      temperature of SN 2023ixf and SN 2024ggi (0.05 to 0.07 dex in :math:`L`, 0.03 to 0.05 dex in :math:`T`), with no</span>
+<span class="sd">      UV data used (see below for those fits);</span>
+<span class="sd">    * Swift/UVOT light curves (SOUSA, Brown et al. 2014): at the object level, SN 2012aw, SN 2008in, SN 2024ggi</span>
+<span class="sd">      and SN 2023ixf (183 detections) scatter 0.20 dex about a +0.02 dex median offset, and at the population level</span>
+<span class="sd">      (53 SNe II) the median offsets are below 0.2 dex in all three bands from day 0.6 to 15;</span>
+<span class="sd">    * the ASAS-SN V-band peak luminosity function of SNe II, to 0.06 to 0.10 dex rms over the eight bins from</span>
+<span class="sd">      :math:`M_V=-15.4` to :math:`-20.0` after fitting one overall normalization (about</span>
+<span class="sd">      :math:`5.3\times10^{-5}` SNe/Mpc\ :sup:`3`/yr). The brightest bin (:math:`M_V=-21.2`) is not reproduced and was</span>
+<span class="sd">      excluded;</span>
+<span class="sd">    * a CSM share of a magnitude-limited sample (weights :math:`\propto10^{-0.6M_V}`) of about 60%, against</span>
+<span class="sd">      :math:`67\pm6\%` from :footcite:t:`hinds2025`.</span>
+
+<span class="sd">    The reference fits of the two CSM objects, which are curve-reproducing sets, not measurements (the early-excess and</span>
+<span class="sd">    CSM terms trade off), are in the model's tests.</span>
+
+<span class="sd">    **Limitations**</span>
+
+<span class="sd">    * The late-time UV of the population is probably faint, by a factor of 2 to 4 after day 15. Selection effects in the</span>
+<span class="sd">      Swift sample contribute (the data are 0.3 to 0.65 dex above the model median from day 15 to 110), but persistent</span>
+<span class="sd">      interaction emission is not modeled. A one-parameter additive UV term was designed and deliberately left out.</span>
+<span class="sd">    * The far UV (below 1900 Angstrom) is uncalibrated, since the blanketing was set on Swift bands only. There is</span>
+<span class="sd">      no cut at the hydrogen Lyman limit.</span>
+<span class="sd">    * The first day is an extrapolation: no plain IIP has a temperature before day 4 in the calibration set.</span>
+<span class="sd">    * :math:`t=0` is the explosion, not first light. With CSM, the model can be faint for a short time before an</span>
+<span class="sd">      observer would record first light.</span>
+<span class="sd">    * About 17% of the population peaks fainter than the faintest bin of the luminosity function (:math:`M_V=-15.4`),</span>
+<span class="sd">      and is unconstrained.</span>
+<span class="sd">    * 37 of the 43 light curves come from a flash-spectroscopy sample, so part of the "plain" early excess is CSM.</span>
+<span class="sd">    * After about day 80 the temperature of real events can fall below the floor (nebular phase), and the tail</span>
+<span class="sd">      spectrum is a floor-temperature blackbody. A constant photospheric velocity makes the model cool slightly too</span>
+<span class="sd">      fast over days 20 to 40 in some objects.</span>
+<span class="sd">    * There is no host extinction, and the luminosity function was taken at face value.</span>
+<span class="sd">    * ``v_ph``, ``R0`` of the plain events, ``k`` and the ``t_r`` of the CSM events are assumptions, not fits.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. footbibliography::</span>
+<span class="sd">    """</span>
+
+    <span class="n">LUMINOSITY_TRENDS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"s"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"L50"</span><span class="p">,</span> <span class="mf">42.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+        <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"L50"</span><span class="p">,</span> <span class="mf">42.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="s2">"v_ph"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"L50"</span><span class="p">,</span> <span class="mf">42.0</span><span class="p">,</span> <span class="mf">0.33</span><span class="p">),</span>
+        <span class="s2">"t_c"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"L_c"</span><span class="p">,</span> <span class="mf">43.15</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+    <span class="p">}</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""dict: For each parameter with a trend, ``(driver, reference, slope)``.</span>
+
+<span class="sd">    The mean of the parameter's prior, in the variable it is sampled in, moves by ``slope`` times</span>
+<span class="sd">    :math:`\log_{10}` of the ``driver`` parameter (in erg/s) minus ``reference``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">_PLAIN_CSM_PLACEHOLDERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"t_c"</span><span class="p">:</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+        <span class="s2">"k"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+        <span class="s2">"tau_d"</span><span class="p">:</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="w">    </span><span class="sd">"""dict: The values of the CSM pulse's unused parameters for an event without CSM."""</span>
+
+    <span class="n">_DEFAULT_PARAMETERS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"csm"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">DiscretePrior</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]),</span> <span class="n">probabilities</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.64</span><span class="p">,</span> <span class="mf">0.36</span><span class="p">])),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Whether the event has a confined CSM excess: 1 if so, 0 if not. The CSM fraction is 0.36."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"x_\mathrm</span><span class="si">{csm}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"L50"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">41.26</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.51</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">40.8</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">43.3</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau luminosity at day 50 (tuned to the ASAS-SN luminosity function)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_</span><span class="si">{50}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_p"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">105.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">150.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau duration, the midpoint of the drop."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_p"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"s"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">3.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Plateau decline rate, in mag per 100 d. The prior is that at log L50 = 42; the mean "</span>
+            <span class="s2">"rises by 0.5 per dex of L50."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"s"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"a_e"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">4.0</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Early excess amplitude, relative to the plateau."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"a_e"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_e"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.18</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Early excess decay time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_e"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_r"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.7</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Envelope rise time. The prior is that of a plain event; a CSM event has its own."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_r"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"M_Ni"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=-</span><span class="mf">1.45</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.17</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">3.3</span><span class="p">,</span> <span class="n">upper</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Msun</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Nickel-56 mass. The prior is that at log L50 = 42; the mean rises by 1 dex per dex of L50."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"M_\mathrm</span><span class="si">{Ni}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"v_ph"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.08</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">8.0e8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Photospheric expansion velocity. The prior is that at log L50 = 42; the mean rises by "</span>
+            <span class="s2">"0.33 dex per dex of L50 (L ~ v^3)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"v_\mathrm</span><span class="si">{ph}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"R0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">NormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.15</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">3.5e13</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Initial photospheric radius: the progenitor radius, or the breakout radius for a CSM event. "</span>
+            <span class="s2">"The prior is that of a plain event; a CSM event has its own."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"R_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"T_rec"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">6000.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">4500.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">7000.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Recombination floor temperature."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_\mathrm</span><span class="si">{rec}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"L_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">43.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.40</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">41.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">44.8</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">erg</span> <span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"CSM pulse peak luminosity, of the events that have CSM (0 for the others)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"L_c"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"t_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">3.5</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"CSM pulse peak time. The prior is that at log L_c = 43.15; the mean rises by 0.5 dex per "</span>
+            <span class="s2">"dex of L_c."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"t_c"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"k"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">4.0</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.18</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.18</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"CSM pulse rise index."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"k"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"tau_d"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">TruncatedNormalPrior</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">1.5</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="s2">"log10"</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"CSM pulse decay time."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\tau_d"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"w"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Width of the plateau drop. Fixed."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"w"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"T0"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">400.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Gamma-ray trapping timescale. Fixed."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_0"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"f_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">1.25</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Ratio of the colour to the effective temperature. Fixed."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"f_c"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"n"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">6.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Smoothness of the transition of the temperature to its floor. Fixed."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"n"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"lam_c"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">3975.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"UV line-blanketing cutoff wavelength. Fixed (calibrated against Swift/UVOT)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\lambda_c"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"beta_max"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">3.6</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Index of the UV suppression at full strength. Fixed (calibrated against Swift/UVOT)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\beta_\mathrm</span><span class="si">{max}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"T_b"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">8000.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Temperature at which the UV blanketing is half on. Fixed (calibrated against Swift/UVOT)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"T_b"</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">"dT"</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">prior</span><span class="o">=</span><span class="n">ConstantPrior</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">660.0</span><span class="p">),</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">"Width of the turn-on of the UV blanketing. Fixed (calibrated against Swift/UVOT)."</span><span class="p">,</span>
+            <span class="n">latex</span><span class="o">=</span><span class="sa">r</span><span class="s2">"\Delta T"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Sampling                               #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span> <span class="n">shift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">FloatArray</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw ``size`` latent values of one parameter, with the mean of its prior moved by ``shift``.</span>
+
+<span class="sd">        A fixed parameter returns its fixed value. A normal or truncated normal prior is drawn with its mean moved,</span>
+<span class="sd">        and its bounds as they are. Any other prior is drawn as it is.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The parameter.</span>
+<span class="sd">        size : int</span>
+<span class="sd">            Number of draws.</span>
+<span class="sd">        rng : numpy.random.Generator</span>
+<span class="sd">            Random-number source.</span>
+<span class="sd">        shift : float or numpy.ndarray, optional</span>
+<span class="sd">            The movement of the mean, in the parameter's latent variable. The default is 0.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The latent values, with shape ``(size,)``.</span>
+<span class="sd">        """</span>
+        <span class="n">parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">is_fixed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parameter</span><span class="o">.</span><span class="n">sample_latent_variable</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">prior</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">prior</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">TruncatedNormalPrior</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_truncated_normal</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="n">shift</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prior</span><span class="p">,</span> <span class="n">NormalPrior</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_truncated_normal</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="n">shift</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_trend</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span> <span class="n">log10_driver</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">FloatArray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Draw a parameter with a luminosity trend (:attr:`LUMINOSITY_TRENDS`), given ``log10`` of its driver."""</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LUMINOSITY_TRENDS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">log10_driver</span> <span class="o">-</span> <span class="n">reference</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_draw_csm_branch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Draw ``t_r`` or ``R0`` of ``size`` CSM events: a fixed parameter keeps its value, else the CSM prior."""</span>
+        <span class="n">parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">is_fixed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parameter</span><span class="o">.</span><span class="n">sample_latent_variable</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"t_r"</span><span class="p">:</span>
+            <span class="n">log10_t_r</span> <span class="o">=</span> <span class="n">_truncated_normal</span><span class="p">(</span>
+                <span class="n">rng</span><span class="p">,</span> <span class="n">_CSM_T_R</span><span class="p">[</span><span class="s2">"log10_median"</span><span class="p">],</span> <span class="n">_CSM_T_R</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">],</span> <span class="n">_CSM_T_R</span><span class="p">[</span><span class="s2">"lower"</span><span class="p">],</span> <span class="n">_CSM_T_R</span><span class="p">[</span><span class="s2">"upper"</span><span class="p">],</span> <span class="n">size</span>
+            <span class="p">)</span>
+            <span class="n">physical</span> <span class="o">=</span> <span class="mf">10.0</span><span class="o">**</span><span class="n">log10_t_r</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">day</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">_CSM_R0</span><span class="p">[</span><span class="s2">"median_cm"</span><span class="p">]</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">_CSM_R0</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">],</span> <span class="n">size</span><span class="p">)</span>
+            <span class="n">physical</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">_CSM_R0</span><span class="p">[</span><span class="s2">"cap_cm"</span><span class="p">])</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span>
+        <span class="k">return</span> <span class="n">parameter</span><span class="o">.</span><span class="n">transform_physical_to_latent</span><span class="p">(</span><span class="n">physical</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_latent_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Draw every parameter's latent variable from the hierarchical population; see the class docstring.</span>
+
+<span class="sd">        The event class first, then :math:`L_{50}` and, for a CSM event, :math:`L_c`, then the other parameters given</span>
+<span class="sd">        them. Everything is drawn from ``rng``, so that a seed fixes the draw.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : int</span>
+<span class="sd">            Number of events.</span>
+<span class="sd">        rng : numpy.random.Generator</span>
+<span class="sd">            The random-number source.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            ``{name: latent samples}`` for each parameter, each with shape ``(size,)``.</span>
+<span class="sd">        """</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span>
+        <span class="n">csm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="s2">"csm"</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+        <span class="k">if</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">]</span><span class="o">.</span><span class="n">is_fixed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"csm"</span><span class="p">]</span><span class="o">.</span><span class="n">is_fixed</span><span class="p">:</span>
+            <span class="n">csm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">n_csm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">csm</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">plain</span> <span class="o">=</span> <span class="o">~</span><span class="n">csm</span>
+
+        <span class="n">latent</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"csm"</span><span class="p">:</span> <span class="n">csm</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)}</span>
+        <span class="n">latent</span><span class="p">[</span><span class="s2">"L50"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="s2">"L50"</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+        <span class="n">log10_l50</span> <span class="o">=</span> <span class="n">_log10_physical</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"L50"</span><span class="p">],</span> <span class="n">latent</span><span class="p">[</span><span class="s2">"L50"</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"t_p"</span><span class="p">,</span> <span class="s2">"a_e"</span><span class="p">,</span> <span class="s2">"tau_e"</span><span class="p">,</span> <span class="s2">"T_rec"</span><span class="p">):</span>
+            <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"s"</span><span class="p">,</span> <span class="s2">"M_Ni"</span><span class="p">,</span> <span class="s2">"v_ph"</span><span class="p">):</span>
+            <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw_trend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">log10_l50</span><span class="p">)</span>
+
+        <span class="c1"># The CSM pulse: drawn for the events that have one, and a placeholder where there is none.</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"L_c"</span><span class="p">,</span> <span class="s2">"t_c"</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">,</span> <span class="s2">"tau_d"</span><span class="p">):</span>
+            <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">latent</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">][</span><span class="n">plain</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>  <span class="c1"># L_c = 0</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PLAIN_CSM_PLACEHOLDERS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">plain</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">transform_physical_to_latent</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_csm</span><span class="p">:</span>
+            <span class="n">latent</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">][</span><span class="n">csm</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="s2">"L_c"</span><span class="p">,</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+            <span class="n">log10_l_c</span> <span class="o">=</span> <span class="n">_log10_physical</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">],</span> <span class="n">latent</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">][</span><span class="n">csm</span><span class="p">])</span>
+            <span class="n">latent</span><span class="p">[</span><span class="s2">"t_c"</span><span class="p">][</span><span class="n">csm</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw_trend</span><span class="p">(</span><span class="s2">"t_c"</span><span class="p">,</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">log10_l_c</span><span class="p">)</span>
+            <span class="n">latent</span><span class="p">[</span><span class="s2">"k"</span><span class="p">][</span><span class="n">csm</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+            <span class="n">latent</span><span class="p">[</span><span class="s2">"tau_d"</span><span class="p">][</span><span class="n">csm</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="s2">"tau_d"</span><span class="p">,</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+
+        <span class="c1"># The two parameters with a prior for each class of event.</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"t_r"</span><span class="p">,</span> <span class="s2">"R0"</span><span class="p">):</span>
+            <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_csm</span><span class="p">:</span>
+                <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">csm</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw_csm_branch</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_csm</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">:</span>
+                <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">plain</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_draw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">size</span> <span class="o">-</span> <span class="n">n_csm</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+
+        <span class="c1"># The constants, last and in declaration order.</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">latent</span><span class="p">:</span>
+                <span class="n">latent</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">sample_latent_variable</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">latent</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Bolometric Luminosity: L_bol(t)         #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_components</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">FloatArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\mathrm{env}`, :math:`\ln L_\mathrm{Ni}` and :math:`\ln L_\mathrm{csm}`, in erg/s.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of numpy.ndarray</span>
+<span class="sd">            The natural logs of the envelope, the radioactive tail and the CSM pulse. Each is :math:`-\infty` where</span>
+<span class="sd">            the component is zero.</span>
+<span class="sd">        """</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">parameters</span>
+        <span class="n">t_days</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">SECONDS_PER_DAY</span>
+        <span class="n">x_p</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="s2">"t_p"</span><span class="p">])</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="s2">"w"</span><span class="p">]</span>
+        <span class="n">log_f</span> <span class="o">=</span> <span class="n">_log_sigmoid</span><span class="p">(</span><span class="o">-</span><span class="n">x_p</span><span class="p">)</span>  <span class="c1"># ln F(t)</span>
+        <span class="n">log_1mf</span> <span class="o">=</span> <span class="n">_log_sigmoid</span><span class="p">(</span><span class="n">x_p</span><span class="p">)</span>  <span class="c1"># ln [1 - F(t)]</span>
+
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log_rise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">t</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="s2">"t_r"</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+            <span class="n">ln_env</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"L50"</span><span class="p">])</span>
+                <span class="o">-</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">_LN10</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="s2">"s"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_days</span> <span class="o">-</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.0</span>
+                <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"a_e"</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="s2">"tau_e"</span><span class="p">]))</span>
+                <span class="o">+</span> <span class="n">log_rise</span>
+                <span class="o">+</span> <span class="n">log_f</span>
+            <span class="p">)</span>
+
+            <span class="n">t_trap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">t_days</span><span class="p">,</span> <span class="n">_T_TRAPPING_MIN_DAYS</span><span class="p">)</span> <span class="o">*</span> <span class="n">SECONDS_PER_DAY</span>
+            <span class="n">ln_decay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_EPS_NI_CGS</span> <span class="o">-</span> <span class="n">_EPS_CO_CGS</span><span class="p">)</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="n">_TAU_NI_CGS</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_EPS_CO_CGS</span><span class="p">)</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="n">_TAU_CO_CGS</span>
+            <span class="p">)</span>
+            <span class="n">ln_ni</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"M_Ni"</span><span class="p">])</span> <span class="o">+</span> <span class="n">ln_decay</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">p</span><span class="p">[</span><span class="s2">"T0"</span><span class="p">]</span> <span class="o">/</span> <span class="n">t_trap</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span> <span class="o">+</span> <span class="n">log_1mf</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="s2">"t_c"</span><span class="p">]</span>
+            <span class="n">before_peak</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">"k"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="n">after_peak</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="s2">"t_c"</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="s2">"tau_d"</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">ln_csm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"L_c"</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">before_peak</span><span class="p">,</span> <span class="n">after_peak</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ln_env</span><span class="p">,</span> <span class="n">ln_ni</span><span class="p">,</span> <span class="n">ln_csm</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_bolometric</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\mathrm{bol}(t)`, the sum of the envelope, the radioactive tail and the CSM pulse.</span>
+
+<span class="sd">        Floored at ``_L_BOL_FLOOR_CGS``, which only matters at and just after explosion.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        """</span>
+        <span class="n">ln_env</span><span class="p">,</span> <span class="n">ln_ni</span><span class="p">,</span> <span class="n">ln_csm</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_components</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">ln_env</span><span class="p">,</span> <span class="n">ln_ni</span><span class="p">),</span> <span class="n">ln_csm</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_L_BOL_FLOOR_CGS</span><span class="p">))</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Colour Temperature: T(t)                #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_temperature_from_log_lbol</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">log_l_bol</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T_\mathrm{col}` of the photosphere radiating :math:`\ln L_\mathrm{bol}` at time ``t``, in K.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        log_l_bol : numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\mathrm{bol}(t)`, in erg/s.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The colour temperature, in K.</span>
+<span class="sd">        """</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">parameters</span>
+        <span class="n">radius</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">"R0"</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">"v_ph"</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span>
+        <span class="n">log_t_exp</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">log_l_bol</span> <span class="o">-</span> <span class="n">_LOG_4PI_SIGMA_SB</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">radius</span><span class="p">))</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span>
+        <span class="c1"># [(f_c T_exp)^n + T_rec^n]^(1/n), in log space so that it cannot overflow.</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logaddexp</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"f_c"</span><span class="p">])</span> <span class="o">+</span> <span class="n">log_t_exp</span><span class="p">),</span> <span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s2">"T_rec"</span><span class="p">]))</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_temperature_cgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T_\mathrm{col}(t)`, the expanding photosphere with a recombination floor, in K.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The colour temperature, in K.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_from_log_lbol</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">),</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TypeIIPSED.temperature">
+<a class="viewcode-back" href="../../../../_as_gen/uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature.html#uvex_transients.models.supernovae.IIp.TypeIIPSED.temperature">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">temperature</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`T_\mathrm{col}(t)` in Kelvin.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t : ~astropy.units.Quantity</span>
+<span class="sd">            Time since explosion.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values. See :meth:`eval_log_cgs`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~astropy.units.Quantity</span>
+<span class="sd">            The colour temperature, in Kelvin.</span>
+<span class="sd">        """</span>
+        <span class="n">cgs_parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CGSParameterValue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">to_cgs_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">cgs_parameters</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">K</span></div>
+
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Spectral Shape: S(nu, t)               #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_spectral_shape</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln[\pi B_\nu(T)\,S(\lambda,T)/\sigma T^4N(T)]`, the blanketed blackbody with unit integral, in 1/Hz.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        temperature : numpy.ndarray</span>
+<span class="sd">            Colour temperature, in K.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the spectral shape, in 1/Hz.</span>
+<span class="sd">        """</span>
+        <span class="n">uv</span> <span class="o">=</span> <span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="s2">"lam_c"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"beta_max"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"T_b"</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">"dT"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">planck_shape_log_cgs</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">_log_suppression</span><span class="p">(</span><span class="n">C_CGS</span> <span class="o">/</span> <span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="o">*</span><span class="n">uv</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">_log_normalization</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="o">*</span><span class="n">uv</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval_spectrum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln S(\nu, t)`, the blanketed blackbody at the colour temperature, integrating to 1.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of the spectral shape, in 1/Hz.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_spectral_shape</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_cgs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">),</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="c1"># Spectral Luminosity: L_nu(nu, t)       #</span>
+    <span class="c1"># -------------------------------------- #</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">CGSParameterValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        :math:`\ln L_\nu(\nu, t) = \ln L_\mathrm{bol}(t) + \ln S(\nu, T_\mathrm{col}(t))`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nu : numpy.ndarray</span>
+<span class="sd">            Frequency, in Hz.</span>
+<span class="sd">        t : numpy.ndarray</span>
+<span class="sd">            Time since explosion, in seconds.</span>
+<span class="sd">        **parameters</span>
+<span class="sd">            This model's parameter values, in cgs units.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The natural log of :math:`L_\nu(\nu, t)`, in erg/s/Hz.</span>
+<span class="sd">        """</span>
+        <span class="n">log_l_bol</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_eval_bolometric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">temperature</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_temperature_from_log_lbol</span><span class="p">(</span><span class="n">log_l_bol</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">log_l_bol</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_log_spectral_shape</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Eliza Diggins.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
