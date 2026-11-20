@@ -1,6 +1,10 @@
 [default]
 extend-ignore-identifiers-re = [
 ]
+# Jupyter cell ids are random hex strings, e.g. "id": "8f94ba22"
+extend-ignore-re = [
+    '"id": "[0-9a-f]{8}"',
+]
 
 [default.extend-identifiers]
 # scipy's LinearNDInterpolator (N-dimensional), not "LinearANDInterpolator"
@@ -15,3 +19,5 @@ arange = "arange"
 emiss = "emiss"
 # RST bold-letter acronym fragments — e.g. **L**\ ibrary renders as "Library"
 ibrary = "ibrary"
+# American Astronomical Society, as in the AAS journal figure style
+AAS = "AAS"
